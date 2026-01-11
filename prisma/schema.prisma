@@ -1,0 +1,141 @@
+// Autoblogger Schema Template
+// Copy this to your project's prisma/schema.prisma and merge with your existing models
+// Then run: npx prisma migrate dev --name add-autoblogger
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Change to "sqlite" for development
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// AUTOBLOGGER MODELS - Copy these to your schema
+// ==========================================
+
+model Post {
+  id          String    @id @default(uuid())
+  title       String
+  subtitle    String?
+  slug        String    @unique
+  markdown    String
+  status      String    @default("draft") // draft, published, suggested, deleted
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  // SEO fields
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String?
+  noIndex        Boolean  @default(false)
+  ogImage        String?
+
+  // Preview
+  previewToken  String?   @unique
+  previewExpiry DateTime?
+
+  // Relations
+  revisions Revision[]
+  tags      PostTag[]
+  comments  Comment[]
+  newsItem  NewsItem?
+
+  // Auto-draft
+  sourceUrl String?
+  topicId   String?
+  topic     TopicSubscription? @relation(fields: [topicId], references: [id])
+
+  // Add your custom fields below, e.g.:
+  // polyhedraShape String?
+}
+
+model Revision {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  title     String?
+  subtitle  String?
+  markdown  String
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // For authenticated comments
+  authorId String?
+
+  // For public comments
+  authorName  String?
+  authorEmail String?
+
+  content   String
+  approved  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model Tag {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  posts     PostTag[]
+}
+
+model PostTag {
+  id        String   @id @default(uuid())
+  postId    String
+  tagId     String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, tagId])
+}
+
+model AISettings {
+  id               String   @id @default("default")
+  rules            String   @default("")
+  chatRules        String   @default("")
+  rewriteRules     String?
+  defaultModel     String   @default("claude-sonnet")
+  generateTemplate String?
+  chatTemplate     String?
+  rewriteTemplate  String?
+  updatedAt        DateTime @updatedAt
+}
+
+model TopicSubscription {
+  id               String    @id @default(uuid())
+  name             String
+  keywords         String // JSON array
+  rssFeeds         String // JSON array of feed URLs
+  isActive         Boolean   @default(true)
+  useKeywordFilter Boolean   @default(true)
+  frequency        String    @default("daily")
+  maxPerPeriod     Int       @default(3)
+  essayFocus       String?
+  lastRunAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  posts            Post[]
+  newsItems        NewsItem[]
+}
+
+model NewsItem {
+  id          String             @id @default(uuid())
+  topicId     String
+  topic       TopicSubscription  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  url         String             @unique
+  title       String
+  summary     String?
+  publishedAt DateTime?
+  status      String             @default("pending") // pending, generated, skipped
+  postId      String?            @unique
+  post        Post?              @relation(fields: [postId], references: [id])
+  createdAt   DateTime           @default(now())
+}
