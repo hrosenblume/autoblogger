@@ -464,14 +464,18 @@ Located at `.github/workflows/publish.yml`. Triggers on every push to `main`:
 
 1. Checks out code and sets up Node.js 20
 2. Installs dependencies and builds
-3. Compares current `package.json` version with published npm version
-4. **Only publishes if version changed** — prevents duplicate publishes
-5. Requires `NPM_TOKEN` secret configured in GitHub repo settings
+3. **Auto-bumps patch version** if current version matches npm
+4. Commits version bump and pushes
+5. Publishes to npm
+6. Skips version bump commits to prevent infinite loops
 
 To release a new version:
-1. Bump version in `package.json`
-2. Commit and push to `main`
-3. GitHub Actions automatically publishes to npm
+1. Push changes to `main`
+2. GitHub Actions automatically bumps version and publishes to npm
+
+For manual version control (minor/major bumps):
+1. Run `npm version minor` or `npm version major` locally
+2. Commit and push — workflow will publish without bumping
 
 ## Build Output
 
