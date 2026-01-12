@@ -99,8 +99,15 @@ function AutoResizeTextarea({
   )
 }
 
-export function EditorPage({ slug }: { slug?: string }) {
-  const { apiBasePath, styles, fields, navigate, basePath, onEditorStateChange, onRegisterEditHandler } = useDashboardContext()
+interface EditorPageProps {
+  slug?: string
+  onEditorStateChange?: (state: import('../context').EditorState | null) => void
+}
+
+export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }: EditorPageProps) {
+  const { apiBasePath, styles, fields, navigate, basePath, onRegisterEditHandler } = useDashboardContext()
+  // Use prop callback (passed from DashboardLayout for internal save button)
+  const onEditorStateChange = onEditorStateChangeProp
   const [post, setPost] = useState<Post>({
     title: '',
     subtitle: '',
@@ -244,7 +251,7 @@ export function EditorPage({ slug }: { slug?: string }) {
     return () => {
       onEditorStateChange(null)
     }
-  }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown, onEditorStateChange])
+  }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown, onEditorStateChange, savePost, handlePublish])
 
   // Register edit handler for AI agent mode
   useEffect(() => {
@@ -358,34 +365,100 @@ export function EditorPage({ slug }: { slug?: string }) {
 
       const wordCount = urlParams.length ? parseInt(urlParams.length) : 500
 
-      fetch(`${apiBasePath}/ai/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          idea: urlParams.idea,
-          wordCount,
-          model: urlParams.model,
-          useWebSearch: urlParams.web === '1',
-          useThinking: urlParams.thinking === '1',
-        }),
-      })
-        .then(r => r.json())
-        .then(data => {
-          if (data.data) {
-            setPost(prev => ({
-              ...prev,
-              title: data.data.title || prev.title,
-              subtitle: data.data.subtitle || prev.subtitle,
-              markdown: data.data.markdown || prev.markdown,
-            }))
-          }
-        })
-        .catch(console.error)
-        .finally(() => setGenerating(false))
-
+      // Clear the URL params immediately
       if (typeof window !== 'undefined') {
         window.history.replaceState({}, '', `${basePath}/editor`)
       }
+
+      const runGenerate = async () => {
+        try {
+          const res = await fetch(`${apiBasePath}/ai/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: urlParams.idea,
+              wordCount,
+              model: urlParams.model,
+            }),
+          })
+
+          if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: 'Generation failed' }))
+            console.error('Generation failed:', error)
+            return
+          }
+
+          // Consume SSE stream
+          const reader = res.body?.getReader()
+          if (!reader) return
+
+          const decoder = new TextDecoder()
+          let fullContent = ''
+
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            const chunk = decoder.decode(value, { stream: true })
+            const lines = chunk.split('\n')
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6)
+                if (data === '[DONE]') continue
+                try {
+                  const parsed = JSON.parse(data)
+                  if (parsed.text) {
+                    fullContent += parsed.text
+                    // Update markdown progressively for live streaming effect
+                    setPost(prev => ({ ...prev, markdown: fullContent }))
+                  }
+                } catch {
+                  // Ignore parse errors for incomplete chunks
+                }
+              }
+            }
+          }
+
+          // Parse title and subtitle from generated content
+          // Look for # Title on first line, and *subtitle* or _subtitle_ on second line
+          const lines = fullContent.trim().split('\n')
+          let title = ''
+          let subtitle = ''
+          let markdownStart = 0
+
+          // Check for H1 title
+          if (lines[0]?.startsWith('# ')) {
+            title = lines[0].slice(2).trim()
+            markdownStart = 1
+
+            // Check for italic subtitle on next line
+            const nextLine = lines[1]?.trim()
+            if (nextLine) {
+              const italicMatch = nextLine.match(/^\*(.+)\*$/) || nextLine.match(/^_(.+)_$/)
+              if (italicMatch) {
+                subtitle = italicMatch[1]
+                markdownStart = 2
+              }
+            }
+          }
+
+          // Update with parsed title/subtitle and remaining markdown
+          const remainingMarkdown = lines.slice(markdownStart).join('\n').trim()
+          setPost(prev => ({
+            ...prev,
+            title: title || prev.title,
+            subtitle: subtitle || prev.subtitle,
+            markdown: remainingMarkdown || fullContent,
+          }))
+        } catch (err) {
+          console.error('Generation error:', err)
+        } finally {
+          setGenerating(false)
+        }
+      }
+
+      runGenerate()
     }
   }, [urlParams, slug, loading, apiBasePath, basePath])
 
@@ -441,7 +514,7 @@ export function EditorPage({ slug }: { slug?: string }) {
     await savePost()
   }, [previewingRevision])
 
-  const savePost = async (silent = false) => {
+  const savePost = useCallback(async (silent = false) => {
     if (!silent) {
       setSaving(true)
       setSavingAs('draft')
@@ -480,16 +553,16 @@ export function EditorPage({ slug }: { slug?: string }) {
         setSavingAs(null)
       }
     }
-  }
+  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate])
 
-  const handlePublish = async () => {
+  const handlePublish = useCallback(async () => {
     if (!confirm('Publish this essay?')) return
     setSaving(true)
     setSavingAs('published')
     try {
       const method = post.id ? 'PATCH' : 'POST'
       const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`
-      
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
@@ -500,7 +573,7 @@ export function EditorPage({ slug }: { slug?: string }) {
           ...Object.fromEntries(fields.map(f => [f.name, post[f.name]]))
         }),
       })
-      
+
       if (res.ok) {
         navigate('/')
       }
@@ -508,7 +581,7 @@ export function EditorPage({ slug }: { slug?: string }) {
       setSaving(false)
       setSavingAs(null)
     }
-  }
+  }, [post.id, post.title, apiBasePath, fields, navigate])
 
   const handleUnpublish = async () => {
     if (!confirm('Unpublish this essay?')) return
@@ -623,7 +696,9 @@ export function EditorPage({ slug }: { slug?: string }) {
               />
             )}
             <div className="!mt-4">
-              <span className={`${styles.byline} underline ${generating ? 'opacity-60' : ''}`}>Author</span>
+              <span className={`${styles.byline} underline ${generating ? 'opacity-60' : ''}`}>
+                {session?.user?.name || session?.user?.email || 'Author'}
+              </span>
             </div>
           </header>
 

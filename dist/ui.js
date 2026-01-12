@@ -41,6 +41,10 @@ __export(ui_exports, {
 });
 module.exports = __toCommonJS(ui_exports);
 
+// src/ui/dashboard.tsx
+var import_react19 = require("react");
+var import_lucide_react13 = require("lucide-react");
+
 // src/ui/context.tsx
 var import_react = require("react");
 var import_jsx_runtime = require("react/jsx-runtime");
@@ -6798,8 +6802,9 @@ function AutoResizeTextarea({
     }
   );
 }
-function EditorPage({ slug }) {
-  const { apiBasePath, styles, fields, navigate, basePath, onEditorStateChange, onRegisterEditHandler } = useDashboardContext();
+function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
+  const { apiBasePath, styles, fields, navigate, basePath, onRegisterEditHandler } = useDashboardContext();
+  const onEditorStateChange = onEditorStateChangeProp;
   const [post, setPost] = (0, import_react16.useState)({
     title: "",
     subtitle: "",
@@ -6905,7 +6910,7 @@ function EditorPage({ slug }) {
     return () => {
       onEditorStateChange(null);
     };
-  }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown, onEditorStateChange]);
+  }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown, onEditorStateChange, savePost, handlePublish]);
   (0, import_react16.useEffect)(() => {
     if (!onRegisterEditHandler) return;
     const handleEdit = (edit) => {
@@ -7000,29 +7005,79 @@ function EditorPage({ slug }) {
       hasTriggeredGeneration.current = true;
       setGenerating(true);
       const wordCount = urlParams.length ? parseInt(urlParams.length) : 500;
-      fetch(`${apiBasePath}/ai/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          idea: urlParams.idea,
-          wordCount,
-          model: urlParams.model,
-          useWebSearch: urlParams.web === "1",
-          useThinking: urlParams.thinking === "1"
-        })
-      }).then((r) => r.json()).then((data) => {
-        if (data.data) {
-          setPost((prev) => ({
-            ...prev,
-            title: data.data.title || prev.title,
-            subtitle: data.data.subtitle || prev.subtitle,
-            markdown: data.data.markdown || prev.markdown
-          }));
-        }
-      }).catch(console.error).finally(() => setGenerating(false));
       if (typeof window !== "undefined") {
         window.history.replaceState({}, "", `${basePath}/editor`);
       }
+      const runGenerate = async () => {
+        try {
+          const res = await fetch(`${apiBasePath}/ai/generate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              prompt: urlParams.idea,
+              wordCount,
+              model: urlParams.model
+            })
+          });
+          if (!res.ok) {
+            const error = await res.json().catch(() => ({ error: "Generation failed" }));
+            console.error("Generation failed:", error);
+            return;
+          }
+          const reader = res.body?.getReader();
+          if (!reader) return;
+          const decoder = new TextDecoder();
+          let fullContent = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            const lines2 = chunk.split("\n");
+            for (const line of lines2) {
+              if (line.startsWith("data: ")) {
+                const data = line.slice(6);
+                if (data === "[DONE]") continue;
+                try {
+                  const parsed = JSON.parse(data);
+                  if (parsed.text) {
+                    fullContent += parsed.text;
+                    setPost((prev) => ({ ...prev, markdown: fullContent }));
+                  }
+                } catch {
+                }
+              }
+            }
+          }
+          const lines = fullContent.trim().split("\n");
+          let title = "";
+          let subtitle = "";
+          let markdownStart = 0;
+          if (lines[0]?.startsWith("# ")) {
+            title = lines[0].slice(2).trim();
+            markdownStart = 1;
+            const nextLine = lines[1]?.trim();
+            if (nextLine) {
+              const italicMatch = nextLine.match(/^\*(.+)\*$/) || nextLine.match(/^_(.+)_$/);
+              if (italicMatch) {
+                subtitle = italicMatch[1];
+                markdownStart = 2;
+              }
+            }
+          }
+          const remainingMarkdown = lines.slice(markdownStart).join("\n").trim();
+          setPost((prev) => ({
+            ...prev,
+            title: title || prev.title,
+            subtitle: subtitle || prev.subtitle,
+            markdown: remainingMarkdown || fullContent
+          }));
+        } catch (err) {
+          console.error("Generation error:", err);
+        } finally {
+          setGenerating(false);
+        }
+      };
+      runGenerate();
     }
   }, [urlParams, slug, loading, apiBasePath, basePath]);
   const fetchRevisions = (0, import_react16.useCallback)(async () => {
@@ -7065,7 +7120,7 @@ function EditorPage({ slug }) {
     setPreviewingRevision(null);
     await savePost();
   }, [previewingRevision]);
-  const savePost = async (silent = false) => {
+  const savePost = (0, import_react16.useCallback)(async (silent = false) => {
     if (!silent) {
       setSaving(true);
       setSavingAs("draft");
@@ -7102,8 +7157,8 @@ function EditorPage({ slug }) {
         setSavingAs(null);
       }
     }
-  };
-  const handlePublish = async () => {
+  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate]);
+  const handlePublish = (0, import_react16.useCallback)(async () => {
     if (!confirm("Publish this essay?")) return;
     setSaving(true);
     setSavingAs("published");
@@ -7127,7 +7182,7 @@ function EditorPage({ slug }) {
       setSaving(false);
       setSavingAs(null);
     }
-  };
+  }, [post.id, post.title, apiBasePath, fields, navigate]);
   const handleUnpublish = async () => {
     if (!confirm("Unpublish this essay?")) return;
     await fetch(`${apiBasePath}/posts/${post.id}`, {
@@ -7230,7 +7285,7 @@ function EditorPage({ slug }) {
             className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: "Author" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "space-y-3", children: [
         /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Skeleton2, { className: "h-4 w-full" }),
@@ -9435,8 +9490,14 @@ function DashboardLayout({
   theme,
   navbarRightSlot
 }) {
-  const { basePath, currentPath, navigate } = useDashboardContext();
+  const { basePath, currentPath, navigate, onEditorStateChange } = useDashboardContext();
+  const [editorState, setEditorState] = (0, import_react19.useState)(null);
   const editorSlug = currentPath.startsWith("/editor/") ? currentPath.replace("/editor/", "") : currentPath === "/editor" ? void 0 : void 0;
+  const isEditorPage = currentPath.startsWith("/editor");
+  const handleEditorStateChange = (state) => {
+    setEditorState(state);
+    onEditorStateChange?.(state);
+  };
   useDashboardKeyboard({
     basePath,
     onToggleView: onToggleView ? () => onToggleView(currentPath, editorSlug) : void 0,
@@ -9451,6 +9512,21 @@ function DashboardLayout({
       if (currentPath !== "/" && currentPath !== "") navigate("/");
     }
   });
+  const rightSlotWithSave = /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
+    isEditorPage && editorState && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+      "button",
+      {
+        type: "button",
+        onClick: () => editorState.onSave("draft"),
+        disabled: !editorState.hasUnsavedChanges || !!editorState.savingAs,
+        className: "w-9 h-9 rounded-md border border-border hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
+        "aria-label": "Save",
+        title: editorState.hasUnsavedChanges ? "Save changes (\u2318S)" : "No unsaved changes",
+        children: editorState.savingAs ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react13.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react13.Save, { className: "h-4 w-4" })
+      }
+    ),
+    navbarRightSlot
+  ] });
   return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "min-h-screen bg-background flex flex-col", children: [
     /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
       Navbar,
@@ -9458,18 +9534,18 @@ function DashboardLayout({
         onSignOut,
         onThemeToggle,
         theme,
-        rightSlot: navbarRightSlot
+        rightSlot: rightSlotWithSave
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DashboardRouter, { path: currentPath }) })
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) })
   ] });
 }
-function DashboardRouter({ path }) {
+function DashboardRouter({ path, onEditorStateChange }) {
   const pathWithoutQuery = path.split("?")[0];
   if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(WriterDashboard, {});
   if (pathWithoutQuery.startsWith("/editor")) {
     const slug = pathWithoutQuery.replace("/editor/", "").replace("/editor", "");
-    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(EditorPage, { slug: slug || void 0 }, path);
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(EditorPage, { slug: slug || void 0, onEditorStateChange }, path);
   }
   if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
   return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("p", { className: "text-muted-foreground", children: [

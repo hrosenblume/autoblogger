@@ -1,6 +1,7 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
+import { Save, Loader2 } from 'lucide-react'
 import type { CustomFieldConfig, StylesConfig } from './types'
 import { DashboardProvider, useDashboardContext, type Session, type EditorState, type EditHandler } from './context'
 import { WriterDashboard } from './pages/WriterDashboard'
@@ -67,12 +68,21 @@ function DashboardLayout({
   theme,
   navbarRightSlot,
 }: DashboardLayoutProps) {
-  const { basePath, currentPath, navigate } = useDashboardContext()
+  const { basePath, currentPath, navigate, onEditorStateChange } = useDashboardContext()
+  const [editorState, setEditorState] = useState<EditorState | null>(null)
 
   // Extract slug from editor path
   const editorSlug = currentPath.startsWith('/editor/') 
     ? currentPath.replace('/editor/', '') 
     : currentPath === '/editor' ? undefined : undefined
+  
+  const isEditorPage = currentPath.startsWith('/editor')
+
+  // Handle editor state changes - track internally AND forward to host app
+  const handleEditorStateChange = (state: EditorState | null) => {
+    setEditorState(state)
+    onEditorStateChange?.(state)
+  }
 
   useDashboardKeyboard({
     basePath,
@@ -89,22 +99,47 @@ function DashboardLayout({
     },
   })
 
+  // Build the right slot with save button + any custom slot from host app
+  const rightSlotWithSave = (
+    <>
+      {/* Save button - only show on editor page */}
+      {isEditorPage && editorState && (
+        <button
+          type="button"
+          onClick={() => editorState.onSave('draft')}
+          disabled={!editorState.hasUnsavedChanges || !!editorState.savingAs}
+          className="w-9 h-9 rounded-md border border-border hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Save"
+          title={editorState.hasUnsavedChanges ? 'Save changes (⌘S)' : 'No unsaved changes'}
+        >
+          {editorState.savingAs ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="h-4 w-4" />
+          )}
+        </button>
+      )}
+      {/* Extra slot from host app */}
+      {navbarRightSlot}
+    </>
+  )
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Navbar
         onSignOut={onSignOut}
         onThemeToggle={onThemeToggle}
         theme={theme}
-        rightSlot={navbarRightSlot}
+        rightSlot={rightSlotWithSave}
       />
       <main className="flex-1">
-        <DashboardRouter path={currentPath} />
+        <DashboardRouter path={currentPath} onEditorStateChange={handleEditorStateChange} />
       </main>
     </div>
   )
 }
 
-function DashboardRouter({ path }: { path: string }) {
+function DashboardRouter({ path, onEditorStateChange }: { path: string; onEditorStateChange?: (state: EditorState | null) => void }) {
   // Strip query params from path for routing
   const pathWithoutQuery = path.split('?')[0]
   
@@ -112,7 +147,7 @@ function DashboardRouter({ path }: { path: string }) {
   if (pathWithoutQuery.startsWith('/editor')) {
     const slug = pathWithoutQuery.replace('/editor/', '').replace('/editor', '')
     // Use path as key to force remount when navigating to same editor with different query params
-    return <EditorPage key={path} slug={slug || undefined} />
+    return <EditorPage key={path} slug={slug || undefined} onEditorStateChange={onEditorStateChange} />
   }
   if (pathWithoutQuery.startsWith('/settings')) return <SettingsPage subPath={pathWithoutQuery.replace('/settings', '')} />
   return <div className="max-w-4xl mx-auto px-6 py-8"><p className="text-muted-foreground">Page not found: {path}</p></div>
