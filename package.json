@@ -1,6 +1,6 @@
 {
   "name": "autoblogger",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "A headless CMS with AI writing tools, WYSIWYG editor, and RSS auto-draft",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
