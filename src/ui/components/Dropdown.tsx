@@ -147,9 +147,10 @@ export function Dropdown({
           ),
         }}
         className={cn(
-          'z-50 min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1',
+          'z-50 min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1 overscroll-contain',
           className
         )}
+        onWheel={(e) => e.stopPropagation()}
       >
         {children}
       </div>

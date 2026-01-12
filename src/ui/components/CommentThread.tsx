@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { MoreHorizontal, Reply, Check, Trash2, Pencil } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { CommentWithUser, canEditComment, canDeleteComment } from '../../lib/comments'
+import { Dropdown, DropdownItem, DropdownDivider } from './Dropdown'
 
 // Simple relative time formatter
 function formatRelativeTime(dateStr: string): string {
@@ -49,7 +50,6 @@ export function CommentThread({
   const [replyContent, setReplyContent] = useState('')
   const [editContent, setEditContent] = useState(comment.content)
   const [loading, setLoading] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
 
   const canEdit = canEditComment(comment, currentUserEmail)
   const canDelete = canDeleteComment(comment, currentUserEmail, isAdmin)
@@ -125,73 +125,45 @@ export function CommentThread({
         </div>
 
         {/* Dropdown menu */}
-        <div className="relative">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              setMenuOpen(!menuOpen)
-            }}
-            className="w-6 h-6 rounded hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"
+        <div onClick={(e) => e.stopPropagation()}>
+          <Dropdown
+            trigger={
+              <button
+                type="button"
+                className="w-6 h-6 rounded hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+            }
+            align="right"
+            className="min-w-[140px]"
           >
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
-          {menuOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-[79]"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setMenuOpen(false)
-                }}
-              />
-              <div className="absolute right-0 top-full mt-1 z-[80] bg-popover border border-border rounded-md shadow-lg p-1 min-w-[140px]">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onResolve()
-                    setMenuOpen(false)
-                  }}
-                  className="w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default flex items-center gap-2"
-                >
-                  <Check className="w-4 h-4" />
-                  {comment.resolved ? 'Unresolve' : 'Resolve'}
-                </button>
-                {canEdit && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      setIsEditing(true)
-                      setMenuOpen(false)
-                    }}
-                    className="w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default flex items-center gap-2"
-                  >
-                    <Pencil className="w-4 h-4" />
-                    Edit
-                  </button>
-                )}
-                {canDelete && (
-                  <>
-                    <div className="my-1 border-t border-border" />
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDelete()
-                        setMenuOpen(false)
-                      }}
-                      className="w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default flex items-center gap-2 text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </button>
-                  </>
-                )}
-              </div>
-            </>
-          )}
+            <DropdownItem onClick={onResolve}>
+              <span className="flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                {comment.resolved ? 'Unresolve' : 'Resolve'}
+              </span>
+            </DropdownItem>
+            {canEdit && (
+              <DropdownItem onClick={() => setIsEditing(true)}>
+                <span className="flex items-center gap-2">
+                  <Pencil className="w-4 h-4" />
+                  Edit
+                </span>
+              </DropdownItem>
+            )}
+            {canDelete && (
+              <>
+                <DropdownDivider />
+                <DropdownItem onClick={handleDelete} destructive>
+                  <span className="flex items-center gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </span>
+                </DropdownItem>
+              </>
+            )}
+          </Dropdown>
         </div>
       </div>
 

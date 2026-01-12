@@ -139,7 +139,10 @@ export function TagsSection({
                     </svg>
                   </button>
                   {dropdownOpen && (
-                    <div className="absolute z-50 top-full left-0 mt-1 w-full bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-auto p-1">
+                    <div 
+                      className="absolute z-50 top-full left-0 mt-1 w-full bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-auto overscroll-contain p-1"
+                      onWheel={(e) => e.stopPropagation()}
+                    >
                       {unselectedTags.map(tag => (
                         <button
                           key={tag.id}
