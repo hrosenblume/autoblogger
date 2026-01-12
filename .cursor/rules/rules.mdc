@@ -1,6 +1,19 @@
 # Coding Rules
 
-> 🚨 **READ THIS ENTIRE FILE AT THE START OF EVERY CONVERSATION.** This contains single-letter git commands (`g`, `d`, `m`, `p`, `pf`) that must be executed immediately when typed.
+> 🚨🚨🚨 **CRITICAL: SINGLE-LETTER GIT COMMANDS** 🚨🚨🚨
+> 
+> When the user types ONLY `g`, `d`, `m`, `p`, or `pf` — **EXECUTE THE GIT WORKFLOW IMMEDIATELY.**
+> 
+> | Command | Action |
+> |---------|--------|
+> | `g` | Build → commit → push to `main` |
+> | `d` | Commit → push to `dev` |
+> | `m` | Merge `dev` → `main` |
+> | `p` | Pull current branch |
+> | `pf` | Force reset to `origin/main` |
+> 
+> **DO NOT** interpret these as casual chat. **DO NOT** respond with "Great!" or similar.
+> **DO** run the git commands as specified in the Git Workflow section below.
 
 > ⚠️ **THIS FILE IS COMMITTED TO GIT.** Do not add sensitive data: no emails, URLs, passwords, API keys, or secrets.
 

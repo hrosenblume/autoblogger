@@ -21,7 +21,7 @@ export { CommentThread } from './components/CommentThread'
 export { useComments } from './hooks/useComments'
 export type { CommentsState } from './hooks/useComments'
 
-// Chat context (UI component stays in host app due to shadcn dependencies)
+// Chat components and context
 export { ChatProvider, useChatContext, ChatContext } from './hooks/useChat'
 export type { 
   Message as ChatMessage,
@@ -32,3 +32,10 @@ export type {
   EditHandler as ChatEditHandler,
   ExpandPlanHandler,
 } from './hooks/useChat'
+export { ChatPanel } from './components/ChatPanel'
+export { useAIModels } from './hooks/useAIModels'
+export { ModelSelector } from './components/ModelSelector'
+export { ControlButton } from './components/ControlButton'
+
+// Types from lib
+export type { AIModelOption } from '../lib/models'

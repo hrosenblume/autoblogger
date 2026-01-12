@@ -8,6 +8,9 @@ marked.setOptions({
 function renderMarkdown(markdown) {
   return marked.parse(markdown);
 }
+function markdownToHtml(markdown) {
+  return marked.parse(markdown, { gfm: true, breaks: true });
+}
 function parseMarkdown(markdown) {
   return marked.lexer(markdown);
 }
@@ -21,6 +24,7 @@ function htmlToMarkdown(html) {
 }
 export {
   htmlToMarkdown,
+  markdownToHtml,
   parseMarkdown,
   renderMarkdown
 };

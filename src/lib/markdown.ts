@@ -15,6 +15,14 @@ export function renderMarkdown(markdown: string): string {
 }
 
 /**
+ * Convert markdown to HTML with GFM and line breaks enabled.
+ * Safe for client-side use in components like ChatPanel.
+ */
+export function markdownToHtml(markdown: string): string {
+  return marked.parse(markdown, { gfm: true, breaks: true }) as string
+}
+
+/**
  * Parse markdown to tokens (AST)
  */
 export function parseMarkdown(markdown: string) {

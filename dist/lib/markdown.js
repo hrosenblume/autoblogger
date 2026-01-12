@@ -31,6 +31,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var markdown_exports = {};
 __export(markdown_exports, {
   htmlToMarkdown: () => htmlToMarkdown,
+  markdownToHtml: () => markdownToHtml,
   parseMarkdown: () => parseMarkdown,
   renderMarkdown: () => renderMarkdown
 });
@@ -43,6 +44,9 @@ import_marked.marked.setOptions({
 });
 function renderMarkdown(markdown) {
   return import_marked.marked.parse(markdown);
+}
+function markdownToHtml(markdown) {
+  return import_marked.marked.parse(markdown, { gfm: true, breaks: true });
 }
 function parseMarkdown(markdown) {
   return import_marked.marked.lexer(markdown);
@@ -58,6 +62,7 @@ function htmlToMarkdown(html) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   htmlToMarkdown,
+  markdownToHtml,
   parseMarkdown,
   renderMarkdown
 });

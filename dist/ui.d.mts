@@ -285,4 +285,60 @@ interface ChatProviderProps {
 declare function ChatProvider({ children, apiBasePath, chatApiPath, historyApiPath, }: ChatProviderProps): react_jsx_runtime.JSX.Element;
 declare function useChatContext(): ChatContextValue;
 
-export { AutobloggerDashboard, type AutobloggerDashboardProps, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, type Message as ChatMessage, type ChatMode, ChatProvider, CommentThread, CommentsPanel, type CommentsState, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, Navbar, type NavbarProps, type Session, type SessionUser, type StylesConfig, useChatContext, useComments, useDashboardContext };
+interface ChatPanelProps {
+    /** Optional prose classes for message rendering */
+    proseClasses?: string;
+    /** Optional callback when navigating (e.g., for expandPlan navigation) */
+    onNavigate?: (path: string) => void;
+    /** Whether currently on an editor page (controls Draft Essay behavior) */
+    isOnEditor?: boolean;
+    /** API path for fetching models (defaults to /api/cms/ai/settings) */
+    modelsApiPath?: string;
+}
+declare function ChatPanel({ proseClasses, onNavigate, isOnEditor: isOnEditorProp, }: ChatPanelProps): react.ReactPortal | null;
+
+/** AI model option for UI dropdowns */
+interface AIModelOption {
+    id: string;
+    name: string;
+    description: string;
+    hasNativeSearch: boolean;
+}
+
+interface UseAIModelsOptions {
+    /** External selected model state (for context-managed selection) */
+    externalSelectedModel?: string;
+    /** External setter (for context-managed selection) */
+    externalSetSelectedModel?: (id: string) => void;
+    /** Custom API path for settings (defaults to /api/cms/ai/settings) */
+    apiPath?: string;
+}
+interface UseAIModelsResult {
+    models: AIModelOption[];
+    selectedModel: string;
+    setSelectedModel: (id: string) => void;
+    currentModel: AIModelOption | undefined;
+    isLoading: boolean;
+}
+/**
+ * Hook to fetch available AI models and manage selection.
+ * Fetches models from AI settings endpoint and sets default model on mount.
+ *
+ * Can use internal state (default) or external state (for context-managed selection).
+ */
+declare function useAIModels(options?: UseAIModelsOptions): UseAIModelsResult;
+
+interface ModelSelectorProps {
+    models: AIModelOption[];
+    selectedModel: string;
+    onModelChange: (id: string) => void;
+    currentModel?: AIModelOption;
+}
+declare function ModelSelector({ models, selectedModel, onModelChange, currentModel, }: ModelSelectorProps): react_jsx_runtime.JSX.Element;
+
+interface ControlButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    active?: boolean;
+}
+declare const ControlButton: react.ForwardRefExoticComponent<ControlButtonProps & react.RefAttributes<HTMLButtonElement>>;
+
+export { type AIModelOption, AutobloggerDashboard, type AutobloggerDashboardProps, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, type Message as ChatMessage, type ChatMode, ChatPanel, ChatProvider, CommentThread, CommentsPanel, type CommentsState, ControlButton, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, ModelSelector, Navbar, type NavbarProps, type Session, type SessionUser, type StylesConfig, useAIModels, useChatContext, useComments, useDashboardContext };

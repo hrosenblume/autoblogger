@@ -1527,6 +1527,9 @@ marked.setOptions({
 function renderMarkdown(markdown) {
   return marked.parse(markdown);
 }
+function markdownToHtml(markdown) {
+  return marked.parse(markdown, { gfm: true, breaks: true });
+}
 var turndownService = new TurndownService({
   headingStyle: "atx",
   codeBlockStyle: "fenced",
@@ -9798,13 +9801,503 @@ function useChatContext() {
   }
   return context;
 }
+
+// src/ui/components/ChatPanel.tsx
+import { useState as useState16, useRef as useRef10, useEffect as useEffect15, useCallback as useCallback11 } from "react";
+import { createPortal as createPortal3 } from "react-dom";
+import { X as X4, Copy, Check as Check4, ArrowUp as ArrowUp3, Pencil as Pencil3, Undo2 as Undo22, ChevronDown as ChevronDown5, MessageSquare as MessageSquare3, Globe as Globe2, Brain as Brain2, Square, List as List2 } from "lucide-react";
+
+// src/ui/hooks/useAIModels.ts
+import { useState as useState15, useEffect as useEffect14 } from "react";
+function useAIModels(options) {
+  const [models, setModels] = useState15([]);
+  const [internalSelectedModel, setInternalSelectedModel] = useState15("");
+  const [isLoading, setIsLoading] = useState15(true);
+  const selectedModel = options?.externalSelectedModel ?? internalSelectedModel;
+  const setSelectedModel = options?.externalSetSelectedModel ?? setInternalSelectedModel;
+  const apiPath = options?.apiPath ?? "/api/cms/ai/settings";
+  useEffect14(() => {
+    fetch(apiPath).then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    }).then((data) => {
+      const settings = data.data || data;
+      setModels(settings.availableModels || []);
+      if (settings.defaultModel && !selectedModel) {
+        setSelectedModel(settings.defaultModel);
+      }
+    }).catch(console.error).finally(() => setIsLoading(false));
+  }, [apiPath]);
+  const currentModel = models.find((m) => m.id === selectedModel);
+  return {
+    models,
+    selectedModel,
+    setSelectedModel,
+    currentModel,
+    isLoading
+  };
+}
+
+// src/ui/components/ChatPanel.tsx
+import { Fragment as Fragment13, jsx as jsx23, jsxs as jsxs17 } from "react/jsx-runtime";
+var DEFAULT_PROSE_CLASSES2 = "prose prose-gray dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:underline";
+function stripPlanTags(content) {
+  return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
+}
+function ChatPanel({
+  proseClasses = DEFAULT_PROSE_CLASSES2,
+  onNavigate,
+  isOnEditor: isOnEditorProp
+}) {
+  const {
+    messages,
+    isStreaming,
+    isOpen: open,
+    setIsOpen,
+    sendMessage: contextSendMessage,
+    stopStreaming,
+    essayContext,
+    mode,
+    setMode,
+    undoEdit,
+    webSearchEnabled,
+    setWebSearchEnabled,
+    thinkingEnabled,
+    setThinkingEnabled,
+    selectedModel,
+    setSelectedModel,
+    expandPlan
+  } = useChatContext();
+  const isOnEditor = isOnEditorProp ?? !!essayContext;
+  const [input, setInput] = useState16("");
+  const [isAnimating, setIsAnimating] = useState16(false);
+  const [isVisible, setIsVisible] = useState16(false);
+  const [mounted, setMounted] = useState16(false);
+  const [copiedIndex, setCopiedIndex] = useState16(null);
+  const [modeMenuOpen, setModeMenuOpen] = useState16(false);
+  const modeMenuRef = useRef10(null);
+  const messagesEndRef = useRef10(null);
+  const messagesContainerRef = useRef10(null);
+  const textareaRef = useRef10(null);
+  const prevMessageCountRef = useRef10(0);
+  const savedScrollPositionRef = useRef10(null);
+  const lastUserMessageRef = useRef10(null);
+  const { models, currentModel } = useAIModels({
+    externalSelectedModel: selectedModel,
+    externalSetSelectedModel: setSelectedModel
+  });
+  const onClose = useCallback11(() => setIsOpen(false), [setIsOpen]);
+  const copyToClipboard = useCallback11(async (text, index) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2e3);
+  }, []);
+  const handleDraftEssay = useCallback11(() => {
+    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
+    if (!lastAssistantMessage?.content) return;
+    if (isOnEditor) {
+      expandPlan();
+      setMode("agent");
+    } else if (onNavigate) {
+      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
+      setIsOpen(false);
+      onNavigate("/editor?fromPlan=1");
+    }
+  }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate]);
+  useEffect15(() => {
+    function handleClick(e) {
+      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
+        setModeMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+  useEffect15(() => {
+    setMounted(true);
+  }, []);
+  useEffect15(() => {
+    if (open) {
+      setIsVisible(true);
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      document.body.style.top = `-${window.scrollY}px`;
+    } else {
+      setIsAnimating(false);
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.top = "";
+      window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+  useEffect15(() => {
+    if (isVisible && open && !isAnimating) {
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    }
+  }, [isVisible, open, isAnimating]);
+  useEffect15(() => {
+    if (!open && messagesContainerRef.current) {
+      savedScrollPositionRef.current = messagesContainerRef.current.scrollTop;
+    }
+  }, [open]);
+  useEffect15(() => {
+    if (!open || !isVisible) return;
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const prevCount = prevMessageCountRef.current;
+    const currentCount = messages.length;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (currentCount > prevCount) {
+          const behavior = prevCount === 0 ? "instant" : "smooth";
+          messagesEndRef.current?.scrollIntoView({ behavior });
+        } else if (savedScrollPositionRef.current !== null) {
+          container.scrollTop = savedScrollPositionRef.current;
+        }
+        prevMessageCountRef.current = currentCount;
+      });
+    });
+  }, [messages.length, open, isVisible]);
+  useEffect15(() => {
+    if (!isStreaming) return;
+    const container = messagesContainerRef.current;
+    const userMessage = lastUserMessageRef.current;
+    if (!container || !userMessage) return;
+    const containerRect = container.getBoundingClientRect();
+    const messageRect = userMessage.getBoundingClientRect();
+    const distanceFromTop = messageRect.top - containerRect.top;
+    if (distanceFromTop > 10) {
+      container.scrollTop += Math.min(distanceFromTop * 0.3, 30);
+    }
+  }, [messages, isStreaming]);
+  useEffect15(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+    }
+  }, [input]);
+  const sendMessage = useCallback11(async () => {
+    if (!input.trim() || isStreaming) return;
+    const content = input.trim();
+    setInput("");
+    await contextSendMessage(content);
+  }, [input, isStreaming, contextSendMessage]);
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      onClose();
+    }
+  };
+  useEffect15(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        if (!open) {
+          setIsOpen(true);
+        }
+        if (essayContext) {
+          setMode("agent");
+        }
+      }
+    };
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [open, setIsOpen, setMode, essayContext]);
+  if (!isVisible || !mounted) return null;
+  const getModeStyles = (m) => {
+    if (m === "ask") return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+    if (m === "agent") return "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400";
+    return "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
+  };
+  return createPortal3(
+    /* @__PURE__ */ jsxs17(Fragment13, { children: [
+      /* @__PURE__ */ jsx23(
+        "div",
+        {
+          className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
+          onClick: onClose
+        }
+      ),
+      /* @__PURE__ */ jsxs17(
+        "div",
+        {
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": "Chat",
+          className: `fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
+          children: [
+            /* @__PURE__ */ jsxs17("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
+              /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ jsx23("h2", { className: "font-medium", children: "Chat" }),
+                essayContext && /* @__PURE__ */ jsx23("span", { className: "inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[120px]", children: essayContext.title || "Untitled" })
+              ] }),
+              /* @__PURE__ */ jsx23(
+                "button",
+                {
+                  onClick: onClose,
+                  className: "w-8 h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
+                  "aria-label": "Close chat",
+                  children: /* @__PURE__ */ jsx23(X4, { className: "w-4 h-4" })
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsx23("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto", children: messages.length === 0 ? /* @__PURE__ */ jsx23("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ jsx23("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ jsx23("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ jsxs17("div", { className: "px-4 py-4 space-y-4", children: [
+              messages.map((message, index) => {
+                const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
+                return /* @__PURE__ */ jsx23(
+                  "div",
+                  {
+                    ref: isLastUserMessage ? lastUserMessageRef : void 0,
+                    className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
+                    children: /* @__PURE__ */ jsxs17(
+                      "div",
+                      {
+                        className: `max-w-[85%] rounded-2xl px-3 py-2 text-sm relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
+                        children: [
+                          message.role === "assistant" ? /* @__PURE__ */ jsx23(
+                            "div",
+                            {
+                              className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
+                              dangerouslySetInnerHTML: { __html: markdownToHtml(stripPlanTags(message.content)) }
+                            }
+                          ) : /* @__PURE__ */ jsx23("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
+                          isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ jsx23("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
+                          message.appliedEdits && message.previousState && /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-2 mt-1.5", children: [
+                            /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-1 text-xs text-green-600 dark:text-green-400", children: [
+                              /* @__PURE__ */ jsx23(Pencil3, { className: "w-3 h-3" }),
+                              /* @__PURE__ */ jsx23("span", { children: "Edit applied" })
+                            ] }),
+                            /* @__PURE__ */ jsxs17(
+                              "button",
+                              {
+                                onClick: () => undoEdit(index),
+                                className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors",
+                                "aria-label": "Undo edit",
+                                children: [
+                                  /* @__PURE__ */ jsx23(Undo22, { className: "w-3 h-3" }),
+                                  /* @__PURE__ */ jsx23("span", { children: "Undo" })
+                                ]
+                              }
+                            )
+                          ] }),
+                          message.role === "assistant" && !isStreaming && /* @__PURE__ */ jsxs17("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
+                            /* @__PURE__ */ jsx23(
+                              "button",
+                              {
+                                onClick: () => copyToClipboard(message.content, index),
+                                className: "text-muted-foreground hover:text-foreground p-1 rounded",
+                                "aria-label": "Copy message",
+                                children: copiedIndex === index ? /* @__PURE__ */ jsx23(Check4, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ jsx23(Copy, { className: "w-3.5 h-3.5" })
+                              }
+                            ),
+                            message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ jsx23(
+                              "button",
+                              {
+                                onClick: handleDraftEssay,
+                                className: "text-xs text-muted-foreground hover:text-foreground px-1 rounded",
+                                children: "Draft Essay"
+                              }
+                            )
+                          ] })
+                        ]
+                      }
+                    )
+                  },
+                  index
+                );
+              }),
+              /* @__PURE__ */ jsx23("div", { ref: messagesEndRef })
+            ] }) }),
+            /* @__PURE__ */ jsxs17(
+              "form",
+              {
+                onSubmit: (e) => {
+                  e.preventDefault();
+                  sendMessage();
+                },
+                className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
+                children: [
+                  /* @__PURE__ */ jsxs17("div", { className: "mb-2 flex items-center gap-3", children: [
+                    /* @__PURE__ */ jsxs17("div", { ref: modeMenuRef, className: "relative", children: [
+                      /* @__PURE__ */ jsxs17(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => setModeMenuOpen(!modeMenuOpen),
+                          className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors hover:opacity-80 ${getModeStyles(mode)}`,
+                          title: "Switch mode (\u2318\u21E7A)",
+                          children: [
+                            mode === "ask" && /* @__PURE__ */ jsx23(MessageSquare3, { className: "w-3 h-3" }),
+                            mode === "agent" && /* @__PURE__ */ jsx23(Pencil3, { className: "w-3 h-3" }),
+                            mode === "plan" && /* @__PURE__ */ jsx23(List2, { className: "w-3 h-3" }),
+                            mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
+                            /* @__PURE__ */ jsx23(ChevronDown5, { className: "w-3 h-3 opacity-60" })
+                          ]
+                        }
+                      ),
+                      modeMenuOpen && /* @__PURE__ */ jsxs17("div", { className: "absolute top-full left-0 mt-1 min-w-[140px] bg-popover border border-border rounded-md shadow-md z-[80]", children: [
+                        /* @__PURE__ */ jsxs17(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => {
+                              setMode("agent");
+                              setModeMenuOpen(false);
+                              textareaRef.current?.focus();
+                            },
+                            disabled: !essayContext,
+                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed",
+                            children: [
+                              /* @__PURE__ */ jsxs17("span", { className: "flex items-center gap-2", children: [
+                                /* @__PURE__ */ jsx23(Pencil3, { className: "w-4 h-4" }),
+                                "Agent"
+                              ] }),
+                              /* @__PURE__ */ jsxs17("span", { className: "flex items-center gap-2", children: [
+                                /* @__PURE__ */ jsx23("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
+                                mode === "agent" && /* @__PURE__ */ jsx23(Check4, { className: "w-4 h-4" })
+                              ] })
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ jsxs17(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => {
+                              setMode("plan");
+                              setModeMenuOpen(false);
+                              textareaRef.current?.focus();
+                            },
+                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between",
+                            children: [
+                              /* @__PURE__ */ jsxs17("span", { className: "flex items-center gap-2", children: [
+                                /* @__PURE__ */ jsx23(List2, { className: "w-4 h-4" }),
+                                "Plan"
+                              ] }),
+                              mode === "plan" && /* @__PURE__ */ jsx23(Check4, { className: "w-4 h-4" })
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ jsxs17(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => {
+                              setMode("ask");
+                              setModeMenuOpen(false);
+                              textareaRef.current?.focus();
+                            },
+                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between",
+                            children: [
+                              /* @__PURE__ */ jsxs17("span", { className: "flex items-center gap-2", children: [
+                                /* @__PURE__ */ jsx23(MessageSquare3, { className: "w-4 h-4" }),
+                                "Ask"
+                              ] }),
+                              mode === "ask" && /* @__PURE__ */ jsx23(Check4, { className: "w-4 h-4" })
+                            ]
+                          }
+                        )
+                      ] })
+                    ] }),
+                    /* @__PURE__ */ jsx23(
+                      ControlButton,
+                      {
+                        onClick: () => {
+                          setWebSearchEnabled(!webSearchEnabled);
+                          textareaRef.current?.focus();
+                        },
+                        active: webSearchEnabled,
+                        title: webSearchEnabled ? "Web search enabled" : "Enable web search",
+                        tabIndex: -1,
+                        children: /* @__PURE__ */ jsx23(Globe2, { className: "w-4 h-4" })
+                      }
+                    ),
+                    /* @__PURE__ */ jsx23(
+                      ControlButton,
+                      {
+                        onClick: () => {
+                          setThinkingEnabled(!thinkingEnabled);
+                          textareaRef.current?.focus();
+                        },
+                        active: thinkingEnabled,
+                        title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
+                        tabIndex: -1,
+                        children: /* @__PURE__ */ jsx23(Brain2, { className: "w-4 h-4" })
+                      }
+                    ),
+                    /* @__PURE__ */ jsx23(
+                      ModelSelector,
+                      {
+                        models,
+                        selectedModel,
+                        onModelChange: (id) => {
+                          setSelectedModel(id);
+                          textareaRef.current?.focus();
+                        },
+                        currentModel
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxs17("div", { className: "flex items-end gap-2", children: [
+                    /* @__PURE__ */ jsx23(
+                      "textarea",
+                      {
+                        ref: textareaRef,
+                        value: input,
+                        onChange: (e) => setInput(e.target.value),
+                        onKeyDown: handleKeyDown,
+                        placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
+                        className: "flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                        rows: 1,
+                        autoFocus: true
+                      }
+                    ),
+                    /* @__PURE__ */ jsx23(
+                      "button",
+                      {
+                        type: isStreaming ? "button" : "submit",
+                        onClick: isStreaming ? stopStreaming : void 0,
+                        disabled: !isStreaming && !input.trim(),
+                        className: "rounded-full w-10 h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
+                        children: isStreaming ? /* @__PURE__ */ jsx23(Square, { className: "h-4 w-4 fill-current" }) : /* @__PURE__ */ jsx23(ArrowUp3, { className: "h-5 w-5" })
+                      }
+                    )
+                  ] })
+                ]
+              }
+            )
+          ]
+        }
+      )
+    ] }),
+    document.body
+  );
+}
 export {
   AutobloggerDashboard,
   ChatContext,
+  ChatPanel,
   ChatProvider,
   CommentThread,
   CommentsPanel,
+  ControlButton,
+  ModelSelector,
   Navbar,
+  useAIModels,
   useChatContext,
   useComments,
   useDashboardContext

@@ -1,5 +1,7 @@
 # Project Context
 
+> 🚨 **CRITICAL: See `rules.mdc` for single-letter git commands (`g`, `d`, `m`, `p`, `pf`).** When the user types just one of these letters, execute the git workflow immediately — don't treat it as casual chat.
+
 > ⚠️ **THIS FILE IS COMMITTED TO GIT.** Do not add sensitive data: no emails, URLs, passwords, API keys, or secrets.
 
 ## Overview
