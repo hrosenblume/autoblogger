@@ -1,10 +1,14 @@
-import type { Autoblogger, Session } from '../config'
+import type { AutobloggerServer, Session } from '../server'
 import { handlePostsAPI } from './posts'
 import { handleCommentsAPI } from './comments'
 import { handleTagsAPI } from './tags'
 import { handleAIAPI } from './ai'
 import { handleUploadAPI } from './upload'
 import { handleTopicsAPI } from './topics'
+import { handleUsersAPI } from './users'
+import { handleAdminAPI } from './admin'
+import { handleSettingsAPI } from './settings'
+import { handleRevisionsAPI } from './revisions'
 
 interface APIHandlerOptions {
   basePath?: string
@@ -31,7 +35,7 @@ function jsonResponse(data: unknown, status = 200) {
   })
 }
 
-export function createAPIHandler(cms: Autoblogger, options: APIHandlerOptions = {}) {
+export function createAPIHandler(cms: AutobloggerServer, options: APIHandlerOptions = {}) {
   const basePath = options.basePath || '/api/cms'
   
   return async (req: NextRequest): Promise<Response> => {
@@ -78,6 +82,22 @@ export function createAPIHandler(cms: Autoblogger, options: APIHandlerOptions = 
         return handleTopicsAPI(req, cms, session, path, options.onMutate)
       }
       
+      if (path.startsWith('/users')) {
+        return handleUsersAPI(req, cms, session, path)
+      }
+      
+      if (path.startsWith('/admin')) {
+        return handleAdminAPI(req, cms, session, path)
+      }
+      
+      if (path.startsWith('/settings')) {
+        return handleSettingsAPI(req, cms, session, path)
+      }
+      
+      if (path.startsWith('/revisions')) {
+        return handleRevisionsAPI(req, cms, session, path, options.onMutate)
+      }
+      
       return jsonResponse({ error: 'Not found' }, 404)
     } catch (error) {
       console.error('API error:', error)
@@ -94,3 +114,7 @@ export { handleTagsAPI } from './tags'
 export { handleAIAPI } from './ai'
 export { handleUploadAPI } from './upload'
 export { handleTopicsAPI } from './topics'
+export { handleUsersAPI } from './users'
+export { handleAdminAPI } from './admin'
+export { handleSettingsAPI } from './settings'
+export { handleRevisionsAPI } from './revisions'

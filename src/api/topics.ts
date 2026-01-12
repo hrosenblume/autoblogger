@@ -1,4 +1,4 @@
-import type { Autoblogger, Session } from '../config'
+import type { AutobloggerServer as Autoblogger, Session } from '../server'
 
 type NextRequest = Request & { nextUrl: URL }
 
@@ -57,6 +57,20 @@ export async function handleTopicsAPI(
   if (method === 'DELETE' && topicId) {
     await cms.topics.delete(topicId)
     return jsonResponse({ data: { success: true } })
+  }
+
+  // POST /topics/:id/generate - trigger generation for a topic
+  if (method === 'POST' && topicId && path.endsWith('/generate')) {
+    // Mark topic as run
+    await cms.topics.markRun(topicId)
+    // Note: Actual RSS fetching and essay generation would be implemented
+    // by the host application via hooks or a separate service
+    return jsonResponse({ 
+      data: { 
+        success: true, 
+        message: 'Generation triggered. Implement generation logic in your application.',
+      } 
+    })
   }
 
   return jsonResponse({ error: 'Method not allowed' }, 405)

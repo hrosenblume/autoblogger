@@ -32,6 +32,10 @@ export function createTopicsData(prisma: any) {
       })
     },
 
+    async count() {
+      return prisma.topicSubscription.count()
+    },
+
     async findActive() {
       return prisma.topicSubscription.findMany({
         where: { isActive: true },

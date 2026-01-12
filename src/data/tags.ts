@@ -9,6 +9,19 @@ export function createTagsData(prisma: any) {
       })
     },
 
+    async findAllWithCounts() {
+      return prisma.tag.findMany({
+        orderBy: { name: 'asc' },
+        include: {
+          _count: { select: { posts: true } },
+        },
+      })
+    },
+
+    async count() {
+      return prisma.tag.count()
+    },
+
     async findById(id: string) {
       return prisma.tag.findUnique({
         where: { id },

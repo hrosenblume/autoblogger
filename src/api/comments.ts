@@ -1,4 +1,4 @@
-import type { Autoblogger, Session } from '../config'
+import type { AutobloggerServer as Autoblogger, Session } from '../server'
 
 type NextRequest = Request & { nextUrl: URL }
 
@@ -20,12 +20,18 @@ export async function handleCommentsAPI(
   const segments = path.split('/').filter(Boolean)
   const commentId = segments[1]
 
-  // GET /comments - list comments
+  // GET /comments - list comments (with pagination)
   if (method === 'GET') {
     const url = new URL(req.url)
     const postId = url.searchParams.get('postId')
-    const comments = await cms.comments.findAll({ postId: postId || undefined })
-    return jsonResponse({ data: comments })
+    const page = parseInt(url.searchParams.get('page') || '1')
+    const limit = parseInt(url.searchParams.get('limit') || '25')
+    const result = await cms.comments.findAll({ 
+      postId: postId || undefined,
+      page,
+      limit,
+    })
+    return jsonResponse(result)
   }
 
   // POST /comments - create comment

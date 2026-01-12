@@ -1,5 +1,21 @@
 export function createRevisionsData(prisma: any) {
   return {
+    async findAll(options?: { postId?: string; skip?: number; take?: number }) {
+      return prisma.revision.findMany({
+        where: options?.postId ? { postId: options.postId } : {},
+        orderBy: { createdAt: 'desc' },
+        skip: options?.skip,
+        take: options?.take,
+        include: {
+          post: { select: { id: true, title: true, slug: true, markdown: true } },
+        },
+      })
+    },
+
+    async count(where?: { postId?: string }) {
+      return prisma.revision.count({ where })
+    },
+
     async findByPost(postId: string) {
       return prisma.revision.findMany({
         where: { postId },
@@ -8,7 +24,12 @@ export function createRevisionsData(prisma: any) {
     },
 
     async findById(id: string) {
-      return prisma.revision.findUnique({ where: { id } })
+      return prisma.revision.findUnique({
+        where: { id },
+        include: {
+          post: { select: { id: true, title: true, slug: true, markdown: true } },
+        },
+      })
     },
 
     async create(postId: string, data: { title?: string; subtitle?: string; markdown: string }) {

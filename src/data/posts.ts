@@ -52,6 +52,10 @@ async function generateUniqueSlug(prisma: any, baseSlug: string, excludeId?: str
 
 export function createPostsData(prisma: any, hooks?: PostHooks) {
   return {
+    async count(where?: { status?: string }) {
+      return prisma.post.count({ where })
+    },
+
     async findPublished() {
       return prisma.post.findMany({
         where: { status: 'published' },
@@ -80,11 +84,22 @@ export function createPostsData(prisma: any, hooks?: PostHooks) {
       })
     },
 
-    async findAll(options?: { status?: string; orderBy?: any }) {
+    async findAll(options?: { 
+      status?: string
+      orderBy?: any
+      skip?: number
+      take?: number
+      includeRevisionCount?: boolean
+    }) {
       return prisma.post.findMany({
         where: options?.status ? { status: options.status } : undefined,
         orderBy: options?.orderBy || { updatedAt: 'desc' },
-        include: { tags: { include: { tag: true } } },
+        include: { 
+          tags: { include: { tag: true } },
+          ...(options?.includeRevisionCount ? { _count: { select: { revisions: true } } } : {}),
+        },
+        skip: options?.skip,
+        take: options?.take,
       })
     },
 
@@ -140,7 +155,11 @@ export function createPostsData(prisma: any, hooks?: PostHooks) {
     },
 
     async delete(id: string) {
-      return prisma.post.delete({ where: { id } })
+      // Soft delete - set status to 'deleted' instead of removing
+      return prisma.post.update({ 
+        where: { id },
+        data: { status: 'deleted' },
+      })
     },
 
     async getPreviewUrl(id: string, basePath: string = '/e') {

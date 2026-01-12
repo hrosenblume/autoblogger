@@ -1,35 +1,33 @@
 import { defineConfig } from 'tsup'
 
 export default defineConfig([
-  // Main bundle with dts
+  // Main entry (server-safe)
   {
     entry: {
       index: 'src/index.ts',
-      ui: 'src/ui/dashboard.tsx',
-      'styles/article': 'src/styles/article.ts',
       'lib/seo': 'src/lib/seo.ts',
       'lib/markdown': 'src/lib/markdown.ts',
+      'styles/article': 'src/styles/article.ts',
     },
-    format: ['esm', 'cjs'],
+    format: ['cjs', 'esm'],
     dts: true,
     splitting: false,
     sourcemap: true,
     clean: true,
-    external: ['react', 'react-dom', 'next', '@prisma/client'],
-    esbuildOptions(options) {
-      options.banner = {
-        js: '"use client";',
-      }
-    },
+    external: ['react', 'react-dom'],
   },
-  // Preset JS file (no dts needed)
+  // UI entry (client-side, React)
   {
     entry: {
-      'styles/preset': 'src/styles/preset.js',
+      ui: 'src/ui/index.ts',
     },
-    format: ['cjs'],
-    dts: false,
+    format: ['cjs', 'esm'],
+    dts: true,
     splitting: false,
     sourcemap: true,
+    external: ['react', 'react-dom'],
+    esbuildOptions(options) {
+      options.banner = { js: '"use client";' }
+    },
   },
 ])

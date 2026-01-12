@@ -1,5 +1,4 @@
-import type { ComponentType } from 'react'
-import type { Post } from './types'
+// Server-safe exports - no React imports
 import { createPostsData } from './data/posts'
 import { createCommentsData } from './data/comments'
 import { createTagsData } from './data/tags'
@@ -8,6 +7,7 @@ import { createAISettingsData } from './data/ai-settings'
 import { createTopicsData } from './data/topics'
 import { createNewsItemsData } from './data/news-items'
 import { createUsersData } from './data/users'
+import type { Post } from './types'
 
 // Session type - user provides their own
 export interface Session {
@@ -21,23 +21,7 @@ export interface Session {
   [key: string]: unknown
 }
 
-// Custom field component props
-export interface CustomFieldProps<T = unknown> {
-  value: T
-  onChange: (value: T) => void
-  post: Post
-  disabled?: boolean
-}
-
-// Custom field definition
-export interface CustomFieldConfig {
-  name: string
-  label?: string
-  component: ComponentType<CustomFieldProps<unknown>>
-  position?: 'footer' | 'sidebar'
-}
-
-// Style configuration
+// Style configuration (no React)
 export interface StylesConfig {
   container?: string
   title?: string
@@ -46,9 +30,9 @@ export interface StylesConfig {
   prose?: string
 }
 
-// Main configuration
-export interface AutobloggerConfig {
-  prisma: unknown // PrismaClient - typed as unknown to avoid direct dependency
+// Server-safe config (no React types)
+export interface AutobloggerServerConfig {
+  prisma: unknown
 
   auth: {
     getSession: () => Promise<Session | null>
@@ -69,8 +53,6 @@ export interface AutobloggerConfig {
     mode: 'authenticated' | 'public' | 'disabled'
   }
 
-  fields?: CustomFieldConfig[]
-
   styles?: StylesConfig
 
   hooks?: {
@@ -88,9 +70,9 @@ const DEFAULT_STYLES: Required<StylesConfig> = {
   prose: 'prose dark:prose-invert max-w-none',
 }
 
-// Autoblogger instance type
-export interface Autoblogger {
-  config: AutobloggerConfig & { styles: Required<StylesConfig> }
+// Autoblogger server instance type
+export interface AutobloggerServer {
+  config: AutobloggerServerConfig & { styles: Required<StylesConfig> }
   posts: ReturnType<typeof createPostsData>
   comments: ReturnType<typeof createCommentsData>
   tags: ReturnType<typeof createTagsData>
@@ -101,8 +83,8 @@ export interface Autoblogger {
   users: ReturnType<typeof createUsersData>
 }
 
-// Create autoblogger instance
-export function createAutoblogger(config: AutobloggerConfig): Autoblogger {
+// Create autoblogger server instance
+export function createAutoblogger(config: AutobloggerServerConfig): AutobloggerServer {
   const prisma = config.prisma as any
   
   const mergedStyles: Required<StylesConfig> = {

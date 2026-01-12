@@ -1,0 +1,297 @@
+'use client'
+
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
+import { X, MessageSquare, ArrowUp, Loader2, ChevronDown, ChevronRight } from 'lucide-react'
+import { cn } from '../../lib/cn'
+import { CommentWithUser } from '../../lib/comments'
+import { CommentThread } from './CommentThread'
+
+interface CommentsPanelProps {
+  comments: CommentWithUser[]
+  currentUserEmail: string
+  isAdmin: boolean
+  selectedText: string | null
+  onCreateComment: (content: string) => Promise<void>
+  onReply: (parentId: string, content: string) => Promise<void>
+  onEdit: (commentId: string, content: string) => Promise<void>
+  onDelete: (commentId: string) => Promise<void>
+  onResolve: (commentId: string) => Promise<void>
+  onCommentClick: (commentId: string) => void
+  activeCommentId: string | null
+  isOpen: boolean
+  onClose: () => void
+  onClearSelection: () => void
+}
+
+export function CommentsPanel({
+  comments,
+  currentUserEmail,
+  isAdmin,
+  selectedText,
+  onCreateComment,
+  onReply,
+  onEdit,
+  onDelete,
+  onResolve,
+  onCommentClick,
+  activeCommentId,
+  isOpen,
+  onClose,
+  onClearSelection,
+}: CommentsPanelProps) {
+  const [newComment, setNewComment] = useState('')
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [creating, setCreating] = useState(false)
+  const [showResolved, setShowResolved] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const commentsEndRef = useRef<HTMLDivElement>(null)
+
+  // Separate open and resolved comments
+  const openComments = comments.filter((c) => !c.resolved)
+  const resolvedComments = comments.filter((c) => c.resolved)
+
+  // Client-side only for portal
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Handle open/close animation and body scroll lock
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true)
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+      document.body.style.top = `-${window.scrollY}px`
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true)
+        })
+      })
+    } else {
+      setIsAnimating(false)
+      const scrollY = document.body.style.top
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+      document.body.style.top = ''
+      window.scrollTo(0, parseInt(scrollY || '0') * -1)
+      const timer = setTimeout(() => {
+        setIsVisible(false)
+      }, 200)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
+
+  // Focus textarea when selected text changes
+  useEffect(() => {
+    if (selectedText && isOpen) {
+      textareaRef.current?.focus()
+    }
+  }, [selectedText, isOpen])
+
+  // Auto-resize textarea as content grows
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      textarea.style.height = 'auto'
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`
+    }
+  }, [newComment])
+
+  const handleCreateComment = useCallback(async () => {
+    if (!newComment.trim() || !selectedText) return
+    setCreating(true)
+    try {
+      await onCreateComment(newComment.trim())
+      setNewComment('')
+      onClearSelection()
+    } finally {
+      setCreating(false)
+    }
+  }, [newComment, selectedText, onCreateComment, onClearSelection])
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      e.stopPropagation()
+      handleCreateComment()
+    }
+    if (e.key === 'Escape') {
+      e.stopPropagation()
+      if (selectedText) {
+        onClearSelection()
+        setNewComment('')
+      } else {
+        onClose()
+      }
+    }
+  }
+
+  if (!isVisible || !mounted) return null
+
+  return createPortal(
+    <>
+      {/* Backdrop */}
+      <div
+        className={cn(
+          'fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200',
+          isAnimating ? 'opacity-100' : 'opacity-0'
+        )}
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Comments"
+        className={cn(
+          'fixed z-[70] flex flex-col bg-white dark:bg-gray-900 shadow-xl transition-transform duration-200 ease-out overflow-hidden',
+          'inset-x-0 top-0 h-[100dvh]',
+          'md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-gray-200 md:dark:border-gray-700',
+          isAnimating ? 'translate-x-0' : 'translate-x-full'
+        )}
+      >
+        {/* Header */}
+        <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-gray-500" />
+            <h2 className="font-medium">Comments</h2>
+            {openComments.length > 0 && (
+              <span className="text-xs text-gray-500">
+                ({openComments.length})
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"
+            aria-label="Close comments"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* New comment section - shown when text is selected */}
+        {selectedText && (
+          <div className="flex-shrink-0 border-b border-gray-200 dark:border-gray-700 px-4 py-5 bg-gray-50/50 dark:bg-gray-800/30">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex-1 px-2 py-1 bg-yellow-100/50 dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 dark:text-gray-400 line-clamp-2">
+                "{selectedText}"
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onClearSelection()
+                  setNewComment('')
+                }}
+                disabled={creating}
+                className="ml-2 text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+            <div className="flex items-end gap-2">
+              <textarea
+                ref={textareaRef}
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Add a comment..."
+                className="flex-1 min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                rows={2}
+                enterKeyHint="send"
+              />
+              <button
+                type="button"
+                onClick={handleCreateComment}
+                disabled={creating || !newComment.trim()}
+                className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-700"
+              >
+                {creating ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <ArrowUp className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Comments list - hidden when composing new comment */}
+        <div className={cn("flex-1 overflow-y-auto", selectedText && "hidden")}>
+          {comments.length === 0 ? (
+            <div className="h-full flex items-center justify-center">
+              <div className="text-center max-w-xs px-6">
+                <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                <p className="text-gray-500 text-sm">
+                  No comments yet. Select text and click the comment button to add one.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 space-y-3">
+              {/* Open comments */}
+              {openComments.map((comment) => (
+                <CommentThread
+                  key={comment.id}
+                  comment={comment}
+                  currentUserEmail={currentUserEmail}
+                  isAdmin={isAdmin}
+                  isActive={activeCommentId === comment.id}
+                  onReply={(content) => onReply(comment.id, content)}
+                  onEdit={(content) => onEdit(comment.id, content)}
+                  onDelete={() => onDelete(comment.id)}
+                  onResolve={() => onResolve(comment.id)}
+                  onClick={() => onCommentClick(comment.id)}
+                />
+              ))}
+
+              {/* Resolved comments section */}
+              {resolvedComments.length > 0 && (
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowResolved(!showResolved)}
+                    className="w-full text-left text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors py-2"
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {showResolved ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                      Resolved ({resolvedComments.length})
+                    </span>
+                  </button>
+                  {showResolved && (
+                    <div className="space-y-3 mt-2">
+                      {resolvedComments.map((comment) => (
+                        <CommentThread
+                          key={comment.id}
+                          comment={comment}
+                          currentUserEmail={currentUserEmail}
+                          isAdmin={isAdmin}
+                          isActive={activeCommentId === comment.id}
+                          onReply={(content) => onReply(comment.id, content)}
+                          onEdit={(content) => onEdit(comment.id, content)}
+                          onDelete={() => onDelete(comment.id)}
+                          onResolve={() => onResolve(comment.id)}
+                          onClick={() => onCommentClick(comment.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div ref={commentsEndRef} />
+            </div>
+          )}
+        </div>
+      </div>
+    </>,
+    document.body
+  )
+}

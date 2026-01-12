@@ -18,10 +18,16 @@ export function createAISettingsData(prisma: any) {
       rules?: string
       chatRules?: string
       rewriteRules?: string
+      autoDraftRules?: string
+      planRules?: string
       defaultModel?: string
-      generateTemplate?: string
-      chatTemplate?: string
-      rewriteTemplate?: string
+      autoDraftWordCount?: number
+      generateTemplate?: string | null
+      chatTemplate?: string | null
+      rewriteTemplate?: string | null
+      autoDraftTemplate?: string | null
+      planTemplate?: string | null
+      expandPlanTemplate?: string | null
     }) {
       return prisma.aISettings.upsert({
         where: { id: DEFAULT_ID },

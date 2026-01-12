@@ -1,4 +1,4 @@
-import type { Autoblogger, Session } from '../config'
+import type { AutobloggerServer as Autoblogger, Session } from '../server'
 
 type NextRequest = Request & { nextUrl: URL }
 

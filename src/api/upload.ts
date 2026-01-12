@@ -1,4 +1,4 @@
-import type { Autoblogger, Session } from '../config'
+import type { AutobloggerServer as Autoblogger, Session } from '../server'
 
 type NextRequest = Request & { nextUrl: URL }
 
@@ -30,7 +30,8 @@ export async function handleUploadAPI(
 
   try {
     const formData = await req.formData()
-    const file = formData.get('file') as File
+    // Support both 'image' (toolbar uploads) and 'file' (general uploads) field names
+    const file = (formData.get('image') || formData.get('file')) as File
     
     if (!file) {
       return jsonResponse({ error: 'No file provided' }, 400)
