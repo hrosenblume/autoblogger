@@ -1,0 +1,9449 @@
+"use client";
+"use client";
+
+// src/ui/context.tsx
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { jsx } from "react/jsx-runtime";
+var DashboardContext = createContext(null);
+function useDashboardContext() {
+  const ctx = useContext(DashboardContext);
+  if (!ctx) throw new Error("useDashboardContext must be used within DashboardProvider");
+  return ctx;
+}
+var DEFAULT_STYLES = {
+  container: "max-w-[680px] mx-auto px-6",
+  title: "text-2xl font-bold",
+  subtitle: "text-lg text-muted-foreground",
+  byline: "text-sm text-muted-foreground",
+  prose: "prose dark:prose-invert max-w-none"
+};
+function extractPath(pathname, basePath) {
+  const normalized = pathname.replace(/\/$/, "");
+  const base = basePath.replace(/\/$/, "");
+  if (normalized === base) return "/";
+  if (normalized.startsWith(base + "/")) return normalized.slice(base.length) || "/";
+  return "/";
+}
+function DashboardProvider({
+  basePath = "/writer",
+  apiBasePath = "/api/cms",
+  styles,
+  fields = [],
+  session = null,
+  onEditorStateChange,
+  onRegisterEditHandler,
+  children
+}) {
+  const [currentPath, setCurrentPath] = useState("/");
+  const [sharedData, setSharedData] = useState(null);
+  const [sharedDataLoading, setSharedDataLoading] = useState(true);
+  const [historyDepth, setHistoryDepth] = useState(0);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setCurrentPath(extractPath(window.location.pathname, basePath));
+      const handlePopState = () => {
+        setCurrentPath(extractPath(window.location.pathname, basePath));
+        setHistoryDepth((d) => Math.max(0, d - 1));
+      };
+      window.addEventListener("popstate", handlePopState);
+      return () => window.removeEventListener("popstate", handlePopState);
+    }
+  }, [basePath]);
+  const navigate = useCallback((path) => {
+    const fullPath = path.startsWith("/") ? basePath + path : basePath + "/" + path;
+    window.history.pushState({}, "", fullPath);
+    setCurrentPath(path.startsWith("/") ? path : "/" + path);
+    setHistoryDepth((d) => d + 1);
+  }, [basePath]);
+  const goBack = useCallback(() => {
+    if (historyDepth > 0) {
+      window.history.back();
+    } else {
+      navigate("/");
+    }
+  }, [historyDepth, navigate]);
+  const canGoBack = historyDepth > 0;
+  const fetchSharedData = useCallback(async () => {
+    setSharedDataLoading(true);
+    try {
+      const [countsRes, settingsRes, postsRes, aiSettingsRes] = await Promise.all([
+        fetch(`${apiBasePath}/admin/counts`).then((r) => r.ok ? r.json() : null),
+        fetch(`${apiBasePath}/settings`).then((r) => r.ok ? r.json() : null),
+        fetch(`${apiBasePath}/posts`).then((r) => r.ok ? r.json() : null),
+        fetch(`${apiBasePath}/ai/settings`).then((r) => r.ok ? r.json() : null)
+      ]);
+      const autoDraftEnabled = settingsRes?.data?.autoDraftEnabled ?? false;
+      let suggestedPosts = [];
+      if (autoDraftEnabled) {
+        const suggestedRes = await fetch(`${apiBasePath}/posts?status=suggested`).then((r) => r.ok ? r.json() : null);
+        suggestedPosts = suggestedRes?.data || [];
+      }
+      setSharedData({
+        counts: countsRes?.data || {},
+        settings: { autoDraftEnabled },
+        posts: postsRes?.data || [],
+        suggestedPosts,
+        aiSettings: {
+          defaultModel: aiSettingsRes?.data?.defaultModel || "claude-sonnet",
+          availableModels: aiSettingsRes?.data?.availableModels || []
+        }
+      });
+    } catch (err) {
+      console.error("Failed to fetch shared data:", err);
+      setSharedData({
+        counts: {},
+        settings: { autoDraftEnabled: false },
+        posts: [],
+        suggestedPosts: [],
+        aiSettings: { defaultModel: "claude-sonnet", availableModels: [] }
+      });
+    } finally {
+      setSharedDataLoading(false);
+    }
+  }, [apiBasePath]);
+  useEffect(() => {
+    fetchSharedData();
+  }, [fetchSharedData]);
+  const mergedStyles = { ...DEFAULT_STYLES, ...styles };
+  const config = { fields, styles: mergedStyles };
+  return /* @__PURE__ */ jsx(DashboardContext.Provider, { value: {
+    basePath,
+    apiBasePath,
+    styles: mergedStyles,
+    fields,
+    currentPath,
+    navigate,
+    goBack,
+    canGoBack,
+    config,
+    session,
+    sharedData,
+    sharedDataLoading,
+    refetchSharedData: fetchSharedData,
+    onEditorStateChange,
+    onRegisterEditHandler
+  }, children });
+}
+
+// src/ui/pages/WriterDashboard.tsx
+import { useState as useState3, useEffect as useEffect3, useMemo, useRef as useRef2 } from "react";
+import { Globe, Brain, ArrowUp, ChevronDown as ChevronDown2, Check as Check2, X, Plus, Search, MoreVertical, ExternalLink } from "lucide-react";
+
+// src/ui/components/ControlButton.tsx
+import { forwardRef } from "react";
+import { jsx as jsx2 } from "react/jsx-runtime";
+var ControlButton = forwardRef(
+  ({ className = "", active, disabled, children, type = "button", ...props }, ref) => {
+    const baseClasses = "inline-flex items-center gap-1 text-sm transition-colors focus:outline-none";
+    const stateClasses = disabled ? "text-muted-foreground/30 cursor-not-allowed" : active ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground hover:text-foreground";
+    return /* @__PURE__ */ jsx2(
+      "button",
+      {
+        ref,
+        type,
+        disabled,
+        className: `${baseClasses} ${stateClasses} ${className}`,
+        ...props,
+        children
+      }
+    );
+  }
+);
+ControlButton.displayName = "ControlButton";
+
+// src/ui/components/ModelSelector.tsx
+import { useState as useState2, useRef, useEffect as useEffect2 } from "react";
+import { ChevronDown, Check } from "lucide-react";
+import { jsx as jsx3, jsxs } from "react/jsx-runtime";
+function ModelSelector({
+  models,
+  selectedModel,
+  onModelChange,
+  currentModel
+}) {
+  const [open, setOpen] = useState2(false);
+  const ref = useRef(null);
+  const displayModel = currentModel ?? models.find((m) => m.id === selectedModel);
+  useEffect2(() => {
+    function handleClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+  return /* @__PURE__ */ jsxs("div", { ref, className: "relative", children: [
+    /* @__PURE__ */ jsxs(ControlButton, { onClick: () => setOpen(!open), children: [
+      displayModel?.name || "Select model",
+      /* @__PURE__ */ jsx3(ChevronDown, { className: "w-3.5 h-3.5" })
+    ] }),
+    open && /* @__PURE__ */ jsx3("div", { className: "absolute top-full left-0 mt-1 min-w-[180px] bg-popover border border-border rounded-md shadow-md z-50", children: models.map((model) => /* @__PURE__ */ jsxs(
+      "button",
+      {
+        onClick: () => {
+          onModelChange(model.id);
+          setOpen(false);
+        },
+        className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between",
+        children: [
+          /* @__PURE__ */ jsx3("span", { children: model.name }),
+          selectedModel === model.id && /* @__PURE__ */ jsx3(Check, { className: "w-4 h-4" })
+        ]
+      },
+      model.id
+    )) })
+  ] });
+}
+
+// src/lib/models.ts
+var LENGTH_OPTIONS = [300, 500, 800, 1e3];
+var DEFAULT_MODELS = [
+  { id: "claude-sonnet", name: "Sonnet 4.5", description: "Fast, capable", hasNativeSearch: false },
+  { id: "claude-opus", name: "Opus 4.5", description: "Highest quality", hasNativeSearch: false },
+  { id: "gpt-5.2", name: "GPT-5.2", description: "Latest OpenAI", hasNativeSearch: true },
+  { id: "gpt-5-mini", name: "GPT-5 Mini", description: "Fast and efficient", hasNativeSearch: true }
+];
+
+// src/lib/format.ts
+var MINUTE = 6e4;
+var HOUR = 36e5;
+var DAY = 864e5;
+function formatRelativeTime(isoDate) {
+  const date = new Date(isoDate);
+  const diffMs = Date.now() - date.getTime();
+  const mins = Math.floor(diffMs / MINUTE);
+  const hours = Math.floor(diffMs / HOUR);
+  const days = Math.floor(diffMs / DAY);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
+function formatSavedTime(date) {
+  const now = /* @__PURE__ */ new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1e3);
+  const diffMins = Math.floor(diffMs / MINUTE);
+  if (diffSecs < 10) return "just now";
+  if (diffSecs < 60) return `${diffSecs}s ago`;
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const isToday = date.toDateString() === now.toDateString();
+  if (isToday) {
+    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+function countWords(text) {
+  if (!text) return 0;
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+// src/ui/pages/WriterDashboard.tsx
+import { jsx as jsx4, jsxs as jsxs2 } from "react/jsx-runtime";
+function WriterDashboard() {
+  const { apiBasePath, navigate, sharedData, sharedDataLoading } = useDashboardContext();
+  const [posts, setPosts] = useState3([]);
+  const [loading, setLoading] = useState3(true);
+  const [searchQuery, setSearchQuery] = useState3("");
+  const [searchOpen, setSearchOpen] = useState3(false);
+  const [activeTab, setActiveTab] = useState3("all");
+  const [suggestedPosts, setSuggestedPosts] = useState3([]);
+  const [autoDraftEnabled, setAutoDraftEnabled] = useState3(false);
+  const [suggestedOpen, setSuggestedOpen] = useState3(false);
+  const [actionLoading, setActionLoading] = useState3(null);
+  const [models, setModels] = useState3(DEFAULT_MODELS);
+  const [modelId, setModelId] = useState3("claude-sonnet");
+  const [length, setLength] = useState3(500);
+  const [webEnabled, setWebEnabled] = useState3(false);
+  const [thinkingEnabled, setThinkingEnabled] = useState3(false);
+  const [lengthOpen, setLengthOpen] = useState3(false);
+  useEffect3(() => {
+    if (sharedData) {
+      setPosts(sharedData.posts);
+      setSuggestedPosts(sharedData.suggestedPosts);
+      setAutoDraftEnabled(sharedData.settings.autoDraftEnabled);
+      if (sharedData.aiSettings.availableModels.length > 0) {
+        setModels(sharedData.aiSettings.availableModels);
+      }
+      if (sharedData.aiSettings.defaultModel) {
+        setModelId(sharedData.aiSettings.defaultModel);
+      }
+      setLoading(false);
+    }
+  }, [sharedData]);
+  useEffect3(() => {
+    if (!sharedDataLoading) {
+      setLoading(false);
+    }
+  }, [sharedDataLoading]);
+  const currentModel = models.find((m) => m.id === modelId);
+  const draftCount = useMemo(() => posts.filter((p) => p.status === "draft").length, [posts]);
+  const publishedCount = useMemo(() => posts.filter((p) => p.status === "published").length, [posts]);
+  const filteredPosts = useMemo(() => {
+    let result = posts.filter((p) => p.status !== "suggested" && p.status !== "deleted");
+    if (searchQuery) {
+      result = result.filter((p) => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+    if (activeTab === "drafts") result = result.filter((p) => p.status === "draft");
+    else if (activeTab === "published") result = result.filter((p) => p.status === "published");
+    return result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  }, [posts, searchQuery, activeTab]);
+  async function handleDelete(id) {
+    if (!confirm("Delete this post?")) return;
+    await fetch(`${apiBasePath}/posts/${id}`, { method: "DELETE" });
+    setPosts(posts.filter((p) => p.id !== id));
+  }
+  async function handlePublish(id) {
+    await fetch(`${apiBasePath}/posts/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "published" })
+    });
+    setPosts(posts.map((p) => p.id === id ? { ...p, status: "published" } : p));
+  }
+  async function handleUnpublish(id) {
+    await fetch(`${apiBasePath}/posts/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "draft" })
+    });
+    setPosts(posts.map((p) => p.id === id ? { ...p, status: "draft" } : p));
+  }
+  async function handleAcceptSuggested(post) {
+    setActionLoading(post.id);
+    try {
+      const res = await fetch(`${apiBasePath}/posts/${post.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "draft" })
+      });
+      if (res.ok) navigate(`/editor/${post.slug}`);
+    } finally {
+      setActionLoading(null);
+    }
+  }
+  async function handleRejectSuggested(post) {
+    if (!confirm(`Reject "${post.title}"?`)) return;
+    setActionLoading(post.id);
+    try {
+      const res = await fetch(`${apiBasePath}/posts/${post.id}`, { method: "DELETE" });
+      if (res.ok) setSuggestedPosts(suggestedPosts.filter((p) => p.id !== post.id));
+    } finally {
+      setActionLoading(null);
+    }
+  }
+  function handleIdeaSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const idea = formData.get("idea")?.trim();
+    if (idea) {
+      const params = new URLSearchParams({
+        idea,
+        model: modelId,
+        length: String(length),
+        ...webEnabled && { web: "1" },
+        ...thinkingEnabled && { thinking: "1" }
+      });
+      navigate(`/editor?${params}`);
+    }
+  }
+  if (loading) {
+    return /* @__PURE__ */ jsxs2("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
+      /* @__PURE__ */ jsxs2("div", { className: "mt-4 mb-8", children: [
+        /* @__PURE__ */ jsx4("div", { className: "h-6 w-48 bg-muted rounded animate-pulse mb-4" }),
+        /* @__PURE__ */ jsx4("div", { className: "h-24 w-full bg-muted rounded animate-pulse" })
+      ] }),
+      /* @__PURE__ */ jsxs2("div", { className: "flex border-b border-border mb-6 gap-4", children: [
+        /* @__PURE__ */ jsx4("div", { className: "h-10 w-16 bg-muted rounded animate-pulse" }),
+        /* @__PURE__ */ jsx4("div", { className: "h-10 w-20 bg-muted rounded animate-pulse" }),
+        /* @__PURE__ */ jsx4("div", { className: "h-10 w-24 bg-muted rounded animate-pulse" })
+      ] }),
+      [1, 2, 3, 4, 5].map((i) => /* @__PURE__ */ jsx4("div", { className: "h-16 bg-muted rounded animate-pulse mb-2" }, i))
+    ] });
+  }
+  return /* @__PURE__ */ jsxs2("div", { className: "max-w-5xl mx-auto px-6 py-8 pb-16", children: [
+    /* @__PURE__ */ jsx4(
+      "button",
+      {
+        onClick: () => navigate("/editor"),
+        className: "sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg z-50 bg-primary text-primary-foreground flex items-center justify-center",
+        children: /* @__PURE__ */ jsx4(Plus, { className: "w-6 h-6" })
+      }
+    ),
+    /* @__PURE__ */ jsxs2("div", { className: "mt-4 mb-8", children: [
+      /* @__PURE__ */ jsx4("h2", { className: "text-lg font-semibold mb-4", children: "What's on your mind?" }),
+      /* @__PURE__ */ jsxs2("form", { onSubmit: handleIdeaSubmit, children: [
+        /* @__PURE__ */ jsxs2("div", { className: "relative", children: [
+          /* @__PURE__ */ jsx4(
+            "textarea",
+            {
+              name: "idea",
+              placeholder: "Describe your idea...",
+              rows: 3,
+              className: "w-full min-h-[100px] px-3 py-2 pr-14 border border-input rounded-md bg-transparent resize-none text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring placeholder:text-muted-foreground",
+              onKeyDown: (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  e.currentTarget.form?.requestSubmit();
+                }
+              }
+            }
+          ),
+          /* @__PURE__ */ jsx4(
+            "button",
+            {
+              type: "submit",
+              className: "absolute bottom-3 right-3 rounded-full w-10 h-10 bg-secondary text-secondary-foreground flex items-center justify-center hover:bg-secondary/80",
+              children: /* @__PURE__ */ jsx4(ArrowUp, { className: "w-5 h-5" })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs2("div", { className: "flex items-center gap-3", children: [
+          /* @__PURE__ */ jsxs2("div", { className: "relative", children: [
+            /* @__PURE__ */ jsxs2(ControlButton, { onClick: () => setLengthOpen(!lengthOpen), children: [
+              length,
+              " words",
+              /* @__PURE__ */ jsx4(ChevronDown2, { className: "w-3.5 h-3.5" })
+            ] }),
+            lengthOpen && /* @__PURE__ */ jsx4("div", { className: "absolute top-full left-0 mt-1 bg-popover border border-border rounded-md shadow-md z-50", children: LENGTH_OPTIONS.map((len) => /* @__PURE__ */ jsxs2(
+              "button",
+              {
+                onClick: () => {
+                  setLength(len);
+                  setLengthOpen(false);
+                },
+                className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between min-w-[120px]",
+                children: [
+                  len,
+                  " words",
+                  length === len && /* @__PURE__ */ jsx4(Check2, { className: "w-4 h-4" })
+                ]
+              },
+              len
+            )) })
+          ] }),
+          /* @__PURE__ */ jsx4(ControlButton, { onClick: () => setWebEnabled(!webEnabled), active: webEnabled, title: "Search the web", children: /* @__PURE__ */ jsx4(Globe, { className: "w-4 h-4" }) }),
+          /* @__PURE__ */ jsx4(ControlButton, { onClick: () => setThinkingEnabled(!thinkingEnabled), active: thinkingEnabled, title: "Enable thinking mode", children: /* @__PURE__ */ jsx4(Brain, { className: "w-4 h-4" }) }),
+          /* @__PURE__ */ jsx4(ModelSelector, { models, selectedModel: modelId, onModelChange: setModelId, currentModel })
+        ] })
+      ] })
+    ] }),
+    autoDraftEnabled && /* @__PURE__ */ jsxs2("section", { className: "mb-8", children: [
+      /* @__PURE__ */ jsxs2("button", { onClick: () => setSuggestedOpen(!suggestedOpen), className: "flex items-center gap-2 text-lg font-semibold mb-4", children: [
+        /* @__PURE__ */ jsx4(ChevronDown2, { className: `h-4 w-4 text-muted-foreground transition-transform ${suggestedOpen ? "" : "-rotate-90"}` }),
+        "Suggested",
+        suggestedPosts.length > 0 && /* @__PURE__ */ jsx4("span", { className: "bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center", children: suggestedPosts.length })
+      ] }),
+      suggestedOpen && (suggestedPosts.length > 0 ? /* @__PURE__ */ jsx4("div", { className: "space-y-2", children: suggestedPosts.map((post) => /* @__PURE__ */ jsxs2("div", { className: "flex items-center justify-between gap-4 py-3 border-b border-border", children: [
+        /* @__PURE__ */ jsxs2("div", { className: "flex-1 min-w-0", children: [
+          /* @__PURE__ */ jsx4("p", { className: "font-medium truncate", children: post.title }),
+          /* @__PURE__ */ jsxs2("div", { className: "flex items-center gap-3 text-sm text-muted-foreground", children: [
+            post.topic && /* @__PURE__ */ jsx4("span", { className: "bg-muted px-2 py-0.5 rounded text-xs", children: post.topic.name }),
+            /* @__PURE__ */ jsx4("span", { children: new Date(post.createdAt).toLocaleDateString() }),
+            post.sourceUrl && /* @__PURE__ */ jsxs2(
+              "a",
+              {
+                href: post.sourceUrl,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                className: "flex items-center gap-1 hover:text-foreground",
+                onClick: (e) => e.stopPropagation(),
+                children: [
+                  /* @__PURE__ */ jsx4(ExternalLink, { className: "h-3 w-3" }),
+                  "Source"
+                ]
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs2("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
+          /* @__PURE__ */ jsx4(
+            "button",
+            {
+              onClick: () => handleRejectSuggested(post),
+              disabled: actionLoading === post.id,
+              className: "p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md",
+              children: /* @__PURE__ */ jsx4(X, { className: "h-4 w-4" })
+            }
+          ),
+          /* @__PURE__ */ jsxs2(
+            "button",
+            {
+              onClick: () => handleAcceptSuggested(post),
+              disabled: actionLoading === post.id,
+              className: "px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm flex items-center gap-1",
+              children: [
+                /* @__PURE__ */ jsx4(Check2, { className: "h-4 w-4" }),
+                "Accept"
+              ]
+            }
+          )
+        ] })
+      ] }, post.id)) }) : /* @__PURE__ */ jsx4("p", { className: "text-muted-foreground text-sm", children: "No suggested essays \u2014 configure topics to generate drafts" }))
+    ] }),
+    /* @__PURE__ */ jsxs2("div", { className: "relative flex items-center justify-between border-b border-border mb-6", children: [
+      /* @__PURE__ */ jsx4("div", { className: `flex ${searchOpen ? "invisible sm:visible" : ""}`, children: ["all", "drafts", "published"].map((tab) => /* @__PURE__ */ jsxs2(
+        "button",
+        {
+          onClick: () => setActiveTab(tab),
+          className: `px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === tab ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`,
+          children: [
+            tab.charAt(0).toUpperCase() + tab.slice(1),
+            /* @__PURE__ */ jsxs2("span", { className: "text-muted-foreground ml-1", children: [
+              "(",
+              tab === "all" ? posts.filter((p) => p.status !== "suggested" && p.status !== "deleted").length : tab === "drafts" ? draftCount : publishedCount,
+              ")"
+            ] })
+          ]
+        },
+        tab
+      )) }),
+      /* @__PURE__ */ jsxs2("div", { className: `flex items-center gap-2 pb-2 ${searchOpen ? "absolute inset-x-0 sm:relative" : ""}`, children: [
+        /* @__PURE__ */ jsx4("button", { onClick: () => navigate("/editor"), className: "hidden sm:flex p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ jsx4(Plus, { className: "w-4 h-4" }) }),
+        searchOpen ? /* @__PURE__ */ jsxs2("div", { className: "flex items-center gap-2 flex-1 sm:flex-initial", children: [
+          /* @__PURE__ */ jsx4(
+            "input",
+            {
+              type: "search",
+              placeholder: "Search...",
+              value: searchQuery,
+              onChange: (e) => setSearchQuery(e.target.value),
+              autoFocus: true,
+              className: "flex-1 sm:w-48 px-3 py-1.5 text-base bg-background border border-border rounded-md outline-none focus-visible:border-ring"
+            }
+          ),
+          /* @__PURE__ */ jsx4("button", { onClick: () => {
+            setSearchOpen(false);
+            setSearchQuery("");
+          }, className: "p-2 text-muted-foreground hover:text-foreground sm:hidden", children: /* @__PURE__ */ jsx4(X, { className: "w-4 h-4" }) })
+        ] }) : /* @__PURE__ */ jsx4("button", { onClick: () => setSearchOpen(true), className: "p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ jsx4(Search, { className: "w-4 h-4" }) })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx4("section", { children: filteredPosts.length > 0 ? /* @__PURE__ */ jsx4("div", { className: "space-y-0", children: filteredPosts.map((post) => /* @__PURE__ */ jsx4(
+      PostItem,
+      {
+        post,
+        onNavigate: () => navigate(`/editor/${post.slug}`),
+        onDelete: () => handleDelete(post.id),
+        onPublish: () => handlePublish(post.id),
+        onUnpublish: () => handleUnpublish(post.id),
+        showStatus: activeTab === "all"
+      },
+      post.id
+    )) }) : /* @__PURE__ */ jsx4("p", { className: "text-muted-foreground py-8 text-center", children: searchQuery ? "No matching articles" : "No articles yet" }) })
+  ] });
+}
+function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStatus }) {
+  const [menuOpen, setMenuOpen] = useState3(false);
+  const menuRef = useRef2(null);
+  useEffect3(() => {
+    if (!menuOpen) return;
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [menuOpen]);
+  return /* @__PURE__ */ jsxs2("div", { className: "flex items-center justify-between py-4 border-b border-border group", children: [
+    /* @__PURE__ */ jsx4("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ jsxs2("button", { onClick: onNavigate, className: "block text-left w-full", children: [
+      /* @__PURE__ */ jsx4("h3", { className: "font-medium truncate group-hover:text-muted-foreground", children: post.title || "Untitled" }),
+      /* @__PURE__ */ jsxs2("p", { className: "text-sm text-muted-foreground mt-1 flex items-center gap-2", children: [
+        showStatus && /* @__PURE__ */ jsx4("span", { className: `text-xs px-1.5 py-0.5 rounded uppercase font-medium ${post.status === "draft" ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" : "bg-green-500/20 text-green-600 dark:text-green-400"}`, children: post.status }),
+        /* @__PURE__ */ jsxs2("span", { children: [
+          formatRelativeTime(post.updatedAt),
+          post.wordCount ? ` \xB7 ${post.wordCount} words` : ""
+        ] })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsxs2("div", { className: "relative", ref: menuRef, children: [
+      /* @__PURE__ */ jsx4(
+        "button",
+        {
+          onClick: () => setMenuOpen(!menuOpen),
+          className: "p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent",
+          children: /* @__PURE__ */ jsx4(MoreVertical, { className: "w-4 h-4" })
+        }
+      ),
+      menuOpen && /* @__PURE__ */ jsxs2("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg z-50 min-w-[12rem] md:min-w-[8rem] p-1", children: [
+        /* @__PURE__ */ jsx4(
+          "button",
+          {
+            onClick: () => {
+              onNavigate();
+              setMenuOpen(false);
+            },
+            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+            children: "Edit"
+          }
+        ),
+        post.status === "draft" && /* @__PURE__ */ jsx4(
+          "button",
+          {
+            onClick: () => {
+              onPublish();
+              setMenuOpen(false);
+            },
+            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+            children: "Publish"
+          }
+        ),
+        post.status === "published" && /* @__PURE__ */ jsx4(
+          "button",
+          {
+            onClick: () => {
+              onUnpublish();
+              setMenuOpen(false);
+            },
+            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+            children: "Unpublish"
+          }
+        ),
+        /* @__PURE__ */ jsx4("div", { className: "h-px bg-border my-1" }),
+        /* @__PURE__ */ jsx4(
+          "button",
+          {
+            onClick: () => {
+              onDelete();
+              setMenuOpen(false);
+            },
+            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm text-destructive hover:bg-accent cursor-default",
+            children: "Delete"
+          }
+        )
+      ] })
+    ] })
+  ] });
+}
+
+// src/ui/pages/EditorPage.tsx
+import { useState as useState10, useEffect as useEffect10, useCallback as useCallback9, useRef as useRef7 } from "react";
+
+// src/ui/components/EditorToolbar.tsx
+import { MessageSquarePlus, MessageSquare } from "lucide-react";
+
+// src/lib/cn.ts
+import { clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+function cn(...inputs) {
+  return twMerge(clsx(inputs));
+}
+
+// src/ui/components/toolbar/ToolbarButton.tsx
+import { jsx as jsx5 } from "react/jsx-runtime";
+function ToolbarButton({ onClick, active, disabled, children, title }) {
+  return /* @__PURE__ */ jsx5(
+    "button",
+    {
+      type: "button",
+      onClick,
+      disabled,
+      title,
+      className: cn(
+        "px-2.5 py-1.5 text-sm font-medium rounded transition-colors",
+        "flex items-center justify-center",
+        "hover:bg-gray-100 dark:hover:bg-gray-800",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        active && "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white",
+        !active && "text-gray-600 dark:text-gray-400"
+      ),
+      children
+    }
+  );
+}
+function Divider() {
+  return /* @__PURE__ */ jsx5("div", { className: "w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" });
+}
+function SkeletonButton() {
+  return /* @__PURE__ */ jsx5("div", { className: "h-7 w-7 rounded shrink-0 bg-gray-200 dark:bg-gray-800 animate-pulse" });
+}
+
+// src/ui/components/toolbar/FormatButtons.tsx
+import { useState as useState4, useEffect as useEffect4, useCallback as useCallback2 } from "react";
+import { Loader2, Wand2 } from "lucide-react";
+
+// src/lib/markdown-helpers.ts
+function insertAtCursor(textarea, before, after, markdown, onMarkdownChange) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selected = markdown.substring(start, end);
+  const newText = markdown.substring(0, start) + before + selected + after + markdown.substring(end);
+  onMarkdownChange(newText);
+  requestAnimationFrame(() => {
+    textarea.focus();
+    const newCursorPos = start + before.length + selected.length;
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+  });
+}
+function insertBlockAtCursor(textarea, prefix, markdown, onMarkdownChange) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  let lineStart = start;
+  while (lineStart > 0 && markdown[lineStart - 1] !== "\n") {
+    lineStart--;
+  }
+  let lineEnd = end;
+  while (lineEnd < markdown.length && markdown[lineEnd] !== "\n") {
+    lineEnd++;
+  }
+  const lineContent = markdown.substring(lineStart, lineEnd);
+  if (lineContent.startsWith(prefix)) {
+    const newText = markdown.substring(0, lineStart) + lineContent.substring(prefix.length) + markdown.substring(lineEnd);
+    onMarkdownChange(newText);
+  } else {
+    const newText = markdown.substring(0, lineStart) + prefix + lineContent + markdown.substring(lineEnd);
+    onMarkdownChange(newText);
+  }
+  requestAnimationFrame(() => {
+    textarea.focus();
+  });
+}
+function setHeadingAtCursor(textarea, level, markdown, onMarkdownChange) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  let lineStart = start;
+  while (lineStart > 0 && markdown[lineStart - 1] !== "\n") {
+    lineStart--;
+  }
+  let lineEnd = end;
+  while (lineEnd < markdown.length && markdown[lineEnd] !== "\n") {
+    lineEnd++;
+  }
+  const lineContent = markdown.substring(lineStart, lineEnd);
+  const withoutHeading = lineContent.replace(/^#{1,6}\s*/, "");
+  const newPrefix = "#".repeat(level) + " ";
+  const currentHeadingMatch = lineContent.match(/^(#{1,6})\s/);
+  if (currentHeadingMatch && currentHeadingMatch[1].length === level) {
+    const newText = markdown.substring(0, lineStart) + withoutHeading + markdown.substring(lineEnd);
+    onMarkdownChange(newText);
+  } else {
+    const newText = markdown.substring(0, lineStart) + newPrefix + withoutHeading + markdown.substring(lineEnd);
+    onMarkdownChange(newText);
+  }
+  requestAnimationFrame(() => {
+    textarea.focus();
+  });
+}
+function clearMarkdownFormatting(textarea, markdown, onMarkdownChange) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  if (start === end) return;
+  const selected = markdown.substring(start, end);
+  const cleaned = selected.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").replace(/~~(.+?)~~/g, "$1").replace(/`(.+?)`/g, "$1").replace(/\[(.+?)\]\(.+?\)/g, "$1");
+  const newText = markdown.substring(0, start) + cleaned + markdown.substring(end);
+  onMarkdownChange(newText);
+  requestAnimationFrame(() => {
+    textarea.focus();
+    textarea.setSelectionRange(start, start + cleaned.length);
+  });
+}
+
+// src/ui/components/toolbar/FormatButtons.tsx
+import { Fragment, jsx as jsx6, jsxs as jsxs3 } from "react/jsx-runtime";
+function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownChange, aiGenerating, loading, apiBasePath = "/api/cms" }) {
+  const editor = editorProp;
+  const isMarkdownMode = !editor && textareaRef && markdown !== void 0 && onMarkdownChange;
+  const [hasSelection, setHasSelection] = useState4(false);
+  const [isRewriting, setIsRewriting] = useState4(false);
+  useEffect4(() => {
+    if (!editor) {
+      setHasSelection(false);
+      return;
+    }
+    const updateSelection = () => {
+      const { from, to } = editor.state.selection;
+      setHasSelection(from !== to);
+    };
+    editor.on("selectionUpdate", updateSelection);
+    editor.on("transaction", updateSelection);
+    return () => {
+      editor.off("selectionUpdate", updateSelection);
+      editor.off("transaction", updateSelection);
+    };
+  }, [editor]);
+  const handleRewrite = useCallback2(async () => {
+    if (!editor || isRewriting) return;
+    const { from, to } = editor.state.selection;
+    if (from === to) return;
+    const selectedText = editor.state.doc.textBetween(from, to, " ");
+    if (!selectedText.trim()) return;
+    setIsRewriting(true);
+    try {
+      const res = await fetch(`${apiBasePath}/ai/rewrite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: selectedText })
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Rewrite failed");
+      }
+      const result = await res.json();
+      editor.chain().focus().deleteSelection().insertContent(result.text).run();
+    } catch (err) {
+      console.error("Rewrite error:", err);
+      alert(err instanceof Error ? err.message : "Failed to rewrite text");
+    } finally {
+      setIsRewriting(false);
+    }
+  }, [editor, isRewriting, apiBasePath]);
+  const setHeading = (level) => {
+    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
+      setHeadingAtCursor(textareaRef.current, level, markdown, onMarkdownChange);
+    }
+  };
+  const wrapSelection = (before, after) => {
+    if (editor) return;
+    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
+      insertAtCursor(textareaRef.current, before, after, markdown, onMarkdownChange);
+    }
+  };
+  if (loading) {
+    return /* @__PURE__ */ jsxs3(Fragment, { children: [
+      /* @__PURE__ */ jsx6(SkeletonButton, {}),
+      /* @__PURE__ */ jsx6(SkeletonButton, {}),
+      /* @__PURE__ */ jsx6(SkeletonButton, {}),
+      /* @__PURE__ */ jsx6(Divider, {}),
+      /* @__PURE__ */ jsx6(SkeletonButton, {}),
+      /* @__PURE__ */ jsx6(SkeletonButton, {}),
+      /* @__PURE__ */ jsx6(SkeletonButton, {}),
+      /* @__PURE__ */ jsx6(Divider, {}),
+      /* @__PURE__ */ jsx6(SkeletonButton, {})
+    ] });
+  }
+  return /* @__PURE__ */ jsxs3(Fragment, { children: [
+    /* @__PURE__ */ jsx6(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleHeading({ level: 1 }).run() : setHeading(1),
+        active: editor?.isActive("heading", { level: 1 }),
+        disabled: aiGenerating,
+        title: "Heading 1",
+        children: "H1"
+      }
+    ),
+    /* @__PURE__ */ jsx6(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleHeading({ level: 2 }).run() : setHeading(2),
+        active: editor?.isActive("heading", { level: 2 }),
+        disabled: aiGenerating,
+        title: "Heading 2",
+        children: "H2"
+      }
+    ),
+    /* @__PURE__ */ jsx6(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleHeading({ level: 3 }).run() : setHeading(3),
+        active: editor?.isActive("heading", { level: 3 }),
+        disabled: aiGenerating,
+        title: "Heading 3",
+        children: "H3"
+      }
+    ),
+    /* @__PURE__ */ jsx6(Divider, {}),
+    /* @__PURE__ */ jsx6(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleBold().run() : wrapSelection("**", "**"),
+        active: editor?.isActive("bold"),
+        disabled: aiGenerating,
+        title: "Bold (\u2318B)",
+        children: /* @__PURE__ */ jsx6("span", { className: "font-bold", children: "B" })
+      }
+    ),
+    /* @__PURE__ */ jsx6(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleItalic().run() : wrapSelection("*", "*"),
+        active: editor?.isActive("italic"),
+        disabled: aiGenerating,
+        title: "Italic (\u2318I)",
+        children: /* @__PURE__ */ jsx6("span", { className: "italic", children: "I" })
+      }
+    ),
+    /* @__PURE__ */ jsx6(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleStrike().run() : wrapSelection("~~", "~~"),
+        active: editor?.isActive("strike"),
+        disabled: aiGenerating,
+        title: "Strikethrough",
+        children: /* @__PURE__ */ jsx6("span", { className: "line-through", children: "S" })
+      }
+    ),
+    !isMarkdownMode && /* @__PURE__ */ jsxs3(Fragment, { children: [
+      /* @__PURE__ */ jsx6(Divider, {}),
+      /* @__PURE__ */ jsx6(
+        ToolbarButton,
+        {
+          onClick: handleRewrite,
+          disabled: !editor || !hasSelection || isRewriting || aiGenerating,
+          title: !editor ? "Editor loading..." : hasSelection ? "Rewrite selection with AI" : "Select text to rewrite",
+          children: isRewriting ? /* @__PURE__ */ jsx6(Loader2, { className: "w-4 h-4 animate-spin" }) : /* @__PURE__ */ jsx6(Wand2, { className: "w-4 h-4" })
+        }
+      )
+    ] })
+  ] });
+}
+
+// src/ui/components/toolbar/BlockButtons.tsx
+import { List, ListOrdered, Quote, Code2, Minus } from "lucide-react";
+import { Fragment as Fragment2, jsx as jsx7, jsxs as jsxs4 } from "react/jsx-runtime";
+function BlockButtons({ editor: editorProp, textareaRef, markdown, onMarkdownChange, aiGenerating, loading }) {
+  const editor = editorProp;
+  if (loading) {
+    return /* @__PURE__ */ jsxs4(Fragment2, { children: [
+      /* @__PURE__ */ jsx7(SkeletonButton, {}),
+      /* @__PURE__ */ jsx7(SkeletonButton, {}),
+      /* @__PURE__ */ jsx7(SkeletonButton, {}),
+      /* @__PURE__ */ jsx7(SkeletonButton, {}),
+      /* @__PURE__ */ jsx7(SkeletonButton, {})
+    ] });
+  }
+  const isMarkdownMode = !editor && textareaRef && markdown !== void 0 && onMarkdownChange;
+  const insertBlock = (prefix) => {
+    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
+      insertBlockAtCursor(textareaRef.current, prefix, markdown, onMarkdownChange);
+    }
+  };
+  const wrapSelection = (before, after) => {
+    if (editor) return;
+    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
+      insertAtCursor(textareaRef.current, before, after, markdown, onMarkdownChange);
+    }
+  };
+  const handleHorizontalRule = () => {
+    if (editor) {
+      editor.chain().focus().setHorizontalRule().run();
+    } else if (isMarkdownMode && textareaRef?.current) {
+      const textarea = textareaRef.current;
+      const start = textarea.selectionStart;
+      const newText = markdown.substring(0, start) + "\n---\n" + markdown.substring(start);
+      onMarkdownChange(newText);
+      requestAnimationFrame(() => textarea.focus());
+    }
+  };
+  return /* @__PURE__ */ jsxs4(Fragment2, { children: [
+    /* @__PURE__ */ jsx7(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleBulletList().run() : insertBlock("- "),
+        active: editor?.isActive("bulletList"),
+        disabled: aiGenerating,
+        title: "Bullet list",
+        children: /* @__PURE__ */ jsx7(List, { className: "w-4 h-4" })
+      }
+    ),
+    /* @__PURE__ */ jsx7(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleOrderedList().run() : insertBlock("1. "),
+        active: editor?.isActive("orderedList"),
+        disabled: aiGenerating,
+        title: "Numbered list",
+        children: /* @__PURE__ */ jsx7(ListOrdered, { className: "w-4 h-4" })
+      }
+    ),
+    /* @__PURE__ */ jsx7(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleBlockquote().run() : insertBlock("> "),
+        active: editor?.isActive("blockquote"),
+        disabled: aiGenerating,
+        title: "Blockquote",
+        children: /* @__PURE__ */ jsx7(Quote, { className: "w-4 h-4" })
+      }
+    ),
+    /* @__PURE__ */ jsx7(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleCodeBlock().run() : wrapSelection("```\n", "\n```"),
+        active: editor?.isActive("codeBlock"),
+        disabled: aiGenerating,
+        title: "Code block",
+        children: /* @__PURE__ */ jsx7(Code2, { className: "w-4 h-4" })
+      }
+    ),
+    /* @__PURE__ */ jsx7(ToolbarButton, { onClick: handleHorizontalRule, disabled: aiGenerating, title: "Horizontal rule", children: /* @__PURE__ */ jsx7(Minus, { className: "w-4 h-4" }) })
+  ] });
+}
+
+// src/ui/components/toolbar/MediaButtons.tsx
+import { useRef as useRef3, useCallback as useCallback3 } from "react";
+import { Link2, Image, RemoveFormatting } from "lucide-react";
+import { Fragment as Fragment3, jsx as jsx8, jsxs as jsxs5 } from "react/jsx-runtime";
+function MediaButtons({ editor: editorProp, textareaRef, markdown, onMarkdownChange, aiGenerating, loading, apiBasePath = "/api/cms" }) {
+  const editor = editorProp;
+  const fileInputRef = useRef3(null);
+  const isMarkdownMode = !editor && textareaRef && markdown !== void 0 && onMarkdownChange;
+  const handleLinkClick = useCallback3(() => {
+    if (editor) {
+      if (editor.isActive("link")) {
+        editor.chain().focus().unsetLink().run();
+        return;
+      }
+      const url = window.prompt("Enter URL:");
+      if (url) {
+        editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+      }
+    } else if (isMarkdownMode) {
+      const url = window.prompt("Enter URL:");
+      if (url && textareaRef?.current) {
+        const textarea = textareaRef.current;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selected = markdown.substring(start, end) || "link text";
+        const newText = markdown.substring(0, start) + `[${selected}](${url})` + markdown.substring(end);
+        onMarkdownChange(newText);
+        requestAnimationFrame(() => textarea.focus());
+      }
+    }
+  }, [editor, isMarkdownMode, textareaRef, markdown, onMarkdownChange]);
+  const handleImageUpload = useCallback3(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const maxSize = 4 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 4MB.`);
+      e.target.value = "";
+      return;
+    }
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      alert(`Invalid file type: ${file.type}. Supported types: JPEG, PNG, GIF, WebP.`);
+      e.target.value = "";
+      return;
+    }
+    const formData = new FormData();
+    formData.append("image", file);
+    try {
+      const res = await fetch(`${apiBasePath}/upload`, {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to upload image");
+        e.target.value = "";
+        return;
+      }
+      const url = data.url || data.data?.url;
+      if (url) {
+        if (editor) {
+          editor.chain().focus().setImage({ src: url }).run();
+        } else if (isMarkdownMode && textareaRef?.current) {
+          const textarea = textareaRef.current;
+          const start = textarea.selectionStart;
+          const newText = markdown.substring(0, start) + `![image](${url})` + markdown.substring(start);
+          onMarkdownChange(newText);
+          requestAnimationFrame(() => textarea.focus());
+        }
+      } else {
+        alert("Upload succeeded but no URL returned");
+      }
+    } catch (err) {
+      alert("Failed to upload image. Please try again.");
+      console.error("Image upload error:", err);
+    }
+    e.target.value = "";
+  }, [editor, isMarkdownMode, textareaRef, markdown, onMarkdownChange, apiBasePath]);
+  const handleClearFormatting = useCallback3(() => {
+    if (editor) {
+      editor.chain().focus().unsetAllMarks().clearNodes().run();
+    } else if (isMarkdownMode && textareaRef?.current && markdown && onMarkdownChange) {
+      clearMarkdownFormatting(textareaRef.current, markdown, onMarkdownChange);
+    }
+  }, [editor, isMarkdownMode, textareaRef, markdown, onMarkdownChange]);
+  if (loading) {
+    return /* @__PURE__ */ jsxs5(Fragment3, { children: [
+      /* @__PURE__ */ jsx8(SkeletonButton, {}),
+      /* @__PURE__ */ jsx8(SkeletonButton, {}),
+      /* @__PURE__ */ jsx8(SkeletonButton, {})
+    ] });
+  }
+  return /* @__PURE__ */ jsxs5(Fragment3, { children: [
+    /* @__PURE__ */ jsx8(
+      ToolbarButton,
+      {
+        onClick: handleLinkClick,
+        active: editor?.isActive("link"),
+        disabled: aiGenerating,
+        title: "Insert link",
+        children: /* @__PURE__ */ jsx8(Link2, { className: "w-4 h-4" })
+      }
+    ),
+    /* @__PURE__ */ jsx8(ToolbarButton, { onClick: () => fileInputRef.current?.click(), disabled: aiGenerating, title: "Insert image", children: /* @__PURE__ */ jsx8(Image, { className: "w-4 h-4" }) }),
+    /* @__PURE__ */ jsx8(
+      "input",
+      {
+        ref: fileInputRef,
+        type: "file",
+        accept: "image/*",
+        onChange: handleImageUpload,
+        className: "hidden"
+      }
+    ),
+    /* @__PURE__ */ jsx8(ToolbarButton, { onClick: handleClearFormatting, disabled: aiGenerating, title: "Clear formatting", children: /* @__PURE__ */ jsx8(RemoveFormatting, { className: "w-4 h-4" }) })
+  ] });
+}
+
+// src/ui/components/toolbar/HistoryButtons.tsx
+import { useCallback as useCallback5 } from "react";
+import { Undo2, Redo2 } from "lucide-react";
+
+// src/ui/components/RevisionHistoryDropdown.tsx
+import { useState as useState5, useRef as useRef4, useEffect as useEffect5, useCallback as useCallback4 } from "react";
+import { createPortal } from "react-dom";
+import { Loader2 as Loader22, History } from "lucide-react";
+import { Fragment as Fragment4, jsx as jsx9, jsxs as jsxs6 } from "react/jsx-runtime";
+function RevisionHistoryDropdown({
+  revisions,
+  loading,
+  previewLoading,
+  disabled,
+  isPreviewMode,
+  onOpen,
+  onSelect
+}) {
+  const [open, setOpen] = useState5(false);
+  const [position, setPosition] = useState5({ top: 0, right: 0 });
+  const buttonRef = useRef4(null);
+  const menuRef = useRef4(null);
+  const updatePosition = useCallback4(() => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + 4,
+        // 4px gap
+        right: window.innerWidth - rect.right
+      });
+    }
+  }, []);
+  useEffect5(() => {
+    if (!open) return;
+    const handleClick = (e) => {
+      const target = e.target;
+      if (menuRef.current && !menuRef.current.contains(target) && buttonRef.current && !buttonRef.current.contains(target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [open]);
+  useEffect5(() => {
+    if (!open) return;
+    const handleUpdate = () => updatePosition();
+    window.addEventListener("scroll", handleUpdate, true);
+    window.addEventListener("resize", handleUpdate);
+    return () => {
+      window.removeEventListener("scroll", handleUpdate, true);
+      window.removeEventListener("resize", handleUpdate);
+    };
+  }, [open, updatePosition]);
+  const handleToggle = () => {
+    if (!open) {
+      updatePosition();
+      onOpen();
+    }
+    setOpen(!open);
+  };
+  return /* @__PURE__ */ jsxs6(Fragment4, { children: [
+    /* @__PURE__ */ jsx9(
+      "button",
+      {
+        ref: buttonRef,
+        type: "button",
+        onClick: handleToggle,
+        disabled: disabled || isPreviewMode || previewLoading,
+        title: disabled ? "Save post to enable history" : "Revision history",
+        className: "px-2.5 py-1.5 text-sm font-medium rounded transition-colors flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400",
+        children: previewLoading ? /* @__PURE__ */ jsx9(Loader22, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ jsx9(History, { className: "w-4 h-4" })
+      }
+    ),
+    open && typeof document !== "undefined" && createPortal(
+      /* @__PURE__ */ jsxs6(
+        "div",
+        {
+          ref: menuRef,
+          className: "fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999] w-64 max-h-80 overflow-y-auto",
+          style: { top: position.top, right: position.right },
+          children: [
+            /* @__PURE__ */ jsx9("div", { className: "px-3 py-2 text-sm font-medium border-b border-gray-200 dark:border-gray-700", children: "Revision History" }),
+            loading ? /* @__PURE__ */ jsx9("div", { className: "flex items-center justify-center py-4", children: /* @__PURE__ */ jsx9(Loader22, { className: "h-4 w-4 animate-spin text-gray-500" }) }) : revisions.length === 0 ? /* @__PURE__ */ jsx9("div", { className: "py-4 text-center text-sm text-gray-500", children: "No revisions yet" }) : revisions.map((rev) => /* @__PURE__ */ jsx9(
+              "button",
+              {
+                onClick: () => {
+                  onSelect(rev.id);
+                  setOpen(false);
+                },
+                className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left rounded-sm hover:bg-accent cursor-default",
+                children: /* @__PURE__ */ jsxs6("div", { className: "flex flex-col", children: [
+                  /* @__PURE__ */ jsx9("span", { className: "text-sm truncate", children: rev.title || "Untitled" }),
+                  /* @__PURE__ */ jsx9("span", { className: "text-xs text-gray-500", children: formatRelativeTime(rev.createdAt) })
+                ] })
+              },
+              rev.id
+            ))
+          ]
+        }
+      ),
+      document.body
+    )
+  ] });
+}
+
+// src/ui/components/toolbar/HistoryButtons.tsx
+import { Fragment as Fragment5, jsx as jsx10, jsxs as jsxs7 } from "react/jsx-runtime";
+function HistoryButtons({
+  editor: editorProp,
+  textareaRef,
+  showMarkdown,
+  setShowMarkdown,
+  postSlug,
+  revisions,
+  aiGenerating,
+  loading
+}) {
+  const editor = editorProp;
+  const handleUndo = useCallback5(() => {
+    if (editor) {
+      editor.chain().focus().undo().run();
+    } else if (textareaRef?.current) {
+      textareaRef.current.focus();
+      document.execCommand("undo");
+    }
+  }, [editor, textareaRef]);
+  const handleRedo = useCallback5(() => {
+    if (editor) {
+      editor.chain().focus().redo().run();
+    } else if (textareaRef?.current) {
+      textareaRef.current.focus();
+      document.execCommand("redo");
+    }
+  }, [editor, textareaRef]);
+  if (loading) {
+    return /* @__PURE__ */ jsxs7(Fragment5, { children: [
+      /* @__PURE__ */ jsx10(SkeletonButton, {}),
+      /* @__PURE__ */ jsx10(SkeletonButton, {}),
+      /* @__PURE__ */ jsx10(Divider, {}),
+      /* @__PURE__ */ jsx10(SkeletonButton, {}),
+      /* @__PURE__ */ jsx10(Divider, {}),
+      /* @__PURE__ */ jsx10(SkeletonButton, {})
+    ] });
+  }
+  return /* @__PURE__ */ jsxs7(Fragment5, { children: [
+    /* @__PURE__ */ jsx10(
+      ToolbarButton,
+      {
+        onClick: handleUndo,
+        disabled: aiGenerating || (editor ? !editor.can().undo() : false),
+        title: "Undo (\u2318Z)",
+        children: /* @__PURE__ */ jsx10(Undo2, { className: "w-4 h-4" })
+      }
+    ),
+    /* @__PURE__ */ jsx10(
+      ToolbarButton,
+      {
+        onClick: handleRedo,
+        disabled: aiGenerating || (editor ? !editor.can().redo() : false),
+        title: "Redo (\u2318\u21E7Z)",
+        children: /* @__PURE__ */ jsx10(Redo2, { className: "w-4 h-4" })
+      }
+    ),
+    setShowMarkdown && /* @__PURE__ */ jsxs7(Fragment5, { children: [
+      /* @__PURE__ */ jsx10(Divider, {}),
+      /* @__PURE__ */ jsx10(
+        ToolbarButton,
+        {
+          onClick: () => setShowMarkdown(!showMarkdown),
+          active: showMarkdown,
+          disabled: aiGenerating,
+          title: showMarkdown ? "Switch to rich text editor" : "Switch to markdown mode",
+          children: /* @__PURE__ */ jsx10("span", { className: "font-mono text-xs", children: "MD" })
+        }
+      )
+    ] }),
+    revisions && /* @__PURE__ */ jsxs7(Fragment5, { children: [
+      /* @__PURE__ */ jsx10(Divider, {}),
+      /* @__PURE__ */ jsx10(
+        RevisionHistoryDropdown,
+        {
+          revisions: revisions.list,
+          loading: revisions.loading,
+          previewLoading: revisions.previewLoading,
+          disabled: aiGenerating || !postSlug,
+          isPreviewMode: !!revisions.previewing,
+          onOpen: revisions.fetch,
+          onSelect: revisions.preview
+        }
+      )
+    ] })
+  ] });
+}
+
+// src/ui/components/EditorToolbar.tsx
+import { jsx as jsx11, jsxs as jsxs8 } from "react/jsx-runtime";
+function EditorToolbar({
+  editor,
+  textareaRef,
+  markdown,
+  onMarkdownChange,
+  showMarkdown,
+  setShowMarkdown,
+  postSlug,
+  revisions,
+  aiGenerating,
+  hasSelection,
+  selectionHasComment,
+  onAddComment,
+  commentsCount,
+  onViewComments,
+  loading = false,
+  apiBasePath = "/api/cms"
+}) {
+  if (loading) {
+    return /* @__PURE__ */ jsxs8("div", { className: "sticky top-[69px] z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto", children: [
+      /* @__PURE__ */ jsx11(FormatButtons, { loading: true }),
+      /* @__PURE__ */ jsx11(Divider, {}),
+      /* @__PURE__ */ jsx11(BlockButtons, { loading: true }),
+      /* @__PURE__ */ jsx11(Divider, {}),
+      /* @__PURE__ */ jsx11(MediaButtons, { loading: true }),
+      /* @__PURE__ */ jsx11(Divider, {}),
+      /* @__PURE__ */ jsx11(HistoryButtons, { loading: true }),
+      /* @__PURE__ */ jsx11(Divider, {}),
+      /* @__PURE__ */ jsx11(SkeletonButton, {}),
+      /* @__PURE__ */ jsx11(SkeletonButton, {})
+    ] });
+  }
+  return /* @__PURE__ */ jsxs8("div", { className: "sticky top-[69px] z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto", children: [
+    /* @__PURE__ */ jsx11(
+      FormatButtons,
+      {
+        editor,
+        textareaRef,
+        markdown,
+        onMarkdownChange,
+        aiGenerating,
+        apiBasePath
+      }
+    ),
+    /* @__PURE__ */ jsx11(Divider, {}),
+    /* @__PURE__ */ jsx11(
+      BlockButtons,
+      {
+        editor,
+        textareaRef,
+        markdown,
+        onMarkdownChange,
+        aiGenerating
+      }
+    ),
+    /* @__PURE__ */ jsx11(Divider, {}),
+    /* @__PURE__ */ jsx11(
+      MediaButtons,
+      {
+        editor,
+        textareaRef,
+        markdown,
+        onMarkdownChange,
+        aiGenerating,
+        apiBasePath
+      }
+    ),
+    /* @__PURE__ */ jsx11(Divider, {}),
+    /* @__PURE__ */ jsx11(
+      HistoryButtons,
+      {
+        editor,
+        textareaRef,
+        showMarkdown,
+        setShowMarkdown,
+        postSlug,
+        revisions,
+        aiGenerating
+      }
+    ),
+    /* @__PURE__ */ jsx11(Divider, {}),
+    /* @__PURE__ */ jsx11(
+      ToolbarButton,
+      {
+        onClick: onAddComment ?? (() => {
+        }),
+        disabled: aiGenerating || !hasSelection || !onAddComment,
+        title: hasSelection ? "New comment (\u2318\u2325M)" : selectionHasComment ? "Text already has a comment" : "Select text to comment",
+        children: /* @__PURE__ */ jsx11(MessageSquarePlus, { className: "w-4 h-4" })
+      }
+    ),
+    /* @__PURE__ */ jsx11(
+      ToolbarButton,
+      {
+        onClick: onViewComments ?? (() => {
+        }),
+        disabled: aiGenerating || !onViewComments,
+        title: "View all comments",
+        children: /* @__PURE__ */ jsxs8("span", { className: "flex items-center gap-1", children: [
+          /* @__PURE__ */ jsx11(MessageSquare, { className: "w-4 h-4" }),
+          commentsCount !== void 0 && commentsCount > 0 && /* @__PURE__ */ jsx11("span", { className: "text-xs tabular-nums", children: commentsCount })
+        ] })
+      }
+    )
+  ] });
+}
+
+// src/ui/components/TiptapEditor.tsx
+import { useEffect as useEffect6, useMemo as useMemo2 } from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Placeholder from "@tiptap/extension-placeholder";
+import Link from "@tiptap/extension-link";
+import Image2 from "@tiptap/extension-image";
+
+// src/lib/markdown.ts
+import { marked } from "marked";
+import TurndownService from "turndown";
+marked.setOptions({
+  gfm: true,
+  breaks: false
+});
+function renderMarkdown(markdown) {
+  return marked.parse(markdown);
+}
+var turndownService = new TurndownService({
+  headingStyle: "atx",
+  codeBlockStyle: "fenced",
+  bulletListMarker: "-"
+});
+function htmlToMarkdown(html) {
+  return turndownService.turndown(html);
+}
+
+// node_modules/@tiptap/core/dist/index.js
+import { liftTarget } from "@tiptap/pm/transform";
+import { createParagraphNear as originalCreateParagraphNear } from "@tiptap/pm/commands";
+import { TextSelection } from "@tiptap/pm/state";
+import { deleteSelection as originalDeleteSelection } from "@tiptap/pm/commands";
+import { exitCode as originalExitCode } from "@tiptap/pm/commands";
+import { TextSelection as TextSelection2 } from "@tiptap/pm/state";
+import { TextSelection as TextSelection3 } from "@tiptap/pm/state";
+import { Selection, TextSelection as TextSelection4 } from "@tiptap/pm/state";
+import { Fragment as Fragment22 } from "@tiptap/pm/model";
+import { DOMParser, Fragment as Fragment6, Node as ProseMirrorNode, Schema } from "@tiptap/pm/model";
+import { Selection as Selection2 } from "@tiptap/pm/state";
+import { ReplaceAroundStep, ReplaceStep } from "@tiptap/pm/transform";
+import {
+  joinBackward as originalJoinBackward,
+  joinDown as originalJoinDown,
+  joinForward as originalJoinForward,
+  joinUp as originalJoinUp
+} from "@tiptap/pm/commands";
+import { joinPoint } from "@tiptap/pm/transform";
+import { joinPoint as joinPoint2 } from "@tiptap/pm/transform";
+import { joinTextblockBackward as originalCommand } from "@tiptap/pm/commands";
+import { joinTextblockForward as originalCommand2 } from "@tiptap/pm/commands";
+import { lift as originalLift } from "@tiptap/pm/commands";
+import { liftEmptyBlock as originalLiftEmptyBlock } from "@tiptap/pm/commands";
+import { liftListItem as originalLiftListItem } from "@tiptap/pm/schema-list";
+import { newlineInCode as originalNewlineInCode } from "@tiptap/pm/commands";
+import { AllSelection } from "@tiptap/pm/state";
+import { selectNodeBackward as originalSelectNodeBackward } from "@tiptap/pm/commands";
+import { selectNodeForward as originalSelectNodeForward } from "@tiptap/pm/commands";
+import { selectParentNode as originalSelectParentNode } from "@tiptap/pm/commands";
+import { selectTextblockEnd as originalSelectTextblockEnd } from "@tiptap/pm/commands";
+import { selectTextblockStart as originalSelectTextblockStart } from "@tiptap/pm/commands";
+import { Transform } from "@tiptap/pm/transform";
+import { Node } from "@tiptap/pm/model";
+import { DOMSerializer } from "@tiptap/pm/model";
+import { Schema as Schema2 } from "@tiptap/pm/model";
+import { DOMParser as DOMParser2 } from "@tiptap/pm/model";
+import { Node as Node2 } from "@tiptap/pm/model";
+import { NodeSelection } from "@tiptap/pm/state";
+import { setBlockType } from "@tiptap/pm/commands";
+import { NodeSelection as NodeSelection2 } from "@tiptap/pm/state";
+import { TextSelection as TextSelection5 } from "@tiptap/pm/state";
+import { sinkListItem as originalSinkListItem } from "@tiptap/pm/schema-list";
+import { NodeSelection as NodeSelection3, TextSelection as TextSelection6 } from "@tiptap/pm/state";
+import { canSplit } from "@tiptap/pm/transform";
+import { Fragment as Fragment32, Slice } from "@tiptap/pm/model";
+import { TextSelection as TextSelection7 } from "@tiptap/pm/state";
+import { canSplit as canSplit2 } from "@tiptap/pm/transform";
+import { canJoin } from "@tiptap/pm/transform";
+import { wrapIn as originalWrapIn } from "@tiptap/pm/commands";
+import { wrapInList as originalWrapInList } from "@tiptap/pm/schema-list";
+import { EditorState } from "@tiptap/pm/state";
+import { EditorView } from "@tiptap/pm/view";
+import { keymap } from "@tiptap/pm/keymap";
+import { Fragment as Fragment42 } from "@tiptap/pm/model";
+import { Plugin } from "@tiptap/pm/state";
+import { Fragment as Fragment52 } from "@tiptap/pm/model";
+import { Plugin as Plugin2 } from "@tiptap/pm/state";
+import { Plugin as Plugin3, PluginKey } from "@tiptap/pm/state";
+import { RemoveMarkStep } from "@tiptap/pm/transform";
+import { Plugin as Plugin4, PluginKey as PluginKey2 } from "@tiptap/pm/state";
+import { Plugin as Plugin5, PluginKey as PluginKey3 } from "@tiptap/pm/state";
+import { Plugin as Plugin6, PluginKey as PluginKey4 } from "@tiptap/pm/state";
+import { Plugin as Plugin7, PluginKey as PluginKey5, Selection as Selection3 } from "@tiptap/pm/state";
+import { Plugin as Plugin8, PluginKey as PluginKey6 } from "@tiptap/pm/state";
+import { Plugin as Plugin9, PluginKey as PluginKey7 } from "@tiptap/pm/state";
+import { Plugin as Plugin10, PluginKey as PluginKey8 } from "@tiptap/pm/state";
+import { canJoin as canJoin2, findWrapping } from "@tiptap/pm/transform";
+import { NodeSelection as NodeSelection4 } from "@tiptap/pm/state";
+import { NodeSelection as NodeSelection5 } from "@tiptap/pm/state";
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+function createChainableState(config) {
+  const { state, transaction } = config;
+  let { selection } = transaction;
+  let { doc } = transaction;
+  let { storedMarks } = transaction;
+  return {
+    ...state,
+    apply: state.apply.bind(state),
+    applyTransaction: state.applyTransaction.bind(state),
+    plugins: state.plugins,
+    schema: state.schema,
+    reconfigure: state.reconfigure.bind(state),
+    toJSON: state.toJSON.bind(state),
+    get storedMarks() {
+      return storedMarks;
+    },
+    get selection() {
+      return selection;
+    },
+    get doc() {
+      return doc;
+    },
+    get tr() {
+      selection = transaction.selection;
+      doc = transaction.doc;
+      storedMarks = transaction.storedMarks;
+      return transaction;
+    }
+  };
+}
+var CommandManager = class {
+  constructor(props) {
+    this.editor = props.editor;
+    this.rawCommands = this.editor.extensionManager.commands;
+    this.customState = props.state;
+  }
+  get hasCustomState() {
+    return !!this.customState;
+  }
+  get state() {
+    return this.customState || this.editor.state;
+  }
+  get commands() {
+    const { rawCommands, editor, state } = this;
+    const { view } = editor;
+    const { tr } = state;
+    const props = this.buildProps(tr);
+    return Object.fromEntries(
+      Object.entries(rawCommands).map(([name, command2]) => {
+        const method = (...args) => {
+          const callback = command2(...args)(props);
+          if (!tr.getMeta("preventDispatch") && !this.hasCustomState) {
+            view.dispatch(tr);
+          }
+          return callback;
+        };
+        return [name, method];
+      })
+    );
+  }
+  get chain() {
+    return () => this.createChain();
+  }
+  get can() {
+    return () => this.createCan();
+  }
+  createChain(startTr, shouldDispatch = true) {
+    const { rawCommands, editor, state } = this;
+    const { view } = editor;
+    const callbacks = [];
+    const hasStartTransaction = !!startTr;
+    const tr = startTr || state.tr;
+    const run3 = () => {
+      if (!hasStartTransaction && shouldDispatch && !tr.getMeta("preventDispatch") && !this.hasCustomState) {
+        view.dispatch(tr);
+      }
+      return callbacks.every((callback) => callback === true);
+    };
+    const chain = {
+      ...Object.fromEntries(
+        Object.entries(rawCommands).map(([name, command2]) => {
+          const chainedCommand = (...args) => {
+            const props = this.buildProps(tr, shouldDispatch);
+            const callback = command2(...args)(props);
+            callbacks.push(callback);
+            return chain;
+          };
+          return [name, chainedCommand];
+        })
+      ),
+      run: run3
+    };
+    return chain;
+  }
+  createCan(startTr) {
+    const { rawCommands, state } = this;
+    const dispatch = false;
+    const tr = startTr || state.tr;
+    const props = this.buildProps(tr, dispatch);
+    const formattedCommands = Object.fromEntries(
+      Object.entries(rawCommands).map(([name, command2]) => {
+        return [name, (...args) => command2(...args)({ ...props, dispatch: void 0 })];
+      })
+    );
+    return {
+      ...formattedCommands,
+      chain: () => this.createChain(tr, dispatch)
+    };
+  }
+  buildProps(tr, shouldDispatch = true) {
+    const { rawCommands, editor, state } = this;
+    const { view } = editor;
+    const props = {
+      tr,
+      editor,
+      view,
+      state: createChainableState({
+        state,
+        transaction: tr
+      }),
+      dispatch: shouldDispatch ? () => void 0 : void 0,
+      chain: () => this.createChain(tr, shouldDispatch),
+      can: () => this.createCan(tr),
+      get commands() {
+        return Object.fromEntries(
+          Object.entries(rawCommands).map(([name, command2]) => {
+            return [name, (...args) => command2(...args)(props)];
+          })
+        );
+      }
+    };
+    return props;
+  }
+};
+var commands_exports = {};
+__export(commands_exports, {
+  blur: () => blur,
+  clearContent: () => clearContent,
+  clearNodes: () => clearNodes,
+  command: () => command,
+  createParagraphNear: () => createParagraphNear,
+  cut: () => cut,
+  deleteCurrentNode: () => deleteCurrentNode,
+  deleteNode: () => deleteNode,
+  deleteRange: () => deleteRange,
+  deleteSelection: () => deleteSelection,
+  enter: () => enter,
+  exitCode: () => exitCode,
+  extendMarkRange: () => extendMarkRange,
+  first: () => first,
+  focus: () => focus,
+  forEach: () => forEach,
+  insertContent: () => insertContent,
+  insertContentAt: () => insertContentAt,
+  joinBackward: () => joinBackward,
+  joinDown: () => joinDown,
+  joinForward: () => joinForward,
+  joinItemBackward: () => joinItemBackward,
+  joinItemForward: () => joinItemForward,
+  joinTextblockBackward: () => joinTextblockBackward,
+  joinTextblockForward: () => joinTextblockForward,
+  joinUp: () => joinUp,
+  keyboardShortcut: () => keyboardShortcut,
+  lift: () => lift,
+  liftEmptyBlock: () => liftEmptyBlock,
+  liftListItem: () => liftListItem,
+  newlineInCode: () => newlineInCode,
+  resetAttributes: () => resetAttributes,
+  scrollIntoView: () => scrollIntoView,
+  selectAll: () => selectAll,
+  selectNodeBackward: () => selectNodeBackward,
+  selectNodeForward: () => selectNodeForward,
+  selectParentNode: () => selectParentNode,
+  selectTextblockEnd: () => selectTextblockEnd,
+  selectTextblockStart: () => selectTextblockStart,
+  setContent: () => setContent,
+  setMark: () => setMark,
+  setMeta: () => setMeta,
+  setNode: () => setNode,
+  setNodeSelection: () => setNodeSelection,
+  setTextDirection: () => setTextDirection,
+  setTextSelection: () => setTextSelection,
+  sinkListItem: () => sinkListItem,
+  splitBlock: () => splitBlock,
+  splitListItem: () => splitListItem,
+  toggleList: () => toggleList,
+  toggleMark: () => toggleMark,
+  toggleNode: () => toggleNode,
+  toggleWrap: () => toggleWrap,
+  undoInputRule: () => undoInputRule,
+  unsetAllMarks: () => unsetAllMarks,
+  unsetMark: () => unsetMark,
+  unsetTextDirection: () => unsetTextDirection,
+  updateAttributes: () => updateAttributes,
+  wrapIn: () => wrapIn,
+  wrapInList: () => wrapInList
+});
+var blur = () => ({ editor, view }) => {
+  requestAnimationFrame(() => {
+    var _a;
+    if (!editor.isDestroyed) {
+      ;
+      view.dom.blur();
+      (_a = window == null ? void 0 : window.getSelection()) == null ? void 0 : _a.removeAllRanges();
+    }
+  });
+  return true;
+};
+var clearContent = (emitUpdate = true) => ({ commands }) => {
+  return commands.setContent("", { emitUpdate });
+};
+var clearNodes = () => ({ state, tr, dispatch }) => {
+  const { selection } = tr;
+  const { ranges } = selection;
+  if (!dispatch) {
+    return true;
+  }
+  ranges.forEach(({ $from, $to }) => {
+    state.doc.nodesBetween($from.pos, $to.pos, (node, pos) => {
+      if (node.type.isText) {
+        return;
+      }
+      const { doc, mapping } = tr;
+      const $mappedFrom = doc.resolve(mapping.map(pos));
+      const $mappedTo = doc.resolve(mapping.map(pos + node.nodeSize));
+      const nodeRange = $mappedFrom.blockRange($mappedTo);
+      if (!nodeRange) {
+        return;
+      }
+      const targetLiftDepth = liftTarget(nodeRange);
+      if (node.type.isTextblock) {
+        const { defaultType } = $mappedFrom.parent.contentMatchAt($mappedFrom.index());
+        tr.setNodeMarkup(nodeRange.start, defaultType);
+      }
+      if (targetLiftDepth || targetLiftDepth === 0) {
+        tr.lift(nodeRange, targetLiftDepth);
+      }
+    });
+  });
+  return true;
+};
+var command = (fn) => (props) => {
+  return fn(props);
+};
+var createParagraphNear = () => ({ state, dispatch }) => {
+  return originalCreateParagraphNear(state, dispatch);
+};
+var cut = (originRange, targetPos) => ({ editor, tr }) => {
+  const { state } = editor;
+  const contentSlice = state.doc.slice(originRange.from, originRange.to);
+  tr.deleteRange(originRange.from, originRange.to);
+  const newPos = tr.mapping.map(targetPos);
+  tr.insert(newPos, contentSlice.content);
+  tr.setSelection(new TextSelection(tr.doc.resolve(Math.max(newPos - 1, 0))));
+  return true;
+};
+var deleteCurrentNode = () => ({ tr, dispatch }) => {
+  const { selection } = tr;
+  const currentNode = selection.$anchor.node();
+  if (currentNode.content.size > 0) {
+    return false;
+  }
+  const $pos = tr.selection.$anchor;
+  for (let depth = $pos.depth; depth > 0; depth -= 1) {
+    const node = $pos.node(depth);
+    if (node.type === currentNode.type) {
+      if (dispatch) {
+        const from = $pos.before(depth);
+        const to = $pos.after(depth);
+        tr.delete(from, to).scrollIntoView();
+      }
+      return true;
+    }
+  }
+  return false;
+};
+function getNodeType(nameOrType, schema) {
+  if (typeof nameOrType === "string") {
+    if (!schema.nodes[nameOrType]) {
+      throw Error(`There is no node type named '${nameOrType}'. Maybe you forgot to add the extension?`);
+    }
+    return schema.nodes[nameOrType];
+  }
+  return nameOrType;
+}
+var deleteNode = (typeOrName) => ({ tr, state, dispatch }) => {
+  const type = getNodeType(typeOrName, state.schema);
+  const $pos = tr.selection.$anchor;
+  for (let depth = $pos.depth; depth > 0; depth -= 1) {
+    const node = $pos.node(depth);
+    if (node.type === type) {
+      if (dispatch) {
+        const from = $pos.before(depth);
+        const to = $pos.after(depth);
+        tr.delete(from, to).scrollIntoView();
+      }
+      return true;
+    }
+  }
+  return false;
+};
+var deleteRange = (range) => ({ tr, dispatch }) => {
+  const { from, to } = range;
+  if (dispatch) {
+    tr.delete(from, to);
+  }
+  return true;
+};
+var deleteSelection = () => ({ state, dispatch }) => {
+  return originalDeleteSelection(state, dispatch);
+};
+var enter = () => ({ commands }) => {
+  return commands.keyboardShortcut("Enter");
+};
+var exitCode = () => ({ state, dispatch }) => {
+  return originalExitCode(state, dispatch);
+};
+function isRegExp(value) {
+  return Object.prototype.toString.call(value) === "[object RegExp]";
+}
+function objectIncludes(object1, object2, options = { strict: true }) {
+  const keys = Object.keys(object2);
+  if (!keys.length) {
+    return true;
+  }
+  return keys.every((key) => {
+    if (options.strict) {
+      return object2[key] === object1[key];
+    }
+    if (isRegExp(object2[key])) {
+      return object2[key].test(object1[key]);
+    }
+    return object2[key] === object1[key];
+  });
+}
+function findMarkInSet(marks, type, attributes = {}) {
+  return marks.find((item) => {
+    return item.type === type && objectIncludes(
+      // Only check equality for the attributes that are provided
+      Object.fromEntries(Object.keys(attributes).map((k) => [k, item.attrs[k]])),
+      attributes
+    );
+  });
+}
+function isMarkInSet(marks, type, attributes = {}) {
+  return !!findMarkInSet(marks, type, attributes);
+}
+function getMarkRange($pos, type, attributes) {
+  var _a;
+  if (!$pos || !type) {
+    return;
+  }
+  let start = $pos.parent.childAfter($pos.parentOffset);
+  if (!start.node || !start.node.marks.some((mark2) => mark2.type === type)) {
+    start = $pos.parent.childBefore($pos.parentOffset);
+  }
+  if (!start.node || !start.node.marks.some((mark2) => mark2.type === type)) {
+    return;
+  }
+  attributes = attributes || ((_a = start.node.marks[0]) == null ? void 0 : _a.attrs);
+  const mark = findMarkInSet([...start.node.marks], type, attributes);
+  if (!mark) {
+    return;
+  }
+  let startIndex = start.index;
+  let startPos = $pos.start() + start.offset;
+  let endIndex = startIndex + 1;
+  let endPos = startPos + start.node.nodeSize;
+  while (startIndex > 0 && isMarkInSet([...$pos.parent.child(startIndex - 1).marks], type, attributes)) {
+    startIndex -= 1;
+    startPos -= $pos.parent.child(startIndex).nodeSize;
+  }
+  while (endIndex < $pos.parent.childCount && isMarkInSet([...$pos.parent.child(endIndex).marks], type, attributes)) {
+    endPos += $pos.parent.child(endIndex).nodeSize;
+    endIndex += 1;
+  }
+  return {
+    from: startPos,
+    to: endPos
+  };
+}
+function getMarkType(nameOrType, schema) {
+  if (typeof nameOrType === "string") {
+    if (!schema.marks[nameOrType]) {
+      throw Error(`There is no mark type named '${nameOrType}'. Maybe you forgot to add the extension?`);
+    }
+    return schema.marks[nameOrType];
+  }
+  return nameOrType;
+}
+var extendMarkRange = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
+  const type = getMarkType(typeOrName, state.schema);
+  const { doc, selection } = tr;
+  const { $from, from, to } = selection;
+  if (dispatch) {
+    const range = getMarkRange($from, type, attributes);
+    if (range && range.from <= from && range.to >= to) {
+      const newSelection = TextSelection2.create(doc, range.from, range.to);
+      tr.setSelection(newSelection);
+    }
+  }
+  return true;
+};
+var first = (commands) => (props) => {
+  const items = typeof commands === "function" ? commands(props) : commands;
+  for (let i = 0; i < items.length; i += 1) {
+    if (items[i](props)) {
+      return true;
+    }
+  }
+  return false;
+};
+function isTextSelection(value) {
+  return value instanceof TextSelection3;
+}
+function minMax(value = 0, min = 0, max = 0) {
+  return Math.min(Math.max(value, min), max);
+}
+function resolveFocusPosition(doc, position = null) {
+  if (!position) {
+    return null;
+  }
+  const selectionAtStart = Selection.atStart(doc);
+  const selectionAtEnd = Selection.atEnd(doc);
+  if (position === "start" || position === true) {
+    return selectionAtStart;
+  }
+  if (position === "end") {
+    return selectionAtEnd;
+  }
+  const minPos = selectionAtStart.from;
+  const maxPos = selectionAtEnd.to;
+  if (position === "all") {
+    return TextSelection4.create(doc, minMax(0, minPos, maxPos), minMax(doc.content.size, minPos, maxPos));
+  }
+  return TextSelection4.create(doc, minMax(position, minPos, maxPos), minMax(position, minPos, maxPos));
+}
+function isAndroid() {
+  return navigator.platform === "Android" || /android/i.test(navigator.userAgent);
+}
+function isiOS() {
+  return ["iPad Simulator", "iPhone Simulator", "iPod Simulator", "iPad", "iPhone", "iPod"].includes(navigator.platform) || // iPad on iOS 13 detection
+  navigator.userAgent.includes("Mac") && "ontouchend" in document;
+}
+function isSafari() {
+  return typeof navigator !== "undefined" ? /^((?!chrome|android).)*safari/i.test(navigator.userAgent) : false;
+}
+var focus = (position = null, options = {}) => ({ editor, view, tr, dispatch }) => {
+  options = {
+    scrollIntoView: true,
+    ...options
+  };
+  const delayedFocus = () => {
+    if (isiOS() || isAndroid()) {
+      ;
+      view.dom.focus();
+    }
+    if (isSafari() && !isiOS() && !isAndroid()) {
+      ;
+      view.dom.focus({ preventScroll: true });
+    }
+    requestAnimationFrame(() => {
+      if (!editor.isDestroyed) {
+        view.focus();
+        if (options == null ? void 0 : options.scrollIntoView) {
+          editor.commands.scrollIntoView();
+        }
+      }
+    });
+  };
+  if (view.hasFocus() && position === null || position === false) {
+    return true;
+  }
+  if (dispatch && position === null && !isTextSelection(editor.state.selection)) {
+    delayedFocus();
+    return true;
+  }
+  const selection = resolveFocusPosition(tr.doc, position) || editor.state.selection;
+  const isSameSelection = editor.state.selection.eq(selection);
+  if (dispatch) {
+    if (!isSameSelection) {
+      tr.setSelection(selection);
+    }
+    if (isSameSelection && tr.storedMarks) {
+      tr.setStoredMarks(tr.storedMarks);
+    }
+    delayedFocus();
+  }
+  return true;
+};
+var forEach = (items, fn) => (props) => {
+  return items.every((item, index) => fn(item, { ...props, index }));
+};
+var insertContent = (value, options) => ({ tr, commands }) => {
+  return commands.insertContentAt({ from: tr.selection.from, to: tr.selection.to }, value, options);
+};
+var removeWhitespaces = (node) => {
+  const children = node.childNodes;
+  for (let i = children.length - 1; i >= 0; i -= 1) {
+    const child = children[i];
+    if (child.nodeType === 3 && child.nodeValue && /^(\n\s\s|\n)$/.test(child.nodeValue)) {
+      node.removeChild(child);
+    } else if (child.nodeType === 1) {
+      removeWhitespaces(child);
+    }
+  }
+  return node;
+};
+function elementFromString(value) {
+  if (typeof window === "undefined") {
+    throw new Error("[tiptap error]: there is no window object available, so this function cannot be used");
+  }
+  const wrappedValue = `<body>${value}</body>`;
+  const html = new window.DOMParser().parseFromString(wrappedValue, "text/html").body;
+  return removeWhitespaces(html);
+}
+function createNodeFromContent(content, schema, options) {
+  if (content instanceof ProseMirrorNode || content instanceof Fragment6) {
+    return content;
+  }
+  options = {
+    slice: true,
+    parseOptions: {},
+    ...options
+  };
+  const isJSONContent = typeof content === "object" && content !== null;
+  const isTextContent = typeof content === "string";
+  if (isJSONContent) {
+    try {
+      const isArrayContent = Array.isArray(content) && content.length > 0;
+      if (isArrayContent) {
+        return Fragment6.fromArray(content.map((item) => schema.nodeFromJSON(item)));
+      }
+      const node = schema.nodeFromJSON(content);
+      if (options.errorOnInvalidContent) {
+        node.check();
+      }
+      return node;
+    } catch (error) {
+      if (options.errorOnInvalidContent) {
+        throw new Error("[tiptap error]: Invalid JSON content", { cause: error });
+      }
+      console.warn("[tiptap warn]: Invalid content.", "Passed value:", content, "Error:", error);
+      return createNodeFromContent("", schema, options);
+    }
+  }
+  if (isTextContent) {
+    if (options.errorOnInvalidContent) {
+      let hasInvalidContent = false;
+      let invalidContent = "";
+      const contentCheckSchema = new Schema({
+        topNode: schema.spec.topNode,
+        marks: schema.spec.marks,
+        // Prosemirror's schemas are executed such that: the last to execute, matches last
+        // This means that we can add a catch-all node at the end of the schema to catch any content that we don't know how to handle
+        nodes: schema.spec.nodes.append({
+          __tiptap__private__unknown__catch__all__node: {
+            content: "inline*",
+            group: "block",
+            parseDOM: [
+              {
+                tag: "*",
+                getAttrs: (e) => {
+                  hasInvalidContent = true;
+                  invalidContent = typeof e === "string" ? e : e.outerHTML;
+                  return null;
+                }
+              }
+            ]
+          }
+        })
+      });
+      if (options.slice) {
+        DOMParser.fromSchema(contentCheckSchema).parseSlice(elementFromString(content), options.parseOptions);
+      } else {
+        DOMParser.fromSchema(contentCheckSchema).parse(elementFromString(content), options.parseOptions);
+      }
+      if (options.errorOnInvalidContent && hasInvalidContent) {
+        throw new Error("[tiptap error]: Invalid HTML content", {
+          cause: new Error(`Invalid element found: ${invalidContent}`)
+        });
+      }
+    }
+    const parser = DOMParser.fromSchema(schema);
+    if (options.slice) {
+      return parser.parseSlice(elementFromString(content), options.parseOptions).content;
+    }
+    return parser.parse(elementFromString(content), options.parseOptions);
+  }
+  return createNodeFromContent("", schema, options);
+}
+function selectionToInsertionEnd(tr, startLen, bias) {
+  const last = tr.steps.length - 1;
+  if (last < startLen) {
+    return;
+  }
+  const step = tr.steps[last];
+  if (!(step instanceof ReplaceStep || step instanceof ReplaceAroundStep)) {
+    return;
+  }
+  const map = tr.mapping.maps[last];
+  let end = 0;
+  map.forEach((_from, _to, _newFrom, newTo) => {
+    if (end === 0) {
+      end = newTo;
+    }
+  });
+  tr.setSelection(Selection2.near(tr.doc.resolve(end), bias));
+}
+var isFragment = (nodeOrFragment) => {
+  return !("type" in nodeOrFragment);
+};
+var insertContentAt = (position, value, options) => ({ tr, dispatch, editor }) => {
+  var _a;
+  if (dispatch) {
+    options = {
+      parseOptions: editor.options.parseOptions,
+      updateSelection: true,
+      applyInputRules: false,
+      applyPasteRules: false,
+      ...options
+    };
+    let content;
+    const emitContentError = (error) => {
+      editor.emit("contentError", {
+        editor,
+        error,
+        disableCollaboration: () => {
+          if ("collaboration" in editor.storage && typeof editor.storage.collaboration === "object" && editor.storage.collaboration) {
+            ;
+            editor.storage.collaboration.isDisabled = true;
+          }
+        }
+      });
+    };
+    const parseOptions = {
+      preserveWhitespace: "full",
+      ...options.parseOptions
+    };
+    if (!options.errorOnInvalidContent && !editor.options.enableContentCheck && editor.options.emitContentError) {
+      try {
+        createNodeFromContent(value, editor.schema, {
+          parseOptions,
+          errorOnInvalidContent: true
+        });
+      } catch (e) {
+        emitContentError(e);
+      }
+    }
+    try {
+      content = createNodeFromContent(value, editor.schema, {
+        parseOptions,
+        errorOnInvalidContent: (_a = options.errorOnInvalidContent) != null ? _a : editor.options.enableContentCheck
+      });
+    } catch (e) {
+      emitContentError(e);
+      return false;
+    }
+    let { from, to } = typeof position === "number" ? { from: position, to: position } : { from: position.from, to: position.to };
+    let isOnlyTextContent = true;
+    let isOnlyBlockContent = true;
+    const nodes = isFragment(content) ? content : [content];
+    nodes.forEach((node) => {
+      node.check();
+      isOnlyTextContent = isOnlyTextContent ? node.isText && node.marks.length === 0 : false;
+      isOnlyBlockContent = isOnlyBlockContent ? node.isBlock : false;
+    });
+    if (from === to && isOnlyBlockContent) {
+      const { parent } = tr.doc.resolve(from);
+      const isEmptyTextBlock = parent.isTextblock && !parent.type.spec.code && !parent.childCount;
+      if (isEmptyTextBlock) {
+        from -= 1;
+        to += 1;
+      }
+    }
+    let newContent;
+    if (isOnlyTextContent) {
+      if (Array.isArray(value)) {
+        newContent = value.map((v) => v.text || "").join("");
+      } else if (value instanceof Fragment22) {
+        let text = "";
+        value.forEach((node) => {
+          if (node.text) {
+            text += node.text;
+          }
+        });
+        newContent = text;
+      } else if (typeof value === "object" && !!value && !!value.text) {
+        newContent = value.text;
+      } else {
+        newContent = value;
+      }
+      tr.insertText(newContent, from, to);
+    } else {
+      newContent = content;
+      const $from = tr.doc.resolve(from);
+      const $fromNode = $from.node();
+      const fromSelectionAtStart = $from.parentOffset === 0;
+      const isTextSelection2 = $fromNode.isText || $fromNode.isTextblock;
+      const hasContent = $fromNode.content.size > 0;
+      if (fromSelectionAtStart && isTextSelection2 && hasContent) {
+        from = Math.max(0, from - 1);
+      }
+      tr.replaceWith(from, to, newContent);
+    }
+    if (options.updateSelection) {
+      selectionToInsertionEnd(tr, tr.steps.length - 1, -1);
+    }
+    if (options.applyInputRules) {
+      tr.setMeta("applyInputRules", { from, text: newContent });
+    }
+    if (options.applyPasteRules) {
+      tr.setMeta("applyPasteRules", { from, text: newContent });
+    }
+  }
+  return true;
+};
+var joinUp = () => ({ state, dispatch }) => {
+  return originalJoinUp(state, dispatch);
+};
+var joinDown = () => ({ state, dispatch }) => {
+  return originalJoinDown(state, dispatch);
+};
+var joinBackward = () => ({ state, dispatch }) => {
+  return originalJoinBackward(state, dispatch);
+};
+var joinForward = () => ({ state, dispatch }) => {
+  return originalJoinForward(state, dispatch);
+};
+var joinItemBackward = () => ({ state, dispatch, tr }) => {
+  try {
+    const point = joinPoint(state.doc, state.selection.$from.pos, -1);
+    if (point === null || point === void 0) {
+      return false;
+    }
+    tr.join(point, 2);
+    if (dispatch) {
+      dispatch(tr);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
+var joinItemForward = () => ({ state, dispatch, tr }) => {
+  try {
+    const point = joinPoint2(state.doc, state.selection.$from.pos, 1);
+    if (point === null || point === void 0) {
+      return false;
+    }
+    tr.join(point, 2);
+    if (dispatch) {
+      dispatch(tr);
+    }
+    return true;
+  } catch {
+    return false;
+  }
+};
+var joinTextblockBackward = () => ({ state, dispatch }) => {
+  return originalCommand(state, dispatch);
+};
+var joinTextblockForward = () => ({ state, dispatch }) => {
+  return originalCommand2(state, dispatch);
+};
+function isMacOS() {
+  return typeof navigator !== "undefined" ? /Mac/.test(navigator.platform) : false;
+}
+function normalizeKeyName(name) {
+  const parts = name.split(/-(?!$)/);
+  let result = parts[parts.length - 1];
+  if (result === "Space") {
+    result = " ";
+  }
+  let alt;
+  let ctrl;
+  let shift;
+  let meta;
+  for (let i = 0; i < parts.length - 1; i += 1) {
+    const mod = parts[i];
+    if (/^(cmd|meta|m)$/i.test(mod)) {
+      meta = true;
+    } else if (/^a(lt)?$/i.test(mod)) {
+      alt = true;
+    } else if (/^(c|ctrl|control)$/i.test(mod)) {
+      ctrl = true;
+    } else if (/^s(hift)?$/i.test(mod)) {
+      shift = true;
+    } else if (/^mod$/i.test(mod)) {
+      if (isiOS() || isMacOS()) {
+        meta = true;
+      } else {
+        ctrl = true;
+      }
+    } else {
+      throw new Error(`Unrecognized modifier name: ${mod}`);
+    }
+  }
+  if (alt) {
+    result = `Alt-${result}`;
+  }
+  if (ctrl) {
+    result = `Ctrl-${result}`;
+  }
+  if (meta) {
+    result = `Meta-${result}`;
+  }
+  if (shift) {
+    result = `Shift-${result}`;
+  }
+  return result;
+}
+var keyboardShortcut = (name) => ({ editor, view, tr, dispatch }) => {
+  const keys = normalizeKeyName(name).split(/-(?!$)/);
+  const key = keys.find((item) => !["Alt", "Ctrl", "Meta", "Shift"].includes(item));
+  const event = new KeyboardEvent("keydown", {
+    key: key === "Space" ? " " : key,
+    altKey: keys.includes("Alt"),
+    ctrlKey: keys.includes("Ctrl"),
+    metaKey: keys.includes("Meta"),
+    shiftKey: keys.includes("Shift"),
+    bubbles: true,
+    cancelable: true
+  });
+  const capturedTransaction = editor.captureTransaction(() => {
+    view.someProp("handleKeyDown", (f) => f(view, event));
+  });
+  capturedTransaction == null ? void 0 : capturedTransaction.steps.forEach((step) => {
+    const newStep = step.map(tr.mapping);
+    if (newStep && dispatch) {
+      tr.maybeStep(newStep);
+    }
+  });
+  return true;
+};
+function isNodeActive(state, typeOrName, attributes = {}) {
+  const { from, to, empty } = state.selection;
+  const type = typeOrName ? getNodeType(typeOrName, state.schema) : null;
+  const nodeRanges = [];
+  state.doc.nodesBetween(from, to, (node, pos) => {
+    if (node.isText) {
+      return;
+    }
+    const relativeFrom = Math.max(from, pos);
+    const relativeTo = Math.min(to, pos + node.nodeSize);
+    nodeRanges.push({
+      node,
+      from: relativeFrom,
+      to: relativeTo
+    });
+  });
+  const selectionRange = to - from;
+  const matchedNodeRanges = nodeRanges.filter((nodeRange) => {
+    if (!type) {
+      return true;
+    }
+    return type.name === nodeRange.node.type.name;
+  }).filter((nodeRange) => objectIncludes(nodeRange.node.attrs, attributes, { strict: false }));
+  if (empty) {
+    return !!matchedNodeRanges.length;
+  }
+  const range = matchedNodeRanges.reduce((sum, nodeRange) => sum + nodeRange.to - nodeRange.from, 0);
+  return range >= selectionRange;
+}
+var lift = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
+  const type = getNodeType(typeOrName, state.schema);
+  const isActive2 = isNodeActive(state, type, attributes);
+  if (!isActive2) {
+    return false;
+  }
+  return originalLift(state, dispatch);
+};
+var liftEmptyBlock = () => ({ state, dispatch }) => {
+  return originalLiftEmptyBlock(state, dispatch);
+};
+var liftListItem = (typeOrName) => ({ state, dispatch }) => {
+  const type = getNodeType(typeOrName, state.schema);
+  return originalLiftListItem(type)(state, dispatch);
+};
+var newlineInCode = () => ({ state, dispatch }) => {
+  return originalNewlineInCode(state, dispatch);
+};
+function getSchemaTypeNameByName(name, schema) {
+  if (schema.nodes[name]) {
+    return "node";
+  }
+  if (schema.marks[name]) {
+    return "mark";
+  }
+  return null;
+}
+function deleteProps(obj, propOrProps) {
+  const props = typeof propOrProps === "string" ? [propOrProps] : propOrProps;
+  return Object.keys(obj).reduce((newObj, prop) => {
+    if (!props.includes(prop)) {
+      newObj[prop] = obj[prop];
+    }
+    return newObj;
+  }, {});
+}
+var resetAttributes = (typeOrName, attributes) => ({ tr, state, dispatch }) => {
+  let nodeType = null;
+  let markType = null;
+  const schemaType = getSchemaTypeNameByName(
+    typeof typeOrName === "string" ? typeOrName : typeOrName.name,
+    state.schema
+  );
+  if (!schemaType) {
+    return false;
+  }
+  if (schemaType === "node") {
+    nodeType = getNodeType(typeOrName, state.schema);
+  }
+  if (schemaType === "mark") {
+    markType = getMarkType(typeOrName, state.schema);
+  }
+  let canReset = false;
+  tr.selection.ranges.forEach((range) => {
+    state.doc.nodesBetween(range.$from.pos, range.$to.pos, (node, pos) => {
+      if (nodeType && nodeType === node.type) {
+        canReset = true;
+        if (dispatch) {
+          tr.setNodeMarkup(pos, void 0, deleteProps(node.attrs, attributes));
+        }
+      }
+      if (markType && node.marks.length) {
+        node.marks.forEach((mark) => {
+          if (markType === mark.type) {
+            canReset = true;
+            if (dispatch) {
+              tr.addMark(pos, pos + node.nodeSize, markType.create(deleteProps(mark.attrs, attributes)));
+            }
+          }
+        });
+      }
+    });
+  });
+  return canReset;
+};
+var scrollIntoView = () => ({ tr, dispatch }) => {
+  if (dispatch) {
+    tr.scrollIntoView();
+  }
+  return true;
+};
+var selectAll = () => ({ tr, dispatch }) => {
+  if (dispatch) {
+    const selection = new AllSelection(tr.doc);
+    tr.setSelection(selection);
+  }
+  return true;
+};
+var selectNodeBackward = () => ({ state, dispatch }) => {
+  return originalSelectNodeBackward(state, dispatch);
+};
+var selectNodeForward = () => ({ state, dispatch }) => {
+  return originalSelectNodeForward(state, dispatch);
+};
+var selectParentNode = () => ({ state, dispatch }) => {
+  return originalSelectParentNode(state, dispatch);
+};
+var selectTextblockEnd = () => ({ state, dispatch }) => {
+  return originalSelectTextblockEnd(state, dispatch);
+};
+var selectTextblockStart = () => ({ state, dispatch }) => {
+  return originalSelectTextblockStart(state, dispatch);
+};
+function createDocument(content, schema, parseOptions = {}, options = {}) {
+  return createNodeFromContent(content, schema, {
+    slice: false,
+    parseOptions,
+    errorOnInvalidContent: options.errorOnInvalidContent
+  });
+}
+var setContent = (content, { errorOnInvalidContent, emitUpdate = true, parseOptions = {} } = {}) => ({ editor, tr, dispatch, commands }) => {
+  const { doc } = tr;
+  if (parseOptions.preserveWhitespace !== "full") {
+    const document2 = createDocument(content, editor.schema, parseOptions, {
+      errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor.options.enableContentCheck
+    });
+    if (dispatch) {
+      tr.replaceWith(0, doc.content.size, document2).setMeta("preventUpdate", !emitUpdate);
+    }
+    return true;
+  }
+  if (dispatch) {
+    tr.setMeta("preventUpdate", !emitUpdate);
+  }
+  return commands.insertContentAt({ from: 0, to: doc.content.size }, content, {
+    parseOptions,
+    errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor.options.enableContentCheck
+  });
+};
+function getMarkAttributes(state, typeOrName) {
+  const type = getMarkType(typeOrName, state.schema);
+  const { from, to, empty } = state.selection;
+  const marks = [];
+  if (empty) {
+    if (state.storedMarks) {
+      marks.push(...state.storedMarks);
+    }
+    marks.push(...state.selection.$head.marks());
+  } else {
+    state.doc.nodesBetween(from, to, (node) => {
+      marks.push(...node.marks);
+    });
+  }
+  const mark = marks.find((markItem) => markItem.type.name === type.name);
+  if (!mark) {
+    return {};
+  }
+  return { ...mark.attrs };
+}
+function combineTransactionSteps(oldDoc, transactions) {
+  const transform = new Transform(oldDoc);
+  transactions.forEach((transaction) => {
+    transaction.steps.forEach((step) => {
+      transform.step(step);
+    });
+  });
+  return transform;
+}
+function defaultBlockAt(match) {
+  for (let i = 0; i < match.edgeCount; i += 1) {
+    const { type } = match.edge(i);
+    if (type.isTextblock && !type.hasRequiredAttrs()) {
+      return type;
+    }
+  }
+  return null;
+}
+function findParentNodeClosestToPos($pos, predicate) {
+  for (let i = $pos.depth; i > 0; i -= 1) {
+    const node = $pos.node(i);
+    if (predicate(node)) {
+      return {
+        pos: i > 0 ? $pos.before(i) : 0,
+        start: $pos.start(i),
+        depth: i,
+        node
+      };
+    }
+  }
+}
+function findParentNode(predicate) {
+  return (selection) => findParentNodeClosestToPos(selection.$from, predicate);
+}
+function getExtensionField(extension, field, context) {
+  if (extension.config[field] === void 0 && extension.parent) {
+    return getExtensionField(extension.parent, field, context);
+  }
+  if (typeof extension.config[field] === "function") {
+    const value = extension.config[field].bind({
+      ...context,
+      parent: extension.parent ? getExtensionField(extension.parent, field, context) : null
+    });
+    return value;
+  }
+  return extension.config[field];
+}
+function flattenExtensions(extensions) {
+  return extensions.map((extension) => {
+    const context = {
+      name: extension.name,
+      options: extension.options,
+      storage: extension.storage
+    };
+    const addExtensions = getExtensionField(extension, "addExtensions", context);
+    if (addExtensions) {
+      return [extension, ...flattenExtensions(addExtensions())];
+    }
+    return extension;
+  }).flat(10);
+}
+function getHTMLFromFragment(fragment, schema) {
+  const documentFragment = DOMSerializer.fromSchema(schema).serializeFragment(fragment);
+  const temporaryDocument = document.implementation.createHTMLDocument();
+  const container = temporaryDocument.createElement("div");
+  container.appendChild(documentFragment);
+  return container.innerHTML;
+}
+function isFunction(value) {
+  return typeof value === "function";
+}
+function callOrReturn(value, context = void 0, ...props) {
+  if (isFunction(value)) {
+    if (context) {
+      return value.bind(context)(...props);
+    }
+    return value(...props);
+  }
+  return value;
+}
+function isEmptyObject(value = {}) {
+  return Object.keys(value).length === 0 && value.constructor === Object;
+}
+function splitExtensions(extensions) {
+  const baseExtensions = extensions.filter((extension) => extension.type === "extension");
+  const nodeExtensions = extensions.filter((extension) => extension.type === "node");
+  const markExtensions = extensions.filter((extension) => extension.type === "mark");
+  return {
+    baseExtensions,
+    nodeExtensions,
+    markExtensions
+  };
+}
+function getAttributesFromExtensions(extensions) {
+  const extensionAttributes = [];
+  const { nodeExtensions, markExtensions } = splitExtensions(extensions);
+  const nodeAndMarkExtensions = [...nodeExtensions, ...markExtensions];
+  const defaultAttribute = {
+    default: null,
+    validate: void 0,
+    rendered: true,
+    renderHTML: null,
+    parseHTML: null,
+    keepOnSplit: true,
+    isRequired: false
+  };
+  extensions.forEach((extension) => {
+    const context = {
+      name: extension.name,
+      options: extension.options,
+      storage: extension.storage,
+      extensions: nodeAndMarkExtensions
+    };
+    const addGlobalAttributes = getExtensionField(
+      extension,
+      "addGlobalAttributes",
+      context
+    );
+    if (!addGlobalAttributes) {
+      return;
+    }
+    const globalAttributes = addGlobalAttributes();
+    globalAttributes.forEach((globalAttribute) => {
+      globalAttribute.types.forEach((type) => {
+        Object.entries(globalAttribute.attributes).forEach(([name, attribute]) => {
+          extensionAttributes.push({
+            type,
+            name,
+            attribute: {
+              ...defaultAttribute,
+              ...attribute
+            }
+          });
+        });
+      });
+    });
+  });
+  nodeAndMarkExtensions.forEach((extension) => {
+    const context = {
+      name: extension.name,
+      options: extension.options,
+      storage: extension.storage
+    };
+    const addAttributes = getExtensionField(
+      extension,
+      "addAttributes",
+      context
+    );
+    if (!addAttributes) {
+      return;
+    }
+    const attributes = addAttributes();
+    Object.entries(attributes).forEach(([name, attribute]) => {
+      const mergedAttr = {
+        ...defaultAttribute,
+        ...attribute
+      };
+      if (typeof (mergedAttr == null ? void 0 : mergedAttr.default) === "function") {
+        mergedAttr.default = mergedAttr.default();
+      }
+      if ((mergedAttr == null ? void 0 : mergedAttr.isRequired) && (mergedAttr == null ? void 0 : mergedAttr.default) === void 0) {
+        delete mergedAttr.default;
+      }
+      extensionAttributes.push({
+        type: extension.name,
+        name,
+        attribute: mergedAttr
+      });
+    });
+  });
+  return extensionAttributes;
+}
+function mergeAttributes(...objects) {
+  return objects.filter((item) => !!item).reduce((items, item) => {
+    const mergedAttributes = { ...items };
+    Object.entries(item).forEach(([key, value]) => {
+      const exists = mergedAttributes[key];
+      if (!exists) {
+        mergedAttributes[key] = value;
+        return;
+      }
+      if (key === "class") {
+        const valueClasses = value ? String(value).split(" ") : [];
+        const existingClasses = mergedAttributes[key] ? mergedAttributes[key].split(" ") : [];
+        const insertClasses = valueClasses.filter((valueClass) => !existingClasses.includes(valueClass));
+        mergedAttributes[key] = [...existingClasses, ...insertClasses].join(" ");
+      } else if (key === "style") {
+        const newStyles = value ? value.split(";").map((style2) => style2.trim()).filter(Boolean) : [];
+        const existingStyles = mergedAttributes[key] ? mergedAttributes[key].split(";").map((style2) => style2.trim()).filter(Boolean) : [];
+        const styleMap = /* @__PURE__ */ new Map();
+        existingStyles.forEach((style2) => {
+          const [property, val] = style2.split(":").map((part) => part.trim());
+          styleMap.set(property, val);
+        });
+        newStyles.forEach((style2) => {
+          const [property, val] = style2.split(":").map((part) => part.trim());
+          styleMap.set(property, val);
+        });
+        mergedAttributes[key] = Array.from(styleMap.entries()).map(([property, val]) => `${property}: ${val}`).join("; ");
+      } else {
+        mergedAttributes[key] = value;
+      }
+    });
+    return mergedAttributes;
+  }, {});
+}
+function getRenderedAttributes(nodeOrMark, extensionAttributes) {
+  return extensionAttributes.filter((attribute) => attribute.type === nodeOrMark.type.name).filter((item) => item.attribute.rendered).map((item) => {
+    if (!item.attribute.renderHTML) {
+      return {
+        [item.name]: nodeOrMark.attrs[item.name]
+      };
+    }
+    return item.attribute.renderHTML(nodeOrMark.attrs) || {};
+  }).reduce((attributes, attribute) => mergeAttributes(attributes, attribute), {});
+}
+function fromString(value) {
+  if (typeof value !== "string") {
+    return value;
+  }
+  if (value.match(/^[+-]?(?:\d*\.)?\d+$/)) {
+    return Number(value);
+  }
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
+  return value;
+}
+function injectExtensionAttributesToParseRule(parseRule, extensionAttributes) {
+  if ("style" in parseRule) {
+    return parseRule;
+  }
+  return {
+    ...parseRule,
+    getAttrs: (node) => {
+      const oldAttributes = parseRule.getAttrs ? parseRule.getAttrs(node) : parseRule.attrs;
+      if (oldAttributes === false) {
+        return false;
+      }
+      const newAttributes = extensionAttributes.reduce((items, item) => {
+        const value = item.attribute.parseHTML ? item.attribute.parseHTML(node) : fromString(node.getAttribute(item.name));
+        if (value === null || value === void 0) {
+          return items;
+        }
+        return {
+          ...items,
+          [item.name]: value
+        };
+      }, {});
+      return { ...oldAttributes, ...newAttributes };
+    }
+  };
+}
+function cleanUpSchemaItem(data) {
+  return Object.fromEntries(
+    // @ts-ignore
+    Object.entries(data).filter(([key, value]) => {
+      if (key === "attrs" && isEmptyObject(value)) {
+        return false;
+      }
+      return value !== null && value !== void 0;
+    })
+  );
+}
+function buildAttributeSpec(extensionAttribute) {
+  var _a, _b;
+  const spec = {};
+  if (!((_a = extensionAttribute == null ? void 0 : extensionAttribute.attribute) == null ? void 0 : _a.isRequired) && "default" in ((extensionAttribute == null ? void 0 : extensionAttribute.attribute) || {})) {
+    spec.default = extensionAttribute.attribute.default;
+  }
+  if (((_b = extensionAttribute == null ? void 0 : extensionAttribute.attribute) == null ? void 0 : _b.validate) !== void 0) {
+    spec.validate = extensionAttribute.attribute.validate;
+  }
+  return [extensionAttribute.name, spec];
+}
+function getSchemaByResolvedExtensions(extensions, editor) {
+  var _a;
+  const allAttributes = getAttributesFromExtensions(extensions);
+  const { nodeExtensions, markExtensions } = splitExtensions(extensions);
+  const topNode = (_a = nodeExtensions.find((extension) => getExtensionField(extension, "topNode"))) == null ? void 0 : _a.name;
+  const nodes = Object.fromEntries(
+    nodeExtensions.map((extension) => {
+      const extensionAttributes = allAttributes.filter((attribute) => attribute.type === extension.name);
+      const context = {
+        name: extension.name,
+        options: extension.options,
+        storage: extension.storage,
+        editor
+      };
+      const extraNodeFields = extensions.reduce((fields, e) => {
+        const extendNodeSchema = getExtensionField(e, "extendNodeSchema", context);
+        return {
+          ...fields,
+          ...extendNodeSchema ? extendNodeSchema(extension) : {}
+        };
+      }, {});
+      const schema = cleanUpSchemaItem({
+        ...extraNodeFields,
+        content: callOrReturn(getExtensionField(extension, "content", context)),
+        marks: callOrReturn(getExtensionField(extension, "marks", context)),
+        group: callOrReturn(getExtensionField(extension, "group", context)),
+        inline: callOrReturn(getExtensionField(extension, "inline", context)),
+        atom: callOrReturn(getExtensionField(extension, "atom", context)),
+        selectable: callOrReturn(getExtensionField(extension, "selectable", context)),
+        draggable: callOrReturn(getExtensionField(extension, "draggable", context)),
+        code: callOrReturn(getExtensionField(extension, "code", context)),
+        whitespace: callOrReturn(getExtensionField(extension, "whitespace", context)),
+        linebreakReplacement: callOrReturn(
+          getExtensionField(extension, "linebreakReplacement", context)
+        ),
+        defining: callOrReturn(getExtensionField(extension, "defining", context)),
+        isolating: callOrReturn(getExtensionField(extension, "isolating", context)),
+        attrs: Object.fromEntries(extensionAttributes.map(buildAttributeSpec))
+      });
+      const parseHTML = callOrReturn(getExtensionField(extension, "parseHTML", context));
+      if (parseHTML) {
+        schema.parseDOM = parseHTML.map(
+          (parseRule) => injectExtensionAttributesToParseRule(parseRule, extensionAttributes)
+        );
+      }
+      const renderHTML = getExtensionField(extension, "renderHTML", context);
+      if (renderHTML) {
+        schema.toDOM = (node) => renderHTML({
+          node,
+          HTMLAttributes: getRenderedAttributes(node, extensionAttributes)
+        });
+      }
+      const renderText = getExtensionField(extension, "renderText", context);
+      if (renderText) {
+        schema.toText = renderText;
+      }
+      return [extension.name, schema];
+    })
+  );
+  const marks = Object.fromEntries(
+    markExtensions.map((extension) => {
+      const extensionAttributes = allAttributes.filter((attribute) => attribute.type === extension.name);
+      const context = {
+        name: extension.name,
+        options: extension.options,
+        storage: extension.storage,
+        editor
+      };
+      const extraMarkFields = extensions.reduce((fields, e) => {
+        const extendMarkSchema = getExtensionField(e, "extendMarkSchema", context);
+        return {
+          ...fields,
+          ...extendMarkSchema ? extendMarkSchema(extension) : {}
+        };
+      }, {});
+      const schema = cleanUpSchemaItem({
+        ...extraMarkFields,
+        inclusive: callOrReturn(getExtensionField(extension, "inclusive", context)),
+        excludes: callOrReturn(getExtensionField(extension, "excludes", context)),
+        group: callOrReturn(getExtensionField(extension, "group", context)),
+        spanning: callOrReturn(getExtensionField(extension, "spanning", context)),
+        code: callOrReturn(getExtensionField(extension, "code", context)),
+        attrs: Object.fromEntries(extensionAttributes.map(buildAttributeSpec))
+      });
+      const parseHTML = callOrReturn(getExtensionField(extension, "parseHTML", context));
+      if (parseHTML) {
+        schema.parseDOM = parseHTML.map(
+          (parseRule) => injectExtensionAttributesToParseRule(parseRule, extensionAttributes)
+        );
+      }
+      const renderHTML = getExtensionField(extension, "renderHTML", context);
+      if (renderHTML) {
+        schema.toDOM = (mark) => renderHTML({
+          mark,
+          HTMLAttributes: getRenderedAttributes(mark, extensionAttributes)
+        });
+      }
+      return [extension.name, schema];
+    })
+  );
+  return new Schema2({
+    topNode,
+    nodes,
+    marks
+  });
+}
+function findDuplicates(items) {
+  const filtered = items.filter((el, index) => items.indexOf(el) !== index);
+  return Array.from(new Set(filtered));
+}
+function sortExtensions(extensions) {
+  const defaultPriority = 100;
+  return extensions.sort((a, b) => {
+    const priorityA = getExtensionField(a, "priority") || defaultPriority;
+    const priorityB = getExtensionField(b, "priority") || defaultPriority;
+    if (priorityA > priorityB) {
+      return -1;
+    }
+    if (priorityA < priorityB) {
+      return 1;
+    }
+    return 0;
+  });
+}
+function resolveExtensions(extensions) {
+  const resolvedExtensions = sortExtensions(flattenExtensions(extensions));
+  const duplicatedNames = findDuplicates(resolvedExtensions.map((extension) => extension.name));
+  if (duplicatedNames.length) {
+    console.warn(
+      `[tiptap warn]: Duplicate extension names found: [${duplicatedNames.map((item) => `'${item}'`).join(", ")}]. This can lead to issues.`
+    );
+  }
+  return resolvedExtensions;
+}
+function getTextBetween(startNode, range, options) {
+  const { from, to } = range;
+  const { blockSeparator = "\n\n", textSerializers = {} } = options || {};
+  let text = "";
+  startNode.nodesBetween(from, to, (node, pos, parent, index) => {
+    var _a;
+    if (node.isBlock && pos > from) {
+      text += blockSeparator;
+    }
+    const textSerializer = textSerializers == null ? void 0 : textSerializers[node.type.name];
+    if (textSerializer) {
+      if (parent) {
+        text += textSerializer({
+          node,
+          pos,
+          parent,
+          index,
+          range
+        });
+      }
+      return false;
+    }
+    if (node.isText) {
+      text += (_a = node == null ? void 0 : node.text) == null ? void 0 : _a.slice(Math.max(from, pos) - pos, to - pos);
+    }
+  });
+  return text;
+}
+function getTextSerializersFromSchema(schema) {
+  return Object.fromEntries(
+    Object.entries(schema.nodes).filter(([, node]) => node.spec.toText).map(([name, node]) => [name, node.spec.toText])
+  );
+}
+function removeDuplicates(array, by = JSON.stringify) {
+  const seen = {};
+  return array.filter((item) => {
+    const key = by(item);
+    return Object.prototype.hasOwnProperty.call(seen, key) ? false : seen[key] = true;
+  });
+}
+function simplifyChangedRanges(changes) {
+  const uniqueChanges = removeDuplicates(changes);
+  return uniqueChanges.length === 1 ? uniqueChanges : uniqueChanges.filter((change, index) => {
+    const rest = uniqueChanges.filter((_, i) => i !== index);
+    return !rest.some((otherChange) => {
+      return change.oldRange.from >= otherChange.oldRange.from && change.oldRange.to <= otherChange.oldRange.to && change.newRange.from >= otherChange.newRange.from && change.newRange.to <= otherChange.newRange.to;
+    });
+  });
+}
+function getChangedRanges(transform) {
+  const { mapping, steps } = transform;
+  const changes = [];
+  mapping.maps.forEach((stepMap, index) => {
+    const ranges = [];
+    if (!stepMap.ranges.length) {
+      const { from, to } = steps[index];
+      if (from === void 0 || to === void 0) {
+        return;
+      }
+      ranges.push({ from, to });
+    } else {
+      stepMap.forEach((from, to) => {
+        ranges.push({ from, to });
+      });
+    }
+    ranges.forEach(({ from, to }) => {
+      const newStart = mapping.slice(index).map(from, -1);
+      const newEnd = mapping.slice(index).map(to);
+      const oldStart = mapping.invert().map(newStart, -1);
+      const oldEnd = mapping.invert().map(newEnd);
+      changes.push({
+        oldRange: {
+          from: oldStart,
+          to: oldEnd
+        },
+        newRange: {
+          from: newStart,
+          to: newEnd
+        }
+      });
+    });
+  });
+  return simplifyChangedRanges(changes);
+}
+function getSchemaTypeByName(name, schema) {
+  return schema.nodes[name] || schema.marks[name] || null;
+}
+function getSplittedAttributes(extensionAttributes, typeName, attributes) {
+  return Object.fromEntries(
+    Object.entries(attributes).filter(([name]) => {
+      const extensionAttribute = extensionAttributes.find((item) => {
+        return item.type === typeName && item.name === name;
+      });
+      if (!extensionAttribute) {
+        return false;
+      }
+      return extensionAttribute.attribute.keepOnSplit;
+    })
+  );
+}
+var getTextContentFromNodes = ($from, maxMatch = 500) => {
+  let textBefore = "";
+  const sliceEndPos = $from.parentOffset;
+  $from.parent.nodesBetween(Math.max(0, sliceEndPos - maxMatch), sliceEndPos, (node, pos, parent, index) => {
+    var _a, _b;
+    const chunk = ((_b = (_a = node.type.spec).toText) == null ? void 0 : _b.call(_a, {
+      node,
+      pos,
+      parent,
+      index
+    })) || node.textContent || "%leaf%";
+    textBefore += node.isAtom && !node.isText ? chunk : chunk.slice(0, Math.max(0, sliceEndPos - pos));
+  });
+  return textBefore;
+};
+function isMarkActive(state, typeOrName, attributes = {}) {
+  const { empty, ranges } = state.selection;
+  const type = typeOrName ? getMarkType(typeOrName, state.schema) : null;
+  if (empty) {
+    return !!(state.storedMarks || state.selection.$from.marks()).filter((mark) => {
+      if (!type) {
+        return true;
+      }
+      return type.name === mark.type.name;
+    }).find((mark) => objectIncludes(mark.attrs, attributes, { strict: false }));
+  }
+  let selectionRange = 0;
+  const markRanges = [];
+  ranges.forEach(({ $from, $to }) => {
+    const from = $from.pos;
+    const to = $to.pos;
+    state.doc.nodesBetween(from, to, (node, pos) => {
+      if (!node.isText && !node.marks.length) {
+        return;
+      }
+      const relativeFrom = Math.max(from, pos);
+      const relativeTo = Math.min(to, pos + node.nodeSize);
+      const range2 = relativeTo - relativeFrom;
+      selectionRange += range2;
+      markRanges.push(
+        ...node.marks.map((mark) => ({
+          mark,
+          from: relativeFrom,
+          to: relativeTo
+        }))
+      );
+    });
+  });
+  if (selectionRange === 0) {
+    return false;
+  }
+  const matchedRange = markRanges.filter((markRange) => {
+    if (!type) {
+      return true;
+    }
+    return type.name === markRange.mark.type.name;
+  }).filter((markRange) => objectIncludes(markRange.mark.attrs, attributes, { strict: false })).reduce((sum, markRange) => sum + markRange.to - markRange.from, 0);
+  const excludedRange = markRanges.filter((markRange) => {
+    if (!type) {
+      return true;
+    }
+    return markRange.mark.type !== type && markRange.mark.type.excludes(type);
+  }).reduce((sum, markRange) => sum + markRange.to - markRange.from, 0);
+  const range = matchedRange > 0 ? matchedRange + excludedRange : matchedRange;
+  return range >= selectionRange;
+}
+function isExtensionRulesEnabled(extension, enabled) {
+  if (Array.isArray(enabled)) {
+    return enabled.some((enabledExtension) => {
+      const name = typeof enabledExtension === "string" ? enabledExtension : enabledExtension.name;
+      return name === extension.name;
+    });
+  }
+  return enabled;
+}
+function isList(name, extensions) {
+  const { nodeExtensions } = splitExtensions(extensions);
+  const extension = nodeExtensions.find((item) => item.name === name);
+  if (!extension) {
+    return false;
+  }
+  const context = {
+    name: extension.name,
+    options: extension.options,
+    storage: extension.storage
+  };
+  const group = callOrReturn(getExtensionField(extension, "group", context));
+  if (typeof group !== "string") {
+    return false;
+  }
+  return group.split(" ").includes("list");
+}
+function isNodeEmpty(node, {
+  checkChildren = true,
+  ignoreWhitespace = false
+} = {}) {
+  var _a;
+  if (ignoreWhitespace) {
+    if (node.type.name === "hardBreak") {
+      return true;
+    }
+    if (node.isText) {
+      return /^\s*$/m.test((_a = node.text) != null ? _a : "");
+    }
+  }
+  if (node.isText) {
+    return !node.text;
+  }
+  if (node.isAtom || node.isLeaf) {
+    return false;
+  }
+  if (node.content.childCount === 0) {
+    return true;
+  }
+  if (checkChildren) {
+    let isContentEmpty = true;
+    node.content.forEach((childNode) => {
+      if (isContentEmpty === false) {
+        return;
+      }
+      if (!isNodeEmpty(childNode, { ignoreWhitespace, checkChildren })) {
+        isContentEmpty = false;
+      }
+    });
+    return isContentEmpty;
+  }
+  return false;
+}
+function canSetMark(state, tr, newMarkType) {
+  var _a;
+  const { selection } = tr;
+  let cursor = null;
+  if (isTextSelection(selection)) {
+    cursor = selection.$cursor;
+  }
+  if (cursor) {
+    const currentMarks = (_a = state.storedMarks) != null ? _a : cursor.marks();
+    const parentAllowsMarkType = cursor.parent.type.allowsMarkType(newMarkType);
+    return parentAllowsMarkType && (!!newMarkType.isInSet(currentMarks) || !currentMarks.some((mark) => mark.type.excludes(newMarkType)));
+  }
+  const { ranges } = selection;
+  return ranges.some(({ $from, $to }) => {
+    let someNodeSupportsMark = $from.depth === 0 ? state.doc.inlineContent && state.doc.type.allowsMarkType(newMarkType) : false;
+    state.doc.nodesBetween($from.pos, $to.pos, (node, _pos, parent) => {
+      if (someNodeSupportsMark) {
+        return false;
+      }
+      if (node.isInline) {
+        const parentAllowsMarkType = !parent || parent.type.allowsMarkType(newMarkType);
+        const currentMarksAllowMarkType = !!newMarkType.isInSet(node.marks) || !node.marks.some((otherMark) => otherMark.type.excludes(newMarkType));
+        someNodeSupportsMark = parentAllowsMarkType && currentMarksAllowMarkType;
+      }
+      return !someNodeSupportsMark;
+    });
+    return someNodeSupportsMark;
+  });
+}
+var setMark = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
+  const { selection } = tr;
+  const { empty, ranges } = selection;
+  const type = getMarkType(typeOrName, state.schema);
+  if (dispatch) {
+    if (empty) {
+      const oldAttributes = getMarkAttributes(state, type);
+      tr.addStoredMark(
+        type.create({
+          ...oldAttributes,
+          ...attributes
+        })
+      );
+    } else {
+      ranges.forEach((range) => {
+        const from = range.$from.pos;
+        const to = range.$to.pos;
+        state.doc.nodesBetween(from, to, (node, pos) => {
+          const trimmedFrom = Math.max(pos, from);
+          const trimmedTo = Math.min(pos + node.nodeSize, to);
+          const someHasMark = node.marks.find((mark) => mark.type === type);
+          if (someHasMark) {
+            node.marks.forEach((mark) => {
+              if (type === mark.type) {
+                tr.addMark(
+                  trimmedFrom,
+                  trimmedTo,
+                  type.create({
+                    ...mark.attrs,
+                    ...attributes
+                  })
+                );
+              }
+            });
+          } else {
+            tr.addMark(trimmedFrom, trimmedTo, type.create(attributes));
+          }
+        });
+      });
+    }
+  }
+  return canSetMark(state, tr, type);
+};
+var setMeta = (key, value) => ({ tr }) => {
+  tr.setMeta(key, value);
+  return true;
+};
+var setNode = (typeOrName, attributes = {}) => ({ state, dispatch, chain }) => {
+  const type = getNodeType(typeOrName, state.schema);
+  let attributesToCopy;
+  if (state.selection.$anchor.sameParent(state.selection.$head)) {
+    attributesToCopy = state.selection.$anchor.parent.attrs;
+  }
+  if (!type.isTextblock) {
+    console.warn('[tiptap warn]: Currently "setNode()" only supports text block nodes.');
+    return false;
+  }
+  return chain().command(({ commands }) => {
+    const canSetBlock = setBlockType(type, { ...attributesToCopy, ...attributes })(state);
+    if (canSetBlock) {
+      return true;
+    }
+    return commands.clearNodes();
+  }).command(({ state: updatedState }) => {
+    return setBlockType(type, { ...attributesToCopy, ...attributes })(updatedState, dispatch);
+  }).run();
+};
+var setNodeSelection = (position) => ({ tr, dispatch }) => {
+  if (dispatch) {
+    const { doc } = tr;
+    const from = minMax(position, 0, doc.content.size);
+    const selection = NodeSelection2.create(doc, from);
+    tr.setSelection(selection);
+  }
+  return true;
+};
+var setTextDirection = (direction, position) => ({ tr, state, dispatch }) => {
+  const { selection } = state;
+  let from;
+  let to;
+  if (typeof position === "number") {
+    from = position;
+    to = position;
+  } else if (position && "from" in position && "to" in position) {
+    from = position.from;
+    to = position.to;
+  } else {
+    from = selection.from;
+    to = selection.to;
+  }
+  if (dispatch) {
+    tr.doc.nodesBetween(from, to, (node, pos) => {
+      if (node.isText) {
+        return;
+      }
+      tr.setNodeMarkup(pos, void 0, {
+        ...node.attrs,
+        dir: direction
+      });
+    });
+  }
+  return true;
+};
+var setTextSelection = (position) => ({ tr, dispatch }) => {
+  if (dispatch) {
+    const { doc } = tr;
+    const { from, to } = typeof position === "number" ? { from: position, to: position } : position;
+    const minPos = TextSelection5.atStart(doc).from;
+    const maxPos = TextSelection5.atEnd(doc).to;
+    const resolvedFrom = minMax(from, minPos, maxPos);
+    const resolvedEnd = minMax(to, minPos, maxPos);
+    const selection = TextSelection5.create(doc, resolvedFrom, resolvedEnd);
+    tr.setSelection(selection);
+  }
+  return true;
+};
+var sinkListItem = (typeOrName) => ({ state, dispatch }) => {
+  const type = getNodeType(typeOrName, state.schema);
+  return originalSinkListItem(type)(state, dispatch);
+};
+function ensureMarks(state, splittableMarks) {
+  const marks = state.storedMarks || state.selection.$to.parentOffset && state.selection.$from.marks();
+  if (marks) {
+    const filteredMarks = marks.filter((mark) => splittableMarks == null ? void 0 : splittableMarks.includes(mark.type.name));
+    state.tr.ensureMarks(filteredMarks);
+  }
+}
+var splitBlock = ({ keepMarks = true } = {}) => ({ tr, state, dispatch, editor }) => {
+  const { selection, doc } = tr;
+  const { $from, $to } = selection;
+  const extensionAttributes = editor.extensionManager.attributes;
+  const newAttributes = getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs);
+  if (selection instanceof NodeSelection3 && selection.node.isBlock) {
+    if (!$from.parentOffset || !canSplit(doc, $from.pos)) {
+      return false;
+    }
+    if (dispatch) {
+      if (keepMarks) {
+        ensureMarks(state, editor.extensionManager.splittableMarks);
+      }
+      tr.split($from.pos).scrollIntoView();
+    }
+    return true;
+  }
+  if (!$from.parent.isBlock) {
+    return false;
+  }
+  const atEnd = $to.parentOffset === $to.parent.content.size;
+  const deflt = $from.depth === 0 ? void 0 : defaultBlockAt($from.node(-1).contentMatchAt($from.indexAfter(-1)));
+  let types = atEnd && deflt ? [
+    {
+      type: deflt,
+      attrs: newAttributes
+    }
+  ] : void 0;
+  let can = canSplit(tr.doc, tr.mapping.map($from.pos), 1, types);
+  if (!types && !can && canSplit(tr.doc, tr.mapping.map($from.pos), 1, deflt ? [{ type: deflt }] : void 0)) {
+    can = true;
+    types = deflt ? [
+      {
+        type: deflt,
+        attrs: newAttributes
+      }
+    ] : void 0;
+  }
+  if (dispatch) {
+    if (can) {
+      if (selection instanceof TextSelection6) {
+        tr.deleteSelection();
+      }
+      tr.split(tr.mapping.map($from.pos), 1, types);
+      if (deflt && !atEnd && !$from.parentOffset && $from.parent.type !== deflt) {
+        const first2 = tr.mapping.map($from.before());
+        const $first = tr.doc.resolve(first2);
+        if ($from.node(-1).canReplaceWith($first.index(), $first.index() + 1, deflt)) {
+          tr.setNodeMarkup(tr.mapping.map($from.before()), deflt);
+        }
+      }
+    }
+    if (keepMarks) {
+      ensureMarks(state, editor.extensionManager.splittableMarks);
+    }
+    tr.scrollIntoView();
+  }
+  return can;
+};
+var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr, state, dispatch, editor }) => {
+  var _a;
+  const type = getNodeType(typeOrName, state.schema);
+  const { $from, $to } = state.selection;
+  const node = state.selection.node;
+  if (node && node.isBlock || $from.depth < 2 || !$from.sameParent($to)) {
+    return false;
+  }
+  const grandParent = $from.node(-1);
+  if (grandParent.type !== type) {
+    return false;
+  }
+  const extensionAttributes = editor.extensionManager.attributes;
+  if ($from.parent.content.size === 0 && $from.node(-1).childCount === $from.indexAfter(-1)) {
+    if ($from.depth === 2 || $from.node(-3).type !== type || $from.index(-2) !== $from.node(-2).childCount - 1) {
+      return false;
+    }
+    if (dispatch) {
+      let wrap = Fragment32.empty;
+      const depthBefore = $from.index(-1) ? 1 : $from.index(-2) ? 2 : 3;
+      for (let d = $from.depth - depthBefore; d >= $from.depth - 3; d -= 1) {
+        wrap = Fragment32.from($from.node(d).copy(wrap));
+      }
+      const depthAfter = (
+        // eslint-disable-next-line no-nested-ternary
+        $from.indexAfter(-1) < $from.node(-2).childCount ? 1 : $from.indexAfter(-2) < $from.node(-3).childCount ? 2 : 3
+      );
+      const newNextTypeAttributes2 = {
+        ...getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs),
+        ...overrideAttrs
+      };
+      const nextType2 = ((_a = type.contentMatch.defaultType) == null ? void 0 : _a.createAndFill(newNextTypeAttributes2)) || void 0;
+      wrap = wrap.append(Fragment32.from(type.createAndFill(null, nextType2) || void 0));
+      const start = $from.before($from.depth - (depthBefore - 1));
+      tr.replace(start, $from.after(-depthAfter), new Slice(wrap, 4 - depthBefore, 0));
+      let sel = -1;
+      tr.doc.nodesBetween(start, tr.doc.content.size, (n, pos) => {
+        if (sel > -1) {
+          return false;
+        }
+        if (n.isTextblock && n.content.size === 0) {
+          sel = pos + 1;
+        }
+      });
+      if (sel > -1) {
+        tr.setSelection(TextSelection7.near(tr.doc.resolve(sel)));
+      }
+      tr.scrollIntoView();
+    }
+    return true;
+  }
+  const nextType = $to.pos === $from.end() ? grandParent.contentMatchAt(0).defaultType : null;
+  const newTypeAttributes = {
+    ...getSplittedAttributes(extensionAttributes, grandParent.type.name, grandParent.attrs),
+    ...overrideAttrs
+  };
+  const newNextTypeAttributes = {
+    ...getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs),
+    ...overrideAttrs
+  };
+  tr.delete($from.pos, $to.pos);
+  const types = nextType ? [
+    { type, attrs: newTypeAttributes },
+    { type: nextType, attrs: newNextTypeAttributes }
+  ] : [{ type, attrs: newTypeAttributes }];
+  if (!canSplit2(tr.doc, $from.pos, 2)) {
+    return false;
+  }
+  if (dispatch) {
+    const { selection, storedMarks } = state;
+    const { splittableMarks } = editor.extensionManager;
+    const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
+    tr.split($from.pos, 2, types).scrollIntoView();
+    if (!marks || !dispatch) {
+      return true;
+    }
+    const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
+    tr.ensureMarks(filteredMarks);
+  }
+  return true;
+};
+var joinListBackwards = (tr, listType) => {
+  const list = findParentNode((node) => node.type === listType)(tr.selection);
+  if (!list) {
+    return true;
+  }
+  const before = tr.doc.resolve(Math.max(0, list.pos - 1)).before(list.depth);
+  if (before === void 0) {
+    return true;
+  }
+  const nodeBefore = tr.doc.nodeAt(before);
+  const canJoinBackwards = list.node.type === (nodeBefore == null ? void 0 : nodeBefore.type) && canJoin(tr.doc, list.pos);
+  if (!canJoinBackwards) {
+    return true;
+  }
+  tr.join(list.pos);
+  return true;
+};
+var joinListForwards = (tr, listType) => {
+  const list = findParentNode((node) => node.type === listType)(tr.selection);
+  if (!list) {
+    return true;
+  }
+  const after = tr.doc.resolve(list.start).after(list.depth);
+  if (after === void 0) {
+    return true;
+  }
+  const nodeAfter = tr.doc.nodeAt(after);
+  const canJoinForwards = list.node.type === (nodeAfter == null ? void 0 : nodeAfter.type) && canJoin(tr.doc, after);
+  if (!canJoinForwards) {
+    return true;
+  }
+  tr.join(after);
+  return true;
+};
+var toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) => ({ editor, tr, state, dispatch, chain, commands, can }) => {
+  const { extensions, splittableMarks } = editor.extensionManager;
+  const listType = getNodeType(listTypeOrName, state.schema);
+  const itemType = getNodeType(itemTypeOrName, state.schema);
+  const { selection, storedMarks } = state;
+  const { $from, $to } = selection;
+  const range = $from.blockRange($to);
+  const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
+  if (!range) {
+    return false;
+  }
+  const parentList = findParentNode((node) => isList(node.type.name, extensions))(selection);
+  if (range.depth >= 1 && parentList && range.depth - parentList.depth <= 1) {
+    if (parentList.node.type === listType) {
+      return commands.liftListItem(itemType);
+    }
+    if (isList(parentList.node.type.name, extensions) && listType.validContent(parentList.node.content) && dispatch) {
+      return chain().command(() => {
+        tr.setNodeMarkup(parentList.pos, listType);
+        return true;
+      }).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
+    }
+  }
+  if (!keepMarks || !marks || !dispatch) {
+    return chain().command(() => {
+      const canWrapInList = can().wrapInList(listType, attributes);
+      if (canWrapInList) {
+        return true;
+      }
+      return commands.clearNodes();
+    }).wrapInList(listType, attributes).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
+  }
+  return chain().command(() => {
+    const canWrapInList = can().wrapInList(listType, attributes);
+    const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
+    tr.ensureMarks(filteredMarks);
+    if (canWrapInList) {
+      return true;
+    }
+    return commands.clearNodes();
+  }).wrapInList(listType, attributes).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
+};
+var toggleMark = (typeOrName, attributes = {}, options = {}) => ({ state, commands }) => {
+  const { extendEmptyMarkRange = false } = options;
+  const type = getMarkType(typeOrName, state.schema);
+  const isActive2 = isMarkActive(state, type, attributes);
+  if (isActive2) {
+    return commands.unsetMark(type, { extendEmptyMarkRange });
+  }
+  return commands.setMark(type, attributes);
+};
+var toggleNode = (typeOrName, toggleTypeOrName, attributes = {}) => ({ state, commands }) => {
+  const type = getNodeType(typeOrName, state.schema);
+  const toggleType = getNodeType(toggleTypeOrName, state.schema);
+  const isActive2 = isNodeActive(state, type, attributes);
+  let attributesToCopy;
+  if (state.selection.$anchor.sameParent(state.selection.$head)) {
+    attributesToCopy = state.selection.$anchor.parent.attrs;
+  }
+  if (isActive2) {
+    return commands.setNode(toggleType, attributesToCopy);
+  }
+  return commands.setNode(type, { ...attributesToCopy, ...attributes });
+};
+var toggleWrap = (typeOrName, attributes = {}) => ({ state, commands }) => {
+  const type = getNodeType(typeOrName, state.schema);
+  const isActive2 = isNodeActive(state, type, attributes);
+  if (isActive2) {
+    return commands.lift(type);
+  }
+  return commands.wrapIn(type, attributes);
+};
+var undoInputRule = () => ({ state, dispatch }) => {
+  const plugins = state.plugins;
+  for (let i = 0; i < plugins.length; i += 1) {
+    const plugin = plugins[i];
+    let undoable;
+    if (plugin.spec.isInputRules && (undoable = plugin.getState(state))) {
+      if (dispatch) {
+        const tr = state.tr;
+        const toUndo = undoable.transform;
+        for (let j = toUndo.steps.length - 1; j >= 0; j -= 1) {
+          tr.step(toUndo.steps[j].invert(toUndo.docs[j]));
+        }
+        if (undoable.text) {
+          const marks = tr.doc.resolve(undoable.from).marks();
+          tr.replaceWith(undoable.from, undoable.to, state.schema.text(undoable.text, marks));
+        } else {
+          tr.delete(undoable.from, undoable.to);
+        }
+      }
+      return true;
+    }
+  }
+  return false;
+};
+var unsetAllMarks = () => ({ tr, dispatch }) => {
+  const { selection } = tr;
+  const { empty, ranges } = selection;
+  if (empty) {
+    return true;
+  }
+  if (dispatch) {
+    ranges.forEach((range) => {
+      tr.removeMark(range.$from.pos, range.$to.pos);
+    });
+  }
+  return true;
+};
+var unsetMark = (typeOrName, options = {}) => ({ tr, state, dispatch }) => {
+  var _a;
+  const { extendEmptyMarkRange = false } = options;
+  const { selection } = tr;
+  const type = getMarkType(typeOrName, state.schema);
+  const { $from, empty, ranges } = selection;
+  if (!dispatch) {
+    return true;
+  }
+  if (empty && extendEmptyMarkRange) {
+    let { from, to } = selection;
+    const attrs = (_a = $from.marks().find((mark) => mark.type === type)) == null ? void 0 : _a.attrs;
+    const range = getMarkRange($from, type, attrs);
+    if (range) {
+      from = range.from;
+      to = range.to;
+    }
+    tr.removeMark(from, to, type);
+  } else {
+    ranges.forEach((range) => {
+      tr.removeMark(range.$from.pos, range.$to.pos, type);
+    });
+  }
+  tr.removeStoredMark(type);
+  return true;
+};
+var unsetTextDirection = (position) => ({ tr, state, dispatch }) => {
+  const { selection } = state;
+  let from;
+  let to;
+  if (typeof position === "number") {
+    from = position;
+    to = position;
+  } else if (position && "from" in position && "to" in position) {
+    from = position.from;
+    to = position.to;
+  } else {
+    from = selection.from;
+    to = selection.to;
+  }
+  if (dispatch) {
+    tr.doc.nodesBetween(from, to, (node, pos) => {
+      if (node.isText) {
+        return;
+      }
+      const newAttrs = { ...node.attrs };
+      delete newAttrs.dir;
+      tr.setNodeMarkup(pos, void 0, newAttrs);
+    });
+  }
+  return true;
+};
+var updateAttributes = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
+  let nodeType = null;
+  let markType = null;
+  const schemaType = getSchemaTypeNameByName(
+    typeof typeOrName === "string" ? typeOrName : typeOrName.name,
+    state.schema
+  );
+  if (!schemaType) {
+    return false;
+  }
+  if (schemaType === "node") {
+    nodeType = getNodeType(typeOrName, state.schema);
+  }
+  if (schemaType === "mark") {
+    markType = getMarkType(typeOrName, state.schema);
+  }
+  let canUpdate = false;
+  tr.selection.ranges.forEach((range) => {
+    const from = range.$from.pos;
+    const to = range.$to.pos;
+    let lastPos;
+    let lastNode;
+    let trimmedFrom;
+    let trimmedTo;
+    if (tr.selection.empty) {
+      state.doc.nodesBetween(from, to, (node, pos) => {
+        if (nodeType && nodeType === node.type) {
+          canUpdate = true;
+          trimmedFrom = Math.max(pos, from);
+          trimmedTo = Math.min(pos + node.nodeSize, to);
+          lastPos = pos;
+          lastNode = node;
+        }
+      });
+    } else {
+      state.doc.nodesBetween(from, to, (node, pos) => {
+        if (pos < from && nodeType && nodeType === node.type) {
+          canUpdate = true;
+          trimmedFrom = Math.max(pos, from);
+          trimmedTo = Math.min(pos + node.nodeSize, to);
+          lastPos = pos;
+          lastNode = node;
+        }
+        if (pos >= from && pos <= to) {
+          if (nodeType && nodeType === node.type) {
+            canUpdate = true;
+            if (dispatch) {
+              tr.setNodeMarkup(pos, void 0, {
+                ...node.attrs,
+                ...attributes
+              });
+            }
+          }
+          if (markType && node.marks.length) {
+            node.marks.forEach((mark) => {
+              if (markType === mark.type) {
+                canUpdate = true;
+                if (dispatch) {
+                  const trimmedFrom2 = Math.max(pos, from);
+                  const trimmedTo2 = Math.min(pos + node.nodeSize, to);
+                  tr.addMark(
+                    trimmedFrom2,
+                    trimmedTo2,
+                    markType.create({
+                      ...mark.attrs,
+                      ...attributes
+                    })
+                  );
+                }
+              }
+            });
+          }
+        }
+      });
+    }
+    if (lastNode) {
+      if (lastPos !== void 0 && dispatch) {
+        tr.setNodeMarkup(lastPos, void 0, {
+          ...lastNode.attrs,
+          ...attributes
+        });
+      }
+      if (markType && lastNode.marks.length) {
+        lastNode.marks.forEach((mark) => {
+          if (markType === mark.type && dispatch) {
+            tr.addMark(
+              trimmedFrom,
+              trimmedTo,
+              markType.create({
+                ...mark.attrs,
+                ...attributes
+              })
+            );
+          }
+        });
+      }
+    }
+  });
+  return canUpdate;
+};
+var wrapIn = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
+  const type = getNodeType(typeOrName, state.schema);
+  return originalWrapIn(type, attributes)(state, dispatch);
+};
+var wrapInList = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
+  const type = getNodeType(typeOrName, state.schema);
+  return originalWrapInList(type, attributes)(state, dispatch);
+};
+var inputRuleMatcherHandler = (text, find) => {
+  if (isRegExp(find)) {
+    return find.exec(text);
+  }
+  const inputRuleMatch = find(text);
+  if (!inputRuleMatch) {
+    return null;
+  }
+  const result = [inputRuleMatch.text];
+  result.index = inputRuleMatch.index;
+  result.input = text;
+  result.data = inputRuleMatch.data;
+  if (inputRuleMatch.replaceWith) {
+    if (!inputRuleMatch.text.includes(inputRuleMatch.replaceWith)) {
+      console.warn('[tiptap warn]: "inputRuleMatch.replaceWith" must be part of "inputRuleMatch.text".');
+    }
+    result.push(inputRuleMatch.replaceWith);
+  }
+  return result;
+};
+function run(config) {
+  var _a;
+  const { editor, from, to, text, rules, plugin } = config;
+  const { view } = editor;
+  if (view.composing) {
+    return false;
+  }
+  const $from = view.state.doc.resolve(from);
+  if (
+    // check for code node
+    $from.parent.type.spec.code || // check for code mark
+    !!((_a = $from.nodeBefore || $from.nodeAfter) == null ? void 0 : _a.marks.find((mark) => mark.type.spec.code))
+  ) {
+    return false;
+  }
+  let matched = false;
+  const textBefore = getTextContentFromNodes($from) + text;
+  rules.forEach((rule) => {
+    if (matched) {
+      return;
+    }
+    const match = inputRuleMatcherHandler(textBefore, rule.find);
+    if (!match) {
+      return;
+    }
+    const tr = view.state.tr;
+    const state = createChainableState({
+      state: view.state,
+      transaction: tr
+    });
+    const range = {
+      from: from - (match[0].length - text.length),
+      to
+    };
+    const { commands, chain, can } = new CommandManager({
+      editor,
+      state
+    });
+    const handler = rule.handler({
+      state,
+      range,
+      match,
+      commands,
+      chain,
+      can
+    });
+    if (handler === null || !tr.steps.length) {
+      return;
+    }
+    if (rule.undoable) {
+      tr.setMeta(plugin, {
+        transform: tr,
+        from,
+        to,
+        text
+      });
+    }
+    view.dispatch(tr);
+    matched = true;
+  });
+  return matched;
+}
+function inputRulesPlugin(props) {
+  const { editor, rules } = props;
+  const plugin = new Plugin({
+    state: {
+      init() {
+        return null;
+      },
+      apply(tr, prev, state) {
+        const stored = tr.getMeta(plugin);
+        if (stored) {
+          return stored;
+        }
+        const simulatedInputMeta = tr.getMeta("applyInputRules");
+        const isSimulatedInput = !!simulatedInputMeta;
+        if (isSimulatedInput) {
+          setTimeout(() => {
+            let { text } = simulatedInputMeta;
+            if (typeof text === "string") {
+              text = text;
+            } else {
+              text = getHTMLFromFragment(Fragment42.from(text), state.schema);
+            }
+            const { from } = simulatedInputMeta;
+            const to = from + text.length;
+            run({
+              editor,
+              from,
+              to,
+              text,
+              rules,
+              plugin
+            });
+          });
+        }
+        return tr.selectionSet || tr.docChanged ? null : prev;
+      }
+    },
+    props: {
+      handleTextInput(view, from, to, text) {
+        return run({
+          editor,
+          from,
+          to,
+          text,
+          rules,
+          plugin
+        });
+      },
+      handleDOMEvents: {
+        compositionend: (view) => {
+          setTimeout(() => {
+            const { $cursor } = view.state.selection;
+            if ($cursor) {
+              run({
+                editor,
+                from: $cursor.pos,
+                to: $cursor.pos,
+                text: "",
+                rules,
+                plugin
+              });
+            }
+          });
+          return false;
+        }
+      },
+      // add support for input rules to trigger on enter
+      // this is useful for example for code blocks
+      handleKeyDown(view, event) {
+        if (event.key !== "Enter") {
+          return false;
+        }
+        const { $cursor } = view.state.selection;
+        if ($cursor) {
+          return run({
+            editor,
+            from: $cursor.pos,
+            to: $cursor.pos,
+            text: "\n",
+            rules,
+            plugin
+          });
+        }
+        return false;
+      }
+    },
+    // @ts-ignore
+    isInputRules: true
+  });
+  return plugin;
+}
+function getType(value) {
+  return Object.prototype.toString.call(value).slice(8, -1);
+}
+function isPlainObject(value) {
+  if (getType(value) !== "Object") {
+    return false;
+  }
+  return value.constructor === Object && Object.getPrototypeOf(value) === Object.prototype;
+}
+function mergeDeep(target, source) {
+  const output = { ...target };
+  if (isPlainObject(target) && isPlainObject(source)) {
+    Object.keys(source).forEach((key) => {
+      if (isPlainObject(source[key]) && isPlainObject(target[key])) {
+        output[key] = mergeDeep(target[key], source[key]);
+      } else {
+        output[key] = source[key];
+      }
+    });
+  }
+  return output;
+}
+var Extendable = class {
+  constructor(config = {}) {
+    this.type = "extendable";
+    this.parent = null;
+    this.child = null;
+    this.name = "";
+    this.config = {
+      name: this.name
+    };
+    this.config = {
+      ...this.config,
+      ...config
+    };
+    this.name = this.config.name;
+  }
+  get options() {
+    return {
+      ...callOrReturn(
+        getExtensionField(this, "addOptions", {
+          name: this.name
+        })
+      ) || {}
+    };
+  }
+  get storage() {
+    return {
+      ...callOrReturn(
+        getExtensionField(this, "addStorage", {
+          name: this.name,
+          options: this.options
+        })
+      ) || {}
+    };
+  }
+  configure(options = {}) {
+    const extension = this.extend({
+      ...this.config,
+      addOptions: () => {
+        return mergeDeep(this.options, options);
+      }
+    });
+    extension.name = this.name;
+    extension.parent = this.parent;
+    return extension;
+  }
+  extend(extendedConfig = {}) {
+    const extension = new this.constructor({ ...this.config, ...extendedConfig });
+    extension.parent = this;
+    this.child = extension;
+    extension.name = "name" in extendedConfig ? extendedConfig.name : extension.parent.name;
+    return extension;
+  }
+};
+var Mark = class _Mark extends Extendable {
+  constructor() {
+    super(...arguments);
+    this.type = "mark";
+  }
+  /**
+   * Create a new Mark instance
+   * @param config - Mark configuration object or a function that returns a configuration object
+   */
+  static create(config = {}) {
+    const resolvedConfig = typeof config === "function" ? config() : config;
+    return new _Mark(resolvedConfig);
+  }
+  static handleExit({ editor, mark }) {
+    const { tr } = editor.state;
+    const currentPos = editor.state.selection.$from;
+    const isAtEnd = currentPos.pos === currentPos.end();
+    if (isAtEnd) {
+      const currentMarks = currentPos.marks();
+      const isInMark = !!currentMarks.find((m) => (m == null ? void 0 : m.type.name) === mark.name);
+      if (!isInMark) {
+        return false;
+      }
+      const removeMark = currentMarks.find((m) => (m == null ? void 0 : m.type.name) === mark.name);
+      if (removeMark) {
+        tr.removeStoredMark(removeMark);
+      }
+      tr.insertText(" ", currentPos.pos);
+      editor.view.dispatch(tr);
+      return true;
+    }
+    return false;
+  }
+  configure(options) {
+    return super.configure(options);
+  }
+  extend(extendedConfig) {
+    const resolvedConfig = typeof extendedConfig === "function" ? extendedConfig() : extendedConfig;
+    return super.extend(resolvedConfig);
+  }
+};
+function isNumber(value) {
+  return typeof value === "number";
+}
+var pasteRuleMatcherHandler = (text, find, event) => {
+  if (isRegExp(find)) {
+    return [...text.matchAll(find)];
+  }
+  const matches = find(text, event);
+  if (!matches) {
+    return [];
+  }
+  return matches.map((pasteRuleMatch) => {
+    const result = [pasteRuleMatch.text];
+    result.index = pasteRuleMatch.index;
+    result.input = text;
+    result.data = pasteRuleMatch.data;
+    if (pasteRuleMatch.replaceWith) {
+      if (!pasteRuleMatch.text.includes(pasteRuleMatch.replaceWith)) {
+        console.warn('[tiptap warn]: "pasteRuleMatch.replaceWith" must be part of "pasteRuleMatch.text".');
+      }
+      result.push(pasteRuleMatch.replaceWith);
+    }
+    return result;
+  });
+};
+function run2(config) {
+  const { editor, state, from, to, rule, pasteEvent, dropEvent } = config;
+  const { commands, chain, can } = new CommandManager({
+    editor,
+    state
+  });
+  const handlers = [];
+  state.doc.nodesBetween(from, to, (node, pos) => {
+    var _a, _b, _c, _d, _e;
+    if (((_b = (_a = node.type) == null ? void 0 : _a.spec) == null ? void 0 : _b.code) || !(node.isText || node.isTextblock || node.isInline)) {
+      return;
+    }
+    const contentSize = (_e = (_d = (_c = node.content) == null ? void 0 : _c.size) != null ? _d : node.nodeSize) != null ? _e : 0;
+    const resolvedFrom = Math.max(from, pos);
+    const resolvedTo = Math.min(to, pos + contentSize);
+    if (resolvedFrom >= resolvedTo) {
+      return;
+    }
+    const textToMatch = node.isText ? node.text || "" : node.textBetween(resolvedFrom - pos, resolvedTo - pos, void 0, "\uFFFC");
+    const matches = pasteRuleMatcherHandler(textToMatch, rule.find, pasteEvent);
+    matches.forEach((match) => {
+      if (match.index === void 0) {
+        return;
+      }
+      const start = resolvedFrom + match.index + 1;
+      const end = start + match[0].length;
+      const range = {
+        from: state.tr.mapping.map(start),
+        to: state.tr.mapping.map(end)
+      };
+      const handler = rule.handler({
+        state,
+        range,
+        match,
+        commands,
+        chain,
+        can,
+        pasteEvent,
+        dropEvent
+      });
+      handlers.push(handler);
+    });
+  });
+  const success = handlers.every((handler) => handler !== null);
+  return success;
+}
+var tiptapDragFromOtherEditor = null;
+var createClipboardPasteEvent = (text) => {
+  var _a;
+  const event = new ClipboardEvent("paste", {
+    clipboardData: new DataTransfer()
+  });
+  (_a = event.clipboardData) == null ? void 0 : _a.setData("text/html", text);
+  return event;
+};
+function pasteRulesPlugin(props) {
+  const { editor, rules } = props;
+  let dragSourceElement = null;
+  let isPastedFromProseMirror = false;
+  let isDroppedFromProseMirror = false;
+  let pasteEvent = typeof ClipboardEvent !== "undefined" ? new ClipboardEvent("paste") : null;
+  let dropEvent;
+  try {
+    dropEvent = typeof DragEvent !== "undefined" ? new DragEvent("drop") : null;
+  } catch {
+    dropEvent = null;
+  }
+  const processEvent = ({
+    state,
+    from,
+    to,
+    rule,
+    pasteEvt
+  }) => {
+    const tr = state.tr;
+    const chainableState = createChainableState({
+      state,
+      transaction: tr
+    });
+    const handler = run2({
+      editor,
+      state: chainableState,
+      from: Math.max(from - 1, 0),
+      to: to.b - 1,
+      rule,
+      pasteEvent: pasteEvt,
+      dropEvent
+    });
+    if (!handler || !tr.steps.length) {
+      return;
+    }
+    try {
+      dropEvent = typeof DragEvent !== "undefined" ? new DragEvent("drop") : null;
+    } catch {
+      dropEvent = null;
+    }
+    pasteEvent = typeof ClipboardEvent !== "undefined" ? new ClipboardEvent("paste") : null;
+    return tr;
+  };
+  const plugins = rules.map((rule) => {
+    return new Plugin2({
+      // we register a global drag handler to track the current drag source element
+      view(view) {
+        const handleDragstart = (event) => {
+          var _a;
+          dragSourceElement = ((_a = view.dom.parentElement) == null ? void 0 : _a.contains(event.target)) ? view.dom.parentElement : null;
+          if (dragSourceElement) {
+            tiptapDragFromOtherEditor = editor;
+          }
+        };
+        const handleDragend = () => {
+          if (tiptapDragFromOtherEditor) {
+            tiptapDragFromOtherEditor = null;
+          }
+        };
+        window.addEventListener("dragstart", handleDragstart);
+        window.addEventListener("dragend", handleDragend);
+        return {
+          destroy() {
+            window.removeEventListener("dragstart", handleDragstart);
+            window.removeEventListener("dragend", handleDragend);
+          }
+        };
+      },
+      props: {
+        handleDOMEvents: {
+          drop: (view, event) => {
+            isDroppedFromProseMirror = dragSourceElement === view.dom.parentElement;
+            dropEvent = event;
+            if (!isDroppedFromProseMirror) {
+              const dragFromOtherEditor = tiptapDragFromOtherEditor;
+              if (dragFromOtherEditor == null ? void 0 : dragFromOtherEditor.isEditable) {
+                setTimeout(() => {
+                  const selection = dragFromOtherEditor.state.selection;
+                  if (selection) {
+                    dragFromOtherEditor.commands.deleteRange({ from: selection.from, to: selection.to });
+                  }
+                }, 10);
+              }
+            }
+            return false;
+          },
+          paste: (_view, event) => {
+            var _a;
+            const html = (_a = event.clipboardData) == null ? void 0 : _a.getData("text/html");
+            pasteEvent = event;
+            isPastedFromProseMirror = !!(html == null ? void 0 : html.includes("data-pm-slice"));
+            return false;
+          }
+        }
+      },
+      appendTransaction: (transactions, oldState, state) => {
+        const transaction = transactions[0];
+        const isPaste = transaction.getMeta("uiEvent") === "paste" && !isPastedFromProseMirror;
+        const isDrop = transaction.getMeta("uiEvent") === "drop" && !isDroppedFromProseMirror;
+        const simulatedPasteMeta = transaction.getMeta("applyPasteRules");
+        const isSimulatedPaste = !!simulatedPasteMeta;
+        if (!isPaste && !isDrop && !isSimulatedPaste) {
+          return;
+        }
+        if (isSimulatedPaste) {
+          let { text } = simulatedPasteMeta;
+          if (typeof text === "string") {
+            text = text;
+          } else {
+            text = getHTMLFromFragment(Fragment52.from(text), state.schema);
+          }
+          const { from: from2 } = simulatedPasteMeta;
+          const to2 = from2 + text.length;
+          const pasteEvt = createClipboardPasteEvent(text);
+          return processEvent({
+            rule,
+            state,
+            from: from2,
+            to: { b: to2 },
+            pasteEvt
+          });
+        }
+        const from = oldState.doc.content.findDiffStart(state.doc.content);
+        const to = oldState.doc.content.findDiffEnd(state.doc.content);
+        if (!isNumber(from) || !to || from === to.b) {
+          return;
+        }
+        return processEvent({
+          rule,
+          state,
+          from,
+          to,
+          pasteEvt: pasteEvent
+        });
+      }
+    });
+  });
+  return plugins;
+}
+var ExtensionManager = class {
+  constructor(extensions, editor) {
+    this.splittableMarks = [];
+    this.editor = editor;
+    this.baseExtensions = extensions;
+    this.extensions = resolveExtensions(extensions);
+    this.schema = getSchemaByResolvedExtensions(this.extensions, editor);
+    this.setupExtensions();
+  }
+  /**
+   * Get all commands from the extensions.
+   * @returns An object with all commands where the key is the command name and the value is the command function
+   */
+  get commands() {
+    return this.extensions.reduce((commands, extension) => {
+      const context = {
+        name: extension.name,
+        options: extension.options,
+        storage: this.editor.extensionStorage[extension.name],
+        editor: this.editor,
+        type: getSchemaTypeByName(extension.name, this.schema)
+      };
+      const addCommands = getExtensionField(extension, "addCommands", context);
+      if (!addCommands) {
+        return commands;
+      }
+      return {
+        ...commands,
+        ...addCommands()
+      };
+    }, {});
+  }
+  /**
+   * Get all registered Prosemirror plugins from the extensions.
+   * @returns An array of Prosemirror plugins
+   */
+  get plugins() {
+    const { editor } = this;
+    const extensions = sortExtensions([...this.extensions].reverse());
+    const allPlugins = extensions.flatMap((extension) => {
+      const context = {
+        name: extension.name,
+        options: extension.options,
+        storage: this.editor.extensionStorage[extension.name],
+        editor,
+        type: getSchemaTypeByName(extension.name, this.schema)
+      };
+      const plugins = [];
+      const addKeyboardShortcuts = getExtensionField(
+        extension,
+        "addKeyboardShortcuts",
+        context
+      );
+      let defaultBindings = {};
+      if (extension.type === "mark" && getExtensionField(extension, "exitable", context)) {
+        defaultBindings.ArrowRight = () => Mark.handleExit({ editor, mark: extension });
+      }
+      if (addKeyboardShortcuts) {
+        const bindings = Object.fromEntries(
+          Object.entries(addKeyboardShortcuts()).map(([shortcut, method]) => {
+            return [shortcut, () => method({ editor })];
+          })
+        );
+        defaultBindings = { ...defaultBindings, ...bindings };
+      }
+      const keyMapPlugin = keymap(defaultBindings);
+      plugins.push(keyMapPlugin);
+      const addInputRules = getExtensionField(extension, "addInputRules", context);
+      if (isExtensionRulesEnabled(extension, editor.options.enableInputRules) && addInputRules) {
+        const rules = addInputRules();
+        if (rules && rules.length) {
+          const inputResult = inputRulesPlugin({
+            editor,
+            rules
+          });
+          const inputPlugins = Array.isArray(inputResult) ? inputResult : [inputResult];
+          plugins.push(...inputPlugins);
+        }
+      }
+      const addPasteRules = getExtensionField(extension, "addPasteRules", context);
+      if (isExtensionRulesEnabled(extension, editor.options.enablePasteRules) && addPasteRules) {
+        const rules = addPasteRules();
+        if (rules && rules.length) {
+          const pasteRules = pasteRulesPlugin({ editor, rules });
+          plugins.push(...pasteRules);
+        }
+      }
+      const addProseMirrorPlugins = getExtensionField(
+        extension,
+        "addProseMirrorPlugins",
+        context
+      );
+      if (addProseMirrorPlugins) {
+        const proseMirrorPlugins = addProseMirrorPlugins();
+        plugins.push(...proseMirrorPlugins);
+      }
+      return plugins;
+    });
+    return allPlugins;
+  }
+  /**
+   * Get all attributes from the extensions.
+   * @returns An array of attributes
+   */
+  get attributes() {
+    return getAttributesFromExtensions(this.extensions);
+  }
+  /**
+   * Get all node views from the extensions.
+   * @returns An object with all node views where the key is the node name and the value is the node view function
+   */
+  get nodeViews() {
+    const { editor } = this;
+    const { nodeExtensions } = splitExtensions(this.extensions);
+    return Object.fromEntries(
+      nodeExtensions.filter((extension) => !!getExtensionField(extension, "addNodeView")).map((extension) => {
+        const extensionAttributes = this.attributes.filter((attribute) => attribute.type === extension.name);
+        const context = {
+          name: extension.name,
+          options: extension.options,
+          storage: this.editor.extensionStorage[extension.name],
+          editor,
+          type: getNodeType(extension.name, this.schema)
+        };
+        const addNodeView = getExtensionField(extension, "addNodeView", context);
+        if (!addNodeView) {
+          return [];
+        }
+        const nodeViewResult = addNodeView();
+        if (!nodeViewResult) {
+          return [];
+        }
+        const nodeview = (node, view, getPos, decorations, innerDecorations) => {
+          const HTMLAttributes = getRenderedAttributes(node, extensionAttributes);
+          return nodeViewResult({
+            // pass-through
+            node,
+            view,
+            getPos,
+            decorations,
+            innerDecorations,
+            // tiptap-specific
+            editor,
+            extension,
+            HTMLAttributes
+          });
+        };
+        return [extension.name, nodeview];
+      })
+    );
+  }
+  /**
+   * Get the composed dispatchTransaction function from all extensions.
+   * @param baseDispatch The base dispatch function (e.g. from the editor or user props)
+   * @returns A composed dispatch function
+   */
+  dispatchTransaction(baseDispatch) {
+    const { editor } = this;
+    const extensions = sortExtensions([...this.extensions].reverse());
+    return extensions.reduceRight((next, extension) => {
+      const context = {
+        name: extension.name,
+        options: extension.options,
+        storage: this.editor.extensionStorage[extension.name],
+        editor,
+        type: getSchemaTypeByName(extension.name, this.schema)
+      };
+      const dispatchTransaction = getExtensionField(
+        extension,
+        "dispatchTransaction",
+        context
+      );
+      if (!dispatchTransaction) {
+        return next;
+      }
+      return (transaction) => {
+        dispatchTransaction.call(context, { transaction, next });
+      };
+    }, baseDispatch);
+  }
+  get markViews() {
+    const { editor } = this;
+    const { markExtensions } = splitExtensions(this.extensions);
+    return Object.fromEntries(
+      markExtensions.filter((extension) => !!getExtensionField(extension, "addMarkView")).map((extension) => {
+        const extensionAttributes = this.attributes.filter((attribute) => attribute.type === extension.name);
+        const context = {
+          name: extension.name,
+          options: extension.options,
+          storage: this.editor.extensionStorage[extension.name],
+          editor,
+          type: getMarkType(extension.name, this.schema)
+        };
+        const addMarkView = getExtensionField(extension, "addMarkView", context);
+        if (!addMarkView) {
+          return [];
+        }
+        const markView = (mark, view, inline) => {
+          const HTMLAttributes = getRenderedAttributes(mark, extensionAttributes);
+          return addMarkView()({
+            // pass-through
+            mark,
+            view,
+            inline,
+            // tiptap-specific
+            editor,
+            extension,
+            HTMLAttributes,
+            updateAttributes: (attrs) => {
+              updateMarkViewAttributes(mark, editor, attrs);
+            }
+          });
+        };
+        return [extension.name, markView];
+      })
+    );
+  }
+  /**
+   * Go through all extensions, create extension storages & setup marks
+   * & bind editor event listener.
+   */
+  setupExtensions() {
+    const extensions = this.extensions;
+    this.editor.extensionStorage = Object.fromEntries(
+      extensions.map((extension) => [extension.name, extension.storage])
+    );
+    extensions.forEach((extension) => {
+      var _a;
+      const context = {
+        name: extension.name,
+        options: extension.options,
+        storage: this.editor.extensionStorage[extension.name],
+        editor: this.editor,
+        type: getSchemaTypeByName(extension.name, this.schema)
+      };
+      if (extension.type === "mark") {
+        const keepOnSplit = (_a = callOrReturn(getExtensionField(extension, "keepOnSplit", context))) != null ? _a : true;
+        if (keepOnSplit) {
+          this.splittableMarks.push(extension.name);
+        }
+      }
+      const onBeforeCreate = getExtensionField(extension, "onBeforeCreate", context);
+      const onCreate = getExtensionField(extension, "onCreate", context);
+      const onUpdate = getExtensionField(extension, "onUpdate", context);
+      const onSelectionUpdate = getExtensionField(
+        extension,
+        "onSelectionUpdate",
+        context
+      );
+      const onTransaction = getExtensionField(extension, "onTransaction", context);
+      const onFocus = getExtensionField(extension, "onFocus", context);
+      const onBlur = getExtensionField(extension, "onBlur", context);
+      const onDestroy = getExtensionField(extension, "onDestroy", context);
+      if (onBeforeCreate) {
+        this.editor.on("beforeCreate", onBeforeCreate);
+      }
+      if (onCreate) {
+        this.editor.on("create", onCreate);
+      }
+      if (onUpdate) {
+        this.editor.on("update", onUpdate);
+      }
+      if (onSelectionUpdate) {
+        this.editor.on("selectionUpdate", onSelectionUpdate);
+      }
+      if (onTransaction) {
+        this.editor.on("transaction", onTransaction);
+      }
+      if (onFocus) {
+        this.editor.on("focus", onFocus);
+      }
+      if (onBlur) {
+        this.editor.on("blur", onBlur);
+      }
+      if (onDestroy) {
+        this.editor.on("destroy", onDestroy);
+      }
+    });
+  }
+};
+ExtensionManager.resolve = resolveExtensions;
+ExtensionManager.sort = sortExtensions;
+ExtensionManager.flatten = flattenExtensions;
+var extensions_exports = {};
+__export(extensions_exports, {
+  ClipboardTextSerializer: () => ClipboardTextSerializer,
+  Commands: () => Commands,
+  Delete: () => Delete,
+  Drop: () => Drop,
+  Editable: () => Editable,
+  FocusEvents: () => FocusEvents,
+  Keymap: () => Keymap,
+  Paste: () => Paste,
+  Tabindex: () => Tabindex,
+  TextDirection: () => TextDirection,
+  focusEventsPluginKey: () => focusEventsPluginKey
+});
+var Extension = class _Extension extends Extendable {
+  constructor() {
+    super(...arguments);
+    this.type = "extension";
+  }
+  /**
+   * Create a new Extension instance
+   * @param config - Extension configuration object or a function that returns a configuration object
+   */
+  static create(config = {}) {
+    const resolvedConfig = typeof config === "function" ? config() : config;
+    return new _Extension(resolvedConfig);
+  }
+  configure(options) {
+    return super.configure(options);
+  }
+  extend(extendedConfig) {
+    const resolvedConfig = typeof extendedConfig === "function" ? extendedConfig() : extendedConfig;
+    return super.extend(resolvedConfig);
+  }
+};
+var ClipboardTextSerializer = Extension.create({
+  name: "clipboardTextSerializer",
+  addOptions() {
+    return {
+      blockSeparator: void 0
+    };
+  },
+  addProseMirrorPlugins() {
+    return [
+      new Plugin3({
+        key: new PluginKey("clipboardTextSerializer"),
+        props: {
+          clipboardTextSerializer: () => {
+            const { editor } = this;
+            const { state, schema } = editor;
+            const { doc, selection } = state;
+            const { ranges } = selection;
+            const from = Math.min(...ranges.map((range2) => range2.$from.pos));
+            const to = Math.max(...ranges.map((range2) => range2.$to.pos));
+            const textSerializers = getTextSerializersFromSchema(schema);
+            const range = { from, to };
+            return getTextBetween(doc, range, {
+              ...this.options.blockSeparator !== void 0 ? { blockSeparator: this.options.blockSeparator } : {},
+              textSerializers
+            });
+          }
+        }
+      })
+    ];
+  }
+});
+var Commands = Extension.create({
+  name: "commands",
+  addCommands() {
+    return {
+      ...commands_exports
+    };
+  }
+});
+var Delete = Extension.create({
+  name: "delete",
+  onUpdate({ transaction, appendedTransactions }) {
+    var _a, _b, _c;
+    const callback = () => {
+      var _a2, _b2, _c2, _d;
+      if ((_d = (_c2 = (_b2 = (_a2 = this.editor.options.coreExtensionOptions) == null ? void 0 : _a2.delete) == null ? void 0 : _b2.filterTransaction) == null ? void 0 : _c2.call(_b2, transaction)) != null ? _d : transaction.getMeta("y-sync$")) {
+        return;
+      }
+      const nextTransaction = combineTransactionSteps(transaction.before, [transaction, ...appendedTransactions]);
+      const changes = getChangedRanges(nextTransaction);
+      changes.forEach((change) => {
+        if (nextTransaction.mapping.mapResult(change.oldRange.from).deletedAfter && nextTransaction.mapping.mapResult(change.oldRange.to).deletedBefore) {
+          nextTransaction.before.nodesBetween(change.oldRange.from, change.oldRange.to, (node, from) => {
+            const to = from + node.nodeSize - 2;
+            const isFullyWithinRange = change.oldRange.from <= from && to <= change.oldRange.to;
+            this.editor.emit("delete", {
+              type: "node",
+              node,
+              from,
+              to,
+              newFrom: nextTransaction.mapping.map(from),
+              newTo: nextTransaction.mapping.map(to),
+              deletedRange: change.oldRange,
+              newRange: change.newRange,
+              partial: !isFullyWithinRange,
+              editor: this.editor,
+              transaction,
+              combinedTransform: nextTransaction
+            });
+          });
+        }
+      });
+      const mapping = nextTransaction.mapping;
+      nextTransaction.steps.forEach((step, index) => {
+        var _a3, _b3;
+        if (step instanceof RemoveMarkStep) {
+          const newStart = mapping.slice(index).map(step.from, -1);
+          const newEnd = mapping.slice(index).map(step.to);
+          const oldStart = mapping.invert().map(newStart, -1);
+          const oldEnd = mapping.invert().map(newEnd);
+          const foundBeforeMark = (_a3 = nextTransaction.doc.nodeAt(newStart - 1)) == null ? void 0 : _a3.marks.some((mark) => mark.eq(step.mark));
+          const foundAfterMark = (_b3 = nextTransaction.doc.nodeAt(newEnd)) == null ? void 0 : _b3.marks.some((mark) => mark.eq(step.mark));
+          this.editor.emit("delete", {
+            type: "mark",
+            mark: step.mark,
+            from: step.from,
+            to: step.to,
+            deletedRange: {
+              from: oldStart,
+              to: oldEnd
+            },
+            newRange: {
+              from: newStart,
+              to: newEnd
+            },
+            partial: Boolean(foundAfterMark || foundBeforeMark),
+            editor: this.editor,
+            transaction,
+            combinedTransform: nextTransaction
+          });
+        }
+      });
+    };
+    if ((_c = (_b = (_a = this.editor.options.coreExtensionOptions) == null ? void 0 : _a.delete) == null ? void 0 : _b.async) != null ? _c : true) {
+      setTimeout(callback, 0);
+    } else {
+      callback();
+    }
+  }
+});
+var Drop = Extension.create({
+  name: "drop",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin4({
+        key: new PluginKey2("tiptapDrop"),
+        props: {
+          handleDrop: (_, e, slice, moved) => {
+            this.editor.emit("drop", {
+              editor: this.editor,
+              event: e,
+              slice,
+              moved
+            });
+          }
+        }
+      })
+    ];
+  }
+});
+var Editable = Extension.create({
+  name: "editable",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin5({
+        key: new PluginKey3("editable"),
+        props: {
+          editable: () => this.editor.options.editable
+        }
+      })
+    ];
+  }
+});
+var focusEventsPluginKey = new PluginKey4("focusEvents");
+var FocusEvents = Extension.create({
+  name: "focusEvents",
+  addProseMirrorPlugins() {
+    const { editor } = this;
+    return [
+      new Plugin6({
+        key: focusEventsPluginKey,
+        props: {
+          handleDOMEvents: {
+            focus: (view, event) => {
+              editor.isFocused = true;
+              const transaction = editor.state.tr.setMeta("focus", { event }).setMeta("addToHistory", false);
+              view.dispatch(transaction);
+              return false;
+            },
+            blur: (view, event) => {
+              editor.isFocused = false;
+              const transaction = editor.state.tr.setMeta("blur", { event }).setMeta("addToHistory", false);
+              view.dispatch(transaction);
+              return false;
+            }
+          }
+        }
+      })
+    ];
+  }
+});
+var Keymap = Extension.create({
+  name: "keymap",
+  addKeyboardShortcuts() {
+    const handleBackspace = () => this.editor.commands.first(({ commands }) => [
+      () => commands.undoInputRule(),
+      // maybe convert first text block node to default node
+      () => commands.command(({ tr }) => {
+        const { selection, doc } = tr;
+        const { empty, $anchor } = selection;
+        const { pos, parent } = $anchor;
+        const $parentPos = $anchor.parent.isTextblock && pos > 0 ? tr.doc.resolve(pos - 1) : $anchor;
+        const parentIsIsolating = $parentPos.parent.type.spec.isolating;
+        const parentPos = $anchor.pos - $anchor.parentOffset;
+        const isAtStart = parentIsIsolating && $parentPos.parent.childCount === 1 ? parentPos === $anchor.pos : Selection3.atStart(doc).from === pos;
+        if (!empty || !parent.type.isTextblock || parent.textContent.length || !isAtStart || isAtStart && $anchor.parent.type.name === "paragraph") {
+          return false;
+        }
+        return commands.clearNodes();
+      }),
+      () => commands.deleteSelection(),
+      () => commands.joinBackward(),
+      () => commands.selectNodeBackward()
+    ]);
+    const handleDelete = () => this.editor.commands.first(({ commands }) => [
+      () => commands.deleteSelection(),
+      () => commands.deleteCurrentNode(),
+      () => commands.joinForward(),
+      () => commands.selectNodeForward()
+    ]);
+    const handleEnter = () => this.editor.commands.first(({ commands }) => [
+      () => commands.newlineInCode(),
+      () => commands.createParagraphNear(),
+      () => commands.liftEmptyBlock(),
+      () => commands.splitBlock()
+    ]);
+    const baseKeymap = {
+      Enter: handleEnter,
+      "Mod-Enter": () => this.editor.commands.exitCode(),
+      Backspace: handleBackspace,
+      "Mod-Backspace": handleBackspace,
+      "Shift-Backspace": handleBackspace,
+      Delete: handleDelete,
+      "Mod-Delete": handleDelete,
+      "Mod-a": () => this.editor.commands.selectAll()
+    };
+    const pcKeymap = {
+      ...baseKeymap
+    };
+    const macKeymap = {
+      ...baseKeymap,
+      "Ctrl-h": handleBackspace,
+      "Alt-Backspace": handleBackspace,
+      "Ctrl-d": handleDelete,
+      "Ctrl-Alt-Backspace": handleDelete,
+      "Alt-Delete": handleDelete,
+      "Alt-d": handleDelete,
+      "Ctrl-a": () => this.editor.commands.selectTextblockStart(),
+      "Ctrl-e": () => this.editor.commands.selectTextblockEnd()
+    };
+    if (isiOS() || isMacOS()) {
+      return macKeymap;
+    }
+    return pcKeymap;
+  },
+  addProseMirrorPlugins() {
+    return [
+      // With this plugin we check if the whole document was selected and deleted.
+      // In this case we will additionally call `clearNodes()` to convert e.g. a heading
+      // to a paragraph if necessary.
+      // This is an alternative to ProseMirror's `AllSelection`, which doesn’t work well
+      // with many other commands.
+      new Plugin7({
+        key: new PluginKey5("clearDocument"),
+        appendTransaction: (transactions, oldState, newState) => {
+          if (transactions.some((tr2) => tr2.getMeta("composition"))) {
+            return;
+          }
+          const docChanges = transactions.some((transaction) => transaction.docChanged) && !oldState.doc.eq(newState.doc);
+          const ignoreTr = transactions.some((transaction) => transaction.getMeta("preventClearDocument"));
+          if (!docChanges || ignoreTr) {
+            return;
+          }
+          const { empty, from, to } = oldState.selection;
+          const allFrom = Selection3.atStart(oldState.doc).from;
+          const allEnd = Selection3.atEnd(oldState.doc).to;
+          const allWasSelected = from === allFrom && to === allEnd;
+          if (empty || !allWasSelected) {
+            return;
+          }
+          const isEmpty = isNodeEmpty(newState.doc);
+          if (!isEmpty) {
+            return;
+          }
+          const tr = newState.tr;
+          const state = createChainableState({
+            state: newState,
+            transaction: tr
+          });
+          const { commands } = new CommandManager({
+            editor: this.editor,
+            state
+          });
+          commands.clearNodes();
+          if (!tr.steps.length) {
+            return;
+          }
+          return tr;
+        }
+      })
+    ];
+  }
+});
+var Paste = Extension.create({
+  name: "paste",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin8({
+        key: new PluginKey6("tiptapPaste"),
+        props: {
+          handlePaste: (_view, e, slice) => {
+            this.editor.emit("paste", {
+              editor: this.editor,
+              event: e,
+              slice
+            });
+          }
+        }
+      })
+    ];
+  }
+});
+var Tabindex = Extension.create({
+  name: "tabindex",
+  addProseMirrorPlugins() {
+    return [
+      new Plugin9({
+        key: new PluginKey7("tabindex"),
+        props: {
+          attributes: () => this.editor.isEditable ? { tabindex: "0" } : {}
+        }
+      })
+    ];
+  }
+});
+var TextDirection = Extension.create({
+  name: "textDirection",
+  addOptions() {
+    return {
+      direction: void 0
+    };
+  },
+  addGlobalAttributes() {
+    if (!this.options.direction) {
+      return [];
+    }
+    const { nodeExtensions } = splitExtensions(this.extensions);
+    return [
+      {
+        types: nodeExtensions.filter((extension) => extension.name !== "text").map((extension) => extension.name),
+        attributes: {
+          dir: {
+            default: this.options.direction,
+            parseHTML: (element) => {
+              const dir = element.getAttribute("dir");
+              if (dir && (dir === "ltr" || dir === "rtl" || dir === "auto")) {
+                return dir;
+              }
+              return this.options.direction;
+            },
+            renderHTML: (attributes) => {
+              if (!attributes.dir) {
+                return {};
+              }
+              return {
+                dir: attributes.dir
+              };
+            }
+          }
+        }
+      }
+    ];
+  },
+  addProseMirrorPlugins() {
+    return [
+      new Plugin10({
+        key: new PluginKey8("textDirection"),
+        props: {
+          attributes: () => {
+            const direction = this.options.direction;
+            if (!direction) {
+              return {};
+            }
+            return {
+              dir: direction
+            };
+          }
+        }
+      })
+    ];
+  }
+});
+var markdown_exports = {};
+__export(markdown_exports, {
+  createAtomBlockMarkdownSpec: () => createAtomBlockMarkdownSpec,
+  createBlockMarkdownSpec: () => createBlockMarkdownSpec,
+  createInlineMarkdownSpec: () => createInlineMarkdownSpec,
+  parseAttributes: () => parseAttributes,
+  parseIndentedBlocks: () => parseIndentedBlocks,
+  renderNestedMarkdownContent: () => renderNestedMarkdownContent,
+  serializeAttributes: () => serializeAttributes
+});
+function parseAttributes(attrString) {
+  if (!(attrString == null ? void 0 : attrString.trim())) {
+    return {};
+  }
+  const attributes = {};
+  const quotedStrings = [];
+  const tempString = attrString.replace(/["']([^"']*)["']/g, (match) => {
+    quotedStrings.push(match);
+    return `__QUOTED_${quotedStrings.length - 1}__`;
+  });
+  const classMatches = tempString.match(/(?:^|\s)\.([a-zA-Z][\w-]*)/g);
+  if (classMatches) {
+    const classes = classMatches.map((match) => match.trim().slice(1));
+    attributes.class = classes.join(" ");
+  }
+  const idMatch = tempString.match(/(?:^|\s)#([a-zA-Z][\w-]*)/);
+  if (idMatch) {
+    attributes.id = idMatch[1];
+  }
+  const kvRegex = /([a-zA-Z][\w-]*)\s*=\s*(__QUOTED_\d+__)/g;
+  const kvMatches = Array.from(tempString.matchAll(kvRegex));
+  kvMatches.forEach(([, key, quotedRef]) => {
+    var _a;
+    const quotedIndex = parseInt(((_a = quotedRef.match(/__QUOTED_(\d+)__/)) == null ? void 0 : _a[1]) || "0", 10);
+    const quotedValue = quotedStrings[quotedIndex];
+    if (quotedValue) {
+      attributes[key] = quotedValue.slice(1, -1);
+    }
+  });
+  const cleanString = tempString.replace(/(?:^|\s)\.([a-zA-Z][\w-]*)/g, "").replace(/(?:^|\s)#([a-zA-Z][\w-]*)/g, "").replace(/([a-zA-Z][\w-]*)\s*=\s*__QUOTED_\d+__/g, "").trim();
+  if (cleanString) {
+    const booleanAttrs = cleanString.split(/\s+/).filter(Boolean);
+    booleanAttrs.forEach((attr) => {
+      if (attr.match(/^[a-zA-Z][\w-]*$/)) {
+        attributes[attr] = true;
+      }
+    });
+  }
+  return attributes;
+}
+function serializeAttributes(attributes) {
+  if (!attributes || Object.keys(attributes).length === 0) {
+    return "";
+  }
+  const parts = [];
+  if (attributes.class) {
+    const classes = String(attributes.class).split(/\s+/).filter(Boolean);
+    classes.forEach((cls) => parts.push(`.${cls}`));
+  }
+  if (attributes.id) {
+    parts.push(`#${attributes.id}`);
+  }
+  Object.entries(attributes).forEach(([key, value]) => {
+    if (key === "class" || key === "id") {
+      return;
+    }
+    if (value === true) {
+      parts.push(key);
+    } else if (value !== false && value != null) {
+      parts.push(`${key}="${String(value)}"`);
+    }
+  });
+  return parts.join(" ");
+}
+function createAtomBlockMarkdownSpec(options) {
+  const {
+    nodeName,
+    name: markdownName,
+    parseAttributes: parseAttributes2 = parseAttributes,
+    serializeAttributes: serializeAttributes2 = serializeAttributes,
+    defaultAttributes = {},
+    requiredAttributes = [],
+    allowedAttributes
+  } = options;
+  const blockName = markdownName || nodeName;
+  const filterAttributes = (attrs) => {
+    if (!allowedAttributes) {
+      return attrs;
+    }
+    const filtered = {};
+    allowedAttributes.forEach((key) => {
+      if (key in attrs) {
+        filtered[key] = attrs[key];
+      }
+    });
+    return filtered;
+  };
+  return {
+    parseMarkdown: (token, h2) => {
+      const attrs = { ...defaultAttributes, ...token.attributes };
+      return h2.createNode(nodeName, attrs, []);
+    },
+    markdownTokenizer: {
+      name: nodeName,
+      level: "block",
+      start(src) {
+        var _a;
+        const regex = new RegExp(`^:::${blockName}(?:\\s|$)`, "m");
+        const index = (_a = src.match(regex)) == null ? void 0 : _a.index;
+        return index !== void 0 ? index : -1;
+      },
+      tokenize(src, _tokens, _lexer) {
+        const regex = new RegExp(`^:::${blockName}(?:\\s+\\{([^}]*)\\})?\\s*:::(?:\\n|$)`);
+        const match = src.match(regex);
+        if (!match) {
+          return void 0;
+        }
+        const attrString = match[1] || "";
+        const attributes = parseAttributes2(attrString);
+        const missingRequired = requiredAttributes.find((required) => !(required in attributes));
+        if (missingRequired) {
+          return void 0;
+        }
+        return {
+          type: nodeName,
+          raw: match[0],
+          attributes
+        };
+      }
+    },
+    renderMarkdown: (node) => {
+      const filteredAttrs = filterAttributes(node.attrs || {});
+      const attrs = serializeAttributes2(filteredAttrs);
+      const attrString = attrs ? ` {${attrs}}` : "";
+      return `:::${blockName}${attrString} :::`;
+    }
+  };
+}
+function createBlockMarkdownSpec(options) {
+  const {
+    nodeName,
+    name: markdownName,
+    getContent,
+    parseAttributes: parseAttributes2 = parseAttributes,
+    serializeAttributes: serializeAttributes2 = serializeAttributes,
+    defaultAttributes = {},
+    content = "block",
+    allowedAttributes
+  } = options;
+  const blockName = markdownName || nodeName;
+  const filterAttributes = (attrs) => {
+    if (!allowedAttributes) {
+      return attrs;
+    }
+    const filtered = {};
+    allowedAttributes.forEach((key) => {
+      if (key in attrs) {
+        filtered[key] = attrs[key];
+      }
+    });
+    return filtered;
+  };
+  return {
+    parseMarkdown: (token, h2) => {
+      let nodeContent;
+      if (getContent) {
+        const contentResult = getContent(token);
+        nodeContent = typeof contentResult === "string" ? [{ type: "text", text: contentResult }] : contentResult;
+      } else if (content === "block") {
+        nodeContent = h2.parseChildren(token.tokens || []);
+      } else {
+        nodeContent = h2.parseInline(token.tokens || []);
+      }
+      const attrs = { ...defaultAttributes, ...token.attributes };
+      return h2.createNode(nodeName, attrs, nodeContent);
+    },
+    markdownTokenizer: {
+      name: nodeName,
+      level: "block",
+      start(src) {
+        var _a;
+        const regex = new RegExp(`^:::${blockName}`, "m");
+        const index = (_a = src.match(regex)) == null ? void 0 : _a.index;
+        return index !== void 0 ? index : -1;
+      },
+      tokenize(src, _tokens, lexer) {
+        var _a;
+        const openingRegex = new RegExp(`^:::${blockName}(?:\\s+\\{([^}]*)\\})?\\s*\\n`);
+        const openingMatch = src.match(openingRegex);
+        if (!openingMatch) {
+          return void 0;
+        }
+        const [openingTag, attrString = ""] = openingMatch;
+        const attributes = parseAttributes2(attrString);
+        let level = 1;
+        const position = openingTag.length;
+        let matchedContent = "";
+        const blockPattern = /^:::([\w-]*)(\s.*)?/gm;
+        const remaining = src.slice(position);
+        blockPattern.lastIndex = 0;
+        for (; ; ) {
+          const match = blockPattern.exec(remaining);
+          if (match === null) {
+            break;
+          }
+          const matchPos = match.index;
+          const blockType = match[1];
+          if ((_a = match[2]) == null ? void 0 : _a.endsWith(":::")) {
+            continue;
+          }
+          if (blockType) {
+            level += 1;
+          } else {
+            level -= 1;
+            if (level === 0) {
+              const rawContent = remaining.slice(0, matchPos);
+              matchedContent = rawContent.trim();
+              const fullMatch = src.slice(0, position + matchPos + match[0].length);
+              let contentTokens = [];
+              if (matchedContent) {
+                if (content === "block") {
+                  contentTokens = lexer.blockTokens(rawContent);
+                  contentTokens.forEach((token) => {
+                    if (token.text && (!token.tokens || token.tokens.length === 0)) {
+                      token.tokens = lexer.inlineTokens(token.text);
+                    }
+                  });
+                  while (contentTokens.length > 0) {
+                    const lastToken = contentTokens[contentTokens.length - 1];
+                    if (lastToken.type === "paragraph" && (!lastToken.text || lastToken.text.trim() === "")) {
+                      contentTokens.pop();
+                    } else {
+                      break;
+                    }
+                  }
+                } else {
+                  contentTokens = lexer.inlineTokens(matchedContent);
+                }
+              }
+              return {
+                type: nodeName,
+                raw: fullMatch,
+                attributes,
+                content: matchedContent,
+                tokens: contentTokens
+              };
+            }
+          }
+        }
+        return void 0;
+      }
+    },
+    renderMarkdown: (node, h2) => {
+      const filteredAttrs = filterAttributes(node.attrs || {});
+      const attrs = serializeAttributes2(filteredAttrs);
+      const attrString = attrs ? ` {${attrs}}` : "";
+      const renderedContent = h2.renderChildren(node.content || [], "\n\n");
+      return `:::${blockName}${attrString}
+
+${renderedContent}
+
+:::`;
+    }
+  };
+}
+function parseShortcodeAttributes(attrString) {
+  if (!attrString.trim()) {
+    return {};
+  }
+  const attributes = {};
+  const regex = /(\w+)=(?:"([^"]*)"|'([^']*)')/g;
+  let match = regex.exec(attrString);
+  while (match !== null) {
+    const [, key, doubleQuoted, singleQuoted] = match;
+    attributes[key] = doubleQuoted || singleQuoted;
+    match = regex.exec(attrString);
+  }
+  return attributes;
+}
+function serializeShortcodeAttributes(attrs) {
+  return Object.entries(attrs).filter(([, value]) => value !== void 0 && value !== null).map(([key, value]) => `${key}="${value}"`).join(" ");
+}
+function createInlineMarkdownSpec(options) {
+  const {
+    nodeName,
+    name: shortcodeName,
+    getContent,
+    parseAttributes: parseAttributes2 = parseShortcodeAttributes,
+    serializeAttributes: serializeAttributes2 = serializeShortcodeAttributes,
+    defaultAttributes = {},
+    selfClosing = false,
+    allowedAttributes
+  } = options;
+  const shortcode = shortcodeName || nodeName;
+  const filterAttributes = (attrs) => {
+    if (!allowedAttributes) {
+      return attrs;
+    }
+    const filtered = {};
+    allowedAttributes.forEach((attr) => {
+      const attrName = typeof attr === "string" ? attr : attr.name;
+      const skipIfDefault = typeof attr === "string" ? void 0 : attr.skipIfDefault;
+      if (attrName in attrs) {
+        const value = attrs[attrName];
+        if (skipIfDefault !== void 0 && value === skipIfDefault) {
+          return;
+        }
+        filtered[attrName] = value;
+      }
+    });
+    return filtered;
+  };
+  const escapedShortcode = shortcode.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return {
+    parseMarkdown: (token, h2) => {
+      const attrs = { ...defaultAttributes, ...token.attributes };
+      if (selfClosing) {
+        return h2.createNode(nodeName, attrs);
+      }
+      const content = getContent ? getContent(token) : token.content || "";
+      if (content) {
+        return h2.createNode(nodeName, attrs, [h2.createTextNode(content)]);
+      }
+      return h2.createNode(nodeName, attrs, []);
+    },
+    markdownTokenizer: {
+      name: nodeName,
+      level: "inline",
+      start(src) {
+        const startPattern = selfClosing ? new RegExp(`\\[${escapedShortcode}\\s*[^\\]]*\\]`) : new RegExp(`\\[${escapedShortcode}\\s*[^\\]]*\\][\\s\\S]*?\\[\\/${escapedShortcode}\\]`);
+        const match = src.match(startPattern);
+        const index = match == null ? void 0 : match.index;
+        return index !== void 0 ? index : -1;
+      },
+      tokenize(src, _tokens, _lexer) {
+        const tokenPattern = selfClosing ? new RegExp(`^\\[${escapedShortcode}\\s*([^\\]]*)\\]`) : new RegExp(`^\\[${escapedShortcode}\\s*([^\\]]*)\\]([\\s\\S]*?)\\[\\/${escapedShortcode}\\]`);
+        const match = src.match(tokenPattern);
+        if (!match) {
+          return void 0;
+        }
+        let content = "";
+        let attrString = "";
+        if (selfClosing) {
+          const [, attrs] = match;
+          attrString = attrs;
+        } else {
+          const [, attrs, contentMatch] = match;
+          attrString = attrs;
+          content = contentMatch || "";
+        }
+        const attributes = parseAttributes2(attrString.trim());
+        return {
+          type: nodeName,
+          raw: match[0],
+          content: content.trim(),
+          attributes
+        };
+      }
+    },
+    renderMarkdown: (node) => {
+      let content = "";
+      if (getContent) {
+        content = getContent(node);
+      } else if (node.content && node.content.length > 0) {
+        content = node.content.filter((child) => child.type === "text").map((child) => child.text).join("");
+      }
+      const filteredAttrs = filterAttributes(node.attrs || {});
+      const attrs = serializeAttributes2(filteredAttrs);
+      const attrString = attrs ? ` ${attrs}` : "";
+      if (selfClosing) {
+        return `[${shortcode}${attrString}]`;
+      }
+      return `[${shortcode}${attrString}]${content}[/${shortcode}]`;
+    }
+  };
+}
+function parseIndentedBlocks(src, config, lexer) {
+  var _a, _b, _c, _d;
+  const lines = src.split("\n");
+  const items = [];
+  let totalRaw = "";
+  let i = 0;
+  const baseIndentSize = config.baseIndentSize || 2;
+  while (i < lines.length) {
+    const currentLine = lines[i];
+    const itemMatch = currentLine.match(config.itemPattern);
+    if (!itemMatch) {
+      if (items.length > 0) {
+        break;
+      } else if (currentLine.trim() === "") {
+        i += 1;
+        totalRaw = `${totalRaw}${currentLine}
+`;
+        continue;
+      } else {
+        return void 0;
+      }
+    }
+    const itemData = config.extractItemData(itemMatch);
+    const { indentLevel, mainContent } = itemData;
+    totalRaw = `${totalRaw}${currentLine}
+`;
+    const itemContent = [mainContent];
+    i += 1;
+    while (i < lines.length) {
+      const nextLine = lines[i];
+      if (nextLine.trim() === "") {
+        const nextNonEmptyIndex = lines.slice(i + 1).findIndex((l) => l.trim() !== "");
+        if (nextNonEmptyIndex === -1) {
+          break;
+        }
+        const nextNonEmpty = lines[i + 1 + nextNonEmptyIndex];
+        const nextIndent2 = ((_b = (_a = nextNonEmpty.match(/^(\s*)/)) == null ? void 0 : _a[1]) == null ? void 0 : _b.length) || 0;
+        if (nextIndent2 > indentLevel) {
+          itemContent.push(nextLine);
+          totalRaw = `${totalRaw}${nextLine}
+`;
+          i += 1;
+          continue;
+        } else {
+          break;
+        }
+      }
+      const nextIndent = ((_d = (_c = nextLine.match(/^(\s*)/)) == null ? void 0 : _c[1]) == null ? void 0 : _d.length) || 0;
+      if (nextIndent > indentLevel) {
+        itemContent.push(nextLine);
+        totalRaw = `${totalRaw}${nextLine}
+`;
+        i += 1;
+      } else {
+        break;
+      }
+    }
+    let nestedTokens;
+    const nestedContent = itemContent.slice(1);
+    if (nestedContent.length > 0) {
+      const dedentedNested = nestedContent.map((nestedLine) => nestedLine.slice(indentLevel + baseIndentSize)).join("\n");
+      if (dedentedNested.trim()) {
+        if (config.customNestedParser) {
+          nestedTokens = config.customNestedParser(dedentedNested);
+        } else {
+          nestedTokens = lexer.blockTokens(dedentedNested);
+        }
+      }
+    }
+    const token = config.createToken(itemData, nestedTokens);
+    items.push(token);
+  }
+  if (items.length === 0) {
+    return void 0;
+  }
+  return {
+    items,
+    raw: totalRaw
+  };
+}
+function renderNestedMarkdownContent(node, h2, prefixOrGenerator, ctx) {
+  if (!node || !Array.isArray(node.content)) {
+    return "";
+  }
+  const prefix = typeof prefixOrGenerator === "function" ? prefixOrGenerator(ctx) : prefixOrGenerator;
+  const [content, ...children] = node.content;
+  const mainContent = h2.renderChildren([content]);
+  const output = [`${prefix}${mainContent}`];
+  if (children && children.length > 0) {
+    children.forEach((child) => {
+      const childContent = h2.renderChildren([child]);
+      if (childContent) {
+        const indentedChild = childContent.split("\n").map((line) => line ? h2.indent(line) : "").join("\n");
+        output.push(indentedChild);
+      }
+    });
+  }
+  return output.join("\n");
+}
+function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
+  const { state } = editor;
+  const { doc, tr } = state;
+  const thisMark = checkMark;
+  doc.descendants((node, pos) => {
+    const from = tr.mapping.map(pos);
+    const to = tr.mapping.map(pos) + node.nodeSize;
+    let foundMark = null;
+    node.marks.forEach((mark) => {
+      if (mark !== thisMark) {
+        return false;
+      }
+      foundMark = mark;
+    });
+    if (!foundMark) {
+      return;
+    }
+    let needsUpdate = false;
+    Object.keys(attrs).forEach((k) => {
+      if (attrs[k] !== foundMark.attrs[k]) {
+        needsUpdate = true;
+      }
+    });
+    if (needsUpdate) {
+      const updatedMark = checkMark.type.create({
+        ...checkMark.attrs,
+        ...attrs
+      });
+      tr.removeMark(from, to, checkMark.type);
+      tr.addMark(from, to, updatedMark);
+    }
+  });
+  if (tr.docChanged) {
+    editor.view.dispatch(tr);
+  }
+}
+
+// src/lib/comment-mark.ts
+import { Plugin as Plugin11, PluginKey as PluginKey9 } from "@tiptap/pm/state";
+var CommentMark = Mark.create({
+  name: "comment",
+  addOptions() {
+    return {
+      onCommentClick: void 0
+    };
+  },
+  addAttributes() {
+    return {
+      commentId: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("data-comment-id"),
+        renderHTML: (attributes) => ({
+          "data-comment-id": attributes.commentId
+        })
+      }
+    };
+  },
+  parseHTML() {
+    return [{ tag: "mark[data-comment-id]" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "mark",
+      mergeAttributes(HTMLAttributes, {
+        class: "bg-yellow-200/50 dark:bg-yellow-500/30 dark:text-foreground cursor-pointer hover:bg-yellow-300/60 dark:hover:bg-yellow-500/40 transition-colors rounded-sm"
+      }),
+      0
+    ];
+  },
+  addCommands() {
+    return {
+      setComment: (commentId) => ({ commands }) => {
+        return commands.setMark(this.name, { commentId });
+      },
+      unsetComment: (commentId) => ({ tr, state }) => {
+        const { doc } = state;
+        let found = false;
+        doc.descendants((node, pos) => {
+          node.marks.forEach((mark) => {
+            if (mark.type.name === this.name && mark.attrs.commentId === commentId) {
+              tr.removeMark(pos, pos + node.nodeSize, mark.type);
+              found = true;
+            }
+          });
+        });
+        return found;
+      }
+    };
+  },
+  addProseMirrorPlugins() {
+    const { onCommentClick } = this.options;
+    return [
+      new Plugin11({
+        key: new PluginKey9("commentClick"),
+        props: {
+          handleClick(view, pos) {
+            if (!onCommentClick) return false;
+            const { state } = view;
+            const $pos = state.doc.resolve(pos);
+            const marks = $pos.marks();
+            const commentMark = marks.find((mark) => mark.type.name === "comment");
+            if (commentMark && commentMark.attrs.commentId) {
+              ;
+              view.dom.blur();
+              onCommentClick(commentMark.attrs.commentId);
+              return true;
+            }
+            return false;
+          }
+        }
+      })
+    ];
+  }
+});
+function addCommentMark(editor, commentId, from, to) {
+  if (!editor.view || editor.isDestroyed) {
+    console.warn("Cannot add comment mark: editor not ready");
+    return;
+  }
+  editor.chain().setTextSelection({ from, to }).setComment(commentId).run();
+}
+function removeCommentMark(editor, commentId) {
+  if (!editor.view || editor.isDestroyed) return;
+  editor.chain().unsetComment(commentId).run();
+}
+function applyCommentMarks(editor, comments) {
+  if (!editor.view || editor.isDestroyed) return;
+  const { doc } = editor.state;
+  const textContent = doc.textContent;
+  comments.forEach((comment) => {
+    if (!comment.quotedText || comment.parentId) return;
+    const index = textContent.indexOf(comment.quotedText);
+    if (index === -1) return;
+    let currentPos = 0;
+    let startPos = null;
+    let endPos = null;
+    doc.descendants((node, pos) => {
+      if (startPos !== null && endPos !== null) return false;
+      if (node.isText && node.text) {
+        const nodeStart = currentPos;
+        const nodeEnd = currentPos + node.text.length;
+        if (startPos === null && nodeEnd > index) {
+          const offsetInNode = index - nodeStart;
+          startPos = pos + offsetInNode;
+        }
+        if (startPos !== null && endPos === null) {
+          const targetEnd = index + comment.quotedText.length;
+          if (nodeEnd >= targetEnd) {
+            const offsetInNode = targetEnd - nodeStart;
+            endPos = pos + offsetInNode;
+          }
+        }
+        currentPos = nodeEnd;
+      }
+      return true;
+    });
+    if (startPos !== null && endPos !== null) {
+      editor.chain().setTextSelection({ from: startPos, to: endPos }).setComment(comment.id).setTextSelection(endPos).run();
+    }
+  });
+}
+function scrollToComment(editor, commentId) {
+  if (!editor.view || editor.isDestroyed) return;
+  const { doc } = editor.state;
+  doc.descendants((node, pos) => {
+    const commentMark = node.marks.find(
+      (mark) => mark.type.name === "comment" && mark.attrs.commentId === commentId
+    );
+    if (commentMark) {
+      editor.chain().setTextSelection(pos).run();
+      const view = editor.view;
+      const coords = view.coordsAtPos(pos);
+      const editorRect = view.dom.getBoundingClientRect();
+      if (coords.top < editorRect.top || coords.bottom > editorRect.bottom) {
+        view.dom.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return false;
+    }
+    return true;
+  });
+}
+
+// src/ui/components/TiptapEditor.tsx
+import { jsx as jsx12 } from "react/jsx-runtime";
+var DEFAULT_PROSE_CLASSES = "prose prose-gray dark:prose-invert max-w-none";
+function TiptapEditor({
+  content,
+  onChange,
+  placeholder = "Start writing...",
+  autoFocus = false,
+  onEditorReady,
+  onSelectionChange,
+  onCommentClick,
+  proseClasses = DEFAULT_PROSE_CLASSES
+}) {
+  const initialHtml = useMemo2(() => content ? renderMarkdown(content) : "", [content]);
+  const extensions = useMemo2(() => [
+    StarterKit.configure({
+      heading: {
+        levels: [1, 2, 3]
+      }
+    }),
+    Placeholder.configure({
+      placeholder
+    }),
+    Link.configure({
+      openOnClick: false,
+      HTMLAttributes: {
+        class: "text-blue-600 dark:text-blue-400 underline"
+      }
+    }),
+    Image2.configure({
+      HTMLAttributes: {
+        class: "rounded-lg max-w-full"
+      }
+    }),
+    CommentMark.configure({
+      onCommentClick
+    })
+  ], [placeholder, onCommentClick]);
+  const editor = useEditor({
+    immediatelyRender: false,
+    // Prevent SSR hydration mismatch
+    extensions,
+    content: initialHtml,
+    onUpdate: ({ editor: editor2 }) => {
+      const html = editor2.getHTML();
+      const markdown = htmlToMarkdown(html);
+      onChange(markdown);
+    },
+    onSelectionUpdate: ({ editor: editor2 }) => {
+      if (!onSelectionChange) return;
+      const { from, to, empty } = editor2.state.selection;
+      if (empty) {
+        onSelectionChange(null);
+      } else {
+        const text = editor2.state.doc.textBetween(from, to, " ");
+        let hasExistingComment = false;
+        editor2.state.doc.nodesBetween(from, to, (node) => {
+          if (node.marks.some((mark) => mark.type.name === "comment")) {
+            hasExistingComment = true;
+            return false;
+          }
+        });
+        onSelectionChange({
+          hasSelection: true,
+          text,
+          from,
+          to,
+          hasExistingComment
+        });
+      }
+    },
+    editorProps: {
+      attributes: {
+        class: `${proseClasses} min-h-[500px] outline-none`
+      }
+    }
+  });
+  useEffect6(() => {
+    if (editor) {
+      if (onEditorReady) {
+        onEditorReady(editor);
+      }
+      if (autoFocus) {
+        setTimeout(() => editor.commands.focus(), 0);
+      }
+    }
+  }, [editor, onEditorReady, autoFocus]);
+  useEffect6(() => {
+    if (editor && content !== void 0) {
+      const currentMarkdown = htmlToMarkdown(editor.getHTML());
+      if (currentMarkdown !== content) {
+        const html = content ? renderMarkdown(content) : "";
+        editor.commands.setContent(html, { emitUpdate: false });
+      }
+    }
+  }, [editor, content]);
+  return /* @__PURE__ */ jsx12(EditorContent, { editor });
+}
+
+// src/ui/components/CommentsPanel.tsx
+import { useState as useState7, useRef as useRef5, useEffect as useEffect7, useCallback as useCallback7 } from "react";
+import { createPortal as createPortal2 } from "react-dom";
+import { X as X2, MessageSquare as MessageSquare2, ArrowUp as ArrowUp2, Loader2 as Loader23, ChevronDown as ChevronDown3, ChevronRight } from "lucide-react";
+
+// src/ui/components/CommentThread.tsx
+import { useState as useState6 } from "react";
+import { MoreHorizontal, Reply, Check as Check3, Trash2, Pencil } from "lucide-react";
+
+// src/lib/comments.ts
+function canDeleteComment(comment, currentUserEmail, isAdmin) {
+  return comment.user.email === currentUserEmail || isAdmin;
+}
+function canEditComment(comment, currentUserEmail) {
+  return comment.user.email === currentUserEmail;
+}
+function createCommentsClient(apiBasePath = "/api/cms") {
+  return {
+    async fetchComments(postId) {
+      const res = await fetch(`${apiBasePath}/posts/${postId}/comments`);
+      if (!res.ok) throw new Error("Failed to fetch comments");
+      const json = await res.json();
+      return json.data || json;
+    },
+    async createComment(postId, data) {
+      const res = await fetch(`${apiBasePath}/posts/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to create comment");
+      }
+      const json = await res.json();
+      return json.data || json;
+    },
+    async updateComment(postId, commentId, content) {
+      const res = await fetch(`${apiBasePath}/posts/${postId}/comments/${commentId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content })
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to update comment");
+      }
+      const json = await res.json();
+      return json.data || json;
+    },
+    async deleteComment(postId, commentId) {
+      const res = await fetch(`${apiBasePath}/posts/${postId}/comments/${commentId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to delete comment");
+      }
+    },
+    async toggleResolve(postId, commentId) {
+      const res = await fetch(`${apiBasePath}/posts/${postId}/comments/${commentId}/resolve`, {
+        method: "POST"
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to toggle resolve");
+      }
+      const json = await res.json();
+      return json.data || json;
+    },
+    async resolveAllComments(postId) {
+      const res = await fetch(`${apiBasePath}/posts/${postId}/comments/resolve-all`, {
+        method: "POST"
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to resolve all comments");
+      }
+      const json = await res.json();
+      return json.data || json;
+    }
+  };
+}
+
+// src/ui/components/CommentThread.tsx
+import { Fragment as Fragment7, jsx as jsx13, jsxs as jsxs9 } from "react/jsx-runtime";
+function formatRelativeTime2(dateStr) {
+  const date = new Date(dateStr);
+  const now = /* @__PURE__ */ new Date();
+  const diff = now.getTime() - date.getTime();
+  const minutes = Math.floor(diff / 6e4);
+  const hours = Math.floor(diff / 36e5);
+  const days = Math.floor(diff / 864e5);
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
+function CommentThread({
+  comment,
+  currentUserEmail,
+  isAdmin,
+  isActive,
+  onReply,
+  onEdit,
+  onDelete,
+  onResolve,
+  onClick
+}) {
+  const [isReplying, setIsReplying] = useState6(false);
+  const [isEditing, setIsEditing] = useState6(false);
+  const [replyContent, setReplyContent] = useState6("");
+  const [editContent, setEditContent] = useState6(comment.content);
+  const [loading, setLoading] = useState6(false);
+  const [menuOpen, setMenuOpen] = useState6(false);
+  const canEdit = canEditComment(comment, currentUserEmail);
+  const canDelete = canDeleteComment(comment, currentUserEmail, isAdmin);
+  const isOwn = comment.user.email === currentUserEmail;
+  const handleReply = async () => {
+    if (!replyContent.trim()) return;
+    setLoading(true);
+    try {
+      await onReply(replyContent.trim());
+      setReplyContent("");
+      setIsReplying(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleEdit = async () => {
+    if (!editContent.trim()) return;
+    setLoading(true);
+    try {
+      await onEdit(editContent.trim());
+      setIsEditing(false);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleDelete = async () => {
+    if (!confirm("Delete this comment?")) return;
+    setLoading(true);
+    try {
+      await onDelete();
+    } finally {
+      setLoading(false);
+    }
+  };
+  return /* @__PURE__ */ jsxs9(
+    "div",
+    {
+      role: "button",
+      tabIndex: 0,
+      onClick,
+      onKeyDown: (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      },
+      className: cn(
+        "rounded-lg border p-3 transition-colors cursor-pointer",
+        isActive ? "border-yellow-400 bg-yellow-50/50 dark:border-yellow-600 dark:bg-yellow-900/20" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900",
+        comment.resolved && "opacity-60"
+      ),
+      children: [
+        /* @__PURE__ */ jsxs9("div", { className: "flex items-start justify-between gap-2 mb-2", children: [
+          /* @__PURE__ */ jsxs9("div", { className: "flex items-center gap-2 text-sm", children: [
+            /* @__PURE__ */ jsx13("span", { className: "font-medium", children: isOwn ? "You" : comment.user.name || comment.user.email.split("@")[0] }),
+            /* @__PURE__ */ jsx13("span", { className: "text-gray-500 dark:text-gray-400", children: formatRelativeTime2(comment.createdAt) }),
+            comment.resolved && /* @__PURE__ */ jsxs9("span", { className: "inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400", children: [
+              /* @__PURE__ */ jsx13(Check3, { className: "w-3 h-3" }),
+              "Resolved"
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs9("div", { className: "relative", children: [
+            /* @__PURE__ */ jsx13(
+              "button",
+              {
+                type: "button",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setMenuOpen(!menuOpen);
+                },
+                className: "w-6 h-6 rounded hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500",
+                children: /* @__PURE__ */ jsx13(MoreHorizontal, { className: "w-4 h-4" })
+              }
+            ),
+            menuOpen && /* @__PURE__ */ jsxs9(Fragment7, { children: [
+              /* @__PURE__ */ jsx13(
+                "div",
+                {
+                  className: "fixed inset-0 z-[79]",
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                  }
+                }
+              ),
+              /* @__PURE__ */ jsxs9("div", { className: "absolute right-0 top-full mt-1 z-[80] bg-popover border border-border rounded-md shadow-lg p-1 min-w-[140px]", children: [
+                /* @__PURE__ */ jsxs9(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: (e) => {
+                      e.stopPropagation();
+                      onResolve();
+                      setMenuOpen(false);
+                    },
+                    className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default flex items-center gap-2",
+                    children: [
+                      /* @__PURE__ */ jsx13(Check3, { className: "w-4 h-4" }),
+                      comment.resolved ? "Unresolve" : "Resolve"
+                    ]
+                  }
+                ),
+                canEdit && /* @__PURE__ */ jsxs9(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: (e) => {
+                      e.stopPropagation();
+                      setIsEditing(true);
+                      setMenuOpen(false);
+                    },
+                    className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default flex items-center gap-2",
+                    children: [
+                      /* @__PURE__ */ jsx13(Pencil, { className: "w-4 h-4" }),
+                      "Edit"
+                    ]
+                  }
+                ),
+                canDelete && /* @__PURE__ */ jsxs9(Fragment7, { children: [
+                  /* @__PURE__ */ jsx13("div", { className: "my-1 border-t border-border" }),
+                  /* @__PURE__ */ jsxs9(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: (e) => {
+                        e.stopPropagation();
+                        handleDelete();
+                        setMenuOpen(false);
+                      },
+                      className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default flex items-center gap-2 text-destructive",
+                      children: [
+                        /* @__PURE__ */ jsx13(Trash2, { className: "w-4 h-4" }),
+                        "Delete"
+                      ]
+                    }
+                  )
+                ] })
+              ] })
+            ] })
+          ] })
+        ] }),
+        comment.quotedText && /* @__PURE__ */ jsxs9("div", { className: "mb-2 px-2 py-1 bg-yellow-100/50 dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 dark:text-gray-400 line-clamp-2", children: [
+          '"',
+          comment.quotedText,
+          '"'
+        ] }),
+        isEditing ? /* @__PURE__ */ jsxs9("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx13(
+            "textarea",
+            {
+              value: editContent,
+              onChange: (e) => {
+                setEditContent(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+              },
+              onKeyDown: (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleEdit();
+                }
+                if (e.key === "Escape") {
+                  e.stopPropagation();
+                  setIsEditing(false);
+                  setEditContent(comment.content);
+                }
+              },
+              onClick: (e) => e.stopPropagation(),
+              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            }
+          ),
+          /* @__PURE__ */ jsxs9("div", { className: "flex gap-2 justify-end", children: [
+            /* @__PURE__ */ jsx13(
+              "button",
+              {
+                type: "button",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setIsEditing(false);
+                  setEditContent(comment.content);
+                },
+                disabled: loading,
+                className: "px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50",
+                children: "Cancel"
+              }
+            ),
+            /* @__PURE__ */ jsx13(
+              "button",
+              {
+                type: "button",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handleEdit();
+                },
+                disabled: loading || !editContent.trim(),
+                className: "px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50",
+                children: "Save"
+              }
+            )
+          ] })
+        ] }) : /* @__PURE__ */ jsx13("p", { className: "text-sm whitespace-pre-wrap", children: comment.content }),
+        comment.replies && comment.replies.length > 0 && /* @__PURE__ */ jsx13("div", { className: "mt-3 pl-3 border-l-2 border-gray-200 dark:border-gray-700 space-y-3", children: comment.replies.map((reply) => /* @__PURE__ */ jsx13(
+          ReplyItem,
+          {
+            reply,
+            currentUserEmail
+          },
+          reply.id
+        )) }),
+        !isEditing && /* @__PURE__ */ jsx13("div", { className: "mt-3", children: isReplying ? /* @__PURE__ */ jsxs9("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx13(
+            "textarea",
+            {
+              value: replyContent,
+              onChange: (e) => {
+                setReplyContent(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
+              },
+              onKeyDown: (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleReply();
+                }
+                if (e.key === "Escape") {
+                  e.stopPropagation();
+                  setIsReplying(false);
+                  setReplyContent("");
+                }
+              },
+              placeholder: "Write a reply...",
+              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
+              onClick: (e) => e.stopPropagation()
+            }
+          ),
+          /* @__PURE__ */ jsxs9("div", { className: "flex gap-2 justify-end", children: [
+            /* @__PURE__ */ jsx13(
+              "button",
+              {
+                type: "button",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setIsReplying(false);
+                  setReplyContent("");
+                },
+                disabled: loading,
+                className: "px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50",
+                children: "Cancel"
+              }
+            ),
+            /* @__PURE__ */ jsx13(
+              "button",
+              {
+                type: "button",
+                onClick: (e) => {
+                  e.stopPropagation();
+                  handleReply();
+                },
+                disabled: loading || !replyContent.trim(),
+                className: "px-3 py-1.5 text-sm rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50",
+                children: "Reply"
+              }
+            )
+          ] })
+        ] }) : /* @__PURE__ */ jsxs9(
+          "button",
+          {
+            type: "button",
+            onClick: (e) => {
+              e.stopPropagation();
+              setIsReplying(true);
+            },
+            className: "inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors",
+            children: [
+              /* @__PURE__ */ jsx13(Reply, { className: "w-3.5 h-3.5" }),
+              "Reply"
+            ]
+          }
+        ) })
+      ]
+    }
+  );
+}
+function ReplyItem({
+  reply,
+  currentUserEmail
+}) {
+  const isOwn = reply.user.email === currentUserEmail;
+  return /* @__PURE__ */ jsxs9("div", { className: "text-sm", children: [
+    /* @__PURE__ */ jsxs9("div", { className: "flex items-center gap-2 mb-1", children: [
+      /* @__PURE__ */ jsx13("span", { className: "font-medium", children: isOwn ? "You" : reply.user.name || reply.user.email.split("@")[0] }),
+      /* @__PURE__ */ jsx13("span", { className: "text-gray-500 dark:text-gray-400 text-xs", children: formatRelativeTime2(reply.createdAt) })
+    ] }),
+    /* @__PURE__ */ jsx13("p", { className: "whitespace-pre-wrap text-gray-600 dark:text-gray-400", children: reply.content })
+  ] });
+}
+
+// src/ui/components/CommentsPanel.tsx
+import { Fragment as Fragment8, jsx as jsx14, jsxs as jsxs10 } from "react/jsx-runtime";
+function CommentsPanel({
+  comments,
+  currentUserEmail,
+  isAdmin,
+  selectedText,
+  onCreateComment,
+  onReply,
+  onEdit,
+  onDelete,
+  onResolve,
+  onCommentClick,
+  activeCommentId,
+  isOpen,
+  onClose,
+  onClearSelection
+}) {
+  const [newComment, setNewComment] = useState7("");
+  const [isAnimating, setIsAnimating] = useState7(false);
+  const [isVisible, setIsVisible] = useState7(false);
+  const [mounted, setMounted] = useState7(false);
+  const [creating, setCreating] = useState7(false);
+  const [showResolved, setShowResolved] = useState7(false);
+  const textareaRef = useRef5(null);
+  const commentsEndRef = useRef5(null);
+  const openComments = comments.filter((c) => !c.resolved);
+  const resolvedComments = comments.filter((c) => c.resolved);
+  useEffect7(() => {
+    setMounted(true);
+  }, []);
+  useEffect7(() => {
+    if (isOpen) {
+      setIsVisible(true);
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      document.body.style.top = `-${window.scrollY}px`;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true);
+        });
+      });
+    } else {
+      setIsAnimating(false);
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.top = "";
+      window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+  useEffect7(() => {
+    if (selectedText && isOpen) {
+      textareaRef.current?.focus();
+    }
+  }, [selectedText, isOpen]);
+  useEffect7(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
+    }
+  }, [newComment]);
+  const handleCreateComment = useCallback7(async () => {
+    if (!newComment.trim() || !selectedText) return;
+    setCreating(true);
+    try {
+      await onCreateComment(newComment.trim());
+      setNewComment("");
+      onClearSelection();
+    } finally {
+      setCreating(false);
+    }
+  }, [newComment, selectedText, onCreateComment, onClearSelection]);
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      handleCreateComment();
+    }
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      if (selectedText) {
+        onClearSelection();
+        setNewComment("");
+      } else {
+        onClose();
+      }
+    }
+  };
+  if (!isVisible || !mounted) return null;
+  return createPortal2(
+    /* @__PURE__ */ jsxs10(Fragment8, { children: [
+      /* @__PURE__ */ jsx14(
+        "div",
+        {
+          className: cn(
+            "fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200",
+            isAnimating ? "opacity-100" : "opacity-0"
+          ),
+          onClick: onClose
+        }
+      ),
+      /* @__PURE__ */ jsxs10(
+        "div",
+        {
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": "Comments",
+          className: cn(
+            "fixed z-[70] flex flex-col bg-white dark:bg-gray-900 shadow-xl transition-transform duration-200 ease-out overflow-hidden",
+            "inset-x-0 top-0 h-[100dvh]",
+            "md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-gray-200 md:dark:border-gray-700",
+            isAnimating ? "translate-x-0" : "translate-x-full"
+          ),
+          children: [
+            /* @__PURE__ */ jsxs10("div", { className: "flex-shrink-0 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between", children: [
+              /* @__PURE__ */ jsxs10("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ jsx14(MessageSquare2, { className: "w-4 h-4 text-gray-500" }),
+                /* @__PURE__ */ jsx14("h2", { className: "font-medium", children: "Comments" }),
+                openComments.length > 0 && /* @__PURE__ */ jsxs10("span", { className: "text-xs text-gray-500", children: [
+                  "(",
+                  openComments.length,
+                  ")"
+                ] })
+              ] }),
+              /* @__PURE__ */ jsx14(
+                "button",
+                {
+                  type: "button",
+                  onClick: onClose,
+                  className: "w-8 h-8 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500",
+                  "aria-label": "Close comments",
+                  children: /* @__PURE__ */ jsx14(X2, { className: "w-4 h-4" })
+                }
+              )
+            ] }),
+            selectedText && /* @__PURE__ */ jsxs10("div", { className: "flex-shrink-0 border-b border-gray-200 dark:border-gray-700 px-4 py-5 bg-gray-50/50 dark:bg-gray-800/30", children: [
+              /* @__PURE__ */ jsxs10("div", { className: "flex items-center justify-between mb-3", children: [
+                /* @__PURE__ */ jsxs10("div", { className: "flex-1 px-2 py-1 bg-yellow-100/50 dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 dark:text-gray-400 line-clamp-2", children: [
+                  '"',
+                  selectedText,
+                  '"'
+                ] }),
+                /* @__PURE__ */ jsx14(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => {
+                      onClearSelection();
+                      setNewComment("");
+                    },
+                    disabled: creating,
+                    className: "ml-2 text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white disabled:opacity-50",
+                    children: "Cancel"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ jsxs10("div", { className: "flex items-end gap-2", children: [
+                /* @__PURE__ */ jsx14(
+                  "textarea",
+                  {
+                    ref: textareaRef,
+                    value: newComment,
+                    onChange: (e) => setNewComment(e.target.value),
+                    onKeyDown: handleKeyDown,
+                    placeholder: "Add a comment...",
+                    className: "flex-1 min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
+                    rows: 2,
+                    enterKeyHint: "send"
+                  }
+                ),
+                /* @__PURE__ */ jsx14(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: handleCreateComment,
+                    disabled: creating || !newComment.trim(),
+                    className: "w-10 h-10 flex-shrink-0 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-700",
+                    children: creating ? /* @__PURE__ */ jsx14(Loader23, { className: "h-5 w-5 animate-spin" }) : /* @__PURE__ */ jsx14(ArrowUp2, { className: "h-5 w-5" })
+                  }
+                )
+              ] })
+            ] }),
+            /* @__PURE__ */ jsx14("div", { className: cn("flex-1 overflow-y-auto", selectedText && "hidden"), children: comments.length === 0 ? /* @__PURE__ */ jsx14("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ jsxs10("div", { className: "text-center max-w-xs px-6", children: [
+              /* @__PURE__ */ jsx14(MessageSquare2, { className: "w-8 h-8 mx-auto mb-2 text-gray-400" }),
+              /* @__PURE__ */ jsx14("p", { className: "text-gray-500 text-sm", children: "No comments yet. Select text and click the comment button to add one." })
+            ] }) }) : /* @__PURE__ */ jsxs10("div", { className: "p-4 space-y-3", children: [
+              openComments.map((comment) => /* @__PURE__ */ jsx14(
+                CommentThread,
+                {
+                  comment,
+                  currentUserEmail,
+                  isAdmin,
+                  isActive: activeCommentId === comment.id,
+                  onReply: (content) => onReply(comment.id, content),
+                  onEdit: (content) => onEdit(comment.id, content),
+                  onDelete: () => onDelete(comment.id),
+                  onResolve: () => onResolve(comment.id),
+                  onClick: () => onCommentClick(comment.id)
+                },
+                comment.id
+              )),
+              resolvedComments.length > 0 && /* @__PURE__ */ jsxs10("div", { className: "pt-2", children: [
+                /* @__PURE__ */ jsx14(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: () => setShowResolved(!showResolved),
+                    className: "w-full text-left text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors py-2",
+                    children: /* @__PURE__ */ jsxs10("span", { className: "inline-flex items-center gap-1", children: [
+                      showResolved ? /* @__PURE__ */ jsx14(ChevronDown3, { className: "w-4 h-4" }) : /* @__PURE__ */ jsx14(ChevronRight, { className: "w-4 h-4" }),
+                      "Resolved (",
+                      resolvedComments.length,
+                      ")"
+                    ] })
+                  }
+                ),
+                showResolved && /* @__PURE__ */ jsx14("div", { className: "space-y-3 mt-2", children: resolvedComments.map((comment) => /* @__PURE__ */ jsx14(
+                  CommentThread,
+                  {
+                    comment,
+                    currentUserEmail,
+                    isAdmin,
+                    isActive: activeCommentId === comment.id,
+                    onReply: (content) => onReply(comment.id, content),
+                    onEdit: (content) => onEdit(comment.id, content),
+                    onDelete: () => onDelete(comment.id),
+                    onResolve: () => onResolve(comment.id),
+                    onClick: () => onCommentClick(comment.id)
+                  },
+                  comment.id
+                )) })
+              ] }),
+              /* @__PURE__ */ jsx14("div", { ref: commentsEndRef })
+            ] }) })
+          ]
+        }
+      )
+    ] }),
+    document.body
+  );
+}
+
+// src/ui/components/TagsSection.tsx
+import { useState as useState8, useEffect as useEffect8, useRef as useRef6 } from "react";
+import { Fragment as Fragment9, jsx as jsx15, jsxs as jsxs11 } from "react/jsx-runtime";
+function TagsSection({
+  tags,
+  onTagsChange,
+  apiBasePath,
+  disabled = false
+}) {
+  const [isExpanded, setIsExpanded] = useState8(false);
+  const [availableTags, setAvailableTags] = useState8([]);
+  const [loading, setLoading] = useState8(false);
+  const [dropdownOpen, setDropdownOpen] = useState8(false);
+  const dropdownRef = useRef6(null);
+  useEffect8(() => {
+    if (isExpanded && availableTags.length === 0) {
+      setLoading(true);
+      fetch(`${apiBasePath}/tags`).then((res) => res.ok ? res.json() : Promise.reject()).then((data) => {
+        setAvailableTags(data.data || []);
+        setLoading(false);
+      }).catch(() => setLoading(false));
+    }
+  }, [isExpanded, availableTags.length, apiBasePath]);
+  useEffect8(() => {
+    if (!dropdownOpen) return;
+    function handleClick(e) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [dropdownOpen]);
+  const handleAddTag = (tagId) => {
+    const tagToAdd = availableTags.find((t) => t.id === tagId);
+    if (tagToAdd && !tags.some((t) => t.id === tagId)) {
+      onTagsChange([...tags, tagToAdd]);
+    }
+    setDropdownOpen(false);
+  };
+  const handleRemoveTag = (tagId) => {
+    onTagsChange(tags.filter((t) => t.id !== tagId));
+  };
+  const unselectedTags = availableTags.filter(
+    (at) => !tags.some((t) => t.id === at.id)
+  );
+  const tagSummary = tags.length === 0 ? "no tags" : tags.length === 1 ? "1 tag" : `${tags.length} tags`;
+  return /* @__PURE__ */ jsxs11("div", { className: "border-t border-gray-200 dark:border-gray-800 pt-4", children: [
+    /* @__PURE__ */ jsxs11(
+      "button",
+      {
+        type: "button",
+        onClick: () => setIsExpanded(!isExpanded),
+        className: "flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors w-full",
+        children: [
+          /* @__PURE__ */ jsx15(
+            "svg",
+            {
+              className: `h-4 w-4 transition-transform ${isExpanded ? "rotate-90" : ""}`,
+              fill: "none",
+              viewBox: "0 0 24 24",
+              stroke: "currentColor",
+              children: /* @__PURE__ */ jsx15("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9 5l7 7-7 7" })
+            }
+          ),
+          /* @__PURE__ */ jsx15("span", { children: "Tags" }),
+          /* @__PURE__ */ jsx15("span", { className: "ml-auto text-xs text-gray-400", children: tagSummary })
+        ]
+      }
+    ),
+    isExpanded && /* @__PURE__ */ jsxs11("div", { className: "mt-4 space-y-3 pl-6", children: [
+      tags.length > 0 && /* @__PURE__ */ jsx15("div", { className: "flex flex-wrap gap-2", children: tags.map((tag) => /* @__PURE__ */ jsxs11(
+        "span",
+        {
+          className: "inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm",
+          children: [
+            tag.name,
+            !disabled && /* @__PURE__ */ jsx15(
+              "button",
+              {
+                type: "button",
+                onClick: () => handleRemoveTag(tag.id),
+                className: "hover:text-red-500 transition-colors",
+                children: /* @__PURE__ */ jsx15("svg", { className: "h-3 w-3", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx15("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M6 18L18 6M6 6l12 12" }) })
+              }
+            )
+          ]
+        },
+        tag.id
+      )) }),
+      !disabled && /* @__PURE__ */ jsx15(Fragment9, { children: loading ? /* @__PURE__ */ jsx15("p", { className: "text-sm text-gray-500", children: "Loading tags..." }) : unselectedTags.length > 0 ? /* @__PURE__ */ jsxs11("div", { className: "relative max-w-[200px]", ref: dropdownRef, children: [
+        /* @__PURE__ */ jsxs11(
+          "button",
+          {
+            type: "button",
+            onClick: () => setDropdownOpen(!dropdownOpen),
+            className: "w-full h-8 px-3 text-sm text-left border border-gray-200 dark:border-gray-700 rounded-md bg-transparent flex items-center justify-between",
+            children: [
+              /* @__PURE__ */ jsx15("span", { className: "text-gray-500", children: "Add tag..." }),
+              /* @__PURE__ */ jsx15("svg", { className: "h-4 w-4 text-gray-400", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx15("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 9l-7 7-7-7" }) })
+            ]
+          }
+        ),
+        dropdownOpen && /* @__PURE__ */ jsx15("div", { className: "absolute z-50 top-full left-0 mt-1 w-full bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-auto p-1", children: unselectedTags.map((tag) => /* @__PURE__ */ jsx15(
+          "button",
+          {
+            type: "button",
+            onClick: () => handleAddTag(tag.id),
+            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+            children: tag.name
+          },
+          tag.id
+        )) })
+      ] }) : availableTags.length === 0 ? /* @__PURE__ */ jsx15("p", { className: "text-sm text-gray-500", children: "No tags available. Create tags in Settings." }) : /* @__PURE__ */ jsx15("p", { className: "text-sm text-gray-500", children: "All tags added" }) })
+    ] })
+  ] });
+}
+
+// src/ui/hooks/useComments.ts
+import { useState as useState9, useCallback as useCallback8, useEffect as useEffect9 } from "react";
+function useComments({
+  postId: initialPostId,
+  editor,
+  apiBasePath = "/api/cms",
+  onSave
+}) {
+  const [postId, setPostId] = useState9(initialPostId);
+  const [comments, setComments] = useState9([]);
+  const [loading, setLoading] = useState9(false);
+  const [activeCommentId, setActiveCommentId] = useState9(null);
+  const [selectedText, setSelectedText] = useState9(null);
+  const client = createCommentsClient(apiBasePath);
+  useEffect9(() => {
+    setPostId(initialPostId);
+  }, [initialPostId]);
+  useEffect9(() => {
+    if (!postId) {
+      setComments([]);
+      return;
+    }
+    setLoading(true);
+    client.fetchComments(postId).then((data) => {
+      setComments(data);
+      if (editor) {
+        applyCommentMarks(editor, data);
+      }
+    }).catch(console.error).finally(() => setLoading(false));
+  }, [postId, editor]);
+  const createComment = useCallback8(async (content) => {
+    if (!selectedText) return;
+    let effectivePostId = postId;
+    if (!effectivePostId && onSave) {
+      effectivePostId = await onSave();
+      if (effectivePostId) {
+        setPostId(effectivePostId);
+      }
+    }
+    if (!effectivePostId) {
+      console.error("Cannot create comment: no post ID");
+      return;
+    }
+    const comment = await client.createComment(effectivePostId, {
+      quotedText: selectedText.text,
+      content
+    });
+    if (editor) {
+      addCommentMark(editor, comment.id, selectedText.from, selectedText.to);
+    }
+    setComments((prev) => [{ ...comment, replies: [] }, ...prev]);
+    setSelectedText(null);
+  }, [postId, selectedText, editor, onSave, client]);
+  const replyToComment = useCallback8(async (parentId, content) => {
+    if (!postId) return;
+    const reply = await client.createComment(postId, {
+      quotedText: "",
+      content,
+      parentId
+    });
+    setComments(
+      (prev) => prev.map(
+        (c) => c.id === parentId ? { ...c, replies: [...c.replies || [], reply] } : c
+      )
+    );
+  }, [postId, client]);
+  const editComment = useCallback8(async (commentId, content) => {
+    if (!postId) return;
+    const updated = await client.updateComment(postId, commentId, content);
+    setComments(
+      (prev) => prev.map((c) => {
+        if (c.id === commentId) {
+          return { ...c, ...updated };
+        }
+        if (c.replies) {
+          return {
+            ...c,
+            replies: c.replies.map(
+              (r) => r.id === commentId ? { ...r, ...updated } : r
+            )
+          };
+        }
+        return c;
+      })
+    );
+  }, [postId, client]);
+  const removeComment = useCallback8(async (commentId) => {
+    if (!postId) return;
+    await client.deleteComment(postId, commentId);
+    if (editor) {
+      removeCommentMark(editor, commentId);
+    }
+    setComments((prev) => {
+      const isTopLevel = prev.some((c) => c.id === commentId);
+      if (isTopLevel) {
+        return prev.filter((c) => c.id !== commentId);
+      }
+      return prev.map((c) => ({
+        ...c,
+        replies: c.replies?.filter((r) => r.id !== commentId)
+      }));
+    });
+  }, [postId, editor, client]);
+  const resolveComment = useCallback8(async (commentId) => {
+    if (!postId) return;
+    const updated = await client.toggleResolve(postId, commentId);
+    if (editor) {
+      const comment = comments.find((c) => c.id === commentId);
+      if (updated.resolved) {
+        removeCommentMark(editor, commentId);
+      } else if (comment && selectedText) {
+        addCommentMark(editor, commentId, selectedText.from, selectedText.to);
+      }
+    }
+    setComments(
+      (prev) => prev.map((c) => c.id === commentId ? { ...c, resolved: updated.resolved } : c)
+    );
+  }, [postId, editor, comments, selectedText, client]);
+  const resolveAllComments = useCallback8(async () => {
+    if (!postId) return;
+    await client.resolveAllComments(postId);
+    if (editor) {
+      comments.filter((c) => !c.resolved && !c.parentId).forEach((c) => {
+        removeCommentMark(editor, c.id);
+      });
+    }
+    setComments(
+      (prev) => prev.map((c) => ({ ...c, resolved: true }))
+    );
+  }, [postId, editor, comments, client]);
+  const scrollToCommentMark = useCallback8((commentId) => {
+    if (editor) {
+      scrollToComment(editor, commentId);
+    }
+    setActiveCommentId(commentId);
+  }, [editor]);
+  const openCount = comments.filter((c) => !c.resolved && !c.parentId).length;
+  return {
+    list: comments,
+    loading,
+    activeId: activeCommentId,
+    setActiveId: setActiveCommentId,
+    selectedText,
+    setSelectedText,
+    postId,
+    create: createComment,
+    reply: replyToComment,
+    edit: editComment,
+    remove: removeComment,
+    resolve: resolveComment,
+    resolveAll: resolveAllComments,
+    scrollTo: scrollToCommentMark,
+    openCount
+  };
+}
+
+// src/ui/pages/EditorPage.tsx
+import { jsx as jsx16, jsxs as jsxs12 } from "react/jsx-runtime";
+function Skeleton({ className }) {
+  return /* @__PURE__ */ jsx16("div", { className: `bg-gray-200 dark:bg-gray-800 animate-pulse rounded ${className || ""}` });
+}
+function ContentSkeleton({ styles }) {
+  return /* @__PURE__ */ jsxs12("div", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+    /* @__PURE__ */ jsxs12("div", { className: "space-y-2 mb-8", children: [
+      /* @__PURE__ */ jsx16(Skeleton, { className: "h-8 w-4/5" }),
+      /* @__PURE__ */ jsx16(Skeleton, { className: "h-5 w-3/5" }),
+      /* @__PURE__ */ jsx16("div", { className: "!mt-4", children: /* @__PURE__ */ jsx16(Skeleton, { className: "h-3 w-24" }) })
+    ] }),
+    /* @__PURE__ */ jsxs12("div", { className: "space-y-3", children: [
+      /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-3/4" }),
+      /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-5/6" })
+    ] })
+  ] });
+}
+function AutoResizeTextarea({
+  value,
+  onChange,
+  placeholder,
+  disabled,
+  className
+}) {
+  const ref = useRef7(null);
+  useEffect10(() => {
+    if (ref.current) {
+      ref.current.style.height = "auto";
+      ref.current.style.height = `${ref.current.scrollHeight}px`;
+    }
+  }, [value]);
+  return /* @__PURE__ */ jsx16(
+    "textarea",
+    {
+      ref,
+      value,
+      onChange: (e) => onChange(e.target.value),
+      placeholder,
+      disabled,
+      rows: 1,
+      onKeyDown: (e) => {
+        if (e.key === "Enter") e.preventDefault();
+      },
+      className: `resize-none overflow-hidden ${className || ""}`
+    }
+  );
+}
+function EditorPage({ slug }) {
+  const { apiBasePath, styles, fields, navigate, basePath, onEditorStateChange, onRegisterEditHandler } = useDashboardContext();
+  const [post, setPost] = useState10({
+    title: "",
+    subtitle: "",
+    slug: "",
+    markdown: "",
+    status: "draft",
+    tags: []
+  });
+  const [loading, setLoading] = useState10(!!slug);
+  const [saving, setSaving] = useState10(false);
+  const [savingAs, setSavingAs] = useState10(null);
+  const [lastSaved, setLastSaved] = useState10(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState10(false);
+  const [generating, setGenerating] = useState10(false);
+  const savedContent = useRef7("");
+  const textareaRef = useRef7(null);
+  const hasTriggeredGeneration = useRef7(false);
+  const [showMarkdown, setShowMarkdown] = useState10(false);
+  const [editor, setEditor] = useState10(null);
+  const [revisions, setRevisions] = useState10([]);
+  const [revisionsLoading, setRevisionsLoading] = useState10(false);
+  const [previewingRevision, setPreviewingRevision] = useState10(null);
+  const [originalPost, setOriginalPost] = useState10(null);
+  const [commentsOpen, setCommentsOpen] = useState10(false);
+  const { session } = useDashboardContext();
+  const currentUserEmail = session?.user?.email || "";
+  const isAdmin = session?.user?.role === "admin";
+  const comments = useComments({
+    postId: post.id || null,
+    editor,
+    apiBasePath,
+    onSave: async () => {
+      await savePost(true);
+      return post.id || null;
+    }
+  });
+  const [urlParams, setUrlParams] = useState10({});
+  useEffect10(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      setUrlParams({
+        idea: params.get("idea") || void 0,
+        model: params.get("model") || void 0,
+        length: params.get("length") || void 0,
+        web: params.get("web") || void 0,
+        thinking: params.get("thinking") || void 0,
+        comment: params.get("comment") || void 0
+      });
+    }
+  }, []);
+  useEffect10(() => {
+    if (urlParams.comment && !comments.loading && comments.list.length > 0) {
+      setCommentsOpen(true);
+      comments.setActiveId(urlParams.comment);
+      setTimeout(() => {
+        comments.scrollTo(urlParams.comment);
+      }, 100);
+    }
+  }, [urlParams.comment, comments.loading, comments.list.length]);
+  useEffect10(() => {
+    if (slug) {
+      fetch(`${apiBasePath}/posts`).then((r) => r.json()).then((d) => {
+        const found = d.data?.find((p) => p.slug === slug);
+        if (found) {
+          setPost(found);
+          savedContent.current = JSON.stringify(found);
+        }
+        setLoading(false);
+      }).catch(() => setLoading(false));
+    }
+  }, [slug, apiBasePath]);
+  useEffect10(() => {
+    const current = JSON.stringify({ title: post.title, subtitle: post.subtitle, markdown: post.markdown });
+    setHasUnsavedChanges(current !== savedContent.current && savedContent.current !== "");
+  }, [post.title, post.subtitle, post.markdown]);
+  useEffect10(() => {
+    if (!onEditorStateChange) return;
+    const confirmLeave = () => {
+      if (hasUnsavedChanges) {
+        return confirm("You have unsaved changes. Leave anyway?");
+      }
+      return true;
+    };
+    onEditorStateChange({
+      hasUnsavedChanges,
+      status: post.status,
+      savingAs,
+      onSave: (status) => {
+        if (status === "draft") {
+          savePost();
+        } else {
+          handlePublish();
+        }
+      },
+      confirmLeave,
+      // Include content for chat integration
+      content: {
+        title: post.title,
+        subtitle: post.subtitle,
+        markdown: post.markdown
+      }
+    });
+    return () => {
+      onEditorStateChange(null);
+    };
+  }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown, onEditorStateChange]);
+  useEffect10(() => {
+    if (!onRegisterEditHandler) return;
+    const handleEdit = (edit) => {
+      if (edit.type === "replace_all") {
+        setPost((prev) => ({
+          ...prev,
+          title: edit.title ?? prev.title,
+          subtitle: edit.subtitle ?? prev.subtitle,
+          markdown: edit.markdown ?? prev.markdown
+        }));
+        return true;
+      }
+      if (edit.type === "replace_section" && edit.find && edit.replace !== void 0) {
+        if (post.markdown.includes(edit.find)) {
+          setPost((prev) => ({
+            ...prev,
+            markdown: prev.markdown.replace(edit.find, edit.replace)
+          }));
+          return true;
+        }
+        return false;
+      }
+      if (edit.type === "insert" && edit.replace !== void 0) {
+        if (edit.position === "start") {
+          setPost((prev) => ({ ...prev, markdown: edit.replace + prev.markdown }));
+          return true;
+        }
+        if (edit.position === "end") {
+          setPost((prev) => ({ ...prev, markdown: prev.markdown + edit.replace }));
+          return true;
+        }
+        if (edit.find && post.markdown.includes(edit.find)) {
+          const idx = post.markdown.indexOf(edit.find);
+          const insertPoint = edit.position === "before" ? idx : idx + edit.find.length;
+          setPost((prev) => ({
+            ...prev,
+            markdown: prev.markdown.slice(0, insertPoint) + edit.replace + prev.markdown.slice(insertPoint)
+          }));
+          return true;
+        }
+        return false;
+      }
+      if (edit.type === "delete" && edit.find) {
+        if (post.markdown.includes(edit.find)) {
+          setPost((prev) => ({
+            ...prev,
+            markdown: prev.markdown.replace(edit.find, "")
+          }));
+          return true;
+        }
+        return false;
+      }
+      return false;
+    };
+    onRegisterEditHandler(handleEdit);
+    return () => {
+      onRegisterEditHandler(null);
+    };
+  }, [post.markdown, onRegisterEditHandler]);
+  useEffect10(() => {
+    if (!post.id || post.status === "published" || !hasUnsavedChanges || previewingRevision) return;
+    const timeout = setTimeout(() => savePost(true), 3e3);
+    return () => clearTimeout(timeout);
+  }, [post, hasUnsavedChanges, previewingRevision]);
+  useEffect10(() => {
+    const handler = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [hasUnsavedChanges]);
+  useEffect10(() => {
+    const handler = (e) => {
+      if (e.key === "Escape") {
+        if (previewingRevision) {
+          cancelRevisionPreview();
+          return;
+        }
+        if (generating) return;
+        if (hasUnsavedChanges && !confirm("You have unsaved changes. Leave anyway?")) return;
+        navigate("/");
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [hasUnsavedChanges, generating, navigate, previewingRevision]);
+  useEffect10(() => {
+    if (urlParams.idea && !slug && !loading && !hasTriggeredGeneration.current) {
+      hasTriggeredGeneration.current = true;
+      setGenerating(true);
+      const wordCount = urlParams.length ? parseInt(urlParams.length) : 500;
+      fetch(`${apiBasePath}/ai/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idea: urlParams.idea,
+          wordCount,
+          model: urlParams.model,
+          useWebSearch: urlParams.web === "1",
+          useThinking: urlParams.thinking === "1"
+        })
+      }).then((r) => r.json()).then((data) => {
+        if (data.data) {
+          setPost((prev) => ({
+            ...prev,
+            title: data.data.title || prev.title,
+            subtitle: data.data.subtitle || prev.subtitle,
+            markdown: data.data.markdown || prev.markdown
+          }));
+        }
+      }).catch(console.error).finally(() => setGenerating(false));
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", `${basePath}/editor`);
+      }
+    }
+  }, [urlParams, slug, loading, apiBasePath, basePath]);
+  const fetchRevisions = useCallback9(async () => {
+    if (!post.id) return;
+    setRevisionsLoading(true);
+    try {
+      const res = await fetch(`${apiBasePath}/revisions?postId=${post.id}`);
+      const data = await res.json();
+      setRevisions(data.data || []);
+    } catch (err) {
+      console.error("Failed to fetch revisions:", err);
+    } finally {
+      setRevisionsLoading(false);
+    }
+  }, [post.id, apiBasePath]);
+  const previewRevision = useCallback9(async (revisionId) => {
+    const revision = revisions.find((r) => r.id === revisionId);
+    if (!revision) return;
+    if (!originalPost) {
+      setOriginalPost({ ...post });
+    }
+    setPreviewingRevision(revision);
+    setPost((prev) => ({
+      ...prev,
+      title: revision.title || prev.title,
+      subtitle: revision.subtitle || prev.subtitle,
+      markdown: revision.markdown
+    }));
+  }, [revisions, post, originalPost]);
+  const cancelRevisionPreview = useCallback9(() => {
+    if (originalPost) {
+      setPost(originalPost);
+      setOriginalPost(null);
+    }
+    setPreviewingRevision(null);
+  }, [originalPost]);
+  const restoreRevision = useCallback9(async () => {
+    if (!previewingRevision) return;
+    setOriginalPost(null);
+    setPreviewingRevision(null);
+    await savePost();
+  }, [previewingRevision]);
+  const savePost = async (silent = false) => {
+    if (!silent) {
+      setSaving(true);
+      setSavingAs("draft");
+    }
+    try {
+      const method = post.id ? "PATCH" : "POST";
+      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`;
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: post.title || "Untitled Draft",
+          subtitle: post.subtitle || null,
+          slug: post.slug || void 0,
+          markdown: post.markdown,
+          status: post.status,
+          tagIds: post.tags?.map((t) => t.id),
+          ...Object.fromEntries(fields.map((f) => [f.name, post[f.name]]))
+        })
+      });
+      const data = await res.json();
+      if (data.data) {
+        setPost((prev) => ({ ...prev, ...data.data }));
+        savedContent.current = JSON.stringify(data.data);
+        setLastSaved(/* @__PURE__ */ new Date());
+        setHasUnsavedChanges(false);
+        if (!post.id && data.data.slug) {
+          navigate(`/editor/${data.data.slug}`);
+        }
+      }
+    } finally {
+      if (!silent) {
+        setSaving(false);
+        setSavingAs(null);
+      }
+    }
+  };
+  const handlePublish = async () => {
+    if (!confirm("Publish this essay?")) return;
+    setSaving(true);
+    setSavingAs("published");
+    try {
+      const method = post.id ? "PATCH" : "POST";
+      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`;
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...post,
+          title: post.title || "Untitled",
+          status: "published",
+          ...Object.fromEntries(fields.map((f) => [f.name, post[f.name]]))
+        })
+      });
+      if (res.ok) {
+        navigate("/");
+      }
+    } finally {
+      setSaving(false);
+      setSavingAs(null);
+    }
+  };
+  const handleUnpublish = async () => {
+    if (!confirm("Unpublish this essay?")) return;
+    await fetch(`${apiBasePath}/posts/${post.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "draft" })
+    });
+    setPost((prev) => ({ ...prev, status: "draft" }));
+  };
+  const words = countWords(post.markdown);
+  const isPublished = post.status === "published";
+  if (loading) {
+    return /* @__PURE__ */ jsxs12("div", { className: "flex flex-col h-full", children: [
+      /* @__PURE__ */ jsx16(
+        EditorToolbar,
+        {
+          textareaRef,
+          markdown: "",
+          onMarkdownChange: () => {
+          },
+          loading: true
+        }
+      ),
+      /* @__PURE__ */ jsx16("main", { className: "flex-1 overflow-auto pb-20", children: /* @__PURE__ */ jsx16(ContentSkeleton, { styles }) })
+    ] });
+  }
+  return /* @__PURE__ */ jsxs12("div", { className: "flex flex-col h-full", children: [
+    previewingRevision && /* @__PURE__ */ jsxs12("div", { className: "bg-amber-100 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxs12("span", { className: "text-sm text-amber-800 dark:text-amber-200", children: [
+        "Previewing revision from ",
+        new Date(previewingRevision.createdAt).toLocaleString()
+      ] }),
+      /* @__PURE__ */ jsxs12("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsx16(
+          "button",
+          {
+            onClick: cancelRevisionPreview,
+            className: "px-3 py-1 text-sm border border-amber-300 dark:border-amber-700 rounded hover:bg-amber-200 dark:hover:bg-amber-800",
+            children: "Cancel"
+          }
+        ),
+        /* @__PURE__ */ jsx16(
+          "button",
+          {
+            onClick: restoreRevision,
+            className: "px-3 py-1 text-sm bg-amber-600 text-white rounded hover:bg-amber-700",
+            children: "Restore"
+          }
+        )
+      ] })
+    ] }),
+    !previewingRevision && /* @__PURE__ */ jsx16(
+      EditorToolbar,
+      {
+        editor: showMarkdown ? null : editor,
+        textareaRef: showMarkdown ? textareaRef : void 0,
+        markdown: post.markdown,
+        onMarkdownChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
+        showMarkdown,
+        setShowMarkdown,
+        aiGenerating: generating,
+        postSlug: slug,
+        revisions: post.id ? {
+          list: revisions,
+          loading: revisionsLoading,
+          previewLoading: false,
+          previewing: previewingRevision,
+          fetch: fetchRevisions,
+          preview: previewRevision,
+          cancel: cancelRevisionPreview,
+          restore: restoreRevision
+        } : void 0,
+        apiBasePath,
+        hasSelection: !!comments.selectedText && !comments.selectedText.hasExistingComment,
+        selectionHasComment: comments.selectedText?.hasExistingComment,
+        onAddComment: () => setCommentsOpen(true),
+        commentsCount: comments.list.filter((c) => !c.resolved).length,
+        onViewComments: () => setCommentsOpen(true)
+      }
+    ),
+    /* @__PURE__ */ jsx16("main", { className: "flex-1 overflow-auto pb-20 overscroll-contain", children: /* @__PURE__ */ jsxs12("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+      /* @__PURE__ */ jsxs12("header", { className: "space-y-2 mb-8", children: [
+        generating && !post.title ? /* @__PURE__ */ jsx16(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ jsx16(
+          AutoResizeTextarea,
+          {
+            value: post.title,
+            onChange: (val) => setPost((prev) => ({ ...prev, title: val })),
+            placeholder: "Title",
+            disabled: generating || !!previewingRevision,
+            className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+          }
+        ),
+        generating && !post.subtitle ? /* @__PURE__ */ jsx16(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ jsx16(
+          AutoResizeTextarea,
+          {
+            value: post.subtitle,
+            onChange: (val) => setPost((prev) => ({ ...prev, subtitle: val })),
+            placeholder: "Subtitle",
+            disabled: generating || !!previewingRevision,
+            className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+          }
+        ),
+        /* @__PURE__ */ jsx16("div", { className: "!mt-4", children: /* @__PURE__ */ jsx16("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: "Author" }) })
+      ] }),
+      /* @__PURE__ */ jsx16("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ jsxs12("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-3/4" }),
+        /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ jsx16(Skeleton, { className: "h-4 w-5/6" })
+      ] }) : showMarkdown ? /* @__PURE__ */ jsx16(
+        "textarea",
+        {
+          ref: textareaRef,
+          value: post.markdown,
+          onChange: (e) => setPost((prev) => ({ ...prev, markdown: e.target.value })),
+          placeholder: "Start writing...",
+          disabled: generating || !!previewingRevision,
+          className: `${styles.prose} w-full min-h-[400px] bg-transparent border-none outline-none resize-none placeholder-gray-400 leading-relaxed font-mono text-sm ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+        }
+      ) : /* @__PURE__ */ jsx16(
+        TiptapEditor,
+        {
+          content: post.markdown,
+          onChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
+          onEditorReady: setEditor,
+          autoFocus: !slug,
+          proseClasses: styles.prose,
+          onSelectionChange: (sel) => {
+            if (sel?.hasSelection) {
+              comments.setSelectedText({
+                text: sel.text,
+                from: sel.from,
+                to: sel.to,
+                hasExistingComment: sel.hasExistingComment
+              });
+            } else {
+              comments.setSelectedText(null);
+            }
+          },
+          onCommentClick: (commentId) => {
+            comments.setActiveId(commentId);
+            setCommentsOpen(true);
+          }
+        }
+      ) }),
+      !previewingRevision && /* @__PURE__ */ jsxs12("div", { className: "mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 space-y-4", children: [
+        /* @__PURE__ */ jsx16("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ jsxs12("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx16("span", { className: "text-gray-500 w-14", children: "URL" }),
+          /* @__PURE__ */ jsx16("span", { className: "text-gray-400", children: "/e/" }),
+          isPublished ? /* @__PURE__ */ jsxs12("span", { className: "flex items-center gap-1.5 text-gray-600 dark:text-gray-400", children: [
+            post.slug,
+            /* @__PURE__ */ jsx16("svg", { className: "w-3 h-3 text-gray-400", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx16("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
+          ] }) : /* @__PURE__ */ jsx16(
+            "input",
+            {
+              type: "text",
+              value: post.slug,
+              onChange: (e) => setPost((prev) => ({ ...prev, slug: e.target.value })),
+              placeholder: "post-slug",
+              className: "flex-1 bg-transparent border-none outline-none placeholder-gray-400 text-gray-600 dark:text-gray-400"
+            }
+          )
+        ] }) }),
+        fields.filter((f) => f.position === "footer").map((field) => {
+          const handleFieldChange = (name, value) => {
+            setPost((prev) => ({ ...prev, [name]: value }));
+          };
+          if (!field.label) {
+            return /* @__PURE__ */ jsx16(
+              field.component,
+              {
+                value: post[field.name],
+                onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
+                onFieldChange: handleFieldChange,
+                post,
+                disabled: saving || generating
+              },
+              field.name
+            );
+          }
+          return /* @__PURE__ */ jsx16("div", { className: "flex items-center justify-between text-sm gap-2", children: /* @__PURE__ */ jsxs12("div", { className: "flex items-center gap-2 flex-1", children: [
+            /* @__PURE__ */ jsx16("span", { className: "text-gray-500 w-14 flex-shrink-0", children: field.label }),
+            /* @__PURE__ */ jsx16("div", { className: "flex-1", children: /* @__PURE__ */ jsx16(
+              field.component,
+              {
+                value: post[field.name],
+                onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
+                onFieldChange: handleFieldChange,
+                post,
+                disabled: saving || generating
+              }
+            ) })
+          ] }) }, field.name);
+        }),
+        /* @__PURE__ */ jsx16(
+          TagsSection,
+          {
+            tags: post.tags || [],
+            onTagsChange: (tags) => setPost((prev) => ({ ...prev, tags })),
+            apiBasePath,
+            disabled: saving || generating
+          }
+        ),
+        /* @__PURE__ */ jsxs12("div", { className: "flex items-center justify-between text-sm", children: [
+          /* @__PURE__ */ jsxs12("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx16("span", { className: "text-gray-500 w-14", children: "Status" }),
+            /* @__PURE__ */ jsx16("span", { className: isPublished ? "text-green-600 dark:text-green-400" : "text-gray-500", children: isPublished ? "Published" : "Draft" })
+          ] }),
+          isPublished ? hasUnsavedChanges ? /* @__PURE__ */ jsxs12(
+            "button",
+            {
+              onClick: handlePublish,
+              disabled: saving || generating,
+              className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
+              children: [
+                savingAs === "published" && /* @__PURE__ */ jsxs12("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                  /* @__PURE__ */ jsx16("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                  /* @__PURE__ */ jsx16("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                ] }),
+                "Update"
+              ]
+            }
+          ) : /* @__PURE__ */ jsx16(
+            "button",
+            {
+              onClick: handleUnpublish,
+              className: "px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-red-500 transition-colors",
+              children: "Unpublish"
+            }
+          ) : /* @__PURE__ */ jsxs12(
+            "button",
+            {
+              onClick: handlePublish,
+              disabled: saving || generating,
+              className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
+              children: [
+                savingAs === "published" && /* @__PURE__ */ jsxs12("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                  /* @__PURE__ */ jsx16("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                  /* @__PURE__ */ jsx16("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                ] }),
+                "Publish"
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs12("div", { className: "text-sm text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-800", children: [
+          words.toLocaleString(),
+          " words \xB7 ~",
+          Math.ceil(words / 200),
+          " min read"
+        ] })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsx16("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-800 px-4 py-3 bg-white dark:bg-black touch-none", children: /* @__PURE__ */ jsx16("div", { className: "flex items-center justify-end text-sm text-gray-500", children: generating ? /* @__PURE__ */ jsx16("button", { className: "hover:text-gray-900 dark:hover:text-white transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ jsx16(
+      "button",
+      {
+        onClick: cancelRevisionPreview,
+        className: "hover:text-gray-900 dark:hover:text-white transition-colors",
+        children: "Press Esc to cancel"
+      }
+    ) : lastSaved ? /* @__PURE__ */ jsxs12("span", { children: [
+      "Saved ",
+      formatSavedTime(lastSaved)
+    ] }) : /* @__PURE__ */ jsx16("span", { children: "Not saved yet" }) }) }),
+    currentUserEmail && /* @__PURE__ */ jsx16(
+      CommentsPanel,
+      {
+        comments: comments.list,
+        currentUserEmail,
+        isAdmin,
+        selectedText: comments.selectedText?.text ?? null,
+        onCreateComment: comments.create,
+        onReply: comments.reply,
+        onEdit: comments.edit,
+        onDelete: comments.remove,
+        onResolve: comments.resolve,
+        onCommentClick: comments.scrollTo,
+        activeCommentId: comments.activeId,
+        isOpen: commentsOpen,
+        onClose: () => setCommentsOpen(false),
+        onClearSelection: () => comments.setSelectedText(null)
+      }
+    )
+  ] });
+}
+
+// src/ui/pages/SettingsPage.tsx
+import { useState as useState11, useEffect as useEffect11 } from "react";
+import { ChevronDown as ChevronDown4, ChevronLeft, ChevronRight as ChevronRight2, RotateCcw, Plus as Plus2, Pencil as Pencil2, Trash2 as Trash22, Play, X as X3, MoreVertical as MoreVertical2, MoreHorizontal as MoreHorizontal2, Loader2 as Loader24 } from "lucide-react";
+import { Fragment as Fragment10, jsx as jsx17, jsxs as jsxs13 } from "react/jsx-runtime";
+function SettingsPage({ subPath }) {
+  const { navigate, sharedData, sharedDataLoading } = useDashboardContext();
+  const counts = sharedData?.counts || {};
+  const autoDraftEnabled = sharedData?.settings?.autoDraftEnabled ?? false;
+  const loading = sharedDataLoading;
+  const allSettingsLinks = [
+    { path: "/settings/users", label: "Users", description: "Manage who can access the CMS", countKey: "users" },
+    { path: "/settings/posts", label: "All Posts", description: "Manage all posts", countKey: "posts" },
+    { path: "/settings/tags", label: "Tags", description: "Organize posts with tags", countKey: "tags" },
+    { path: "/settings/ai", label: "AI Settings", description: "Configure AI models and rules" },
+    { path: "/settings/revisions", label: "Revisions", description: "View revision history" },
+    { path: "/settings/comments", label: "Comments", description: "Manage post comments" },
+    { path: "/settings/topics", label: "Topics", description: "RSS subscriptions for auto-draft", countKey: "topics" }
+  ];
+  const settingsLinks = autoDraftEnabled ? allSettingsLinks : allSettingsLinks.filter((link) => link.path !== "/settings/topics");
+  if (!subPath || subPath === "/") {
+    if (loading) {
+      return /* @__PURE__ */ jsxs13("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
+        /* @__PURE__ */ jsx17("div", { className: "h-7 w-24 bg-muted rounded animate-pulse mb-6" }),
+        /* @__PURE__ */ jsx17("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: [1, 2, 3, 4, 5, 6].map((i) => /* @__PURE__ */ jsxs13("div", { className: "p-4 sm:p-6 border border-border rounded-lg", children: [
+          /* @__PURE__ */ jsx17("div", { className: "h-4 w-16 bg-muted rounded animate-pulse" }),
+          /* @__PURE__ */ jsx17("div", { className: "h-8 w-12 bg-muted rounded animate-pulse mt-2" })
+        ] }, i)) })
+      ] });
+    }
+    return /* @__PURE__ */ jsxs13("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
+      /* @__PURE__ */ jsx17("h2", { className: "text-lg font-semibold pb-4 mb-6 border-b border-border", children: "Settings" }),
+      /* @__PURE__ */ jsx17("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: settingsLinks.map((item) => /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          onClick: () => navigate(item.path),
+          className: "p-4 sm:p-6 border border-border rounded-lg text-left hover:bg-accent transition-colors",
+          children: [
+            /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: item.label }),
+            item.countKey ? /* @__PURE__ */ jsx17("p", { className: "text-2xl font-bold mt-1", children: counts[item.countKey] ?? 0 }) : /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground mt-1", children: "Configure \u2192" })
+          ]
+        },
+        item.path
+      )) })
+    ] });
+  }
+  const pageName = subPath.slice(1);
+  const revisionDetailMatch = pageName.match(/^revisions\/(.+)$/);
+  return /* @__PURE__ */ jsxs13("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
+    pageName === "users" && /* @__PURE__ */ jsx17(UsersSettingsContent, {}),
+    pageName === "ai" && /* @__PURE__ */ jsx17(AISettingsContent, {}),
+    pageName === "tags" && /* @__PURE__ */ jsx17(TagsSettingsContent, {}),
+    pageName === "topics" && /* @__PURE__ */ jsx17(TopicsSettingsContent, {}),
+    pageName === "posts" && /* @__PURE__ */ jsx17(PostsSettingsContent, {}),
+    pageName === "revisions" && /* @__PURE__ */ jsx17(RevisionsSettingsContent, {}),
+    revisionDetailMatch && /* @__PURE__ */ jsx17(RevisionDetailContent, { revisionId: revisionDetailMatch[1] }),
+    pageName === "comments" && /* @__PURE__ */ jsx17(CommentsSettingsContent, {})
+  ] });
+}
+function UsersSettingsContent() {
+  const { apiBasePath } = useDashboardContext();
+  const [users, setUsers] = useState11([]);
+  const [loading, setLoading] = useState11(true);
+  const [showForm, setShowForm] = useState11(false);
+  const [editingUser, setEditingUser] = useState11(null);
+  const [formEmail, setFormEmail] = useState11("");
+  const [formName, setFormName] = useState11("");
+  const [formRole, setFormRole] = useState11("writer");
+  const [formError, setFormError] = useState11("");
+  const [saving, setSaving] = useState11(false);
+  const [menuOpen, setMenuOpen] = useState11(null);
+  useEffect11(() => {
+    fetch(`${apiBasePath}/users`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
+      setUsers(res.data || []);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [apiBasePath]);
+  function resetForm() {
+    setFormEmail("");
+    setFormName("");
+    setFormRole("writer");
+    setFormError("");
+    setEditingUser(null);
+  }
+  function openNewForm() {
+    resetForm();
+    setShowForm(true);
+  }
+  function openEditForm(user) {
+    setEditingUser(user);
+    setFormEmail(user.email);
+    setFormName(user.name || "");
+    setFormRole(user.role);
+    setFormError("");
+    setShowForm(true);
+  }
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!formEmail) return;
+    setSaving(true);
+    setFormError("");
+    const url = editingUser ? `${apiBasePath}/users/${editingUser.id}` : `${apiBasePath}/users`;
+    const method = editingUser ? "PATCH" : "POST";
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: formEmail, name: formName || null, role: formRole })
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (editingUser) {
+        setUsers(users.map((u) => u.id === editingUser.id ? json.data : u));
+      } else {
+        setUsers([json.data, ...users]);
+      }
+      setShowForm(false);
+      resetForm();
+    } else {
+      const result = await res.json().catch(() => ({}));
+      setFormError(result.error || `Failed to ${editingUser ? "update" : "create"} user`);
+    }
+    setSaving(false);
+  }
+  async function handleDeleteUser(id, email) {
+    if (!confirm(`Delete user "${email}"?`)) return;
+    const res = await fetch(`${apiBasePath}/users/${id}`, { method: "DELETE" });
+    if (res.ok) setUsers(users.filter((u) => u.id !== id));
+    setMenuOpen(null);
+  }
+  function getRoleBadgeClasses(role) {
+    if (role === "admin") return "bg-primary text-primary-foreground";
+    if (role === "drafter") return "border border-border text-foreground";
+    return "bg-secondary text-secondary-foreground";
+  }
+  if (loading) return /* @__PURE__ */ jsx17("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  return /* @__PURE__ */ jsx17("div", { className: "space-y-6", children: showForm ? /* @__PURE__ */ jsxs13("div", { className: "max-w-md", children: [
+    /* @__PURE__ */ jsx17("div", { className: "flex items-center justify-between mb-6", children: /* @__PURE__ */ jsx17("h2", { className: "text-lg font-semibold", children: editingUser ? "Edit User" : "Add User" }) }),
+    formError && /* @__PURE__ */ jsx17("div", { className: "bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4", children: formError }),
+    /* @__PURE__ */ jsxs13("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { htmlFor: "email", className: "block text-sm font-medium", children: "Email *" }),
+        /* @__PURE__ */ jsx17(
+          "input",
+          {
+            type: "email",
+            id: "email",
+            value: formEmail,
+            onChange: (e) => setFormEmail(e.target.value),
+            required: true,
+            placeholder: editingUser ? void 0 : "user@example.com",
+            className: "w-full px-3 py-2 border border-input rounded-md bg-transparent"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { htmlFor: "name", className: "block text-sm font-medium", children: "Name" }),
+        /* @__PURE__ */ jsx17(
+          "input",
+          {
+            type: "text",
+            id: "name",
+            value: formName,
+            onChange: (e) => setFormName(e.target.value),
+            placeholder: editingUser ? void 0 : "John Doe",
+            className: "w-full px-3 py-2 border border-input rounded-md bg-transparent"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { htmlFor: "role", className: "block text-sm font-medium", children: "Role" }),
+        /* @__PURE__ */ jsxs13(
+          "select",
+          {
+            id: "role",
+            value: formRole,
+            onChange: (e) => setFormRole(e.target.value),
+            className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
+            children: [
+              /* @__PURE__ */ jsx17("option", { value: "drafter", children: "Drafter" }),
+              /* @__PURE__ */ jsx17("option", { value: "writer", children: "Writer" }),
+              /* @__PURE__ */ jsx17("option", { value: "admin", children: "Admin" })
+            ]
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "flex gap-4 pt-2", children: [
+        /* @__PURE__ */ jsx17("button", { type: "submit", disabled: saving, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50", children: saving ? editingUser ? "Saving..." : "Creating..." : editingUser ? "Save Changes" : "Create User" }),
+        /* @__PURE__ */ jsx17("button", { type: "button", onClick: () => {
+          setShowForm(false);
+          resetForm();
+        }, className: "px-4 py-2 text-muted-foreground hover:text-foreground", children: "Cancel" })
+      ] })
+    ] })
+  ] }) : /* @__PURE__ */ jsxs13(Fragment10, { children: [
+    /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx17("h2", { className: "text-lg font-semibold", children: "Users" }),
+      /* @__PURE__ */ jsx17("button", { onClick: openNewForm, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm", children: "Add User" })
+    ] }),
+    /* @__PURE__ */ jsxs13("div", { className: "hidden md:block rounded-md border border-border", children: [
+      /* @__PURE__ */ jsxs13("table", { className: "w-full", children: [
+        /* @__PURE__ */ jsx17("thead", { className: "bg-muted/50", children: /* @__PURE__ */ jsxs13("tr", { children: [
+          /* @__PURE__ */ jsx17("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Email" }),
+          /* @__PURE__ */ jsx17("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Name" }),
+          /* @__PURE__ */ jsx17("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Role" }),
+          /* @__PURE__ */ jsx17("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ jsx17("th", { className: "px-4 py-3 text-right text-sm font-medium text-muted-foreground", children: "Actions" })
+        ] }) }),
+        /* @__PURE__ */ jsx17("tbody", { className: "divide-y divide-border", children: users.map((user) => /* @__PURE__ */ jsxs13("tr", { children: [
+          /* @__PURE__ */ jsx17("td", { className: "px-4 py-3 text-sm max-w-[250px] truncate", children: user.email }),
+          /* @__PURE__ */ jsx17("td", { className: "px-4 py-3 text-sm text-muted-foreground max-w-[150px] truncate", children: user.name || "\u2014" }),
+          /* @__PURE__ */ jsx17("td", { className: "px-4 py-3 text-sm", children: /* @__PURE__ */ jsx17("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role }) }),
+          /* @__PURE__ */ jsx17("td", { className: "px-4 py-3 text-sm text-muted-foreground", children: new Date(user.createdAt).toLocaleDateString() }),
+          /* @__PURE__ */ jsx17("td", { className: "px-4 py-3 text-right", children: /* @__PURE__ */ jsxs13("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => setMenuOpen(menuOpen === user.id ? null : user.id),
+                className: "p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-accent",
+                children: /* @__PURE__ */ jsx17(MoreVertical2, { className: "h-4 w-4" })
+              }
+            ),
+            menuOpen === user.id && /* @__PURE__ */ jsxs13("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
+              /* @__PURE__ */ jsx17(
+                "button",
+                {
+                  onClick: () => {
+                    openEditForm(user);
+                    setMenuOpen(null);
+                  },
+                  className: "w-full px-3 py-2 text-left text-sm hover:bg-accent",
+                  children: "Edit"
+                }
+              ),
+              /* @__PURE__ */ jsx17("div", { className: "h-px bg-border my-1" }),
+              /* @__PURE__ */ jsx17(
+                "button",
+                {
+                  onClick: () => handleDeleteUser(user.id, user.email),
+                  className: "w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-accent",
+                  children: "Delete"
+                }
+              )
+            ] })
+          ] }) })
+        ] }, user.id)) })
+      ] }),
+      users.length === 0 && /* @__PURE__ */ jsx17("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
+    ] }),
+    /* @__PURE__ */ jsxs13("div", { className: "md:hidden divide-y divide-border rounded-md border border-border bg-background", children: [
+      users.map((user) => /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ jsxs13("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx17("span", { className: "font-medium truncate", children: user.email }),
+            /* @__PURE__ */ jsx17("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role })
+          ] }),
+          /* @__PURE__ */ jsxs13("p", { className: "text-sm text-muted-foreground truncate", children: [
+            user.name || "No name",
+            " \xB7 Created ",
+            new Date(user.createdAt).toLocaleDateString()
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs13("div", { className: "relative", children: [
+          /* @__PURE__ */ jsx17(
+            "button",
+            {
+              onClick: () => setMenuOpen(menuOpen === user.id ? null : user.id),
+              className: "p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-accent",
+              children: /* @__PURE__ */ jsx17(MoreVertical2, { className: "h-4 w-4" })
+            }
+          ),
+          menuOpen === user.id && /* @__PURE__ */ jsxs13("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => {
+                  openEditForm(user);
+                  setMenuOpen(null);
+                },
+                className: "w-full px-3 py-2 text-left text-sm hover:bg-accent",
+                children: "Edit"
+              }
+            ),
+            /* @__PURE__ */ jsx17("div", { className: "h-px bg-border my-1" }),
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => handleDeleteUser(user.id, user.email),
+                className: "w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-accent",
+                children: "Delete"
+              }
+            )
+          ] })
+        ] })
+      ] }, user.id)),
+      users.length === 0 && /* @__PURE__ */ jsx17("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
+    ] })
+  ] }) });
+}
+function CollapsibleTemplate({
+  label,
+  value,
+  defaultValue,
+  onChange,
+  onReset,
+  placeholders,
+  disabled
+}) {
+  const [open, setOpen] = useState11(false);
+  const isCustom = value !== null;
+  const displayValue = value ?? defaultValue;
+  return /* @__PURE__ */ jsxs13("div", { className: "mt-2", children: [
+    /* @__PURE__ */ jsxs13(
+      "button",
+      {
+        type: "button",
+        onClick: () => setOpen(!open),
+        className: "flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground",
+        children: [
+          /* @__PURE__ */ jsx17(ChevronDown4, { className: `h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}` }),
+          isCustom ? `Edit prompt template (customized)` : `Edit prompt template`
+        ]
+      }
+    ),
+    open && /* @__PURE__ */ jsxs13("div", { className: "mt-2 space-y-2", children: [
+      /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxs13("p", { className: "text-xs text-muted-foreground", children: [
+          "Placeholders: ",
+          placeholders
+        ] }),
+        isCustom && /* @__PURE__ */ jsxs13("button", { type: "button", onClick: onReset, className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground", children: [
+          /* @__PURE__ */ jsx17(RotateCcw, { className: "h-3 w-3" }),
+          " Reset to default"
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx17(
+        "textarea",
+        {
+          value: displayValue,
+          onChange: (e) => onChange(e.target.value),
+          rows: 10,
+          className: "w-full px-3 py-2 border border-input rounded-md bg-transparent resize-none font-mono text-xs",
+          disabled
+        }
+      )
+    ] })
+  ] });
+}
+function AISettingsContent() {
+  const { apiBasePath, navigate } = useDashboardContext();
+  const [rules, setRules] = useState11("");
+  const [chatRules, setChatRules] = useState11("");
+  const [rewriteRules, setRewriteRules] = useState11("");
+  const [autoDraftRules, setAutoDraftRules] = useState11("");
+  const [planRules, setPlanRules] = useState11("");
+  const [autoDraftWordCount, setAutoDraftWordCount] = useState11(800);
+  const [autoDraftEnabled, setAutoDraftEnabled] = useState11(false);
+  const [defaultModel, setDefaultModel] = useState11("claude-sonnet");
+  const [models, setModels] = useState11([]);
+  const [generateTemplate, setGenerateTemplate] = useState11(null);
+  const [chatTemplate, setChatTemplate] = useState11(null);
+  const [rewriteTemplate, setRewriteTemplate] = useState11(null);
+  const [autoDraftTemplate, setAutoDraftTemplate] = useState11(null);
+  const [planTemplate, setPlanTemplate] = useState11(null);
+  const [expandPlanTemplate, setExpandPlanTemplate] = useState11(null);
+  const [defaultGenerateTemplate, setDefaultGenerateTemplate] = useState11("");
+  const [defaultChatTemplate, setDefaultChatTemplate] = useState11("");
+  const [defaultRewriteTemplate, setDefaultRewriteTemplate] = useState11("");
+  const [defaultAutoDraftTemplate, setDefaultAutoDraftTemplate] = useState11("");
+  const [defaultPlanRules, setDefaultPlanRules] = useState11("");
+  const [defaultPlanTemplate, setDefaultPlanTemplate] = useState11("");
+  const [defaultExpandPlanTemplate, setDefaultExpandPlanTemplate] = useState11("");
+  const [loading, setLoading] = useState11(true);
+  const [saving, setSaving] = useState11(false);
+  const [saved, setSaved] = useState11(false);
+  useEffect11(() => {
+    Promise.all([
+      fetch(`${apiBasePath}/ai/settings`).then((res) => res.ok ? res.json() : Promise.reject()),
+      fetch(`${apiBasePath}/settings`).then((res) => res.ok ? res.json() : Promise.reject())
+    ]).then(([aiRes, settingsRes]) => {
+      const data = aiRes.data || aiRes || {};
+      console.log("[AUTOBLOGGER DEBUG] aiRes:", aiRes);
+      console.log("[AUTOBLOGGER DEBUG] data:", data);
+      console.log("[AUTOBLOGGER DEBUG] data.defaultPlanRules:", data.defaultPlanRules);
+      console.log("[AUTOBLOGGER DEBUG] data.planRules:", data.planRules);
+      setRules(data.rules || "");
+      setChatRules(data.chatRules || "");
+      setRewriteRules(data.rewriteRules || "");
+      setAutoDraftRules(data.autoDraftRules || "");
+      setPlanRules(data.planRules || "");
+      setAutoDraftWordCount(data.autoDraftWordCount ?? 800);
+      setDefaultModel(data.defaultModel || "claude-sonnet");
+      setModels(data.availableModels || [
+        { id: "claude-sonnet", name: "Sonnet 4.5", description: "Fast, capable, best value" },
+        { id: "claude-opus", name: "Opus 4.5", description: "Highest quality, slower" },
+        { id: "gpt-5.2", name: "GPT-5.2", description: "Latest OpenAI flagship" },
+        { id: "gpt-5-mini", name: "GPT-5 Mini", description: "Fast and cost-efficient" }
+      ]);
+      setGenerateTemplate(data.generateTemplate ?? null);
+      setChatTemplate(data.chatTemplate ?? null);
+      setRewriteTemplate(data.rewriteTemplate ?? null);
+      setAutoDraftTemplate(data.autoDraftTemplate ?? null);
+      setPlanTemplate(data.planTemplate ?? null);
+      setExpandPlanTemplate(data.expandPlanTemplate ?? null);
+      setDefaultGenerateTemplate(data.defaultGenerateTemplate || "");
+      setDefaultChatTemplate(data.defaultChatTemplate || "");
+      setDefaultRewriteTemplate(data.defaultRewriteTemplate || "");
+      setDefaultAutoDraftTemplate(data.defaultAutoDraftTemplate || "");
+      setDefaultPlanRules(data.defaultPlanRules || "");
+      setDefaultPlanTemplate(data.defaultPlanTemplate || "");
+      setDefaultExpandPlanTemplate(data.defaultExpandPlanTemplate || "");
+      setAutoDraftEnabled(settingsRes.data?.autoDraftEnabled ?? false);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [apiBasePath]);
+  async function handleSave() {
+    setSaving(true);
+    setSaved(false);
+    await Promise.all([
+      fetch(`${apiBasePath}/ai/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rules,
+          chatRules,
+          rewriteRules,
+          autoDraftRules,
+          planRules,
+          autoDraftWordCount,
+          defaultModel,
+          generateTemplate,
+          chatTemplate,
+          rewriteTemplate,
+          autoDraftTemplate,
+          planTemplate,
+          expandPlanTemplate
+        })
+      }),
+      fetch(`${apiBasePath}/settings`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ autoDraftEnabled })
+      })
+    ]);
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2e3);
+  }
+  if (loading) {
+    return /* @__PURE__ */ jsx17("div", { className: "flex items-center justify-center py-12", children: /* @__PURE__ */ jsx17(Loader24, { className: "h-6 w-6 animate-spin text-muted-foreground" }) });
+  }
+  return /* @__PURE__ */ jsxs13("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxs13("div", { children: [
+      /* @__PURE__ */ jsx17("h2", { className: "text-lg font-semibold", children: "AI Settings" }),
+      /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: "Configure your AI writing assistant." })
+    ] }),
+    /* @__PURE__ */ jsx17("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs13("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ jsx17("label", { className: "text-sm font-medium leading-none shrink-0", children: "Default Model" }),
+        /* @__PURE__ */ jsxs13("div", { className: "relative max-w-sm flex-1", children: [
+          /* @__PURE__ */ jsx17(
+            "select",
+            {
+              value: defaultModel,
+              onChange: (e) => setDefaultModel(e.target.value),
+              className: "h-10 w-full appearance-none rounded-md border border-input bg-background pl-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer",
+              children: models.map((model) => /* @__PURE__ */ jsxs13("option", { value: model.id, children: [
+                model.name,
+                " \u2014 ",
+                model.description
+              ] }, model.id))
+            }
+          ),
+          /* @__PURE__ */ jsx17(ChevronDown4, { className: "absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { className: "text-sm font-medium leading-none", children: "Essay Writing Rules" }),
+        /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: "Style and format rules for generated essays. Applied when generating or rewriting content." }),
+        /* @__PURE__ */ jsx17(
+          "textarea",
+          {
+            value: rules,
+            onChange: (e) => setRules(e.target.value),
+            placeholder: `- Never use "utilize" \u2014 always say "use"
+- Avoid passive voice
+- Start with concrete scenes, not abstractions
+- Short paragraphs (3-4 sentences max)
+- Use em-dashes sparingly
+- End with forward motion, not tidy conclusions`,
+            className: "flex min-h-[180px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none",
+            disabled: saving
+          }
+        ),
+        /* @__PURE__ */ jsx17(
+          CollapsibleTemplate,
+          {
+            label: "Generate",
+            value: generateTemplate,
+            defaultValue: defaultGenerateTemplate,
+            onChange: setGenerateTemplate,
+            onReset: () => setGenerateTemplate(null),
+            placeholders: "{{RULES}}, {{STYLE_EXAMPLES}}",
+            disabled: saving
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { className: "text-sm font-medium leading-none", children: "Chat Behavior Rules" }),
+        /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: "How the assistant should behave during brainstorming conversations. Controls personality and interaction style." }),
+        /* @__PURE__ */ jsx17(
+          "textarea",
+          {
+            value: chatRules,
+            onChange: (e) => setChatRules(e.target.value),
+            placeholder: `- Be direct and concise
+- Push back on vague ideas
+- Ask clarifying questions before drafting
+- Challenge my assumptions`,
+            className: "flex min-h-[140px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none",
+            disabled: saving
+          }
+        ),
+        /* @__PURE__ */ jsx17(
+          CollapsibleTemplate,
+          {
+            label: "Chat",
+            value: chatTemplate,
+            defaultValue: defaultChatTemplate,
+            onChange: setChatTemplate,
+            onReset: () => setChatTemplate(null),
+            placeholders: "{{RULES}}, {{CHAT_RULES}}, {{STYLE_EXAMPLES}}",
+            disabled: saving
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { className: "text-sm font-medium leading-none", children: "Rewrite Rules" }),
+        /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: "Rules for cleaning up selected text with the rewrite tool." }),
+        /* @__PURE__ */ jsx17(
+          "textarea",
+          {
+            value: rewriteRules,
+            onChange: (e) => setRewriteRules(e.target.value),
+            placeholder: `- Keep the same meaning, improve clarity
+- Maintain sentence length variety
+- Remove filler words
+- Don't add new ideas`,
+            className: "flex min-h-[140px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none",
+            disabled: saving
+          }
+        ),
+        /* @__PURE__ */ jsx17(
+          CollapsibleTemplate,
+          {
+            label: "Rewrite",
+            value: rewriteTemplate,
+            defaultValue: defaultRewriteTemplate,
+            onChange: setRewriteTemplate,
+            onReset: () => setRewriteTemplate(null),
+            placeholders: "{{RULES}}, {{REWRITE_RULES}}, {{STYLE_EXAMPLES}}",
+            disabled: saving
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft Rules" }),
+        /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: "Rules for generating essays from news articles via RSS feeds. Controls how topics are transformed into original essays." }),
+        /* @__PURE__ */ jsx17(
+          "textarea",
+          {
+            value: autoDraftRules,
+            onChange: (e) => setAutoDraftRules(e.target.value),
+            placeholder: `- Write original perspectives, don't summarize
+- Take a contrarian angle when appropriate
+- Include personal insights and experiences
+- Focus on implications, not just facts`,
+            className: "flex min-h-[140px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none",
+            disabled: saving
+          }
+        ),
+        /* @__PURE__ */ jsx17("div", { className: "flex items-center gap-4 pt-2", children: /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx17("label", { className: "text-sm whitespace-nowrap", children: "Target word count:" }),
+          /* @__PURE__ */ jsx17(
+            "input",
+            {
+              type: "number",
+              min: 200,
+              max: 3e3,
+              value: autoDraftWordCount,
+              onChange: (e) => setAutoDraftWordCount(parseInt(e.target.value) || 800),
+              className: "flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              disabled: saving
+            }
+          )
+        ] }) }),
+        /* @__PURE__ */ jsx17(
+          CollapsibleTemplate,
+          {
+            label: "Auto-Draft",
+            value: autoDraftTemplate,
+            defaultValue: defaultAutoDraftTemplate,
+            onChange: setAutoDraftTemplate,
+            onReset: () => setAutoDraftTemplate(null),
+            placeholders: "{{AUTO_DRAFT_RULES}}, {{AUTO_DRAFT_WORD_COUNT}}, {{RULES}}, {{STYLE_EXAMPLES}}, {{TOPIC_NAME}}, {{ARTICLE_TITLE}}, {{ARTICLE_SUMMARY}}, {{ARTICLE_URL}}",
+            disabled: saving
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { className: "text-sm font-medium leading-none", children: "Plan Format Rules" }),
+        /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: "Rules for essay plan structure and format. Controls how outlines are organized in Plan mode." }),
+        /* @__PURE__ */ jsx17("div", { className: "flex items-center justify-end", children: planRules && /* @__PURE__ */ jsxs13(
+          "button",
+          {
+            type: "button",
+            onClick: () => setPlanRules(""),
+            className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-7 px-2 hover:bg-accent hover:text-accent-foreground",
+            children: [
+              /* @__PURE__ */ jsx17(RotateCcw, { className: "h-3 w-3 mr-1" }),
+              "Reset to default"
+            ]
+          }
+        ) }),
+        /* @__PURE__ */ jsx17(
+          "textarea",
+          {
+            value: planRules || defaultPlanRules,
+            onChange: (e) => setPlanRules(e.target.value),
+            className: "flex min-h-[250px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono resize-none",
+            disabled: saving
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { className: "text-sm font-medium leading-none", children: "Plan Mode Template" }),
+        /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: "Prompt template for Plan mode in chat. Controls the full system prompt." }),
+        /* @__PURE__ */ jsx17(
+          CollapsibleTemplate,
+          {
+            label: "Plan",
+            value: planTemplate,
+            defaultValue: defaultPlanTemplate,
+            onChange: setPlanTemplate,
+            onReset: () => setPlanTemplate(null),
+            placeholders: "{{PLAN_RULES}}, {{STYLE_EXAMPLES}}",
+            disabled: saving
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx17("label", { className: "text-sm font-medium leading-none", children: "Expand Plan Template" }),
+        /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: "Prompt template for expanding a plan outline into a full essay draft." }),
+        /* @__PURE__ */ jsx17(
+          CollapsibleTemplate,
+          {
+            label: "Expand Plan",
+            value: expandPlanTemplate,
+            defaultValue: defaultExpandPlanTemplate,
+            onChange: setExpandPlanTemplate,
+            onReset: () => setExpandPlanTemplate(null),
+            placeholders: "{{RULES}}, {{STYLE_EXAMPLES}}, {{PLAN}}",
+            disabled: saving
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between py-4 border-t border-border", children: [
+        /* @__PURE__ */ jsxs13("div", { className: "space-y-0.5", children: [
+          /* @__PURE__ */ jsx17("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft Feature" }),
+          /* @__PURE__ */ jsx17("p", { className: "text-sm text-muted-foreground", children: "Enable RSS topic subscriptions and automatic draft generation." })
+        ] }),
+        /* @__PURE__ */ jsx17(
+          "button",
+          {
+            type: "button",
+            role: "switch",
+            "aria-checked": autoDraftEnabled,
+            onClick: () => setAutoDraftEnabled(!autoDraftEnabled),
+            className: `relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${autoDraftEnabled ? "bg-primary" : "bg-input"}`,
+            children: /* @__PURE__ */ jsx17(
+              "span",
+              {
+                className: `pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${autoDraftEnabled ? "translate-x-5" : "translate-x-0"}`
+              }
+            )
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-3", children: [
+        /* @__PURE__ */ jsxs13(
+          "button",
+          {
+            onClick: handleSave,
+            disabled: saving,
+            className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
+            children: [
+              saving && /* @__PURE__ */ jsx17(Loader24, { className: "mr-2 h-4 w-4 animate-spin" }),
+              saving ? "Saving..." : "Save"
+            ]
+          }
+        ),
+        saved && /* @__PURE__ */ jsx17("span", { className: "text-sm text-green-600 dark:text-green-400", children: "Saved!" })
+      ] })
+    ] }) })
+  ] });
+}
+function TagsSettingsContent() {
+  const { apiBasePath } = useDashboardContext();
+  const [tags, setTags] = useState11([]);
+  const [loading, setLoading] = useState11(true);
+  const [dialogOpen, setDialogOpen] = useState11(false);
+  const [editingTag, setEditingTag] = useState11(null);
+  const [tagName, setTagName] = useState11("");
+  const [saving, setSaving] = useState11(false);
+  const [error, setError] = useState11("");
+  const [menuOpen, setMenuOpen] = useState11(null);
+  useEffect11(() => {
+    fetchTags();
+  }, [apiBasePath]);
+  async function fetchTags() {
+    const res = await fetch(`${apiBasePath}/tags`);
+    if (res.ok) {
+      const json = await res.json();
+      setTags(json.data || []);
+    }
+    setLoading(false);
+  }
+  function openCreateDialog() {
+    setEditingTag(null);
+    setTagName("");
+    setError("");
+    setDialogOpen(true);
+  }
+  function openEditDialog(tag) {
+    setEditingTag(tag);
+    setTagName(tag.name);
+    setError("");
+    setDialogOpen(true);
+    setMenuOpen(null);
+  }
+  async function handleDelete(tag) {
+    if (!confirm(`Delete tag "${tag.name}"? This will remove it from all posts.`)) return;
+    const res = await fetch(`${apiBasePath}/tags/${tag.id}`, { method: "DELETE" });
+    if (res.ok) {
+      fetchTags();
+    }
+    setMenuOpen(null);
+  }
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!tagName.trim()) {
+      setError("Tag name is required");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    const url = editingTag ? `${apiBasePath}/tags/${editingTag.id}` : `${apiBasePath}/tags`;
+    const method = editingTag ? "PATCH" : "POST";
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: tagName.trim() })
+    });
+    if (res.ok) {
+      setDialogOpen(false);
+      fetchTags();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || "Failed to save tag");
+    }
+    setSaving(false);
+  }
+  if (loading) return /* @__PURE__ */ jsx17("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  return /* @__PURE__ */ jsxs13("div", { children: [
+    /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between mb-6 md:mb-8", children: [
+      /* @__PURE__ */ jsx17("h2", { className: "text-lg font-semibold", children: "Tags" }),
+      /* @__PURE__ */ jsx17(
+        "button",
+        {
+          onClick: openCreateDialog,
+          className: "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90",
+          children: "Add Tag"
+        }
+      )
+    ] }),
+    tags.length === 0 ? /* @__PURE__ */ jsx17("div", { className: "py-8 text-center text-muted-foreground", children: "No tags yet. Create one to get started." }) : /* @__PURE__ */ jsxs13(Fragment10, { children: [
+      /* @__PURE__ */ jsx17("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs13("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ jsx17("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs13("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Name" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Posts" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+        ] }) }),
+        /* @__PURE__ */ jsx17("tbody", { className: "[&_tr:last-child]:border-0", children: tags.map((tag) => /* @__PURE__ */ jsxs13("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx17("span", { className: "block truncate max-w-[250px]", children: tag.name }) }),
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-muted-foreground", children: tag._count?.posts ?? 0 }),
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-muted-foreground", children: tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014" }),
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsxs13("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => setMenuOpen(menuOpen === tag.id ? null : tag.id),
+                className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
+                children: /* @__PURE__ */ jsx17(MoreVertical2, { className: "h-4 w-4" })
+              }
+            ),
+            menuOpen === tag.id && /* @__PURE__ */ jsxs13("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+              /* @__PURE__ */ jsx17(
+                "button",
+                {
+                  onClick: () => openEditDialog(tag),
+                  className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left hover:bg-accent",
+                  children: "Edit"
+                }
+              ),
+              /* @__PURE__ */ jsx17("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+              /* @__PURE__ */ jsx17(
+                "button",
+                {
+                  onClick: () => handleDelete(tag),
+                  className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left text-destructive hover:bg-accent",
+                  children: "Delete"
+                }
+              )
+            ] })
+          ] }) })
+        ] }, tag.id)) })
+      ] }) }),
+      /* @__PURE__ */ jsx17("div", { className: "md:hidden divide-y rounded-md border bg-background", children: tags.map((tag) => /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ jsxs13("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ jsx17("span", { className: "font-medium truncate block", children: tag.name }),
+          /* @__PURE__ */ jsxs13("p", { className: "text-sm text-muted-foreground truncate", children: [
+            tag._count?.posts ?? 0,
+            " posts \xB7 Created ",
+            tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014"
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs13("div", { className: "relative", children: [
+          /* @__PURE__ */ jsx17(
+            "button",
+            {
+              onClick: () => setMenuOpen(menuOpen === tag.id ? null : tag.id),
+              className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
+              children: /* @__PURE__ */ jsx17(MoreVertical2, { className: "h-4 w-4" })
+            }
+          ),
+          menuOpen === tag.id && /* @__PURE__ */ jsxs13("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => openEditDialog(tag),
+                className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left hover:bg-accent",
+                children: "Edit"
+              }
+            ),
+            /* @__PURE__ */ jsx17("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => handleDelete(tag),
+                className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left text-destructive hover:bg-accent",
+                children: "Delete"
+              }
+            )
+          ] })
+        ] })
+      ] }, tag.id)) })
+    ] }),
+    dialogOpen && /* @__PURE__ */ jsxs13("div", { className: "fixed inset-0 z-50 flex items-center justify-center", children: [
+      /* @__PURE__ */ jsx17(
+        "div",
+        {
+          className: "fixed inset-0 bg-black/80",
+          onClick: () => setDialogOpen(false)
+        }
+      ),
+      /* @__PURE__ */ jsxs13("div", { className: "relative z-50 w-full max-w-sm bg-background border border-border rounded-lg shadow-lg", children: [
+        /* @__PURE__ */ jsx17("div", { className: "flex flex-col space-y-1.5 p-6", children: /* @__PURE__ */ jsx17("h3", { className: "text-lg font-semibold leading-none tracking-tight", children: editingTag ? "Edit Tag" : "Create Tag" }) }),
+        /* @__PURE__ */ jsxs13("form", { onSubmit: handleSubmit, children: [
+          /* @__PURE__ */ jsx17("div", { className: "px-6 pb-4", children: /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+            /* @__PURE__ */ jsx17("label", { htmlFor: "tagName", className: "text-sm font-medium leading-none", children: "Name" }),
+            /* @__PURE__ */ jsx17(
+              "input",
+              {
+                id: "tagName",
+                type: "text",
+                value: tagName,
+                onChange: (e) => setTagName(e.target.value),
+                placeholder: "e.g. technology",
+                autoFocus: true,
+                className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              }
+            ),
+            error && /* @__PURE__ */ jsx17("p", { className: "text-sm text-destructive", children: error })
+          ] }) }),
+          /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-end gap-2 p-6 pt-0", children: [
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                type: "button",
+                onClick: () => setDialogOpen(false),
+                disabled: saving,
+                className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground disabled:opacity-50",
+                children: "Cancel"
+              }
+            ),
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                type: "submit",
+                disabled: saving,
+                className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50",
+                children: saving ? "Saving..." : editingTag ? "Save" : "Create"
+              }
+            )
+          ] })
+        ] })
+      ] })
+    ] })
+  ] });
+}
+function TopicsSettingsContent() {
+  const { apiBasePath } = useDashboardContext();
+  const [topics, setTopics] = useState11([]);
+  const [loading, setLoading] = useState11(true);
+  const [showForm, setShowForm] = useState11(false);
+  const [editingTopic, setEditingTopic] = useState11(null);
+  const [generating, setGenerating] = useState11(null);
+  const [formName, setFormName] = useState11("");
+  const [formKeywords, setFormKeywords] = useState11("");
+  const [formFeeds, setFormFeeds] = useState11("");
+  const [formFrequency, setFormFrequency] = useState11("daily");
+  const [formMaxPerPeriod, setFormMaxPerPeriod] = useState11(3);
+  const [formEssayFocus, setFormEssayFocus] = useState11("");
+  const [formIsActive, setFormIsActive] = useState11(true);
+  useEffect11(() => {
+    fetchTopics();
+  }, [apiBasePath]);
+  async function fetchTopics() {
+    const res = await fetch(`${apiBasePath}/topics`);
+    if (res.ok) {
+      const json = await res.json();
+      setTopics(json.data || []);
+    }
+    setLoading(false);
+  }
+  function resetForm() {
+    setFormName("");
+    setFormKeywords("");
+    setFormFeeds("");
+    setFormFrequency("daily");
+    setFormMaxPerPeriod(3);
+    setFormEssayFocus("");
+    setFormIsActive(true);
+  }
+  function openEditForm(topic) {
+    setEditingTopic(topic);
+    setFormName(topic.name);
+    setFormKeywords(JSON.parse(topic.keywords).join(", "));
+    setFormFeeds(JSON.parse(topic.rssFeeds).join("\n"));
+    setFormFrequency(topic.frequency);
+    setFormMaxPerPeriod(topic.maxPerPeriod);
+    setFormEssayFocus(topic.essayFocus || "");
+    setFormIsActive(topic.isActive);
+    setShowForm(true);
+  }
+  function openNewForm() {
+    setEditingTopic(null);
+    resetForm();
+    setShowForm(true);
+  }
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const data = {
+      name: formName,
+      keywords: formKeywords.split(",").map((k) => k.trim()).filter(Boolean),
+      rssFeeds: formFeeds.split("\n").map((f) => f.trim()).filter(Boolean),
+      frequency: formFrequency,
+      maxPerPeriod: formMaxPerPeriod,
+      essayFocus: formEssayFocus || null,
+      isActive: formIsActive
+    };
+    const url = editingTopic ? `${apiBasePath}/topics/${editingTopic.id}` : `${apiBasePath}/topics`;
+    const method = editingTopic ? "PATCH" : "POST";
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+    if (res.ok) {
+      setShowForm(false);
+      resetForm();
+      setEditingTopic(null);
+      fetchTopics();
+    }
+  }
+  async function handleDelete(id) {
+    if (!confirm("Delete this topic? This will also delete associated news items.")) return;
+    const res = await fetch(`${apiBasePath}/topics/${id}`, { method: "DELETE" });
+    if (res.ok) setTopics(topics.filter((t) => t.id !== id));
+  }
+  async function handleGenerate(topicId) {
+    setGenerating(topicId);
+    try {
+      const res = await fetch(`${apiBasePath}/topics/${topicId}/generate`, { method: "POST" });
+      if (res.ok) {
+        fetchTopics();
+      }
+    } finally {
+      setGenerating(null);
+    }
+  }
+  if (loading) return /* @__PURE__ */ jsx17("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  return /* @__PURE__ */ jsxs13("div", { className: "space-y-4", children: [
+    /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx17("h2", { className: "text-lg font-semibold", children: "Topics" }),
+      /* @__PURE__ */ jsxs13("button", { onClick: openNewForm, className: "flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm", children: [
+        /* @__PURE__ */ jsx17(Plus2, { className: "h-4 w-4" }),
+        " New Topic"
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx17("p", { className: "text-muted-foreground text-sm -mt-2", children: "RSS topic subscriptions for auto-generating draft posts." }),
+    showForm && /* @__PURE__ */ jsxs13("div", { className: "border border-border rounded-lg p-4 space-y-4 bg-muted/30", children: [
+      /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx17("h3", { className: "font-medium", children: editingTopic ? "Edit Topic" : "New Topic" }),
+        /* @__PURE__ */ jsx17("button", { onClick: () => {
+          setShowForm(false);
+          resetForm();
+          setEditingTopic(null);
+        }, className: "text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ jsx17(X3, { className: "h-4 w-4" }) })
+      ] }),
+      /* @__PURE__ */ jsxs13("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+        /* @__PURE__ */ jsxs13("div", { children: [
+          /* @__PURE__ */ jsx17("label", { className: "block text-sm font-medium mb-1", children: "Name" }),
+          /* @__PURE__ */ jsx17(
+            "input",
+            {
+              type: "text",
+              value: formName,
+              onChange: (e) => setFormName(e.target.value),
+              required: true,
+              className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
+              placeholder: "e.g. School Lunch Policy"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs13("div", { children: [
+          /* @__PURE__ */ jsx17("label", { className: "block text-sm font-medium mb-1", children: "Keywords (comma-separated)" }),
+          /* @__PURE__ */ jsx17(
+            "input",
+            {
+              type: "text",
+              value: formKeywords,
+              onChange: (e) => setFormKeywords(e.target.value),
+              className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
+              placeholder: "school lunch, USDA, nutrition"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs13("div", { children: [
+          /* @__PURE__ */ jsx17("label", { className: "block text-sm font-medium mb-1", children: "RSS Feed URLs (one per line)" }),
+          /* @__PURE__ */ jsx17(
+            "textarea",
+            {
+              value: formFeeds,
+              onChange: (e) => setFormFeeds(e.target.value),
+              rows: 3,
+              className: "w-full px-3 py-2 border border-input rounded-md bg-transparent resize-none font-mono text-sm",
+              placeholder: "https://example.com/feed.xml"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs13("div", { className: "grid grid-cols-2 gap-4", children: [
+          /* @__PURE__ */ jsxs13("div", { children: [
+            /* @__PURE__ */ jsx17("label", { className: "block text-sm font-medium mb-1", children: "Frequency" }),
+            /* @__PURE__ */ jsxs13(
+              "select",
+              {
+                value: formFrequency,
+                onChange: (e) => setFormFrequency(e.target.value),
+                className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
+                children: [
+                  /* @__PURE__ */ jsx17("option", { value: "daily", children: "Daily" }),
+                  /* @__PURE__ */ jsx17("option", { value: "weekly", children: "Weekly" }),
+                  /* @__PURE__ */ jsx17("option", { value: "hourly", children: "Hourly" })
+                ]
+              }
+            )
+          ] }),
+          /* @__PURE__ */ jsxs13("div", { children: [
+            /* @__PURE__ */ jsx17("label", { className: "block text-sm font-medium mb-1", children: "Max per period" }),
+            /* @__PURE__ */ jsx17(
+              "input",
+              {
+                type: "number",
+                min: 1,
+                max: 20,
+                value: formMaxPerPeriod,
+                onChange: (e) => setFormMaxPerPeriod(parseInt(e.target.value) || 3),
+                className: "w-full px-3 py-2 border border-input rounded-md bg-transparent"
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs13("div", { children: [
+          /* @__PURE__ */ jsx17("label", { className: "block text-sm font-medium mb-1", children: "Essay Focus (optional)" }),
+          /* @__PURE__ */ jsx17(
+            "textarea",
+            {
+              value: formEssayFocus,
+              onChange: (e) => setFormEssayFocus(e.target.value),
+              rows: 2,
+              className: "w-full px-3 py-2 border border-input rounded-md bg-transparent resize-none",
+              placeholder: "Specific angle or perspective for essays on this topic"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx17(
+            "input",
+            {
+              type: "checkbox",
+              id: "isActive",
+              checked: formIsActive,
+              onChange: (e) => setFormIsActive(e.target.checked)
+            }
+          ),
+          /* @__PURE__ */ jsx17("label", { htmlFor: "isActive", className: "text-sm", children: "Active" })
+        ] }),
+        /* @__PURE__ */ jsxs13("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ jsx17("button", { type: "submit", className: "px-4 py-2 bg-primary text-primary-foreground rounded-md", children: editingTopic ? "Update" : "Create" }),
+          /* @__PURE__ */ jsx17("button", { type: "button", onClick: () => {
+            setShowForm(false);
+            resetForm();
+            setEditingTopic(null);
+          }, className: "px-4 py-2 border border-input rounded-md", children: "Cancel" })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs13("div", { className: "border border-border rounded-lg divide-y divide-border", children: [
+      topics.map((topic) => {
+        const keywords = JSON.parse(topic.keywords);
+        const feeds = JSON.parse(topic.rssFeeds);
+        return /* @__PURE__ */ jsx17("div", { className: "p-4", children: /* @__PURE__ */ jsxs13("div", { className: "flex items-start justify-between", children: [
+          /* @__PURE__ */ jsxs13("div", { children: [
+            /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsx17("p", { className: "font-medium", children: topic.name }),
+              !topic.isActive && /* @__PURE__ */ jsx17("span", { className: "text-xs bg-muted px-1.5 py-0.5 rounded", children: "Paused" })
+            ] }),
+            /* @__PURE__ */ jsxs13("p", { className: "text-sm text-muted-foreground mt-1", children: [
+              keywords.slice(0, 3).join(", "),
+              keywords.length > 3 && ` +${keywords.length - 3}`
+            ] }),
+            /* @__PURE__ */ jsxs13("p", { className: "text-xs text-muted-foreground mt-1", children: [
+              feeds.length,
+              " feed",
+              feeds.length !== 1 ? "s" : "",
+              " \xB7 ",
+              topic.frequency,
+              " \xB7 ",
+              topic._count?.posts ?? 0,
+              " posts",
+              topic.lastRunAt && ` \xB7 Last run: ${new Date(topic.lastRunAt).toLocaleDateString()}`
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-1", children: [
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => handleGenerate(topic.id),
+                disabled: generating !== null,
+                className: "p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-50",
+                title: "Generate now",
+                children: /* @__PURE__ */ jsx17(Play, { className: `h-4 w-4 ${generating === topic.id ? "animate-pulse" : ""}` })
+              }
+            ),
+            /* @__PURE__ */ jsx17("button", { onClick: () => openEditForm(topic), className: "p-1.5 text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ jsx17(Pencil2, { className: "h-4 w-4" }) }),
+            /* @__PURE__ */ jsx17("button", { onClick: () => handleDelete(topic.id), className: "p-1.5 text-red-500 hover:text-red-600", children: /* @__PURE__ */ jsx17(Trash22, { className: "h-4 w-4" }) })
+          ] })
+        ] }) }, topic.id);
+      }),
+      topics.length === 0 && /* @__PURE__ */ jsx17("p", { className: "p-4 text-muted-foreground text-center", children: "No topics configured" })
+    ] })
+  ] });
+}
+var POSTS_PER_PAGE = 25;
+function PostsSettingsContent() {
+  const { apiBasePath, navigate } = useDashboardContext();
+  const [posts, setPosts] = useState11([]);
+  const [totalCount, setTotalCount] = useState11(0);
+  const [loading, setLoading] = useState11(true);
+  const [currentPage, setCurrentPage] = useState11(1);
+  const [totalPages, setTotalPages] = useState11(1);
+  const [menuOpen, setMenuOpen] = useState11(null);
+  useEffect11(() => {
+    setLoading(true);
+    fetch(`${apiBasePath}/posts?all=1&page=${currentPage}&limit=${POSTS_PER_PAGE}&includeRevisionCount=1`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
+      setPosts(res.data || []);
+      setTotalCount(res.total ?? res.data?.length ?? 0);
+      setTotalPages(Math.ceil((res.total ?? res.data?.length ?? 0) / POSTS_PER_PAGE));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [apiBasePath, currentPage]);
+  async function handleDelete(post) {
+    if (!confirm(`Delete "${post.title || "Untitled"}"? This will also delete all revisions.`)) return;
+    const res = await fetch(`${apiBasePath}/posts/${post.id}`, { method: "DELETE" });
+    if (res.ok) {
+      setPosts(posts.filter((p) => p.id !== post.id));
+      setTotalCount((c) => c - 1);
+    }
+    setMenuOpen(null);
+  }
+  function getStatusBadgeClasses(status) {
+    if (status === "published") return "bg-primary text-primary-foreground";
+    if (status === "deleted") return "bg-destructive text-destructive-foreground";
+    return "bg-secondary text-secondary-foreground";
+  }
+  const PaginationControls = ({ position }) => {
+    if (totalPages <= 1) return null;
+    const getPageNumbers = () => {
+      const pages = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        if (currentPage > 3) pages.push("ellipsis-start");
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) {
+          if (!pages.includes(i)) pages.push(i);
+        }
+        if (currentPage < totalPages - 2) pages.push("ellipsis-end");
+        if (!pages.includes(totalPages)) pages.push(totalPages);
+      }
+      return pages;
+    };
+    const spacingClass = position === "bottom" ? "mt-4" : "";
+    return /* @__PURE__ */ jsx17("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ jsxs13("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
+          disabled: currentPage <= 1,
+          "aria-label": "Go to previous page",
+          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+          children: [
+            /* @__PURE__ */ jsx17(ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ jsx17("span", { className: "hidden sm:block", children: "Previous" })
+          ]
+        }
+      ) }),
+      getPageNumbers().map(
+        (page) => typeof page === "string" ? /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsx17("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ jsx17(MoreHorizontal2, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsx17(
+          "button",
+          {
+            onClick: () => setCurrentPage(page),
+            "aria-current": page === currentPage ? "page" : void 0,
+            className: `inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-9 w-9 ${page === currentPage ? "border border-input bg-background hover:bg-accent hover:text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"}`,
+            children: page
+          }
+        ) }, page)
+      ),
+      /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
+          disabled: currentPage >= totalPages,
+          "aria-label": "Go to next page",
+          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+          children: [
+            /* @__PURE__ */ jsx17("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ jsx17(ChevronRight2, { className: "h-4 w-4" })
+          ]
+        }
+      ) })
+    ] }) });
+  };
+  if (loading && posts.length === 0) return /* @__PURE__ */ jsx17("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  return /* @__PURE__ */ jsxs13("div", { children: [
+    /* @__PURE__ */ jsxs13("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ jsxs13("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ jsx17("h1", { className: "text-lg font-bold", children: "Posts" }),
+        /* @__PURE__ */ jsxs13("p", { className: "text-sm text-muted-foreground mt-1", children: [
+          totalCount,
+          " total post",
+          totalCount !== 1 ? "s" : ""
+        ] })
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ jsx17(PaginationControls, { position: "top" }),
+        /* @__PURE__ */ jsx17(
+          "button",
+          {
+            onClick: () => navigate("/editor"),
+            className: "inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90",
+            children: "New Post"
+          }
+        )
+      ] })
+    ] }),
+    posts.length === 0 ? /* @__PURE__ */ jsx17("div", { className: "py-8 text-center text-muted-foreground", children: "No posts yet." }) : /* @__PURE__ */ jsxs13(Fragment10, { children: [
+      /* @__PURE__ */ jsx17("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs13("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ jsx17("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs13("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Title" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Slug" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Revisions" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Updated" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+        ] }) }),
+        /* @__PURE__ */ jsx17("tbody", { className: "[&_tr:last-child]:border-0", children: posts.map((post) => /* @__PURE__ */ jsxs13("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx17("span", { className: "block truncate max-w-[200px]", children: post.title || "Untitled" }) }),
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx17("span", { className: "block truncate max-w-[250px] text-muted-foreground font-mono", children: post.slug }) }),
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx17("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(post.status)}`, children: post.status }) }),
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-muted-foreground", children: post._count?.revisions ?? 0 }),
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(post.updatedAt).toLocaleDateString() }),
+          /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsxs13("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => setMenuOpen(menuOpen === post.id ? null : post.id),
+                className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
+                children: /* @__PURE__ */ jsx17(MoreVertical2, { className: "h-4 w-4" })
+              }
+            ),
+            menuOpen === post.id && /* @__PURE__ */ jsxs13("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+              /* @__PURE__ */ jsx17(
+                "button",
+                {
+                  onClick: () => {
+                    navigate(`/editor/${post.slug}`);
+                    setMenuOpen(null);
+                  },
+                  className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left hover:bg-accent",
+                  children: "Edit"
+                }
+              ),
+              post.status === "published" && /* @__PURE__ */ jsx17(
+                "a",
+                {
+                  href: `/e/${post.slug}`,
+                  target: "_blank",
+                  rel: "noopener noreferrer",
+                  className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left hover:bg-accent",
+                  onClick: () => setMenuOpen(null),
+                  children: "View"
+                }
+              ),
+              /* @__PURE__ */ jsx17("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+              /* @__PURE__ */ jsx17(
+                "button",
+                {
+                  onClick: () => handleDelete(post),
+                  className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left text-destructive hover:bg-accent",
+                  children: "Delete"
+                }
+              )
+            ] })
+          ] }) })
+        ] }, post.id)) })
+      ] }) }),
+      /* @__PURE__ */ jsx17("div", { className: "md:hidden divide-y rounded-md border bg-background", children: posts.map((post) => /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ jsxs13("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx17("span", { className: "font-medium truncate", children: post.title || "Untitled" }),
+            /* @__PURE__ */ jsx17("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(post.status)}`, children: post.status })
+          ] }),
+          /* @__PURE__ */ jsxs13("p", { className: "text-sm text-muted-foreground truncate", children: [
+            post.slug,
+            " \xB7 ",
+            post._count?.revisions ?? 0,
+            " rev \xB7 ",
+            new Date(post.updatedAt).toLocaleDateString()
+          ] })
+        ] }),
+        /* @__PURE__ */ jsxs13("div", { className: "relative", children: [
+          /* @__PURE__ */ jsx17(
+            "button",
+            {
+              onClick: () => setMenuOpen(menuOpen === post.id ? null : post.id),
+              className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
+              children: /* @__PURE__ */ jsx17(MoreVertical2, { className: "h-4 w-4" })
+            }
+          ),
+          menuOpen === post.id && /* @__PURE__ */ jsxs13("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => {
+                  navigate(`/editor/${post.slug}`);
+                  setMenuOpen(null);
+                },
+                className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left hover:bg-accent",
+                children: "Edit"
+              }
+            ),
+            post.status === "published" && /* @__PURE__ */ jsx17(
+              "a",
+              {
+                href: `/e/${post.slug}`,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left hover:bg-accent",
+                onClick: () => setMenuOpen(null),
+                children: "View"
+              }
+            ),
+            /* @__PURE__ */ jsx17("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+            /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => handleDelete(post),
+                className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left text-destructive hover:bg-accent",
+                children: "Delete"
+              }
+            )
+          ] })
+        ] })
+      ] }, post.id)) })
+    ] }),
+    /* @__PURE__ */ jsx17(PaginationControls, { position: "bottom" })
+  ] });
+}
+var REVISIONS_PER_PAGE = 25;
+function RevisionsSettingsContent() {
+  const { apiBasePath, navigate } = useDashboardContext();
+  const [revisions, setRevisions] = useState11([]);
+  const [totalCount, setTotalCount] = useState11(0);
+  const [loading, setLoading] = useState11(true);
+  const [currentPage, setCurrentPage] = useState11(1);
+  const [totalPages, setTotalPages] = useState11(1);
+  useEffect11(() => {
+    setLoading(true);
+    fetch(`${apiBasePath}/revisions?page=${currentPage}&limit=${REVISIONS_PER_PAGE}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
+      setRevisions(res.data || []);
+      setTotalCount(res.total ?? res.data?.length ?? 0);
+      setTotalPages(res.totalPages || Math.ceil((res.total ?? res.data?.length ?? 0) / REVISIONS_PER_PAGE));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [apiBasePath, currentPage]);
+  function getStatusBadgeClasses(isCurrent) {
+    if (isCurrent) return "bg-primary text-primary-foreground";
+    return "bg-secondary text-secondary-foreground";
+  }
+  const PaginationControls = ({ position }) => {
+    if (totalPages <= 1) return null;
+    const getPageNumbers = () => {
+      const pages = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        if (currentPage > 3) pages.push("ellipsis-start");
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) {
+          if (!pages.includes(i)) pages.push(i);
+        }
+        if (currentPage < totalPages - 2) pages.push("ellipsis-end");
+        if (!pages.includes(totalPages)) pages.push(totalPages);
+      }
+      return pages;
+    };
+    const spacingClass = position === "bottom" ? "mt-4" : "";
+    return /* @__PURE__ */ jsx17("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ jsxs13("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
+          disabled: currentPage <= 1,
+          "aria-label": "Go to previous page",
+          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+          children: [
+            /* @__PURE__ */ jsx17(ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ jsx17("span", { className: "hidden sm:block", children: "Previous" })
+          ]
+        }
+      ) }),
+      getPageNumbers().map(
+        (page) => typeof page === "string" ? /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsx17("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ jsx17(MoreHorizontal2, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsx17(
+          "button",
+          {
+            onClick: () => setCurrentPage(page),
+            "aria-current": page === currentPage ? "page" : void 0,
+            className: `inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-9 w-9 ${page === currentPage ? "border border-input bg-background hover:bg-accent hover:text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"}`,
+            children: page
+          }
+        ) }, page)
+      ),
+      /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
+          disabled: currentPage >= totalPages,
+          "aria-label": "Go to next page",
+          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+          children: [
+            /* @__PURE__ */ jsx17("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ jsx17(ChevronRight2, { className: "h-4 w-4" })
+          ]
+        }
+      ) })
+    ] }) });
+  };
+  if (loading && revisions.length === 0) return /* @__PURE__ */ jsx17("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  return /* @__PURE__ */ jsxs13("div", { children: [
+    /* @__PURE__ */ jsxs13("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ jsxs13("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ jsx17("h1", { className: "text-lg font-bold", children: "Revisions" }),
+        /* @__PURE__ */ jsxs13("p", { className: "text-sm text-muted-foreground mt-1", children: [
+          totalCount,
+          " total revision",
+          totalCount !== 1 ? "s" : ""
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx17(PaginationControls, { position: "top" })
+    ] }),
+    revisions.length === 0 ? /* @__PURE__ */ jsx17("div", { className: "py-8 text-center text-muted-foreground", children: "No revisions yet." }) : /* @__PURE__ */ jsxs13(Fragment10, { children: [
+      /* @__PURE__ */ jsx17("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs13("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ jsx17("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs13("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Post" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Content Preview" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+        ] }) }),
+        /* @__PURE__ */ jsx17("tbody", { className: "[&_tr:last-child]:border-0", children: revisions.map((revision) => {
+          const isCurrent = revision.post.markdown === revision.markdown;
+          return /* @__PURE__ */ jsxs13("tr", { className: "border-b", children: [
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => navigate(`/editor/${revision.post.slug}`),
+                className: "block truncate max-w-[200px] hover:underline text-left",
+                children: revision.post.title || "Untitled"
+              }
+            ) }),
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsxs13("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
+              revision.markdown.slice(0, 80),
+              revision.markdown.length > 80 ? "..." : ""
+            ] }) }),
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(revision.createdAt).toLocaleString() }),
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx17("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" }) }),
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => navigate(`/settings/revisions/${revision.id}`),
+                className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-8 px-3 hover:bg-accent text-muted-foreground hover:text-foreground",
+                children: "View"
+              }
+            ) })
+          ] }, revision.id);
+        }) })
+      ] }) }),
+      /* @__PURE__ */ jsx17("div", { className: "md:hidden divide-y rounded-md border bg-background", children: revisions.map((revision) => {
+        const isCurrent = revision.post.markdown === revision.markdown;
+        return /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+          /* @__PURE__ */ jsxs13("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+            /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsx17("span", { className: "font-medium truncate", children: revision.post.title || "Untitled" }),
+              /* @__PURE__ */ jsx17("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" })
+            ] }),
+            /* @__PURE__ */ jsxs13("p", { className: "text-sm text-muted-foreground truncate", children: [
+              revision.markdown.slice(0, 40),
+              revision.markdown.length > 40 ? "..." : "",
+              " \xB7 ",
+              new Date(revision.createdAt).toLocaleDateString()
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx17(
+            "button",
+            {
+              onClick: () => navigate(`/settings/revisions/${revision.id}`),
+              className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-8 px-3 hover:bg-accent text-muted-foreground hover:text-foreground shrink-0",
+              children: "View"
+            }
+          )
+        ] }, revision.id);
+      }) })
+    ] }),
+    /* @__PURE__ */ jsx17(PaginationControls, { position: "bottom" })
+  ] });
+}
+function RevisionDetailContent({ revisionId }) {
+  const { apiBasePath, navigate } = useDashboardContext();
+  const [revision, setRevision] = useState11(null);
+  const [loading, setLoading] = useState11(true);
+  const [restoring, setRestoring] = useState11(false);
+  useEffect11(() => {
+    fetch(`${apiBasePath}/revisions/${revisionId}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
+      setRevision(res.data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [apiBasePath, revisionId]);
+  async function handleRestore() {
+    if (!revision) return;
+    if (!confirm("Restore this revision? This will replace the current post content.")) return;
+    setRestoring(true);
+    const res = await fetch(`${apiBasePath}/revisions/${revisionId}/restore`, { method: "POST" });
+    if (res.ok) {
+      navigate(`/editor/${revision.post.slug}`);
+    }
+    setRestoring(false);
+  }
+  if (loading) {
+    return /* @__PURE__ */ jsxs13("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsx17("div", { className: "h-6 w-32 bg-muted rounded animate-pulse" }),
+      /* @__PURE__ */ jsx17("div", { className: "h-64 bg-muted rounded animate-pulse" })
+    ] });
+  }
+  if (!revision) {
+    return /* @__PURE__ */ jsxs13("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          onClick: () => navigate("/settings/revisions"),
+          className: "text-sm text-muted-foreground hover:text-foreground flex items-center gap-1",
+          children: [
+            /* @__PURE__ */ jsx17(ChevronLeft, { className: "h-4 w-4" }),
+            " Back to Revisions"
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx17("p", { className: "text-muted-foreground", children: "Revision not found." })
+    ] });
+  }
+  const isCurrent = revision.post.markdown === revision.markdown;
+  return /* @__PURE__ */ jsxs13("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxs13("div", { className: "space-y-1", children: [
+        /* @__PURE__ */ jsxs13(
+          "button",
+          {
+            onClick: () => navigate("/settings/revisions"),
+            className: "text-sm text-muted-foreground hover:text-foreground flex items-center gap-1",
+            children: [
+              /* @__PURE__ */ jsx17(ChevronLeft, { className: "h-4 w-4" }),
+              " Back to Revisions"
+            ]
+          }
+        ),
+        /* @__PURE__ */ jsx17("h2", { className: "text-lg font-semibold", children: "Revision Detail" })
+      ] }),
+      /* @__PURE__ */ jsx17("div", { className: "flex items-center gap-2", children: isCurrent ? /* @__PURE__ */ jsx17("span", { className: "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground", children: "current" }) : /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          onClick: handleRestore,
+          disabled: restoring,
+          className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50",
+          children: [
+            /* @__PURE__ */ jsx17(RotateCcw, { className: "h-4 w-4 mr-2" }),
+            restoring ? "Restoring..." : "Restore This Revision"
+          ]
+        }
+      ) })
+    ] }),
+    /* @__PURE__ */ jsxs13("div", { className: "rounded-lg border bg-card p-4 space-y-2", children: [
+      /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx17("span", { className: "text-sm text-muted-foreground", children: "Post" }),
+        /* @__PURE__ */ jsx17(
+          "button",
+          {
+            onClick: () => navigate(`/editor/${revision.post.slug}`),
+            className: "text-sm hover:underline",
+            children: revision.post.title || "Untitled"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx17("span", { className: "text-sm text-muted-foreground", children: "Title at revision" }),
+        /* @__PURE__ */ jsx17("span", { className: "text-sm", children: revision.title || "\u2014" })
+      ] }),
+      /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx17("span", { className: "text-sm text-muted-foreground", children: "Created" }),
+        /* @__PURE__ */ jsx17("span", { className: "text-sm", children: new Date(revision.createdAt).toLocaleString() })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs13("div", { className: "space-y-2", children: [
+      /* @__PURE__ */ jsx17("h3", { className: "text-sm font-medium", children: "Content" }),
+      /* @__PURE__ */ jsx17("div", { className: "rounded-lg border bg-muted/30 p-4 max-h-96 overflow-auto", children: /* @__PURE__ */ jsx17("pre", { className: "text-sm whitespace-pre-wrap font-mono", children: revision.markdown }) })
+    ] })
+  ] });
+}
+var COMMENTS_PER_PAGE = 25;
+function CommentsSettingsContent() {
+  const { apiBasePath, navigate, basePath } = useDashboardContext();
+  const [comments, setComments] = useState11([]);
+  const [totalCount, setTotalCount] = useState11(0);
+  const [loading, setLoading] = useState11(true);
+  const [currentPage, setCurrentPage] = useState11(1);
+  const [totalPages, setTotalPages] = useState11(1);
+  useEffect11(() => {
+    setLoading(true);
+    fetch(`${apiBasePath}/comments?page=${currentPage}&limit=${COMMENTS_PER_PAGE}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
+      setComments(res.data || []);
+      setTotalCount(res.total ?? res.data?.length ?? 0);
+      setTotalPages(res.totalPages || Math.ceil((res.total ?? res.data?.length ?? 0) / COMMENTS_PER_PAGE));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [apiBasePath, currentPage]);
+  function getStatusBadge(comment) {
+    const isDeleted = comment.deletedAt !== null;
+    const isResolved = comment.resolved;
+    if (isDeleted) {
+      return { label: "deleted", classes: "bg-destructive text-destructive-foreground" };
+    }
+    if (isResolved) {
+      return { label: "resolved", classes: "bg-secondary text-secondary-foreground" };
+    }
+    return { label: "active", classes: "bg-primary text-primary-foreground" };
+  }
+  const PaginationControls = ({ position }) => {
+    if (totalPages <= 1) return null;
+    const getPageNumbers = () => {
+      const pages = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        if (currentPage > 3) pages.push("ellipsis-start");
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) {
+          if (!pages.includes(i)) pages.push(i);
+        }
+        if (currentPage < totalPages - 2) pages.push("ellipsis-end");
+        if (!pages.includes(totalPages)) pages.push(totalPages);
+      }
+      return pages;
+    };
+    const spacingClass = position === "bottom" ? "mt-4" : "";
+    return /* @__PURE__ */ jsx17("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ jsxs13("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
+          disabled: currentPage <= 1,
+          "aria-label": "Go to previous page",
+          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+          children: [
+            /* @__PURE__ */ jsx17(ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ jsx17("span", { className: "hidden sm:block", children: "Previous" })
+          ]
+        }
+      ) }),
+      getPageNumbers().map(
+        (page) => typeof page === "string" ? /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsx17("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ jsx17(MoreHorizontal2, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsx17(
+          "button",
+          {
+            onClick: () => setCurrentPage(page),
+            "aria-current": page === currentPage ? "page" : void 0,
+            className: `inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-9 w-9 ${page === currentPage ? "border border-input bg-background hover:bg-accent hover:text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"}`,
+            children: page
+          }
+        ) }, page)
+      ),
+      /* @__PURE__ */ jsx17("li", { children: /* @__PURE__ */ jsxs13(
+        "button",
+        {
+          onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
+          disabled: currentPage >= totalPages,
+          "aria-label": "Go to next page",
+          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+          children: [
+            /* @__PURE__ */ jsx17("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ jsx17(ChevronRight2, { className: "h-4 w-4" })
+          ]
+        }
+      ) })
+    ] }) });
+  };
+  if (loading && comments.length === 0) return /* @__PURE__ */ jsx17("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  return /* @__PURE__ */ jsxs13("div", { children: [
+    /* @__PURE__ */ jsxs13("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ jsxs13("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ jsx17("h1", { className: "text-lg font-bold", children: "Comments" }),
+        /* @__PURE__ */ jsxs13("p", { className: "text-sm text-muted-foreground mt-1", children: [
+          totalCount,
+          " total comment",
+          totalCount !== 1 ? "s" : ""
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx17(PaginationControls, { position: "top" })
+    ] }),
+    comments.length === 0 ? /* @__PURE__ */ jsx17("div", { className: "py-8 text-center text-muted-foreground", children: "No comments yet." }) : /* @__PURE__ */ jsxs13(Fragment10, { children: [
+      /* @__PURE__ */ jsx17("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs13("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ jsx17("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs13("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[200px]", children: "Post" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Author" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[300px]", children: "Comment" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ jsx17("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+        ] }) }),
+        /* @__PURE__ */ jsx17("tbody", { className: "[&_tr:last-child]:border-0", children: comments.map((comment) => {
+          const status = getStatusBadge(comment);
+          const isReply = comment.parentId !== null;
+          const commentIdToOpen = comment.parentId || comment.id;
+          return /* @__PURE__ */ jsxs13("tr", { className: "border-b", children: [
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => navigate(`/editor/${comment.post.slug}`),
+                className: "block truncate max-w-[200px] hover:underline text-left",
+                children: comment.post.title || "Untitled"
+              }
+            ) }),
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-muted-foreground", children: comment.user.name || comment.user.email }),
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsxs13("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
+              isReply && /* @__PURE__ */ jsx17("span", { className: "text-xs mr-1", children: "\u21B3" }),
+              comment.content.slice(0, 60),
+              comment.content.length > 60 ? "..." : ""
+            ] }) }),
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(comment.createdAt).toLocaleString() }),
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx17("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${status.classes}`, children: status.label }) }),
+            /* @__PURE__ */ jsx17("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsx17(
+              "button",
+              {
+                onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
+                className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-8 px-3 hover:bg-accent text-muted-foreground hover:text-foreground",
+                children: "View"
+              }
+            ) })
+          ] }, comment.id);
+        }) })
+      ] }) }),
+      /* @__PURE__ */ jsx17("div", { className: "md:hidden divide-y rounded-md border bg-background", children: comments.map((comment) => {
+        const status = getStatusBadge(comment);
+        const isReply = comment.parentId !== null;
+        const commentIdToOpen = comment.parentId || comment.id;
+        return /* @__PURE__ */ jsxs13("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+          /* @__PURE__ */ jsxs13("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+            /* @__PURE__ */ jsxs13("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsxs13("span", { className: "font-medium truncate", children: [
+                isReply && /* @__PURE__ */ jsx17("span", { className: "text-xs mr-1", children: "\u21B3" }),
+                comment.content.slice(0, 40),
+                comment.content.length > 40 ? "..." : ""
+              ] }),
+              /* @__PURE__ */ jsx17("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${status.classes}`, children: status.label })
+            ] }),
+            /* @__PURE__ */ jsxs13("p", { className: "text-sm text-muted-foreground truncate", children: [
+              comment.user.name || comment.user.email,
+              " \xB7 ",
+              new Date(comment.createdAt).toLocaleDateString()
+            ] })
+          ] }),
+          /* @__PURE__ */ jsx17(
+            "button",
+            {
+              onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
+              className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-8 px-3 hover:bg-accent text-muted-foreground hover:text-foreground shrink-0",
+              children: "View"
+            }
+          )
+        ] }, comment.id);
+      }) })
+    ] }),
+    /* @__PURE__ */ jsx17(PaginationControls, { position: "bottom" })
+  ] });
+}
+
+// src/ui/components/Navbar.tsx
+import { useRef as useRef8, useState as useState12, useEffect as useEffect12 } from "react";
+import { ChevronLeft as ChevronLeft2, Moon, Sun } from "lucide-react";
+import { Fragment as Fragment11, jsx as jsx18, jsxs as jsxs14 } from "react/jsx-runtime";
+function Navbar({
+  onSignOut,
+  onThemeToggle,
+  theme,
+  rightSlot
+}) {
+  const { session, currentPath, navigate, goBack, basePath } = useDashboardContext();
+  const [menuOpen, setMenuOpen] = useState12(false);
+  const menuRef = useRef8(null);
+  const triggerRef = useRef8(null);
+  useEffect12(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [menuOpen]);
+  const isRoot = currentPath === "/" || currentPath === "";
+  const isSettings = currentPath.startsWith("/settings");
+  const handleBack = (e) => {
+    e.currentTarget.blur();
+    goBack();
+  };
+  return /* @__PURE__ */ jsx18("header", { className: "sticky top-0 z-50 border-b border-border bg-background", children: /* @__PURE__ */ jsxs14("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
+    isRoot ? /* @__PURE__ */ jsxs14("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
+      "Writer",
+      /* @__PURE__ */ jsx18("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
+    ] }) : /* @__PURE__ */ jsxs14(
+      "button",
+      {
+        type: "button",
+        onClick: handleBack,
+        className: "h-9 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground touch-manipulation",
+        children: [
+          /* @__PURE__ */ jsx18(ChevronLeft2, { className: "h-4 w-4" }),
+          /* @__PURE__ */ jsx18("span", { className: "hidden sm:inline", children: "Back" })
+        ]
+      }
+    ),
+    /* @__PURE__ */ jsxs14("div", { className: "flex items-center gap-2", children: [
+      rightSlot,
+      onThemeToggle && /* @__PURE__ */ jsx18(
+        "button",
+        {
+          type: "button",
+          onClick: onThemeToggle,
+          className: "w-9 h-9 rounded-md border border-border hover:bg-accent text-muted-foreground flex items-center justify-center",
+          "aria-label": "Toggle theme",
+          children: theme === "dark" ? /* @__PURE__ */ jsx18(Sun, { className: "h-4 w-4" }) : /* @__PURE__ */ jsx18(Moon, { className: "h-4 w-4" })
+        }
+      ),
+      session && /* @__PURE__ */ jsxs14("div", { className: "relative", ref: menuRef, children: [
+        /* @__PURE__ */ jsxs14(
+          "button",
+          {
+            ref: triggerRef,
+            type: "button",
+            onClick: () => setMenuOpen(!menuOpen),
+            className: "relative w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground hover:ring-2 hover:ring-ring transition-shadow",
+            children: [
+              session.user?.email?.charAt(0).toUpperCase() || "?",
+              /* @__PURE__ */ jsx18("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
+            ]
+          }
+        ),
+        menuOpen && /* @__PURE__ */ jsxs14("div", { className: "absolute right-0 top-full mt-1 min-w-[180px] bg-popover border border-border rounded-md shadow-lg z-50 p-1", children: [
+          session.user?.role === "admin" && /* @__PURE__ */ jsxs14(Fragment11, { children: [
+            !isSettings ? /* @__PURE__ */ jsx18(
+              "button",
+              {
+                onClick: () => {
+                  navigate("/settings");
+                  setMenuOpen(false);
+                },
+                className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+                children: "Go to settings"
+              }
+            ) : /* @__PURE__ */ jsx18(
+              "button",
+              {
+                onClick: () => {
+                  navigate("/");
+                  setMenuOpen(false);
+                },
+                className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+                children: "Back to writer"
+              }
+            ),
+            /* @__PURE__ */ jsx18("div", { className: "h-px bg-border my-1" })
+          ] }),
+          /* @__PURE__ */ jsx18(
+            "a",
+            {
+              href: "/",
+              className: "block w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+              onClick: () => setMenuOpen(false),
+              children: "Back to site"
+            }
+          ),
+          onSignOut && /* @__PURE__ */ jsx18(
+            "button",
+            {
+              onClick: () => {
+                onSignOut();
+                setMenuOpen(false);
+              },
+              className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+              children: "Logout"
+            }
+          )
+        ] })
+      ] })
+    ] })
+  ] }) });
+}
+
+// src/ui/hooks/useKeyboard.ts
+import { useEffect as useEffect13, useRef as useRef9 } from "react";
+function useKeyboard(shortcuts, enabled = true) {
+  const shortcutsRef = useRef9(shortcuts);
+  shortcutsRef.current = shortcuts;
+  useEffect13(() => {
+    if (!enabled) return;
+    function handleKeyDown(event) {
+      const target = event.target;
+      const isTyping = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+      if (isTyping) {
+        const hasMeta = event.metaKey || event.ctrlKey;
+        const isEscape = event.key === "Escape";
+        const isNavShortcut = hasMeta && (event.key === "/" || event.key === "'");
+        if (!isEscape && !isNavShortcut) {
+          return;
+        }
+      }
+      for (const shortcut of shortcutsRef.current) {
+        const metaMatch = shortcut.metaKey ? event.metaKey || event.ctrlKey : true;
+        const ctrlMatch = shortcut.ctrlKey ? event.ctrlKey : true;
+        const shiftMatch = shortcut.shiftKey ? event.shiftKey : !event.shiftKey;
+        const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase();
+        if (keyMatch && metaMatch && ctrlMatch && shiftMatch) {
+          event.preventDefault();
+          shortcut.action();
+          break;
+        }
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [enabled]);
+}
+function useDashboardKeyboard(options) {
+  const shortcuts = [
+    {
+      key: "/",
+      metaKey: true,
+      action: () => options.onToggleView?.(),
+      description: "Toggle view"
+    },
+    {
+      key: "'",
+      metaKey: true,
+      action: () => options.onToggleSettings?.(),
+      description: "Toggle settings"
+    },
+    {
+      key: "n",
+      action: () => options.onNewPost?.(),
+      description: "New post"
+    },
+    {
+      key: "Escape",
+      action: () => options.onEscape?.(),
+      description: "Go back"
+    }
+  ];
+  useKeyboard(shortcuts, true);
+}
+
+// src/ui/dashboard.tsx
+import { jsx as jsx19, jsxs as jsxs15 } from "react/jsx-runtime";
+function AutobloggerDashboard({
+  basePath = "/writer",
+  apiBasePath = "/api/cms",
+  styles,
+  fields = [],
+  session = null,
+  onEditorStateChange,
+  onRegisterEditHandler,
+  onToggleView,
+  onSignOut,
+  onThemeToggle,
+  theme,
+  navbarRightSlot
+}) {
+  return /* @__PURE__ */ jsx19(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ jsx19(
+    DashboardLayout,
+    {
+      onToggleView,
+      onSignOut,
+      onThemeToggle,
+      theme,
+      navbarRightSlot
+    }
+  ) });
+}
+function DashboardLayout({
+  onToggleView,
+  onSignOut,
+  onThemeToggle,
+  theme,
+  navbarRightSlot
+}) {
+  const { basePath, currentPath, navigate } = useDashboardContext();
+  const editorSlug = currentPath.startsWith("/editor/") ? currentPath.replace("/editor/", "") : currentPath === "/editor" ? void 0 : void 0;
+  useDashboardKeyboard({
+    basePath,
+    onToggleView: onToggleView ? () => onToggleView(currentPath, editorSlug) : void 0,
+    onToggleSettings: () => {
+      if (currentPath.startsWith("/settings")) navigate("/");
+      else navigate("/settings");
+    },
+    onNewPost: () => {
+      if (currentPath === "/" || currentPath === "") navigate("/editor");
+    },
+    onEscape: () => {
+      if (currentPath !== "/" && currentPath !== "") navigate("/");
+    }
+  });
+  return /* @__PURE__ */ jsxs15("div", { className: "min-h-screen bg-background flex flex-col", children: [
+    /* @__PURE__ */ jsx19(
+      Navbar,
+      {
+        onSignOut,
+        onThemeToggle,
+        theme,
+        rightSlot: navbarRightSlot
+      }
+    ),
+    /* @__PURE__ */ jsx19("main", { className: "flex-1", children: /* @__PURE__ */ jsx19(DashboardRouter, { path: currentPath }) })
+  ] });
+}
+function DashboardRouter({ path }) {
+  const pathWithoutQuery = path.split("?")[0];
+  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ jsx19(WriterDashboard, {});
+  if (pathWithoutQuery.startsWith("/editor")) {
+    const slug = pathWithoutQuery.replace("/editor/", "").replace("/editor", "");
+    return /* @__PURE__ */ jsx19(EditorPage, { slug: slug || void 0 }, path);
+  }
+  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ jsx19(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
+  return /* @__PURE__ */ jsx19("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ jsxs15("p", { className: "text-muted-foreground", children: [
+    "Page not found: ",
+    path
+  ] }) });
+}
+export {
+  AutobloggerDashboard,
+  CommentThread,
+  CommentsPanel,
+  Navbar,
+  useComments,
+  useDashboardContext
+};
+//# sourceMappingURL=ui.mjs.map
