@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useCallback, useRef, useEffect, type ReactNode } from 'react'
+import { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo, type ReactNode } from 'react'
 
 export interface EssaySnapshot {
   title: string
@@ -369,7 +369,7 @@ export function ChatProvider({
     setIsOpen(false)
   }, [messages])
 
-  const value: ChatContextValue = {
+  const value = useMemo<ChatContextValue>(() => ({
     messages,
     essayContext,
     isStreaming,
@@ -392,7 +392,24 @@ export function ChatProvider({
     undoEdit,
     registerExpandPlanHandler,
     expandPlan,
-  }
+  }), [
+    messages,
+    essayContext,
+    isStreaming,
+    isOpen,
+    mode,
+    webSearchEnabled,
+    thinkingEnabled,
+    selectedModel,
+    sendMessage,
+    stopStreaming,
+    addMessage,
+    clearMessages,
+    registerEditHandler,
+    undoEdit,
+    registerExpandPlanHandler,
+    expandPlan,
+  ])
 
   return (
     <ChatContext.Provider value={value}>

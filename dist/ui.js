@@ -155,9 +155,15 @@ function DashboardProvider({
   (0, import_react.useEffect)(() => {
     fetchSharedData();
   }, [fetchSharedData]);
-  const mergedStyles = { ...DEFAULT_STYLES, ...styles };
-  const config = { fields, styles: mergedStyles };
-  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DashboardContext.Provider, { value: {
+  const mergedStyles = (0, import_react.useMemo)(
+    () => ({ ...DEFAULT_STYLES, ...styles }),
+    [styles]
+  );
+  const config = (0, import_react.useMemo)(
+    () => ({ fields, styles: mergedStyles }),
+    [fields, mergedStyles]
+  );
+  const contextValue = (0, import_react.useMemo)(() => ({
     basePath,
     apiBasePath,
     styles: mergedStyles,
@@ -173,7 +179,24 @@ function DashboardProvider({
     refetchSharedData: fetchSharedData,
     onEditorStateChange,
     onRegisterEditHandler
-  }, children });
+  }), [
+    basePath,
+    apiBasePath,
+    mergedStyles,
+    fields,
+    currentPath,
+    navigate,
+    goBack,
+    canGoBack,
+    config,
+    session,
+    sharedData,
+    sharedDataLoading,
+    fetchSharedData,
+    onEditorStateChange,
+    onRegisterEditHandler
+  ]);
+  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DashboardContext.Provider, { value: contextValue, children });
 }
 
 // src/ui/pages/WriterDashboard.tsx
@@ -9810,7 +9833,7 @@ function ChatProvider({
     expandPlanHandlerRef.current(lastAssistantMessage.content, wordCount);
     setIsOpen(false);
   }, [messages]);
-  const value = {
+  const value = (0, import_react20.useMemo)(() => ({
     messages,
     essayContext,
     isStreaming,
@@ -9833,7 +9856,24 @@ function ChatProvider({
     undoEdit,
     registerExpandPlanHandler,
     expandPlan
-  };
+  }), [
+    messages,
+    essayContext,
+    isStreaming,
+    isOpen,
+    mode,
+    webSearchEnabled,
+    thinkingEnabled,
+    selectedModel,
+    sendMessage,
+    stopStreaming,
+    addMessage,
+    clearMessages,
+    registerEditHandler,
+    undoEdit,
+    registerExpandPlanHandler,
+    expandPlan
+  ]);
   return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(ChatContext.Provider, { value, children });
 }
 function useChatContext() {

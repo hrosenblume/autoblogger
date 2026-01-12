@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react'
 import type { CustomFieldConfig, StylesConfig } from './types'
 
 export interface DashboardConfig {
@@ -214,27 +214,52 @@ export function DashboardProvider({
     fetchSharedData()
   }, [fetchSharedData])
 
-  const mergedStyles: Required<StylesConfig> = { ...DEFAULT_STYLES, ...styles }
-  const config: DashboardConfig = { fields, styles: mergedStyles }
+  const mergedStyles = useMemo<Required<StylesConfig>>(
+    () => ({ ...DEFAULT_STYLES, ...styles }),
+    [styles]
+  )
+  
+  const config = useMemo<DashboardConfig>(
+    () => ({ fields, styles: mergedStyles }),
+    [fields, mergedStyles]
+  )
+
+  const contextValue = useMemo<DashboardContextValue>(() => ({
+    basePath, 
+    apiBasePath, 
+    styles: mergedStyles, 
+    fields, 
+    currentPath, 
+    navigate,
+    goBack,
+    canGoBack,
+    config,
+    session,
+    sharedData,
+    sharedDataLoading,
+    refetchSharedData: fetchSharedData,
+    onEditorStateChange,
+    onRegisterEditHandler,
+  }), [
+    basePath,
+    apiBasePath,
+    mergedStyles,
+    fields,
+    currentPath,
+    navigate,
+    goBack,
+    canGoBack,
+    config,
+    session,
+    sharedData,
+    sharedDataLoading,
+    fetchSharedData,
+    onEditorStateChange,
+    onRegisterEditHandler,
+  ])
 
   return (
-    <DashboardContext.Provider value={{ 
-      basePath, 
-      apiBasePath, 
-      styles: mergedStyles, 
-      fields, 
-      currentPath, 
-      navigate,
-      goBack,
-      canGoBack,
-      config,
-      session,
-      sharedData,
-      sharedDataLoading,
-      refetchSharedData: fetchSharedData,
-      onEditorStateChange,
-      onRegisterEditHandler,
-    }}>
+    <DashboardContext.Provider value={contextValue}>
       {children}
     </DashboardContext.Provider>
   )

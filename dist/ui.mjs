@@ -6,7 +6,7 @@ import { useState as useState13 } from "react";
 import { Save, Loader2 as Loader25 } from "lucide-react";
 
 // src/ui/context.tsx
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { jsx } from "react/jsx-runtime";
 var DashboardContext = createContext(null);
 function useDashboardContext() {
@@ -108,9 +108,15 @@ function DashboardProvider({
   useEffect(() => {
     fetchSharedData();
   }, [fetchSharedData]);
-  const mergedStyles = { ...DEFAULT_STYLES, ...styles };
-  const config = { fields, styles: mergedStyles };
-  return /* @__PURE__ */ jsx(DashboardContext.Provider, { value: {
+  const mergedStyles = useMemo(
+    () => ({ ...DEFAULT_STYLES, ...styles }),
+    [styles]
+  );
+  const config = useMemo(
+    () => ({ fields, styles: mergedStyles }),
+    [fields, mergedStyles]
+  );
+  const contextValue = useMemo(() => ({
     basePath,
     apiBasePath,
     styles: mergedStyles,
@@ -126,11 +132,28 @@ function DashboardProvider({
     refetchSharedData: fetchSharedData,
     onEditorStateChange,
     onRegisterEditHandler
-  }, children });
+  }), [
+    basePath,
+    apiBasePath,
+    mergedStyles,
+    fields,
+    currentPath,
+    navigate,
+    goBack,
+    canGoBack,
+    config,
+    session,
+    sharedData,
+    sharedDataLoading,
+    fetchSharedData,
+    onEditorStateChange,
+    onRegisterEditHandler
+  ]);
+  return /* @__PURE__ */ jsx(DashboardContext.Provider, { value: contextValue, children });
 }
 
 // src/ui/pages/WriterDashboard.tsx
-import { useState as useState3, useEffect as useEffect3, useMemo, useRef as useRef2 } from "react";
+import { useState as useState3, useEffect as useEffect3, useMemo as useMemo2, useRef as useRef2 } from "react";
 import { Globe, Brain, ArrowUp, ChevronDown as ChevronDown2, Check as Check2, X, Plus, Search, MoreVertical, ExternalLink } from "lucide-react";
 
 // src/ui/components/ControlButton.tsx
@@ -289,9 +312,9 @@ function WriterDashboard() {
     }
   }, [sharedDataLoading]);
   const currentModel = models.find((m) => m.id === modelId);
-  const draftCount = useMemo(() => posts.filter((p) => p.status === "draft").length, [posts]);
-  const publishedCount = useMemo(() => posts.filter((p) => p.status === "published").length, [posts]);
-  const filteredPosts = useMemo(() => {
+  const draftCount = useMemo2(() => posts.filter((p) => p.status === "draft").length, [posts]);
+  const publishedCount = useMemo2(() => posts.filter((p) => p.status === "published").length, [posts]);
+  const filteredPosts = useMemo2(() => {
     let result = posts.filter((p) => p.status !== "suggested" && p.status !== "deleted");
     if (searchQuery) {
       result = result.filter((p) => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -1510,7 +1533,7 @@ function EditorToolbar({
 }
 
 // src/ui/components/TiptapEditor.tsx
-import { useEffect as useEffect6, useMemo as useMemo2 } from "react";
+import { useEffect as useEffect6, useMemo as useMemo3 } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -5736,8 +5759,8 @@ function TiptapEditor({
   onCommentClick,
   proseClasses = DEFAULT_PROSE_CLASSES
 }) {
-  const initialHtml = useMemo2(() => content ? renderMarkdown(content) : "", [content]);
-  const extensions = useMemo2(() => [
+  const initialHtml = useMemo3(() => content ? renderMarkdown(content) : "", [content]);
+  const extensions = useMemo3(() => [
     StarterKit.configure({
       heading: {
         levels: [1, 2, 3]
@@ -9523,7 +9546,7 @@ function DashboardRouter({ path, onEditorStateChange }) {
 }
 
 // src/ui/hooks/useChat.tsx
-import { createContext as createContext3, useContext as useContext3, useState as useState14, useCallback as useCallback10, useRef as useRef9, useEffect as useEffect13 } from "react";
+import { createContext as createContext3, useContext as useContext3, useState as useState14, useCallback as useCallback10, useRef as useRef9, useEffect as useEffect13, useMemo as useMemo4 } from "react";
 import { jsx as jsx22 } from "react/jsx-runtime";
 var ChatContext = createContext3(null);
 function parseEditBlocks(content) {
@@ -9768,7 +9791,7 @@ function ChatProvider({
     expandPlanHandlerRef.current(lastAssistantMessage.content, wordCount);
     setIsOpen(false);
   }, [messages]);
-  const value = {
+  const value = useMemo4(() => ({
     messages,
     essayContext,
     isStreaming,
@@ -9791,7 +9814,24 @@ function ChatProvider({
     undoEdit,
     registerExpandPlanHandler,
     expandPlan
-  };
+  }), [
+    messages,
+    essayContext,
+    isStreaming,
+    isOpen,
+    mode,
+    webSearchEnabled,
+    thinkingEnabled,
+    selectedModel,
+    sendMessage,
+    stopStreaming,
+    addMessage,
+    clearMessages,
+    registerEditHandler,
+    undoEdit,
+    registerExpandPlanHandler,
+    expandPlan
+  ]);
   return /* @__PURE__ */ jsx22(ChatContext.Provider, { value, children });
 }
 function useChatContext() {
