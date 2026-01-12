@@ -480,21 +480,24 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
             return
           }
 
-          // Consume SSE stream
+          // Consume SSE stream with real-time title/subtitle parsing
           const reader = res.body?.getReader()
           if (!reader) return
 
           const decoder = new TextDecoder()
           let fullContent = ''
+          let titleExtracted = false
+          let subtitleExtracted = false
+          let bodyStartIndex = 0
 
           while (true) {
             const { done, value } = await reader.read()
             if (done) break
 
             const chunk = decoder.decode(value, { stream: true })
-            const lines = chunk.split('\n')
+            const sseLines = chunk.split('\n')
 
-            for (const line of lines) {
+            for (const line of sseLines) {
               if (line.startsWith('data: ')) {
                 const data = line.slice(6)
                 if (data === '[DONE]') continue
@@ -502,8 +505,39 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                   const parsed = JSON.parse(data)
                   if (parsed.text) {
                     fullContent += parsed.text
-                    // Update markdown progressively for live streaming effect
-                    setPost(prev => ({ ...prev, markdown: fullContent }))
+                    
+                    // Parse title as soon as first line is complete
+                    if (!titleExtracted && fullContent.includes('\n')) {
+                      const firstLine = fullContent.split('\n')[0]
+                      if (firstLine.startsWith('# ')) {
+                        const title = firstLine.slice(2).trim()
+                        setPost(prev => ({ ...prev, title }))
+                        titleExtracted = true
+                        bodyStartIndex = firstLine.length + 1 // +1 for newline
+                      }
+                    }
+                    
+                    // Parse subtitle as soon as second line is complete
+                    if (titleExtracted && !subtitleExtracted) {
+                      const afterTitle = fullContent.slice(bodyStartIndex)
+                      if (afterTitle.includes('\n')) {
+                        const secondLine = afterTitle.split('\n')[0].trim()
+                        const italicMatch = secondLine.match(/^\*(.+)\*$/) || secondLine.match(/^_(.+)_$/)
+                        if (italicMatch) {
+                          const subtitle = italicMatch[1]
+                          setPost(prev => ({ ...prev, subtitle }))
+                          subtitleExtracted = true
+                          bodyStartIndex += secondLine.length + 1 // +1 for newline
+                        } else if (secondLine) {
+                          // Second line exists but isn't a subtitle - body starts here
+                          subtitleExtracted = true
+                        }
+                      }
+                    }
+                    
+                    // Update markdown with body content only (excluding title/subtitle)
+                    const bodyContent = fullContent.slice(bodyStartIndex).trim()
+                    setPost(prev => ({ ...prev, markdown: bodyContent }))
                   }
                 } catch {
                   // Ignore parse errors for incomplete chunks
@@ -511,37 +545,12 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               }
             }
           }
-
-          // Parse title and subtitle from generated content
-          // Look for # Title on first line, and *subtitle* or _subtitle_ on second line
-          const lines = fullContent.trim().split('\n')
-          let title = ''
-          let subtitle = ''
-          let markdownStart = 0
-
-          // Check for H1 title
-          if (lines[0]?.startsWith('# ')) {
-            title = lines[0].slice(2).trim()
-            markdownStart = 1
-
-            // Check for italic subtitle on next line
-            const nextLine = lines[1]?.trim()
-            if (nextLine) {
-              const italicMatch = nextLine.match(/^\*(.+)\*$/) || nextLine.match(/^_(.+)_$/)
-              if (italicMatch) {
-                subtitle = italicMatch[1]
-                markdownStart = 2
-              }
-            }
-          }
-
-          // Update with parsed title/subtitle and remaining markdown
-          const remainingMarkdown = lines.slice(markdownStart).join('\n').trim()
+          
+          // Final cleanup - ensure body doesn't include title/subtitle
+          const finalBody = fullContent.slice(bodyStartIndex).trim()
           setPost(prev => ({
             ...prev,
-            title: title || prev.title,
-            subtitle: subtitle || prev.subtitle,
-            markdown: remainingMarkdown || fullContent,
+            markdown: finalBody,
           }))
         } catch (err) {
           console.error('Generation error:', err)

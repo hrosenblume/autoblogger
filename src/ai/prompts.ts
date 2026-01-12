@@ -10,7 +10,13 @@ export const DEFAULT_GENERATE_TEMPLATE = `You are an expert essay writer. Write 
 
 {{RULES}}
 
-Write approximately {{WORD_COUNT}} words.`
+Write approximately {{WORD_COUNT}} words.
+
+IMPORTANT: Start your response with exactly this format:
+# Title Here
+*Subtitle here*
+
+Then write the essay body. The title must be on line 1 with a # prefix. The subtitle must be on line 2 wrapped in asterisks (*like this*).`
 
 // ============================================
 // CHAT PROMPTS
@@ -125,6 +131,8 @@ Write an essay following this exact structure:
 {{PLAN}}
 
 Rules:
+- Start with the title on line 1 as: # Title Here
+- Follow with the subtitle on line 2 as: *Subtitle here*
 - Use the section headers as H2 headings
 - Expand each section's bullet points into full paragraphs
 - Match the author's voice and style from the examples
