@@ -171,7 +171,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       const data = await res.json()
       if (data.data) {
         setPost(prev => ({ ...prev, ...data.data }))
-        savedContent.current = JSON.stringify(data.data)
+        savedContent.current = JSON.stringify({ title: data.data.title, subtitle: data.data.subtitle, markdown: data.data.markdown })
         setLastSaved(new Date())
         setHasUnsavedChanges(false)
         if (!post.id && data.data.slug) {
@@ -280,7 +280,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
           const found = d.data?.find((p: Post) => p.slug === slug)
           if (found) {
             setPost(found)
-            savedContent.current = JSON.stringify(found)
+            savedContent.current = JSON.stringify({ title: found.title, subtitle: found.subtitle, markdown: found.markdown })
           }
           setLoading(false)
         })
@@ -291,7 +291,13 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   // Track unsaved changes
   useEffect(() => {
     const current = JSON.stringify({ title: post.title, subtitle: post.subtitle, markdown: post.markdown })
-    setHasUnsavedChanges(current !== savedContent.current && savedContent.current !== '')
+    // For new posts (savedContent is empty), any content is unsaved
+    // For existing posts, compare against saved content
+    if (savedContent.current === '') {
+      setHasUnsavedChanges(!!(post.title || post.subtitle || post.markdown))
+    } else {
+      setHasUnsavedChanges(current !== savedContent.current)
+    }
   }, [post.title, post.subtitle, post.markdown])
 
   // Report editor state to parent app (for navbar save button etc.)
@@ -407,11 +413,12 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   }, [post.markdown, onRegisterEditHandler])
 
   // Auto-save drafts (3s debounce)
+  // Deps include content fields to reset timer on each keystroke (debounce behavior)
   useEffect(() => {
     if (!post.id || post.status === 'published' || !hasUnsavedChanges || previewingRevision) return
-    const timeout = setTimeout(() => savePost(true), 3000)
+    const timeout = setTimeout(() => savePostRef.current(true), 3000)
     return () => clearTimeout(timeout)
-  }, [post, hasUnsavedChanges, previewingRevision])
+  }, [post.id, post.status, post.title, post.subtitle, post.markdown, hasUnsavedChanges, previewingRevision])
 
   // Warn on navigation with unsaved changes
   useEffect(() => {

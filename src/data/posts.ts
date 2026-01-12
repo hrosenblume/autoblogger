@@ -104,32 +104,51 @@ export function createPostsData(prisma: any, hooks?: PostHooks) {
     },
 
     async create(data: CreatePostInput) {
-      const slug = data.slug 
-        ? await generateUniqueSlug(prisma, data.slug)
-        : await generateUniqueSlug(prisma, slugify(data.title))
+      // Extract tagIds before passing to Prisma
+      const { tagIds, ...postData } = data as CreatePostInput & { tagIds?: string[] }
+      
+      const slug = postData.slug 
+        ? await generateUniqueSlug(prisma, postData.slug)
+        : await generateUniqueSlug(prisma, slugify(postData.title))
 
       const post = await prisma.post.create({
         data: {
-          ...data,
+          ...postData,
           slug,
-          markdown: data.markdown || '',
-          status: data.status || 'draft',
+          markdown: postData.markdown || '',
+          status: postData.status || 'draft',
         },
       })
 
-      if (hooks?.afterSave) {
-        await hooks.afterSave(post)
+      // Create tag associations if provided
+      if (tagIds?.length) {
+        await prisma.postTag.createMany({
+          data: tagIds.map((tagId: string) => ({ postId: post.id, tagId })),
+        })
       }
 
-      return post
+      // Fetch with tags included
+      const result = await prisma.post.findUnique({
+        where: { id: post.id },
+        include: { tags: { include: { tag: true } } },
+      })
+
+      if (hooks?.afterSave) {
+        await hooks.afterSave(result)
+      }
+
+      return result
     },
 
     async update(id: string, data: UpdatePostInput) {
+      // Extract tagIds before passing to Prisma
+      const { tagIds, ...postData } = data as UpdatePostInput & { tagIds?: string[] }
+      
       // Auto-set publishedAt on first publish
-      if (data.status === 'published') {
+      if (postData.status === 'published') {
         const existing = await prisma.post.findUnique({ where: { id } })
         if (existing?.status !== 'published') {
-          data.publishedAt = new Date()
+          postData.publishedAt = new Date()
           
           if (hooks?.beforePublish) {
             await hooks.beforePublish(existing)
@@ -138,20 +157,37 @@ export function createPostsData(prisma: any, hooks?: PostHooks) {
       }
 
       // Handle slug uniqueness if slug is being changed
-      if (data.slug) {
-        data.slug = await generateUniqueSlug(prisma, data.slug, id)
+      if (postData.slug) {
+        postData.slug = await generateUniqueSlug(prisma, postData.slug, id)
       }
 
       const post = await prisma.post.update({
         where: { id },
-        data,
+        data: postData,
+      })
+
+      // Update tag associations if provided
+      if (tagIds !== undefined) {
+        // Delete existing tags and create new ones
+        await prisma.postTag.deleteMany({ where: { postId: id } })
+        if (tagIds.length) {
+          await prisma.postTag.createMany({
+            data: tagIds.map((tagId: string) => ({ postId: id, tagId })),
+          })
+        }
+      }
+
+      // Fetch with tags included
+      const result = await prisma.post.findUnique({
+        where: { id },
+        include: { tags: { include: { tag: true } } },
       })
 
       if (hooks?.afterSave) {
-        await hooks.afterSave(post)
+        await hooks.afterSave(result)
       }
 
-      return post
+      return result
     },
 
     async delete(id: string) {
