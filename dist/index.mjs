@@ -389,41 +389,64 @@ function createPostsData(prisma, hooks) {
       });
     },
     async create(data) {
-      const slug = data.slug ? await generateUniqueSlug(prisma, data.slug) : await generateUniqueSlug(prisma, slugify(data.title));
+      const { tagIds, ...postData } = data;
+      const slug = postData.slug ? await generateUniqueSlug(prisma, postData.slug) : await generateUniqueSlug(prisma, slugify(postData.title));
       const post = await prisma.post.create({
         data: {
-          ...data,
+          ...postData,
           slug,
-          markdown: data.markdown || "",
-          status: data.status || "draft"
+          markdown: postData.markdown || "",
+          status: postData.status || "draft"
         }
       });
-      if (hooks?.afterSave) {
-        await hooks.afterSave(post);
+      if (tagIds?.length) {
+        await prisma.postTag.createMany({
+          data: tagIds.map((tagId) => ({ postId: post.id, tagId }))
+        });
       }
-      return post;
+      const result = await prisma.post.findUnique({
+        where: { id: post.id },
+        include: { tags: { include: { tag: true } } }
+      });
+      if (hooks?.afterSave) {
+        await hooks.afterSave(result);
+      }
+      return result;
     },
     async update(id, data) {
-      if (data.status === "published") {
+      const { tagIds, ...postData } = data;
+      if (postData.status === "published") {
         const existing = await prisma.post.findUnique({ where: { id } });
         if (existing?.status !== "published") {
-          data.publishedAt = /* @__PURE__ */ new Date();
+          postData.publishedAt = /* @__PURE__ */ new Date();
           if (hooks?.beforePublish) {
             await hooks.beforePublish(existing);
           }
         }
       }
-      if (data.slug) {
-        data.slug = await generateUniqueSlug(prisma, data.slug, id);
+      if (postData.slug) {
+        postData.slug = await generateUniqueSlug(prisma, postData.slug, id);
       }
       const post = await prisma.post.update({
         where: { id },
-        data
+        data: postData
+      });
+      if (tagIds !== void 0) {
+        await prisma.postTag.deleteMany({ where: { postId: id } });
+        if (tagIds.length) {
+          await prisma.postTag.createMany({
+            data: tagIds.map((tagId) => ({ postId: id, tagId }))
+          });
+        }
+      }
+      const result = await prisma.post.findUnique({
+        where: { id },
+        include: { tags: { include: { tag: true } } }
       });
       if (hooks?.afterSave) {
-        await hooks.afterSave(post);
+        await hooks.afterSave(result);
       }
-      return post;
+      return result;
     },
     async delete(id) {
       return prisma.post.update({

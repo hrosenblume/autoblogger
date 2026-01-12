@@ -6889,7 +6889,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       const data = await res.json();
       if (data.data) {
         setPost((prev) => ({ ...prev, ...data.data }));
-        savedContent.current = JSON.stringify(data.data);
+        savedContent.current = JSON.stringify({ title: data.data.title, subtitle: data.data.subtitle, markdown: data.data.markdown });
         setLastSaved(/* @__PURE__ */ new Date());
         setHasUnsavedChanges(false);
         if (!post.id && data.data.slug) {
@@ -6974,7 +6974,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         const found = d.data?.find((p) => p.slug === slug);
         if (found) {
           setPost(found);
-          savedContent.current = JSON.stringify(found);
+          savedContent.current = JSON.stringify({ title: found.title, subtitle: found.subtitle, markdown: found.markdown });
         }
         setLoading(false);
       }).catch(() => setLoading(false));
@@ -6982,7 +6982,11 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   }, [slug, apiBasePath]);
   (0, import_react16.useEffect)(() => {
     const current = JSON.stringify({ title: post.title, subtitle: post.subtitle, markdown: post.markdown });
-    setHasUnsavedChanges(current !== savedContent.current && savedContent.current !== "");
+    if (savedContent.current === "") {
+      setHasUnsavedChanges(!!(post.title || post.subtitle || post.markdown));
+    } else {
+      setHasUnsavedChanges(current !== savedContent.current);
+    }
   }, [post.title, post.subtitle, post.markdown]);
   const savePostRef = (0, import_react16.useRef)(savePost);
   const handlePublishRef = (0, import_react16.useRef)(handlePublish);
@@ -7088,9 +7092,9 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   }, [post.markdown, onRegisterEditHandler]);
   (0, import_react16.useEffect)(() => {
     if (!post.id || post.status === "published" || !hasUnsavedChanges || previewingRevision) return;
-    const timeout = setTimeout(() => savePost(true), 3e3);
+    const timeout = setTimeout(() => savePostRef.current(true), 3e3);
     return () => clearTimeout(timeout);
-  }, [post, hasUnsavedChanges, previewingRevision]);
+  }, [post.id, post.status, post.title, post.subtitle, post.markdown, hasUnsavedChanges, previewingRevision]);
   (0, import_react16.useEffect)(() => {
     const handler = (e) => {
       if (hasUnsavedChanges) {
