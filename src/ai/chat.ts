@@ -1,5 +1,5 @@
 import { createStream } from './provider'
-import { buildChatPrompt } from './system-prompt'
+import { buildChatPrompt } from './builders'
 
 interface ChatMessage {
   role: 'user' | 'assistant'

@@ -1,13 +1,7 @@
 import type { AutobloggerServer as Autoblogger, Session } from '../server'
+import { jsonResponse, parsePath, requireAdmin } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
-
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 export async function handleCommentsAPI(
   req: NextRequest,
@@ -17,8 +11,7 @@ export async function handleCommentsAPI(
   onMutate?: (type: string, data: unknown) => Promise<void>
 ): Promise<Response> {
   const method = req.method
-  const segments = path.split('/').filter(Boolean)
-  const commentId = segments[1]
+  const { id: commentId, subPath } = parsePath(path)
 
   // GET /comments - list comments (with pagination)
   if (method === 'GET') {
@@ -46,19 +39,19 @@ export async function handleCommentsAPI(
   }
 
   // PATCH /comments/:id/approve - approve comment
-  if (method === 'PATCH' && commentId && path.endsWith('/approve')) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse({ error: 'Admin required' }, 403)
-    }
+  if (method === 'PATCH' && commentId && subPath === 'approve') {
+    const authError = requireAdmin(cms, session)
+    if (authError) return authError
+
     const comment = await cms.comments.approve(commentId)
     return jsonResponse({ data: comment })
   }
 
   // DELETE /comments/:id - delete comment
   if (method === 'DELETE' && commentId) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse({ error: 'Admin required' }, 403)
-    }
+    const authError = requireAdmin(cms, session)
+    if (authError) return authError
+
     await cms.comments.delete(commentId)
     return jsonResponse({ data: { success: true } })
   }

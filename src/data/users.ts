@@ -1,3 +1,5 @@
+import { createCrudData } from './factory'
+
 interface CreateUserInput {
   email: string
   name?: string
@@ -10,25 +12,19 @@ interface UpdateUserInput {
 }
 
 export function createUsersData(prisma: any) {
+  const base = createCrudData(prisma, {
+    model: 'user',
+    defaultOrderBy: { createdAt: 'desc' },
+  })
+
   return {
-    async count() {
-      return prisma.user.count()
-    },
-
-    async findAll() {
-      return prisma.user.findMany({
-        orderBy: { createdAt: 'desc' },
-      })
-    },
-
-    async findById(id: string) {
-      return prisma.user.findUnique({ where: { id } })
-    },
+    ...base,
 
     async findByEmail(email: string) {
       return prisma.user.findUnique({ where: { email } })
     },
 
+    // Override create with proper defaults
     async create(data: CreateUserInput) {
       return prisma.user.create({
         data: {
@@ -39,15 +35,12 @@ export function createUsersData(prisma: any) {
       })
     },
 
+    // Override update with proper typing
     async update(id: string, data: UpdateUserInput) {
       return prisma.user.update({
         where: { id },
         data,
       })
-    },
-
-    async delete(id: string) {
-      return prisma.user.delete({ where: { id } })
     },
   }
 }

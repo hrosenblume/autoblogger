@@ -1,5 +1,5 @@
 import { createStream } from './provider'
-import { buildGeneratePrompt } from './system-prompt'
+import { buildGeneratePrompt } from './builders'
 
 interface GenerateOptions {
   prompt: string

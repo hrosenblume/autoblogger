@@ -1,13 +1,7 @@
 import type { AutobloggerServer, Session } from '../server'
+import { jsonResponse, parsePath, requireAdmin } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
-
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 export async function handleUsersAPI(
   req: NextRequest,
@@ -16,13 +10,11 @@ export async function handleUsersAPI(
   path: string
 ): Promise<Response> {
   const method = req.method
-  const segments = path.split('/').filter(Boolean)
-  const userId = segments[1]
+  const { id: userId } = parsePath(path)
 
   // All user operations require admin
-  if (!cms.config.auth.isAdmin(session)) {
-    return jsonResponse({ error: 'Admin required' }, 403)
-  }
+  const authError = requireAdmin(cms, session)
+  if (authError) return authError
 
   // GET /users - list all users
   if (method === 'GET' && !userId) {

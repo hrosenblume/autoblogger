@@ -1,13 +1,7 @@
 import type { AutobloggerServer as Autoblogger, Session } from '../server'
+import { jsonResponse, parsePath, requireAdmin } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
-
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 export async function handleRevisionsAPI(
   req: NextRequest,
@@ -18,8 +12,7 @@ export async function handleRevisionsAPI(
 ): Promise<Response> {
   const method = req.method
   const url = new URL(req.url)
-  const segments = path.split('/').filter(Boolean)
-  const revisionId = segments[1]
+  const { id: revisionId, subPath } = parsePath(path)
 
   // GET /revisions - list all revisions (paginated)
   if (method === 'GET' && !revisionId) {
@@ -50,10 +43,10 @@ export async function handleRevisionsAPI(
   }
 
   // POST /revisions/:id/restore - restore a revision
-  if (method === 'POST' && revisionId && path.endsWith('/restore')) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse({ error: 'Admin required' }, 403)
-    }
+  if (method === 'POST' && revisionId && subPath === 'restore') {
+    const authError = requireAdmin(cms, session)
+    if (authError) return authError
+
     const post = await cms.revisions.restore(revisionId)
     if (onMutate) await onMutate('post', post)
     return jsonResponse({ data: post })
@@ -61,9 +54,9 @@ export async function handleRevisionsAPI(
 
   // DELETE /revisions/:id - delete a revision
   if (method === 'DELETE' && revisionId) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse({ error: 'Admin required' }, 403)
-    }
+    const authError = requireAdmin(cms, session)
+    if (authError) return authError
+
     await cms.revisions.delete(revisionId)
     return jsonResponse({ data: { success: true } })
   }

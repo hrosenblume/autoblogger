@@ -1,13 +1,7 @@
 import type { AutobloggerServer, Session } from '../server'
+import { jsonResponse, requireAuth, requireAdmin } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
-
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 export async function handleSettingsAPI(
   req: NextRequest,
@@ -19,9 +13,8 @@ export async function handleSettingsAPI(
   const prisma = cms.config.prisma as any
 
   // Check auth
-  if (!session) {
-    return jsonResponse({ error: 'Unauthorized' }, 401)
-  }
+  const authError = requireAuth(session)
+  if (authError) return authError
 
   // GET /settings - get general settings
   if (method === 'GET' && path === '/settings') {
@@ -40,9 +33,8 @@ export async function handleSettingsAPI(
   // PATCH /settings - update general settings
   if (method === 'PATCH' && path === '/settings') {
     // Check admin
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse({ error: 'Forbidden' }, 403)
-    }
+    const adminError = requireAdmin(cms, session)
+    if (adminError) return adminError
 
     const body = await req.json()
     

@@ -7,16 +7,10 @@ import {
   DEFAULT_PLAN_TEMPLATE,
   DEFAULT_EXPAND_PLAN_TEMPLATE,
   DEFAULT_PLAN_RULES,
-} from '../ai/system-prompt'
+} from '../ai/prompts'
+import { jsonResponse, requireAuth, requireAdmin } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
-
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 export async function handleAIAPI(
   req: NextRequest,
@@ -27,9 +21,8 @@ export async function handleAIAPI(
   const method = req.method
   
   // Check auth
-  if (!session) {
-    return jsonResponse({ error: 'Unauthorized' }, 401)
-  }
+  const authError = requireAuth(session)
+  if (authError) return authError
 
   // GET /ai/settings - get AI settings
   if (method === 'GET' && path === '/ai/settings') {
@@ -51,9 +44,9 @@ export async function handleAIAPI(
 
   // PATCH /ai/settings - update AI settings
   if (method === 'PATCH' && path === '/ai/settings') {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse({ error: 'Admin required' }, 403)
-    }
+    const adminError = requireAdmin(cms, session)
+    if (adminError) return adminError
+
     const body = await req.json()
     const settings = await cms.aiSettings.update(body)
     return jsonResponse({ data: settings })

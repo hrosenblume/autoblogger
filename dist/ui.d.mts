@@ -32,7 +32,6 @@ interface StylesConfig {
     byline?: string;
     prose?: string;
 }
-
 interface CustomFieldProps<T = unknown> {
     value: T;
     onChange: (value: T) => void;

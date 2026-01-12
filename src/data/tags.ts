@@ -1,48 +1,32 @@
+import { createCrudData } from './factory'
+
 export function createTagsData(prisma: any) {
+  const base = createCrudData(prisma, {
+    model: 'tag',
+    defaultOrderBy: { name: 'asc' },
+    defaultInclude: { _count: { select: { posts: true } } },
+  })
+
   return {
-    async findAll() {
-      return prisma.tag.findMany({
-        orderBy: { name: 'asc' },
-        include: {
-          _count: { select: { posts: true } },
-        },
-      })
-    },
+    ...base,
 
+    // Alias for backward compatibility
     async findAllWithCounts() {
-      return prisma.tag.findMany({
-        orderBy: { name: 'asc' },
-        include: {
-          _count: { select: { posts: true } },
-        },
-      })
-    },
-
-    async count() {
-      return prisma.tag.count()
-    },
-
-    async findById(id: string) {
-      return prisma.tag.findUnique({
-        where: { id },
-        include: { posts: { include: { post: true } } },
-      })
+      return base.findAll()
     },
 
     async findByName(name: string) {
       return prisma.tag.findUnique({ where: { name } })
     },
 
+    // Override create to accept string directly
     async create(name: string) {
       return prisma.tag.create({ data: { name } })
     },
 
+    // Override update to accept name directly
     async update(id: string, name: string) {
       return prisma.tag.update({ where: { id }, data: { name } })
-    },
-
-    async delete(id: string) {
-      return prisma.tag.delete({ where: { id } })
     },
 
     async addToPost(postId: string, tagId: string) {

@@ -1,13 +1,7 @@
 import type { AutobloggerServer, Session } from '../server'
+import { jsonResponse, requireAdmin } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
-
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 export async function handleAdminAPI(
   req: NextRequest,
@@ -18,9 +12,8 @@ export async function handleAdminAPI(
   const method = req.method
 
   // All admin operations require admin role
-  if (!cms.config.auth.isAdmin(session)) {
-    return jsonResponse({ error: 'Admin required' }, 403)
-  }
+  const authError = requireAdmin(cms, session)
+  if (authError) return authError
 
   // GET /admin/counts - get counts for dashboard
   if (method === 'GET' && path === '/admin/counts') {

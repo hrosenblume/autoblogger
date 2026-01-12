@@ -1,13 +1,7 @@
 import type { AutobloggerServer as Autoblogger, Session } from '../server'
+import { jsonResponse, requireAuth } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
-
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 export async function handleUploadAPI(
   req: NextRequest,
@@ -18,9 +12,8 @@ export async function handleUploadAPI(
     return jsonResponse({ error: 'Method not allowed' }, 405)
   }
   
-  if (!session) {
-    return jsonResponse({ error: 'Unauthorized' }, 401)
-  }
+  const authError = requireAuth(session)
+  if (authError) return authError
   
   if (!cms.config.storage?.upload) {
     return jsonResponse({ 

@@ -30,29 +30,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/ai/system-prompt.ts
-function buildGeneratePrompt(options) {
-  const template = options.template || DEFAULT_GENERATE_TEMPLATE;
-  return template.replace("{{RULES}}", options.rules || "").replace("{{WORD_COUNT}}", String(options.wordCount || 800));
-}
-function buildChatPrompt(options) {
-  const template = options.template || DEFAULT_CHAT_TEMPLATE;
-  let essaySection = "";
-  if (options.essayContext) {
-    essaySection = `
-Current essay being edited:
-Title: ${options.essayContext.title}
-${options.essayContext.subtitle ? `Subtitle: ${options.essayContext.subtitle}` : ""}
-
-Content:
-${options.essayContext.markdown}
-`;
-  }
-  return template.replace("{{CHAT_RULES}}", options.chatRules || "").replace("{{ESSAY_CONTEXT}}", essaySection);
-}
-var DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_PLAN_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_PLAN_RULES;
-var init_system_prompt = __esm({
-  "src/ai/system-prompt.ts"() {
+// src/ai/prompts.ts
+var DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_PLAN_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_EXPAND_PLAN_TEMPLATE;
+var init_prompts = __esm({
+  "src/ai/prompts.ts"() {
     "use strict";
     DEFAULT_GENERATE_TEMPLATE = `You are an expert essay writer. Write engaging, thoughtful content.
 
@@ -84,25 +65,6 @@ Wrap your entire response in <plan> tags. Output nothing outside the tags.
 
 ## Style Reference
 {{STYLE_EXAMPLES}}`;
-    DEFAULT_EXPAND_PLAN_TEMPLATE = `You are a writing assistant that expands essay outlines into full drafts.
-
-## Writing Rules (Follow these exactly)
-{{RULES}}
-
-## Style Reference (Write in this voice)
-{{STYLE_EXAMPLES}}
-
----
-
-Write an essay following this exact structure:
-
-{{PLAN}}
-
-Rules:
-- Use the section headers as H2 headings
-- Expand each section's bullet points into full paragraphs
-- Match the author's voice and style from the examples
-- Output ONLY markdown. No preamble, no "Here is...", no explanations. Just the essay content.`;
     DEFAULT_PLAN_RULES = `STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bullets.
 
 Output format:
@@ -128,12 +90,34 @@ Constraints:
 - Bullets are short phrases, not sentences
 - No prose, no paragraphs, no explanations
 - When revising, output the complete updated plan`;
+    DEFAULT_EXPAND_PLAN_TEMPLATE = `You are a writing assistant that expands essay outlines into full drafts.
+
+## Writing Rules (Follow these exactly)
+{{RULES}}
+
+## Style Reference (Write in this voice)
+{{STYLE_EXAMPLES}}
+
+---
+
+Write an essay following this exact structure:
+
+{{PLAN}}
+
+Rules:
+- Use the section headers as H2 headings
+- Expand each section's bullet points into full paragraphs
+- Match the author's voice and style from the examples
+- Output ONLY markdown. No preamble, no "Here is...", no explanations. Just the essay content.`;
   }
 });
 
 // src/ai/models.ts
 function getModel(id) {
   return AI_MODELS.find((m) => m.id === id);
+}
+function getDefaultModel() {
+  return AI_MODELS[0];
 }
 var AI_MODELS;
 var init_models = __esm({
@@ -247,6 +231,33 @@ var init_provider = __esm({
   }
 });
 
+// src/ai/builders.ts
+function buildGeneratePrompt(options) {
+  const template = options.template || DEFAULT_GENERATE_TEMPLATE;
+  return template.replace("{{RULES}}", options.rules || "").replace("{{WORD_COUNT}}", String(options.wordCount || 800));
+}
+function buildChatPrompt(options) {
+  const template = options.template || DEFAULT_CHAT_TEMPLATE;
+  let essaySection = "";
+  if (options.essayContext) {
+    essaySection = `
+Current essay being edited:
+Title: ${options.essayContext.title}
+${options.essayContext.subtitle ? `Subtitle: ${options.essayContext.subtitle}` : ""}
+
+Content:
+${options.essayContext.markdown}
+`;
+  }
+  return template.replace("{{CHAT_RULES}}", options.chatRules || "").replace("{{ESSAY_CONTEXT}}", essaySection);
+}
+var init_builders = __esm({
+  "src/ai/builders.ts"() {
+    "use strict";
+    init_prompts();
+  }
+});
+
 // src/ai/generate.ts
 var generate_exports = {};
 __export(generate_exports, {
@@ -273,7 +284,7 @@ var init_generate = __esm({
   "src/ai/generate.ts"() {
     "use strict";
     init_provider();
-    init_system_prompt();
+    init_builders();
   }
 });
 
@@ -313,22 +324,35 @@ var init_chat = __esm({
   "src/ai/chat.ts"() {
     "use strict";
     init_provider();
-    init_system_prompt();
+    init_builders();
   }
 });
 
 // src/index.ts
 var src_exports = {};
 __export(src_exports, {
+  AI_MODELS: () => AI_MODELS,
   CommentMark: () => CommentMark,
+  DEFAULT_AUTO_DRAFT_TEMPLATE: () => DEFAULT_AUTO_DRAFT_TEMPLATE,
+  DEFAULT_CHAT_TEMPLATE: () => DEFAULT_CHAT_TEMPLATE,
+  DEFAULT_EXPAND_PLAN_TEMPLATE: () => DEFAULT_EXPAND_PLAN_TEMPLATE,
+  DEFAULT_GENERATE_TEMPLATE: () => DEFAULT_GENERATE_TEMPLATE,
+  DEFAULT_PLAN_RULES: () => DEFAULT_PLAN_RULES,
+  DEFAULT_PLAN_TEMPLATE: () => DEFAULT_PLAN_TEMPLATE,
+  DEFAULT_REWRITE_TEMPLATE: () => DEFAULT_REWRITE_TEMPLATE,
   addCommentMark: () => addCommentMark,
   applyCommentMarks: () => applyCommentMarks,
+  buildChatPrompt: () => buildChatPrompt,
+  buildGeneratePrompt: () => buildGeneratePrompt,
   canDeleteComment: () => canDeleteComment,
   canEditComment: () => canEditComment,
   createAPIHandler: () => createAPIHandler,
   createAutoblogger: () => createAutoblogger,
   createCommentsClient: () => createCommentsClient,
+  createCrudData: () => createCrudData,
   formatDate: () => formatDate,
+  getDefaultModel: () => getDefaultModel,
+  getModel: () => getModel,
   getSeoValues: () => getSeoValues,
   htmlToMarkdown: () => htmlToMarkdown,
   parseMarkdown: () => parseMarkdown,
@@ -654,45 +678,64 @@ function createCommentsData(prisma, config) {
   };
 }
 
-// src/data/tags.ts
-function createTagsData(prisma) {
+// src/data/factory.ts
+function createCrudData(prisma, options) {
+  const delegate = prisma[options.model];
   return {
-    async findAll() {
-      return prisma.tag.findMany({
-        orderBy: { name: "asc" },
-        include: {
-          _count: { select: { posts: true } }
-        }
+    async findAll(opts) {
+      return delegate.findMany({
+        orderBy: options.defaultOrderBy,
+        include: options.defaultInclude,
+        ...opts
       });
-    },
-    async findAllWithCounts() {
-      return prisma.tag.findMany({
-        orderBy: { name: "asc" },
-        include: {
-          _count: { select: { posts: true } }
-        }
-      });
-    },
-    async count() {
-      return prisma.tag.count();
     },
     async findById(id) {
-      return prisma.tag.findUnique({
+      return delegate.findUnique({
         where: { id },
-        include: { posts: { include: { post: true } } }
+        include: options.defaultInclude
       });
+    },
+    async count(where) {
+      return delegate.count({ where });
+    },
+    async create(data) {
+      return delegate.create({ data });
+    },
+    async update(id, data) {
+      return delegate.update({
+        where: { id },
+        data
+      });
+    },
+    async delete(id) {
+      return delegate.delete({ where: { id } });
+    }
+  };
+}
+
+// src/data/tags.ts
+function createTagsData(prisma) {
+  const base = createCrudData(prisma, {
+    model: "tag",
+    defaultOrderBy: { name: "asc" },
+    defaultInclude: { _count: { select: { posts: true } } }
+  });
+  return {
+    ...base,
+    // Alias for backward compatibility
+    async findAllWithCounts() {
+      return base.findAll();
     },
     async findByName(name) {
       return prisma.tag.findUnique({ where: { name } });
     },
+    // Override create to accept string directly
     async create(name) {
       return prisma.tag.create({ data: { name } });
     },
+    // Override update to accept name directly
     async update(id, name) {
       return prisma.tag.update({ where: { id }, data: { name } });
-    },
-    async delete(id) {
-      return prisma.tag.delete({ where: { id } });
     },
     async addToPost(postId, tagId) {
       return prisma.postTag.create({
@@ -952,21 +995,16 @@ function createNewsItemsData(prisma) {
 
 // src/data/users.ts
 function createUsersData(prisma) {
+  const base = createCrudData(prisma, {
+    model: "user",
+    defaultOrderBy: { createdAt: "desc" }
+  });
   return {
-    async count() {
-      return prisma.user.count();
-    },
-    async findAll() {
-      return prisma.user.findMany({
-        orderBy: { createdAt: "desc" }
-      });
-    },
-    async findById(id) {
-      return prisma.user.findUnique({ where: { id } });
-    },
+    ...base,
     async findByEmail(email) {
       return prisma.user.findUnique({ where: { email } });
     },
+    // Override create with proper defaults
     async create(data) {
       return prisma.user.create({
         data: {
@@ -976,19 +1014,17 @@ function createUsersData(prisma) {
         }
       });
     },
+    // Override update with proper typing
     async update(id, data) {
       return prisma.user.update({
         where: { id },
         data
       });
-    },
-    async delete(id) {
-      return prisma.user.delete({ where: { id } });
     }
   };
 }
 
-// src/server.ts
+// src/types/config.ts
 var DEFAULT_STYLES = {
   container: "max-w-ab-content mx-auto px-ab-content-padding",
   title: "text-ab-title font-bold",
@@ -996,6 +1032,8 @@ var DEFAULT_STYLES = {
   byline: "text-sm text-muted-foreground",
   prose: "prose dark:prose-invert max-w-none"
 };
+
+// src/server.ts
 function createAutoblogger(config) {
   const prisma = config.prisma;
   const mergedStyles = {
@@ -1130,17 +1168,39 @@ async function handlePostCommentsAPI(req, cms, session, postId, segments, onMuta
   return jsonResponse({ error: "Method not allowed" }, 405);
 }
 
-// src/api/comments.ts
+// src/api/utils.ts
 function jsonResponse2(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { "Content-Type": "application/json" }
   });
 }
+function parsePath(path) {
+  const segments = path.split("/").filter(Boolean);
+  return {
+    segments,
+    resource: segments[0] || "",
+    id: segments[1],
+    subPath: segments.slice(2).join("/")
+  };
+}
+function requireAdmin(cms, session) {
+  if (!cms.config.auth.isAdmin(session)) {
+    return jsonResponse2({ error: "Admin required" }, 403);
+  }
+  return null;
+}
+function requireAuth(session) {
+  if (!session) {
+    return jsonResponse2({ error: "Authentication required" }, 401);
+  }
+  return null;
+}
+
+// src/api/comments.ts
 async function handleCommentsAPI(req, cms, session, path, onMutate) {
   const method = req.method;
-  const segments = path.split("/").filter(Boolean);
-  const commentId = segments[1];
+  const { id: commentId, subPath } = parsePath(path);
   if (method === "GET") {
     const url = new URL(req.url);
     const postId = url.searchParams.get("postId");
@@ -1162,17 +1222,15 @@ async function handleCommentsAPI(req, cms, session, path, onMutate) {
     if (onMutate) await onMutate("comment", comment);
     return jsonResponse2({ data: comment }, 201);
   }
-  if (method === "PATCH" && commentId && path.endsWith("/approve")) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse2({ error: "Admin required" }, 403);
-    }
+  if (method === "PATCH" && commentId && subPath === "approve") {
+    const authError = requireAdmin(cms, session);
+    if (authError) return authError;
     const comment = await cms.comments.approve(commentId);
     return jsonResponse2({ data: comment });
   }
   if (method === "DELETE" && commentId) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse2({ error: "Admin required" }, 403);
-    }
+    const authError = requireAdmin(cms, session);
+    if (authError) return authError;
     await cms.comments.delete(commentId);
     return jsonResponse2({ data: { success: true } });
   }
@@ -1180,63 +1238,46 @@ async function handleCommentsAPI(req, cms, session, path, onMutate) {
 }
 
 // src/api/tags.ts
-function jsonResponse3(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
-}
 async function handleTagsAPI(req, cms, session, path, onMutate) {
   const method = req.method;
-  const segments = path.split("/").filter(Boolean);
-  const tagId = segments[1];
+  const { id: tagId } = parsePath(path);
   if (method === "GET" && !tagId) {
     const tags = await cms.tags.findAll();
-    return jsonResponse3({ data: tags });
+    return jsonResponse2({ data: tags });
   }
   if (method === "POST") {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse3({ error: "Admin required" }, 403);
-    }
+    const authError = requireAdmin(cms, session);
+    if (authError) return authError;
     const body = await req.json();
     const tag = await cms.tags.create(body.name);
     if (onMutate) await onMutate("tag", tag);
-    return jsonResponse3({ data: tag }, 201);
+    return jsonResponse2({ data: tag }, 201);
   }
   if (method === "PATCH" && tagId) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse3({ error: "Admin required" }, 403);
-    }
+    const authError = requireAdmin(cms, session);
+    if (authError) return authError;
     const body = await req.json();
     const tag = await cms.tags.update(tagId, body.name);
-    return jsonResponse3({ data: tag });
+    return jsonResponse2({ data: tag });
   }
   if (method === "DELETE" && tagId) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse3({ error: "Admin required" }, 403);
-    }
+    const authError = requireAdmin(cms, session);
+    if (authError) return authError;
     await cms.tags.delete(tagId);
-    return jsonResponse3({ data: { success: true } });
+    return jsonResponse2({ data: { success: true } });
   }
-  return jsonResponse3({ error: "Method not allowed" }, 405);
+  return jsonResponse2({ error: "Method not allowed" }, 405);
 }
 
 // src/api/ai.ts
-init_system_prompt();
-function jsonResponse4(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
-}
+init_prompts();
 async function handleAIAPI(req, cms, session, path) {
   const method = req.method;
-  if (!session) {
-    return jsonResponse4({ error: "Unauthorized" }, 401);
-  }
+  const authError = requireAuth(session);
+  if (authError) return authError;
   if (method === "GET" && path === "/ai/settings") {
     const settings = await cms.aiSettings.get();
-    return jsonResponse4({
+    return jsonResponse2({
       data: {
         ...settings,
         defaultGenerateTemplate: DEFAULT_GENERATE_TEMPLATE,
@@ -1250,12 +1291,11 @@ async function handleAIAPI(req, cms, session, path) {
     });
   }
   if (method === "PATCH" && path === "/ai/settings") {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse4({ error: "Admin required" }, 403);
-    }
+    const adminError = requireAdmin(cms, session);
+    if (adminError) return adminError;
     const body = await req.json();
     const settings = await cms.aiSettings.update(body);
-    return jsonResponse4({ data: settings });
+    return jsonResponse2({ data: settings });
   }
   if (method === "POST" && path === "/ai/generate") {
     const body = await req.json();
@@ -1280,7 +1320,7 @@ async function handleAIAPI(req, cms, session, path) {
         }
       });
     } catch (error) {
-      return jsonResponse4({
+      return jsonResponse2({
         error: error instanceof Error ? error.message : "Generation failed"
       }, 500);
     }
@@ -1309,30 +1349,23 @@ async function handleAIAPI(req, cms, session, path) {
         }
       });
     } catch (error) {
-      return jsonResponse4({
+      return jsonResponse2({
         error: error instanceof Error ? error.message : "Chat failed"
       }, 500);
     }
   }
-  return jsonResponse4({ error: "Not found" }, 404);
+  return jsonResponse2({ error: "Not found" }, 404);
 }
 
 // src/api/upload.ts
-function jsonResponse5(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
-}
 async function handleUploadAPI(req, cms, session) {
   if (req.method !== "POST") {
-    return jsonResponse5({ error: "Method not allowed" }, 405);
+    return jsonResponse2({ error: "Method not allowed" }, 405);
   }
-  if (!session) {
-    return jsonResponse5({ error: "Unauthorized" }, 401);
-  }
+  const authError = requireAuth(session);
+  if (authError) return authError;
   if (!cms.config.storage?.upload) {
-    return jsonResponse5({
+    return jsonResponse2({
       error: "Image uploads not configured. Add storage.upload to your autoblogger config."
     }, 400);
   }
@@ -1340,132 +1373,109 @@ async function handleUploadAPI(req, cms, session) {
     const formData = await req.formData();
     const file = formData.get("image") || formData.get("file");
     if (!file) {
-      return jsonResponse5({ error: "No file provided" }, 400);
+      return jsonResponse2({ error: "No file provided" }, 400);
     }
     const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      return jsonResponse5({
+      return jsonResponse2({
         error: "Invalid file type. Allowed: JPEG, PNG, GIF, WebP"
       }, 400);
     }
     const maxSize = 4 * 1024 * 1024;
     if (file.size > maxSize) {
-      return jsonResponse5({ error: "File too large. Maximum size: 4MB" }, 400);
+      return jsonResponse2({ error: "File too large. Maximum size: 4MB" }, 400);
     }
     const result = await cms.config.storage.upload(file);
-    return jsonResponse5({ data: result });
+    return jsonResponse2({ data: result });
   } catch (error) {
-    return jsonResponse5({
+    return jsonResponse2({
       error: error instanceof Error ? error.message : "Upload failed"
     }, 500);
   }
 }
 
 // src/api/topics.ts
-function jsonResponse6(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
-}
 async function handleTopicsAPI(req, cms, session, path, onMutate) {
   const method = req.method;
-  const segments = path.split("/").filter(Boolean);
-  const topicId = segments[1];
-  if (!cms.config.auth.isAdmin(session)) {
-    return jsonResponse6({ error: "Admin required" }, 403);
-  }
+  const { id: topicId, subPath } = parsePath(path);
+  const authError = requireAdmin(cms, session);
+  if (authError) return authError;
   if (method === "GET" && !topicId) {
     const topics = await cms.topics.findAll();
-    return jsonResponse6({ data: topics });
+    return jsonResponse2({ data: topics });
   }
   if (method === "GET" && topicId) {
     const topic = await cms.topics.findById(topicId);
-    if (!topic) return jsonResponse6({ error: "Topic not found" }, 404);
-    return jsonResponse6({ data: topic });
+    if (!topic) return jsonResponse2({ error: "Topic not found" }, 404);
+    return jsonResponse2({ data: topic });
   }
-  if (method === "POST") {
+  if (method === "POST" && !topicId) {
     const body = await req.json();
     const topic = await cms.topics.create(body);
     if (onMutate) await onMutate("topic", topic);
-    return jsonResponse6({ data: topic }, 201);
+    return jsonResponse2({ data: topic }, 201);
   }
-  if (method === "PATCH" && topicId) {
-    const body = await req.json();
-    const topic = await cms.topics.update(topicId, body);
-    return jsonResponse6({ data: topic });
-  }
-  if (method === "DELETE" && topicId) {
-    await cms.topics.delete(topicId);
-    return jsonResponse6({ data: { success: true } });
-  }
-  if (method === "POST" && topicId && path.endsWith("/generate")) {
+  if (method === "POST" && topicId && subPath === "generate") {
     await cms.topics.markRun(topicId);
-    return jsonResponse6({
+    return jsonResponse2({
       data: {
         success: true,
         message: "Generation triggered. Implement generation logic in your application."
       }
     });
   }
-  return jsonResponse6({ error: "Method not allowed" }, 405);
+  if (method === "PATCH" && topicId) {
+    const body = await req.json();
+    const topic = await cms.topics.update(topicId, body);
+    return jsonResponse2({ data: topic });
+  }
+  if (method === "DELETE" && topicId) {
+    await cms.topics.delete(topicId);
+    return jsonResponse2({ data: { success: true } });
+  }
+  return jsonResponse2({ error: "Method not allowed" }, 405);
 }
 
 // src/api/users.ts
-function jsonResponse7(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
-}
 async function handleUsersAPI(req, cms, session, path) {
   const method = req.method;
-  const segments = path.split("/").filter(Boolean);
-  const userId = segments[1];
-  if (!cms.config.auth.isAdmin(session)) {
-    return jsonResponse7({ error: "Admin required" }, 403);
-  }
+  const { id: userId } = parsePath(path);
+  const authError = requireAdmin(cms, session);
+  if (authError) return authError;
   if (method === "GET" && !userId) {
     const users = await cms.users.findAll();
-    return jsonResponse7({ data: users });
+    return jsonResponse2({ data: users });
   }
   if (method === "GET" && userId) {
     const user = await cms.users.findById(userId);
-    if (!user) return jsonResponse7({ error: "User not found" }, 404);
-    return jsonResponse7({ data: user });
+    if (!user) return jsonResponse2({ error: "User not found" }, 404);
+    return jsonResponse2({ data: user });
   }
   if (method === "POST") {
     const body = await req.json();
     if (!body.email) {
-      return jsonResponse7({ error: "Email required" }, 400);
+      return jsonResponse2({ error: "Email required" }, 400);
     }
     const user = await cms.users.create(body);
-    return jsonResponse7({ data: user }, 201);
+    return jsonResponse2({ data: user }, 201);
   }
   if (method === "PATCH" && userId) {
     const body = await req.json();
     const user = await cms.users.update(userId, body);
-    return jsonResponse7({ data: user });
+    return jsonResponse2({ data: user });
   }
   if (method === "DELETE" && userId) {
     await cms.users.delete(userId);
-    return jsonResponse7({ data: { success: true } });
+    return jsonResponse2({ data: { success: true } });
   }
-  return jsonResponse7({ error: "Method not allowed" }, 405);
+  return jsonResponse2({ error: "Method not allowed" }, 405);
 }
 
 // src/api/admin.ts
-function jsonResponse8(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
-}
 async function handleAdminAPI(req, cms, session, path) {
   const method = req.method;
-  if (!cms.config.auth.isAdmin(session)) {
-    return jsonResponse8({ error: "Admin required" }, 403);
-  }
+  const authError = requireAdmin(cms, session);
+  if (authError) return authError;
   if (method === "GET" && path === "/admin/counts") {
     const [users, posts, tags, topics] = await Promise.all([
       cms.users.count(),
@@ -1473,40 +1483,32 @@ async function handleAdminAPI(req, cms, session, path) {
       cms.tags.findAll().then((t) => t.length),
       cms.topics.findAll().then((t) => t.length)
     ]);
-    return jsonResponse8({
+    return jsonResponse2({
       data: { users, posts, tags, topics }
     });
   }
-  return jsonResponse8({ error: "Not found" }, 404);
+  return jsonResponse2({ error: "Not found" }, 404);
 }
 
 // src/api/settings.ts
-function jsonResponse9(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
-}
 async function handleSettingsAPI(req, cms, session, path) {
   const method = req.method;
   const prisma = cms.config.prisma;
-  if (!session) {
-    return jsonResponse9({ error: "Unauthorized" }, 401);
-  }
+  const authError = requireAuth(session);
+  if (authError) return authError;
   if (method === "GET" && path === "/settings") {
     const integrationSettings = await prisma.integrationSettings.findUnique({
       where: { id: "default" }
     });
-    return jsonResponse9({
+    return jsonResponse2({
       data: {
         autoDraftEnabled: integrationSettings?.autoDraftEnabled ?? false
       }
     });
   }
   if (method === "PATCH" && path === "/settings") {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse9({ error: "Forbidden" }, 403);
-    }
+    const adminError = requireAdmin(cms, session);
+    if (adminError) return adminError;
     const body = await req.json();
     if (typeof body.autoDraftEnabled === "boolean") {
       await prisma.integrationSettings.upsert({
@@ -1518,27 +1520,20 @@ async function handleSettingsAPI(req, cms, session, path) {
     const integrationSettings = await prisma.integrationSettings.findUnique({
       where: { id: "default" }
     });
-    return jsonResponse9({
+    return jsonResponse2({
       data: {
         autoDraftEnabled: integrationSettings?.autoDraftEnabled ?? false
       }
     });
   }
-  return jsonResponse9({ error: "Not found" }, 404);
+  return jsonResponse2({ error: "Not found" }, 404);
 }
 
 // src/api/revisions.ts
-function jsonResponse10(data, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { "Content-Type": "application/json" }
-  });
-}
 async function handleRevisionsAPI(req, cms, session, path, onMutate) {
   const method = req.method;
   const url = new URL(req.url);
-  const segments = path.split("/").filter(Boolean);
-  const revisionId = segments[1];
+  const { id: revisionId, subPath } = parsePath(path);
   if (method === "GET" && !revisionId) {
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "25");
@@ -1548,7 +1543,7 @@ async function handleRevisionsAPI(req, cms, session, path, onMutate) {
       cms.revisions.findAll({ ...where, skip: (page - 1) * limit, take: limit }),
       cms.revisions.count(where)
     ]);
-    return jsonResponse10({
+    return jsonResponse2({
       data: revisions,
       total,
       page,
@@ -1557,25 +1552,23 @@ async function handleRevisionsAPI(req, cms, session, path, onMutate) {
   }
   if (method === "GET" && revisionId) {
     const revision = await cms.revisions.findById(revisionId);
-    if (!revision) return jsonResponse10({ error: "Revision not found" }, 404);
-    return jsonResponse10({ data: revision });
+    if (!revision) return jsonResponse2({ error: "Revision not found" }, 404);
+    return jsonResponse2({ data: revision });
   }
-  if (method === "POST" && revisionId && path.endsWith("/restore")) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse10({ error: "Admin required" }, 403);
-    }
+  if (method === "POST" && revisionId && subPath === "restore") {
+    const authError = requireAdmin(cms, session);
+    if (authError) return authError;
     const post = await cms.revisions.restore(revisionId);
     if (onMutate) await onMutate("post", post);
-    return jsonResponse10({ data: post });
+    return jsonResponse2({ data: post });
   }
   if (method === "DELETE" && revisionId) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse10({ error: "Admin required" }, 403);
-    }
+    const authError = requireAdmin(cms, session);
+    if (authError) return authError;
     await cms.revisions.delete(revisionId);
-    return jsonResponse10({ data: { success: true } });
+    return jsonResponse2({ data: { success: true } });
   }
-  return jsonResponse10({ error: "Method not allowed" }, 405);
+  return jsonResponse2({ error: "Method not allowed" }, 405);
 }
 
 // src/api/index.ts
@@ -1588,7 +1581,7 @@ function extractPath(pathname, basePath) {
   }
   return "/";
 }
-function jsonResponse11(data, status = 200) {
+function jsonResponse3(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: { "Content-Type": "application/json" }
@@ -1606,7 +1599,7 @@ function createAPIHandler(cms, options = {}) {
     }
     const isPublicRoute = path.startsWith("/posts") && method === "GET";
     if (!isPublicRoute && !session) {
-      return jsonResponse11({ error: "Unauthorized" }, 401);
+      return jsonResponse3({ error: "Unauthorized" }, 401);
     }
     try {
       if (path.startsWith("/posts")) {
@@ -1639,10 +1632,10 @@ function createAPIHandler(cms, options = {}) {
       if (path.startsWith("/revisions")) {
         return handleRevisionsAPI(req, cms, session, path, options.onMutate);
       }
-      return jsonResponse11({ error: "Not found" }, 404);
+      return jsonResponse3({ error: "Not found" }, 404);
     } catch (error) {
       console.error("API error:", error);
-      return jsonResponse11({
+      return jsonResponse3({
         error: error instanceof Error ? error.message : "Internal server error"
       }, 500);
     }
@@ -1682,6 +1675,14 @@ async function validateSchema(prisma) {
     missingTables
   };
 }
+
+// src/ai/index.ts
+init_models();
+init_provider();
+init_generate();
+init_chat();
+init_builders();
+init_prompts();
 
 // src/lib/markdown.ts
 var import_marked = require("marked");
@@ -5987,15 +5988,28 @@ function scrollToComment(editor, commentId) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  AI_MODELS,
   CommentMark,
+  DEFAULT_AUTO_DRAFT_TEMPLATE,
+  DEFAULT_CHAT_TEMPLATE,
+  DEFAULT_EXPAND_PLAN_TEMPLATE,
+  DEFAULT_GENERATE_TEMPLATE,
+  DEFAULT_PLAN_RULES,
+  DEFAULT_PLAN_TEMPLATE,
+  DEFAULT_REWRITE_TEMPLATE,
   addCommentMark,
   applyCommentMarks,
+  buildChatPrompt,
+  buildGeneratePrompt,
   canDeleteComment,
   canEditComment,
   createAPIHandler,
   createAutoblogger,
   createCommentsClient,
+  createCrudData,
   formatDate,
+  getDefaultModel,
+  getModel,
   getSeoValues,
   htmlToMarkdown,
   parseMarkdown,

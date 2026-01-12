@@ -1,13 +1,7 @@
 import type { AutobloggerServer as Autoblogger, Session } from '../server'
+import { jsonResponse, parsePath, requireAdmin } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
-
-function jsonResponse(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  })
-}
 
 export async function handleTagsAPI(
   req: NextRequest,
@@ -17,8 +11,7 @@ export async function handleTagsAPI(
   onMutate?: (type: string, data: unknown) => Promise<void>
 ): Promise<Response> {
   const method = req.method
-  const segments = path.split('/').filter(Boolean)
-  const tagId = segments[1]
+  const { id: tagId } = parsePath(path)
 
   // GET /tags - list all tags
   if (method === 'GET' && !tagId) {
@@ -28,9 +21,9 @@ export async function handleTagsAPI(
 
   // POST /tags - create tag
   if (method === 'POST') {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse({ error: 'Admin required' }, 403)
-    }
+    const authError = requireAdmin(cms, session)
+    if (authError) return authError
+
     const body = await req.json()
     const tag = await cms.tags.create(body.name)
     if (onMutate) await onMutate('tag', tag)
@@ -39,9 +32,9 @@ export async function handleTagsAPI(
 
   // PATCH /tags/:id - update tag
   if (method === 'PATCH' && tagId) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse({ error: 'Admin required' }, 403)
-    }
+    const authError = requireAdmin(cms, session)
+    if (authError) return authError
+
     const body = await req.json()
     const tag = await cms.tags.update(tagId, body.name)
     return jsonResponse({ data: tag })
@@ -49,9 +42,9 @@ export async function handleTagsAPI(
 
   // DELETE /tags/:id - delete tag
   if (method === 'DELETE' && tagId) {
-    if (!cms.config.auth.isAdmin(session)) {
-      return jsonResponse({ error: 'Admin required' }, 403)
-    }
+    const authError = requireAdmin(cms, session)
+    if (authError) return authError
+
     await cms.tags.delete(tagId)
     return jsonResponse({ data: { success: true } })
   }

@@ -1,8 +1,8 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
 import { ChevronLeft, Moon, Sun } from 'lucide-react'
 import { useDashboardContext } from '../context'
+import { Dropdown, DropdownItem, DropdownDivider } from './Dropdown'
 
 export interface NavbarProps {
   // Callbacks
@@ -21,22 +21,6 @@ export function Navbar({
   rightSlot,
 }: NavbarProps) {
   const { session, currentPath, navigate, goBack, basePath } = useDashboardContext()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const triggerRef = useRef<HTMLButtonElement>(null)
-
-  // Close menu on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false)
-      }
-    }
-    if (menuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [menuOpen])
 
   // Detect current route state
   const isRoot = currentPath === '/' || currentPath === ''
@@ -47,6 +31,16 @@ export function Navbar({
     e.currentTarget.blur()
     goBack()
   }
+
+  const avatarTrigger = (
+    <button
+      type="button"
+      className="relative w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground hover:ring-2 hover:ring-ring transition-shadow"
+    >
+      {session?.user?.email?.charAt(0).toUpperCase() || '?'}
+      <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
+    </button>
+  )
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
@@ -87,63 +81,35 @@ export function Navbar({
 
           {/* User menu */}
           {session && (
-            <div className="relative" ref={menuRef}>
-              <button
-                ref={triggerRef}
-                type="button"
-                onClick={() => setMenuOpen(!menuOpen)}
-                className="relative w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground hover:ring-2 hover:ring-ring transition-shadow"
-              >
-                {session.user?.email?.charAt(0).toUpperCase() || '?'}
-                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
-              </button>
-
-              {menuOpen && (
-                <div className="absolute right-0 top-full mt-1 min-w-[180px] bg-popover border border-border rounded-md shadow-lg z-50 p-1">
-                  {session.user?.role === 'admin' && (
-                    <>
-                      {/* Settings toggle */}
-                      {!isSettings ? (
-                        <button
-                          onClick={() => { navigate('/settings'); setMenuOpen(false) }}
-                          className="w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default"
-                        >
-                          Go to settings
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => { navigate('/'); setMenuOpen(false) }}
-                          className="w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default"
-                        >
-                          Back to writer
-                        </button>
-                      )}
-
-                      <div className="h-px bg-border my-1" />
-                    </>
+            <Dropdown trigger={avatarTrigger} align="right" className="min-w-[180px]">
+              {session.user?.role === 'admin' && (
+                <>
+                  {/* Settings toggle */}
+                  {!isSettings ? (
+                    <DropdownItem onClick={() => navigate('/settings')}>
+                      Go to settings
+                    </DropdownItem>
+                  ) : (
+                    <DropdownItem onClick={() => navigate('/')}>
+                      Back to writer
+                    </DropdownItem>
                   )}
-
-                  {/* Back to site */}
-                  <a
-                    href="/"
-                    className="block w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Back to site
-                  </a>
-
-                  {/* Logout */}
-                  {onSignOut && (
-                    <button
-                      onClick={() => { onSignOut(); setMenuOpen(false) }}
-                      className="w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default"
-                    >
-                      Logout
-                    </button>
-                  )}
-                </div>
+                  <DropdownDivider />
+                </>
               )}
-            </div>
+
+              {/* Back to site */}
+              <DropdownItem onClick={() => { window.location.href = '/' }}>
+                Back to site
+              </DropdownItem>
+
+              {/* Logout */}
+              {onSignOut && (
+                <DropdownItem onClick={onSignOut}>
+                  Logout
+                </DropdownItem>
+              )}
+            </Dropdown>
           )}
         </div>
       </div>

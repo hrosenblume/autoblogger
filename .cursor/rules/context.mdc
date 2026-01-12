@@ -48,8 +48,16 @@ autoblogger/
 │   ├── schema.ts          # Prisma schema validation helper
 │   ├── types.ts           # Core TypeScript types (Post, Revision, etc.)
 │   │
+│   ├── types/             # Consolidated type definitions
+│   │   ├── index.ts       # Barrel exports
+│   │   ├── models.ts      # Core model interfaces (Post, Comment, etc.)
+│   │   ├── session.ts     # Session interface
+│   │   ├── config.ts      # Config types + DEFAULT_STYLES
+│   │   └── editor.ts      # Editor state types
+│   │
 │   ├── data/              # Prisma data layer
 │   │   ├── index.ts       # Barrel exports
+│   │   ├── factory.ts     # createCrudData() generic CRUD factory
 │   │   ├── posts.ts       # Post CRUD + preview URLs
 │   │   ├── revisions.ts   # Revision history + restore
 │   │   ├── comments.ts    # Editor & public comments
@@ -61,6 +69,7 @@ autoblogger/
 │   │
 │   ├── api/               # HTTP route handlers
 │   │   ├── index.ts       # createAPIHandler() + route dispatcher
+│   │   ├── utils.ts       # Shared: jsonResponse, parsePath, requireAdmin/Auth
 │   │   ├── posts.ts       # /posts + /posts/:id/comments
 │   │   ├── revisions.ts   # /revisions + restore
 │   │   ├── comments.ts    # /comments (admin listing)
@@ -78,7 +87,8 @@ autoblogger/
 │   │   ├── provider.ts    # Unified streaming abstraction
 │   │   ├── generate.ts    # Essay generation
 │   │   ├── chat.ts        # Chat streaming with modes
-│   │   └── system-prompt.ts # Prompt templates + builders
+│   │   ├── prompts.ts     # Default prompt templates (all DEFAULT_* constants)
+│   │   └── builders.ts    # buildGeneratePrompt, buildChatPrompt
 │   │
 │   ├── lib/               # Utilities
 │   │   ├── cn.ts          # clsx + tailwind-merge
@@ -116,6 +126,10 @@ autoblogger/
 │       │   ├── ModelSelector.tsx
 │       │   ├── ControlButton.tsx
 │       │   ├── RevisionHistoryDropdown.tsx
+│       │   ├── Skeleton.tsx         # Reusable skeleton components
+│       │   ├── Dropdown.tsx         # Reusable dropdown menu
+│       │   ├── Form.tsx             # Form field components
+│       │   ├── SettingsListPage.tsx # Generic admin list page
 │       │   └── toolbar/
 │       │       ├── index.ts
 │       │       ├── ToolbarButton.tsx

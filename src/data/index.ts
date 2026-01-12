@@ -1,3 +1,8 @@
+// CRUD factory for custom data layers
+export { createCrudData } from './factory'
+export type { CrudOptions, BaseCrud } from './factory'
+
+// Data layer factories
 export { createPostsData } from './posts'
 export { createCommentsData } from './comments'
 export { createTagsData } from './tags'

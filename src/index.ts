@@ -3,8 +3,29 @@ export { createAutoblogger } from './server'
 export { createAPIHandler } from './api'
 export { validateSchema } from './schema'
 
+// Data layer factory
+export { createCrudData } from './data/factory'
+export type { CrudOptions, BaseCrud } from './data/factory'
+
 // Data access types
 export type { Post, Revision, Comment, Tag, PostTag, AISettings, TopicSubscription, NewsItem } from './types'
+
+// AI exports
+export {
+  AI_MODELS,
+  getModel,
+  getDefaultModel,
+  buildGeneratePrompt,
+  buildChatPrompt,
+  DEFAULT_GENERATE_TEMPLATE,
+  DEFAULT_CHAT_TEMPLATE,
+  DEFAULT_REWRITE_TEMPLATE,
+  DEFAULT_AUTO_DRAFT_TEMPLATE,
+  DEFAULT_PLAN_TEMPLATE,
+  DEFAULT_PLAN_RULES,
+  DEFAULT_EXPAND_PLAN_TEMPLATE,
+} from './ai'
+export type { AIModel } from './ai'
 
 // Utilities
 export { renderMarkdown, parseMarkdown, htmlToMarkdown } from './lib/markdown'
