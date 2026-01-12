@@ -9220,6 +9220,7 @@ var import_lucide_react12 = require("lucide-react");
 var import_react17 = require("react");
 var import_react_dom3 = require("react-dom");
 var import_jsx_runtime19 = require("react/jsx-runtime");
+var DropdownContext = (0, import_react17.createContext)(null);
 function Dropdown({
   trigger,
   children,
@@ -9296,8 +9297,9 @@ function Dropdown({
     if (disabled) return;
     setOpen(!isOpen);
   };
+  const close = (0, import_react17.useCallback)(() => setOpen(false), [setOpen]);
   const menu = isOpen && mounted ? (0, import_react_dom3.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(DropdownContext.Provider, { value: { close }, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
       "div",
       {
         ref: menuRef,
@@ -9312,7 +9314,7 @@ function Dropdown({
         ),
         children
       }
-    ),
+    ) }),
     document.body
   ) : null;
   return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
@@ -9327,9 +9329,11 @@ function DropdownItem({
   children,
   className
 }) {
+  const context = (0, import_react17.useContext)(DropdownContext);
   const handleClick = () => {
-    if (!disabled && onClick) {
-      onClick();
+    if (!disabled) {
+      onClick?.();
+      context?.close();
     }
   };
   return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(

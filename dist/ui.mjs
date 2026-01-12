@@ -9182,9 +9182,10 @@ function CommentsSettingsContent() {
 import { ChevronLeft as ChevronLeft2, Moon, Sun } from "lucide-react";
 
 // src/ui/components/Dropdown.tsx
-import { useState as useState12, useRef as useRef8, useEffect as useEffect12, useCallback as useCallback10 } from "react";
+import { useState as useState12, useRef as useRef8, useEffect as useEffect12, useCallback as useCallback10, createContext as createContext2, useContext as useContext2 } from "react";
 import { createPortal as createPortal3 } from "react-dom";
 import { Fragment as Fragment11, jsx as jsx19, jsxs as jsxs14 } from "react/jsx-runtime";
+var DropdownContext = createContext2(null);
 function Dropdown({
   trigger,
   children,
@@ -9261,8 +9262,9 @@ function Dropdown({
     if (disabled) return;
     setOpen(!isOpen);
   };
+  const close = useCallback10(() => setOpen(false), [setOpen]);
   const menu = isOpen && mounted ? createPortal3(
-    /* @__PURE__ */ jsx19(
+    /* @__PURE__ */ jsx19(DropdownContext.Provider, { value: { close }, children: /* @__PURE__ */ jsx19(
       "div",
       {
         ref: menuRef,
@@ -9277,7 +9279,7 @@ function Dropdown({
         ),
         children
       }
-    ),
+    ) }),
     document.body
   ) : null;
   return /* @__PURE__ */ jsxs14(Fragment11, { children: [
@@ -9292,9 +9294,11 @@ function DropdownItem({
   children,
   className
 }) {
+  const context = useContext2(DropdownContext);
   const handleClick = () => {
-    if (!disabled && onClick) {
-      onClick();
+    if (!disabled) {
+      onClick?.();
+      context?.close();
     }
   };
   return /* @__PURE__ */ jsx19(

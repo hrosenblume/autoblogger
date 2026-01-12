@@ -1,8 +1,14 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, createContext, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '../../lib/cn'
+
+// ============================================
+// DROPDOWN CONTEXT
+// ============================================
+
+const DropdownContext = createContext<{ close: () => void } | null>(null)
 
 // ============================================
 // DROPDOWN CONTAINER
@@ -126,24 +132,28 @@ export function Dropdown({
     setOpen(!isOpen)
   }
 
+  const close = useCallback(() => setOpen(false), [setOpen])
+
   const menu = isOpen && mounted ? createPortal(
-    <div
-      ref={menuRef}
-      style={{
-        position: 'fixed',
-        top: position.top,
-        ...(align === 'right' 
-          ? { right: position.right } 
-          : { left: position.left }
-        ),
-      }}
-      className={cn(
-        'z-50 min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1',
-        className
-      )}
-    >
-      {children}
-    </div>,
+    <DropdownContext.Provider value={{ close }}>
+      <div
+        ref={menuRef}
+        style={{
+          position: 'fixed',
+          top: position.top,
+          ...(align === 'right' 
+            ? { right: position.right } 
+            : { left: position.left }
+          ),
+        }}
+        className={cn(
+          'z-50 min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1',
+          className
+        )}
+      >
+        {children}
+      </div>
+    </DropdownContext.Provider>,
     document.body
   ) : null
 
@@ -176,9 +186,12 @@ export function DropdownItem({
   children,
   className,
 }: DropdownItemProps) {
+  const context = useContext(DropdownContext)
+  
   const handleClick = () => {
-    if (!disabled && onClick) {
-      onClick()
+    if (!disabled) {
+      onClick?.()
+      context?.close()
     }
   }
 
