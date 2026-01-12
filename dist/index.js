@@ -251,6 +251,10 @@ ${options.essayContext.markdown}
   }
   return template.replace("{{CHAT_RULES}}", options.chatRules || "").replace("{{ESSAY_CONTEXT}}", essaySection);
 }
+function buildExpandPlanPrompt(options) {
+  const template = options.template || DEFAULT_EXPAND_PLAN_TEMPLATE;
+  return template.replace("{{RULES}}", options.rules || "").replace("{{STYLE_EXAMPLES}}", options.styleExamples || "").replace("{{PLAN}}", options.plan);
+}
 var init_builders = __esm({
   "src/ai/builders.ts"() {
     "use strict";
@@ -261,6 +265,7 @@ var init_builders = __esm({
 // src/ai/generate.ts
 var generate_exports = {};
 __export(generate_exports, {
+  expandPlanStream: () => expandPlanStream,
   generateStream: () => generateStream
 });
 async function generateStream(options) {
@@ -274,6 +279,24 @@ async function generateStream(options) {
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: options.prompt }
+    ],
+    anthropicKey: options.anthropicKey,
+    openaiKey: options.openaiKey,
+    maxTokens: 8192
+  });
+}
+async function expandPlanStream(options) {
+  const systemPrompt = buildExpandPlanPrompt({
+    rules: options.rules,
+    template: options.template,
+    plan: options.plan,
+    styleExamples: options.styleExamples
+  });
+  return createStream({
+    model: options.model,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: "Write the essay now." }
     ],
     anthropicKey: options.anthropicKey,
     openaiKey: options.openaiKey,
@@ -1299,19 +1322,33 @@ async function handleAIAPI(req, cms, session, path) {
   }
   if (method === "POST" && path === "/ai/generate") {
     const body = await req.json();
-    const { prompt, model, wordCount } = body;
+    const { prompt, model, wordCount, mode, plan, styleExamples } = body;
     const settings = await cms.aiSettings.get();
-    const { generateStream: generateStream2 } = await Promise.resolve().then(() => (init_generate(), generate_exports));
     try {
-      const stream = await generateStream2({
-        prompt,
-        model: model || settings.defaultModel,
-        wordCount,
-        rules: settings.rules,
-        template: settings.generateTemplate,
-        anthropicKey: cms.config.ai?.anthropicKey,
-        openaiKey: cms.config.ai?.openaiKey
-      });
+      let stream;
+      if (mode === "expand_plan" && plan) {
+        const { expandPlanStream: expandPlanStream2 } = await Promise.resolve().then(() => (init_generate(), generate_exports));
+        stream = await expandPlanStream2({
+          plan,
+          model: model || settings.defaultModel,
+          rules: settings.rules,
+          template: settings.expandPlanTemplate,
+          styleExamples,
+          anthropicKey: cms.config.ai?.anthropicKey,
+          openaiKey: cms.config.ai?.openaiKey
+        });
+      } else {
+        const { generateStream: generateStream2 } = await Promise.resolve().then(() => (init_generate(), generate_exports));
+        stream = await generateStream2({
+          prompt,
+          model: model || settings.defaultModel,
+          wordCount,
+          rules: settings.rules,
+          template: settings.generateTemplate,
+          anthropicKey: cms.config.ai?.anthropicKey,
+          openaiKey: cms.config.ai?.openaiKey
+        });
+      }
       return new Response(stream, {
         headers: {
           "Content-Type": "text/event-stream",

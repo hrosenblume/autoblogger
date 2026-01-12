@@ -85,7 +85,7 @@ interface EditCommand {
     replace?: string;
     position?: 'before' | 'after' | 'start' | 'end';
 }
-type EditHandler = (edit: EditCommand) => boolean;
+type EditHandler$1 = (edit: EditCommand) => boolean;
 interface EditorState {
     hasUnsavedChanges: boolean;
     status: 'draft' | 'published';
@@ -109,7 +109,7 @@ interface DashboardContextValue {
     sharedDataLoading: boolean;
     refetchSharedData: () => Promise<void>;
     onEditorStateChange?: (state: EditorState | null) => void;
-    onRegisterEditHandler?: (handler: EditHandler | null) => void;
+    onRegisterEditHandler?: (handler: EditHandler$1 | null) => void;
 }
 declare function useDashboardContext(): DashboardContextValue;
 
@@ -120,7 +120,7 @@ interface AutobloggerDashboardProps {
     fields?: CustomFieldConfig[];
     session?: Session | null;
     onEditorStateChange?: (state: EditorState | null) => void;
-    onRegisterEditHandler?: (handler: EditHandler | null) => void;
+    onRegisterEditHandler?: (handler: EditHandler$1 | null) => void;
     onToggleView?: (currentPath: string, slug?: string) => void;
     onSignOut?: () => void;
     onThemeToggle?: () => void;
@@ -222,4 +222,67 @@ interface CommentsState {
 }
 declare function useComments({ postId: initialPostId, editor, apiBasePath, onSave, }: UseCommentsOptions): CommentsState;
 
-export { AutobloggerDashboard, type AutobloggerDashboardProps, CommentThread, CommentsPanel, type CommentsState, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler, type EditorContent, type EditorState, Navbar, type NavbarProps, type Session, type SessionUser, type StylesConfig, useComments, useDashboardContext };
+interface EssaySnapshot {
+    title: string;
+    subtitle: string;
+    markdown: string;
+}
+interface Message {
+    role: 'user' | 'assistant';
+    content: string;
+    mode?: ChatMode;
+    appliedEdits?: boolean;
+    previousState?: EssaySnapshot;
+}
+interface EssayContext {
+    title: string;
+    subtitle?: string;
+    markdown: string;
+}
+type ChatMode = 'ask' | 'agent' | 'plan';
+interface EssayEdit {
+    type: 'replace_all' | 'replace_section' | 'insert' | 'delete';
+    title?: string;
+    subtitle?: string;
+    markdown?: string;
+    find?: string;
+    replace?: string;
+    position?: 'before' | 'after' | 'start' | 'end';
+}
+type EditHandler = (edit: EssayEdit) => boolean;
+type ExpandPlanHandler = (plan: string, wordCount: number) => void;
+interface ChatContextValue {
+    messages: Message[];
+    essayContext: EssayContext | null;
+    isStreaming: boolean;
+    isOpen: boolean;
+    mode: ChatMode;
+    webSearchEnabled: boolean;
+    thinkingEnabled: boolean;
+    selectedModel: string;
+    setEssayContext: (context: EssayContext | null) => void;
+    sendMessage: (content: string) => Promise<void>;
+    stopStreaming: () => void;
+    addMessage: (role: 'user' | 'assistant', content: string) => void;
+    clearMessages: () => void;
+    setIsOpen: (open: boolean) => void;
+    setMode: (mode: ChatMode) => void;
+    setWebSearchEnabled: (enabled: boolean) => void;
+    setThinkingEnabled: (enabled: boolean) => void;
+    setSelectedModel: (modelId: string) => void;
+    registerEditHandler: (handler: EditHandler | null) => void;
+    undoEdit: (messageIndex: number) => void;
+    registerExpandPlanHandler: (handler: ExpandPlanHandler | null) => void;
+    expandPlan: (wordCount?: number) => void;
+}
+declare const ChatContext: react.Context<ChatContextValue | null>;
+interface ChatProviderProps {
+    children: ReactNode;
+    apiBasePath?: string;
+    chatApiPath?: string;
+    historyApiPath?: string;
+}
+declare function ChatProvider({ children, apiBasePath, chatApiPath, historyApiPath, }: ChatProviderProps): react_jsx_runtime.JSX.Element;
+declare function useChatContext(): ChatContextValue;
+
+export { AutobloggerDashboard, type AutobloggerDashboardProps, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, type Message as ChatMessage, type ChatMode, ChatProvider, CommentThread, CommentsPanel, type CommentsState, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, Navbar, type NavbarProps, type Session, type SessionUser, type StylesConfig, useChatContext, useComments, useDashboardContext };

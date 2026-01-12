@@ -55,24 +55,39 @@ export async function handleAIAPI(
   // POST /ai/generate - generate content (streaming)
   if (method === 'POST' && path === '/ai/generate') {
     const body = await req.json()
-    const { prompt, model, wordCount } = body
+    const { prompt, model, wordCount, mode, plan, styleExamples } = body
     
     // Get AI settings for rules
     const settings = await cms.aiSettings.get()
     
-    // Use the AI provider to generate
-    const { generateStream } = await import('../ai/generate')
-    
     try {
-      const stream = await generateStream({
-        prompt,
-        model: model || settings.defaultModel,
-        wordCount,
-        rules: settings.rules,
-        template: settings.generateTemplate,
-        anthropicKey: cms.config.ai?.anthropicKey,
-        openaiKey: cms.config.ai?.openaiKey,
-      })
+      let stream: ReadableStream
+      
+      if (mode === 'expand_plan' && plan) {
+        // Draft essay from plan mode
+        const { expandPlanStream } = await import('../ai/generate')
+        stream = await expandPlanStream({
+          plan,
+          model: model || settings.defaultModel,
+          rules: settings.rules,
+          template: settings.expandPlanTemplate,
+          styleExamples,
+          anthropicKey: cms.config.ai?.anthropicKey,
+          openaiKey: cms.config.ai?.openaiKey,
+        })
+      } else {
+        // Standard generation
+        const { generateStream } = await import('../ai/generate')
+        stream = await generateStream({
+          prompt,
+          model: model || settings.defaultModel,
+          wordCount,
+          rules: settings.rules,
+          template: settings.generateTemplate,
+          anthropicKey: cms.config.ai?.anthropicKey,
+          openaiKey: cms.config.ai?.openaiKey,
+        })
+      }
       
       return new Response(stream, {
         headers: {

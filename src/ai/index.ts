@@ -1,9 +1,9 @@
 export { AI_MODELS, getModel, getDefaultModel } from './models'
 export type { AIModel } from './models'
 export { createStream } from './provider'
-export { generateStream } from './generate'
+export { generateStream, expandPlanStream } from './generate'
 export { chatStream } from './chat'
-export { buildGeneratePrompt, buildChatPrompt } from './builders'
+export { buildGeneratePrompt, buildChatPrompt, buildExpandPlanPrompt } from './builders'
 export {
   DEFAULT_GENERATE_TEMPLATE,
   DEFAULT_CHAT_TEMPLATE,

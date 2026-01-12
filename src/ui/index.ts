@@ -20,3 +20,15 @@ export { CommentsPanel } from './components/CommentsPanel'
 export { CommentThread } from './components/CommentThread'
 export { useComments } from './hooks/useComments'
 export type { CommentsState } from './hooks/useComments'
+
+// Chat context (UI component stays in host app due to shadcn dependencies)
+export { ChatProvider, useChatContext, ChatContext } from './hooks/useChat'
+export type { 
+  Message as ChatMessage,
+  EssayContext as ChatEssayContext,
+  EssaySnapshot,
+  ChatMode,
+  EssayEdit,
+  EditHandler as ChatEditHandler,
+  ExpandPlanHandler,
+} from './hooks/useChat'

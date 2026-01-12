@@ -1,4 +1,4 @@
-import { DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE } from './prompts'
+import { DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE } from './prompts'
 
 /**
  * Build a system prompt for essay generation.
@@ -40,4 +40,21 @@ ${options.essayContext.markdown}
   return template
     .replace('{{CHAT_RULES}}', options.chatRules || '')
     .replace('{{ESSAY_CONTEXT}}', essaySection)
+}
+
+/**
+ * Build a system prompt for expanding a plan into a full essay.
+ */
+export function buildExpandPlanPrompt(options: {
+  rules?: string
+  template?: string | null
+  plan: string
+  styleExamples?: string
+}): string {
+  const template = options.template || DEFAULT_EXPAND_PLAN_TEMPLATE
+  
+  return template
+    .replace('{{RULES}}', options.rules || '')
+    .replace('{{STYLE_EXAMPLES}}', options.styleExamples || '')
+    .replace('{{PLAN}}', options.plan)
 }

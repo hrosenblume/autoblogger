@@ -33,9 +33,12 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var ui_exports = {};
 __export(ui_exports, {
   AutobloggerDashboard: () => AutobloggerDashboard,
+  ChatContext: () => ChatContext,
+  ChatProvider: () => ChatProvider,
   CommentThread: () => CommentThread,
   CommentsPanel: () => CommentsPanel,
   Navbar: () => Navbar,
+  useChatContext: () => useChatContext,
   useComments: () => useComments,
   useDashboardContext: () => useDashboardContext
 });
@@ -9553,12 +9556,295 @@ function DashboardRouter({ path, onEditorStateChange }) {
     path
   ] }) });
 }
+
+// src/ui/hooks/useChat.tsx
+var import_react20 = require("react");
+var import_jsx_runtime22 = require("react/jsx-runtime");
+var ChatContext = (0, import_react20.createContext)(null);
+function parseEditBlocks(content) {
+  const editRegex = /:::edit\s*([\s\S]*?)\s*:::/g;
+  const edits = [];
+  let cleanContent = content;
+  let match;
+  while ((match = editRegex.exec(content)) !== null) {
+    try {
+      const edit = JSON.parse(match[1]);
+      edits.push(edit);
+      cleanContent = cleanContent.replace(match[0], "");
+    } catch {
+      console.warn("Failed to parse edit block:", match[1]);
+    }
+  }
+  cleanContent = cleanContent.replace(/\n{3,}/g, "\n\n").trim();
+  return { edits, cleanContent };
+}
+function cleanPlanOutput(content) {
+  let cleaned = content;
+  const planMatch = cleaned.match(/<plan>([\s\S]*?)<\/plan>/i);
+  if (planMatch) {
+    cleaned = planMatch[1];
+  } else {
+    const openTagMatch = cleaned.match(/<plan>([\s\S]*)/i);
+    if (openTagMatch) {
+      cleaned = openTagMatch[1];
+    }
+  }
+  const lines = cleaned.split("\n");
+  let lastBulletIndex = -1;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].trim().startsWith("- ")) {
+      lastBulletIndex = i;
+      break;
+    }
+  }
+  if (lastBulletIndex === -1) {
+    return cleaned.trim();
+  }
+  return lines.slice(0, lastBulletIndex + 1).join("\n").trim();
+}
+function ChatProvider({
+  children,
+  apiBasePath = "/api/cms",
+  chatApiPath,
+  historyApiPath = "/api/chat/history"
+}) {
+  const [messages, setMessages] = (0, import_react20.useState)([]);
+  const [essayContext, setEssayContext] = (0, import_react20.useState)(null);
+  const [isStreaming, setIsStreaming] = (0, import_react20.useState)(false);
+  const [isOpen, setIsOpen] = (0, import_react20.useState)(false);
+  const [mode, setMode] = (0, import_react20.useState)("ask");
+  const [webSearchEnabled, setWebSearchEnabled] = (0, import_react20.useState)(false);
+  const [thinkingEnabled, setThinkingEnabled] = (0, import_react20.useState)(false);
+  const [selectedModel, setSelectedModel] = (0, import_react20.useState)("claude-sonnet");
+  const editHandlerRef = (0, import_react20.useRef)(null);
+  const expandPlanHandlerRef = (0, import_react20.useRef)(null);
+  const historyLoadedRef = (0, import_react20.useRef)(false);
+  const abortControllerRef = (0, import_react20.useRef)(null);
+  const resolvedChatApiPath = chatApiPath || "/api/ai/chat";
+  const registerEditHandler = (0, import_react20.useCallback)((handler) => {
+    editHandlerRef.current = handler;
+  }, []);
+  const registerExpandPlanHandler = (0, import_react20.useCallback)((handler) => {
+    expandPlanHandlerRef.current = handler;
+  }, []);
+  const stopStreaming = (0, import_react20.useCallback)(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsStreaming(false);
+  }, []);
+  (0, import_react20.useEffect)(() => {
+    if (historyLoadedRef.current) return;
+    historyLoadedRef.current = true;
+    fetch(historyApiPath).then((res) => res.ok ? res.json() : []).then((data) => {
+      if (data.length > 0) {
+        setMessages(data.map((m) => ({ role: m.role, content: m.content })));
+      }
+    }).catch(() => {
+    });
+  }, [historyApiPath]);
+  const saveMessage = (0, import_react20.useCallback)((role, content) => {
+    fetch(historyApiPath, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role, content })
+    }).catch(() => {
+    });
+  }, [historyApiPath]);
+  const sendMessage = (0, import_react20.useCallback)(async (content) => {
+    if (!content.trim() || isStreaming) return;
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    const userMessage = { role: "user", content: content.trim() };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setIsStreaming(true);
+    saveMessage("user", content.trim());
+    const assistantMessage = { role: "assistant", content: "", mode };
+    setMessages([...newMessages, assistantMessage]);
+    try {
+      const response = await fetch(resolvedChatApiPath, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: newMessages,
+          essayContext,
+          mode,
+          modelId: selectedModel,
+          useWebSearch: webSearchEnabled,
+          useThinking: thinkingEnabled
+        }),
+        signal
+      });
+      if (!response.ok) {
+        if (response.status === 503) {
+          throw new Error("AI service temporarily unavailable. Please try again.");
+        }
+        if (response.status === 429) {
+          throw new Error("Rate limit exceeded. Please wait before trying again.");
+        }
+        const errorText = await response.text();
+        try {
+          const error = JSON.parse(errorText);
+          throw new Error(error.error || "Failed to send message");
+        } catch {
+          throw new Error(`Server error (${response.status}). Please try again.`);
+        }
+      }
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+      const decoder = new TextDecoder();
+      let assistantContent = "";
+      let appliedEdits = false;
+      while (true) {
+        const { done, value: value2 } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value2, { stream: true });
+        assistantContent += chunk;
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { role: "assistant", content: assistantContent, mode };
+          return updated;
+        });
+      }
+      if (mode === "agent" && editHandlerRef.current && essayContext) {
+        const { edits, cleanContent } = parseEditBlocks(assistantContent);
+        const previousState = {
+          title: essayContext.title,
+          subtitle: essayContext.subtitle || "",
+          markdown: essayContext.markdown
+        };
+        for (const edit of edits) {
+          const success = editHandlerRef.current(edit);
+          if (success) appliedEdits = true;
+        }
+        if (edits.length > 0) {
+          const finalContent = cleanContent || "Edit applied.";
+          setMessages((prev) => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              role: "assistant",
+              content: finalContent,
+              mode,
+              appliedEdits,
+              previousState: appliedEdits ? previousState : void 0
+            };
+            return updated;
+          });
+          saveMessage("assistant", finalContent);
+        } else {
+          saveMessage("assistant", assistantContent);
+        }
+      } else if (mode === "plan") {
+        const cleanedContent = cleanPlanOutput(assistantContent);
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: cleanedContent,
+            mode
+          };
+          return updated;
+        });
+        saveMessage("assistant", cleanedContent);
+      } else {
+        saveMessage("assistant", assistantContent);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
+      console.error("Chat error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: "assistant", content: `Error: ${errorMessage}` };
+        return updated;
+      });
+    } finally {
+      abortControllerRef.current = null;
+      setIsStreaming(false);
+    }
+  }, [messages, isStreaming, essayContext, mode, webSearchEnabled, thinkingEnabled, selectedModel, saveMessage, resolvedChatApiPath]);
+  const clearMessages = (0, import_react20.useCallback)(() => {
+    setMessages([]);
+  }, []);
+  const addMessage = (0, import_react20.useCallback)((role, content) => {
+    const message = { role, content };
+    setMessages((prev) => [...prev, message]);
+    saveMessage(role, content);
+  }, [saveMessage]);
+  const undoEdit = (0, import_react20.useCallback)((messageIndex) => {
+    const message = messages[messageIndex];
+    if (!message?.previousState || !editHandlerRef.current) return;
+    const success = editHandlerRef.current({
+      type: "replace_all",
+      title: message.previousState.title,
+      subtitle: message.previousState.subtitle,
+      markdown: message.previousState.markdown
+    });
+    if (success) {
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[messageIndex] = {
+          ...updated[messageIndex],
+          appliedEdits: false,
+          previousState: void 0
+        };
+        return updated;
+      });
+    }
+  }, [messages]);
+  const expandPlan = (0, import_react20.useCallback)((wordCount = 800) => {
+    if (!expandPlanHandlerRef.current) return;
+    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
+    if (!lastAssistantMessage?.content) return;
+    expandPlanHandlerRef.current(lastAssistantMessage.content, wordCount);
+    setIsOpen(false);
+  }, [messages]);
+  const value = {
+    messages,
+    essayContext,
+    isStreaming,
+    isOpen,
+    mode,
+    webSearchEnabled,
+    thinkingEnabled,
+    selectedModel,
+    setEssayContext,
+    sendMessage,
+    stopStreaming,
+    addMessage,
+    clearMessages,
+    setIsOpen,
+    setMode,
+    setWebSearchEnabled,
+    setThinkingEnabled,
+    setSelectedModel,
+    registerEditHandler,
+    undoEdit,
+    registerExpandPlanHandler,
+    expandPlan
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(ChatContext.Provider, { value, children });
+}
+function useChatContext() {
+  const context = (0, import_react20.useContext)(ChatContext);
+  if (!context) {
+    throw new Error("useChatContext must be used within a ChatProvider");
+  }
+  return context;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AutobloggerDashboard,
+  ChatContext,
+  ChatProvider,
   CommentThread,
   CommentsPanel,
   Navbar,
+  useChatContext,
   useComments,
   useDashboardContext
 });
