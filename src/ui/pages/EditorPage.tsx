@@ -144,6 +144,76 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   const currentUserEmail = session?.user?.email || ''
   const isAdmin = session?.user?.role === 'admin'
 
+  // Define savePost and handlePublish early (before hooks that depend on them)
+  const savePost = useCallback(async (silent = false) => {
+    if (!silent) {
+      setSaving(true)
+      setSavingAs('draft')
+    }
+    try {
+      const method = post.id ? 'PATCH' : 'POST'
+      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`
+      
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: post.title || 'Untitled Draft',
+          subtitle: post.subtitle || null,
+          slug: post.slug || undefined,
+          markdown: post.markdown,
+          status: post.status,
+          tagIds: post.tags?.map(t => t.id),
+          ...Object.fromEntries(fields.map(f => [f.name, post[f.name]]))
+        }),
+      })
+      
+      const data = await res.json()
+      if (data.data) {
+        setPost(prev => ({ ...prev, ...data.data }))
+        savedContent.current = JSON.stringify(data.data)
+        setLastSaved(new Date())
+        setHasUnsavedChanges(false)
+        if (!post.id && data.data.slug) {
+          navigate(`/editor/${data.data.slug}`)
+        }
+      }
+    } finally {
+      if (!silent) {
+        setSaving(false)
+        setSavingAs(null)
+      }
+    }
+  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate])
+
+  const handlePublish = useCallback(async () => {
+    if (!confirm('Publish this essay?')) return
+    setSaving(true)
+    setSavingAs('published')
+    try {
+      const method = post.id ? 'PATCH' : 'POST'
+      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`
+
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...post,
+          title: post.title || 'Untitled',
+          status: 'published',
+          ...Object.fromEntries(fields.map(f => [f.name, post[f.name]]))
+        }),
+      })
+
+      if (res.ok) {
+        navigate('/')
+      }
+    } finally {
+      setSaving(false)
+      setSavingAs(null)
+    }
+  }, [post, apiBasePath, fields, navigate])
+
   // Comments hook - handles all comment logic
   const comments = useComments({
     postId: post.id || null,
@@ -512,76 +582,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     setPreviewingRevision(null)
     // The post is already set to the revision content, just save it
     await savePost()
-  }, [previewingRevision])
-
-  const savePost = useCallback(async (silent = false) => {
-    if (!silent) {
-      setSaving(true)
-      setSavingAs('draft')
-    }
-    try {
-      const method = post.id ? 'PATCH' : 'POST'
-      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`
-      
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: post.title || 'Untitled Draft',
-          subtitle: post.subtitle || null,
-          slug: post.slug || undefined,
-          markdown: post.markdown,
-          status: post.status,
-          tagIds: post.tags?.map(t => t.id),
-          ...Object.fromEntries(fields.map(f => [f.name, post[f.name]]))
-        }),
-      })
-      
-      const data = await res.json()
-      if (data.data) {
-        setPost(prev => ({ ...prev, ...data.data }))
-        savedContent.current = JSON.stringify(data.data)
-        setLastSaved(new Date())
-        setHasUnsavedChanges(false)
-        if (!post.id && data.data.slug) {
-          navigate(`/editor/${data.data.slug}`)
-        }
-      }
-    } finally {
-      if (!silent) {
-        setSaving(false)
-        setSavingAs(null)
-      }
-    }
-  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate])
-
-  const handlePublish = useCallback(async () => {
-    if (!confirm('Publish this essay?')) return
-    setSaving(true)
-    setSavingAs('published')
-    try {
-      const method = post.id ? 'PATCH' : 'POST'
-      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...post,
-          title: post.title || 'Untitled',
-          status: 'published',
-          ...Object.fromEntries(fields.map(f => [f.name, post[f.name]]))
-        }),
-      })
-
-      if (res.ok) {
-        navigate('/')
-      }
-    } finally {
-      setSaving(false)
-      setSavingAs(null)
-    }
-  }, [post.id, post.title, apiBasePath, fields, navigate])
+  }, [previewingRevision, savePost])
 
   const handleUnpublish = async () => {
     if (!confirm('Unpublish this essay?')) return

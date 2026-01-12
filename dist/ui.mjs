@@ -6800,6 +6800,69 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   const { session } = useDashboardContext();
   const currentUserEmail = session?.user?.email || "";
   const isAdmin = session?.user?.role === "admin";
+  const savePost = useCallback9(async (silent = false) => {
+    if (!silent) {
+      setSaving(true);
+      setSavingAs("draft");
+    }
+    try {
+      const method = post.id ? "PATCH" : "POST";
+      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`;
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: post.title || "Untitled Draft",
+          subtitle: post.subtitle || null,
+          slug: post.slug || void 0,
+          markdown: post.markdown,
+          status: post.status,
+          tagIds: post.tags?.map((t) => t.id),
+          ...Object.fromEntries(fields.map((f) => [f.name, post[f.name]]))
+        })
+      });
+      const data = await res.json();
+      if (data.data) {
+        setPost((prev) => ({ ...prev, ...data.data }));
+        savedContent.current = JSON.stringify(data.data);
+        setLastSaved(/* @__PURE__ */ new Date());
+        setHasUnsavedChanges(false);
+        if (!post.id && data.data.slug) {
+          navigate(`/editor/${data.data.slug}`);
+        }
+      }
+    } finally {
+      if (!silent) {
+        setSaving(false);
+        setSavingAs(null);
+      }
+    }
+  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate]);
+  const handlePublish = useCallback9(async () => {
+    if (!confirm("Publish this essay?")) return;
+    setSaving(true);
+    setSavingAs("published");
+    try {
+      const method = post.id ? "PATCH" : "POST";
+      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`;
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...post,
+          title: post.title || "Untitled",
+          status: "published",
+          ...Object.fromEntries(fields.map((f) => [f.name, post[f.name]]))
+        })
+      });
+      if (res.ok) {
+        navigate("/");
+      }
+    } finally {
+      setSaving(false);
+      setSavingAs(null);
+    }
+  }, [post, apiBasePath, fields, navigate]);
   const comments = useComments({
     postId: post.id || null,
     editor,
@@ -7087,70 +7150,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     setOriginalPost(null);
     setPreviewingRevision(null);
     await savePost();
-  }, [previewingRevision]);
-  const savePost = useCallback9(async (silent = false) => {
-    if (!silent) {
-      setSaving(true);
-      setSavingAs("draft");
-    }
-    try {
-      const method = post.id ? "PATCH" : "POST";
-      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`;
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: post.title || "Untitled Draft",
-          subtitle: post.subtitle || null,
-          slug: post.slug || void 0,
-          markdown: post.markdown,
-          status: post.status,
-          tagIds: post.tags?.map((t) => t.id),
-          ...Object.fromEntries(fields.map((f) => [f.name, post[f.name]]))
-        })
-      });
-      const data = await res.json();
-      if (data.data) {
-        setPost((prev) => ({ ...prev, ...data.data }));
-        savedContent.current = JSON.stringify(data.data);
-        setLastSaved(/* @__PURE__ */ new Date());
-        setHasUnsavedChanges(false);
-        if (!post.id && data.data.slug) {
-          navigate(`/editor/${data.data.slug}`);
-        }
-      }
-    } finally {
-      if (!silent) {
-        setSaving(false);
-        setSavingAs(null);
-      }
-    }
-  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate]);
-  const handlePublish = useCallback9(async () => {
-    if (!confirm("Publish this essay?")) return;
-    setSaving(true);
-    setSavingAs("published");
-    try {
-      const method = post.id ? "PATCH" : "POST";
-      const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`;
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...post,
-          title: post.title || "Untitled",
-          status: "published",
-          ...Object.fromEntries(fields.map((f) => [f.name, post[f.name]]))
-        })
-      });
-      if (res.ok) {
-        navigate("/");
-      }
-    } finally {
-      setSaving(false);
-      setSavingAs(null);
-    }
-  }, [post.id, post.title, apiBasePath, fields, navigate]);
+  }, [previewingRevision, savePost]);
   const handleUnpublish = async () => {
     if (!confirm("Unpublish this essay?")) return;
     await fetch(`${apiBasePath}/posts/${post.id}`, {
