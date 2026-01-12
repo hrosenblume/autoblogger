@@ -12,7 +12,7 @@ interface Post {
   id: string
   title: string
   slug: string
-  status: 'draft' | 'published' | 'suggested'
+  status: 'draft' | 'published' | 'suggested' | 'deleted'
   wordCount?: number
   updatedAt: string
   publishedAt: string | null

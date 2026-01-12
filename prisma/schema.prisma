@@ -123,15 +123,30 @@ model PostTag {
 }
 
 model AISettings {
+  id                 String   @id @default("default")
+  rules              String   @default("")
+  chatRules          String   @default("")
+  rewriteRules       String?
+  autoDraftRules     String?
+  planRules          String?
+  defaultModel       String   @default("claude-sonnet")
+  autoDraftWordCount Int      @default(800)
+  generateTemplate   String?
+  chatTemplate       String?
+  rewriteTemplate    String?
+  autoDraftTemplate  String?
+  planTemplate       String?
+  expandPlanTemplate String?
+  updatedAt          DateTime @updatedAt
+}
+
+model IntegrationSettings {
   id               String   @id @default("default")
-  rules            String   @default("")
-  chatRules        String   @default("")
-  rewriteRules     String?
-  defaultModel     String   @default("claude-sonnet")
-  generateTemplate String?
-  chatTemplate     String?
-  rewriteTemplate  String?
+  autoDraftEnabled Boolean  @default(false)
   updatedAt        DateTime @updatedAt
+  // Host app can add additional fields like:
+  // googleAnalyticsId String?
+  // contactEmail      String?
 }
 
 model TopicSubscription {

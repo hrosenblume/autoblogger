@@ -83,13 +83,15 @@ export function MediaButtons({ editor: editorProp, textareaRef, markdown, onMark
         return
       }
 
-      if (data.url) {
+      // Handle both { url: ... } and { data: { url: ... } } response formats
+      const url = data.url || data.data?.url
+      if (url) {
         if (editor) {
-          editor.chain().focus().setImage({ src: data.url }).run()
+          editor.chain().focus().setImage({ src: url }).run()
         } else if (isMarkdownMode && textareaRef?.current) {
           const textarea = textareaRef.current
           const start = textarea.selectionStart
-          const newText = markdown!.substring(0, start) + `![image](${data.url})` + markdown!.substring(start)
+          const newText = markdown!.substring(0, start) + `![image](${url})` + markdown!.substring(start)
           onMarkdownChange!(newText)
           requestAnimationFrame(() => textarea.focus())
         }

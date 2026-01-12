@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { Loader2, History } from 'lucide-react'
 import { formatRelativeTime } from '../../lib/format'
 import type { RevisionSummary } from '../../lib/editor-types'
@@ -25,13 +26,30 @@ export function RevisionHistoryDropdown({
   onSelect,
 }: Props) {
   const [open, setOpen] = useState(false)
+  const [position, setPosition] = useState({ top: 0, right: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  // Calculate position when opening
+  const updatePosition = useCallback(() => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setPosition({
+        top: rect.bottom + 4, // 4px gap
+        right: window.innerWidth - rect.right,
+      })
+    }
+  }, [])
 
   // Close on click outside
   useEffect(() => {
     if (!open) return
     const handleClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (
+        menuRef.current && !menuRef.current.contains(target) &&
+        buttonRef.current && !buttonRef.current.contains(target)
+      ) {
         setOpen(false)
       }
     }
@@ -39,14 +57,30 @@ export function RevisionHistoryDropdown({
     return () => document.removeEventListener('click', handleClick)
   }, [open])
 
+  // Update position on scroll/resize
+  useEffect(() => {
+    if (!open) return
+    const handleUpdate = () => updatePosition()
+    window.addEventListener('scroll', handleUpdate, true)
+    window.addEventListener('resize', handleUpdate)
+    return () => {
+      window.removeEventListener('scroll', handleUpdate, true)
+      window.removeEventListener('resize', handleUpdate)
+    }
+  }, [open, updatePosition])
+
   const handleToggle = () => {
-    if (!open) onOpen()
+    if (!open) {
+      updatePosition()
+      onOpen()
+    }
     setOpen(!open)
   }
 
   return (
-    <div className="relative" ref={menuRef}>
+    <>
       <button
+        ref={buttonRef}
         type="button"
         onClick={handleToggle}
         disabled={disabled || isPreviewMode || previewLoading}
@@ -60,8 +94,12 @@ export function RevisionHistoryDropdown({
         )}
       </button>
       
-      {open && (
-        <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 w-64 max-h-80 overflow-y-auto">
+      {open && typeof document !== 'undefined' && createPortal(
+        <div 
+          ref={menuRef}
+          className="fixed bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-[9999] w-64 max-h-80 overflow-y-auto"
+          style={{ top: position.top, right: position.right }}
+        >
           <div className="px-3 py-2 text-sm font-medium border-b border-gray-200 dark:border-gray-700">
             Revision History
           </div>
@@ -93,8 +131,9 @@ export function RevisionHistoryDropdown({
               </button>
             ))
           )}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   )
 }

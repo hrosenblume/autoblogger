@@ -49,7 +49,7 @@ export function Navbar({
   }
 
   return (
-    <header className="border-b border-border bg-background">
+    <header className="sticky top-0 z-50 border-b border-border bg-background">
       <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Left side: Logo or back button */}
         {isRoot ? (

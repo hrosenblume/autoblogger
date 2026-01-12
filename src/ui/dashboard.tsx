@@ -111,7 +111,8 @@ function DashboardRouter({ path }: { path: string }) {
   if (pathWithoutQuery === '/' || pathWithoutQuery === '') return <WriterDashboard />
   if (pathWithoutQuery.startsWith('/editor')) {
     const slug = pathWithoutQuery.replace('/editor/', '').replace('/editor', '')
-    return <EditorPage slug={slug || undefined} />
+    // Use path as key to force remount when navigating to same editor with different query params
+    return <EditorPage key={path} slug={slug || undefined} />
   }
   if (pathWithoutQuery.startsWith('/settings')) return <SettingsPage subPath={pathWithoutQuery.replace('/settings', '')} />
   return <div className="max-w-4xl mx-auto px-6 py-8"><p className="text-muted-foreground">Page not found: {path}</p></div>

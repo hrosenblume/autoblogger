@@ -116,6 +116,9 @@ export function SettingsPage({ subPath }: { subPath: string }) {
   // Sub-pages - each component renders its own header
   const pageName = subPath.slice(1) // Remove leading /
   
+  // Handle revision detail page: /revisions/:id
+  const revisionDetailMatch = pageName.match(/^revisions\/(.+)$/)
+  
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
       {pageName === 'users' && <UsersSettingsContent />}
@@ -124,6 +127,7 @@ export function SettingsPage({ subPath }: { subPath: string }) {
       {pageName === 'topics' && <TopicsSettingsContent />}
       {pageName === 'posts' && <PostsSettingsContent />}
       {pageName === 'revisions' && <RevisionsSettingsContent />}
+      {revisionDetailMatch && <RevisionDetailContent revisionId={revisionDetailMatch[1]} />}
       {pageName === 'comments' && <CommentsSettingsContent />}
     </div>
   )
@@ -1810,6 +1814,132 @@ function RevisionsSettingsContent() {
 
       {/* Bottom Pagination */}
       <PaginationControls position="bottom" />
+    </div>
+  )
+}
+
+interface RevisionDetail {
+  id: string
+  postId: string
+  title: string | null
+  subtitle: string | null
+  markdown: string
+  createdAt: string
+  post: { id: string; title: string; slug: string; markdown: string }
+}
+
+function RevisionDetailContent({ revisionId }: { revisionId: string }) {
+  const { apiBasePath, navigate } = useDashboardContext()
+  const [revision, setRevision] = useState<RevisionDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [restoring, setRestoring] = useState(false)
+
+  useEffect(() => {
+    fetch(`${apiBasePath}/revisions/${revisionId}`)
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(res => {
+        setRevision(res.data)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [apiBasePath, revisionId])
+
+  async function handleRestore() {
+    if (!revision) return
+    if (!confirm('Restore this revision? This will replace the current post content.')) return
+    
+    setRestoring(true)
+    const res = await fetch(`${apiBasePath}/revisions/${revisionId}/restore`, { method: 'POST' })
+    if (res.ok) {
+      navigate(`/editor/${revision.post.slug}`)
+    }
+    setRestoring(false)
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-6 w-32 bg-muted rounded animate-pulse" />
+        <div className="h-64 bg-muted rounded animate-pulse" />
+      </div>
+    )
+  }
+
+  if (!revision) {
+    return (
+      <div className="space-y-6">
+        <button
+          onClick={() => navigate('/settings/revisions')}
+          className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
+        >
+          <ChevronLeft className="h-4 w-4" /> Back to Revisions
+        </button>
+        <p className="text-muted-foreground">Revision not found.</p>
+      </div>
+    )
+  }
+
+  const isCurrent = revision.post.markdown === revision.markdown
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <button
+            onClick={() => navigate('/settings/revisions')}
+            className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1"
+          >
+            <ChevronLeft className="h-4 w-4" /> Back to Revisions
+          </button>
+          <h2 className="text-lg font-semibold">Revision Detail</h2>
+        </div>
+        <div className="flex items-center gap-2">
+          {isCurrent ? (
+            <span className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground">
+              current
+            </span>
+          ) : (
+            <button
+              onClick={handleRestore}
+              disabled={restoring}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              <RotateCcw className="h-4 w-4 mr-2" />
+              {restoring ? 'Restoring...' : 'Restore This Revision'}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Metadata */}
+      <div className="rounded-lg border bg-card p-4 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Post</span>
+          <button
+            onClick={() => navigate(`/editor/${revision.post.slug}`)}
+            className="text-sm hover:underline"
+          >
+            {revision.post.title || 'Untitled'}
+          </button>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Title at revision</span>
+          <span className="text-sm">{revision.title || '—'}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-muted-foreground">Created</span>
+          <span className="text-sm">{new Date(revision.createdAt).toLocaleString()}</span>
+        </div>
+      </div>
+
+      {/* Content Preview */}
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium">Content</h3>
+        <div className="rounded-lg border bg-muted/30 p-4 max-h-96 overflow-auto">
+          <pre className="text-sm whitespace-pre-wrap font-mono">{revision.markdown}</pre>
+        </div>
+      </div>
     </div>
   )
 }
