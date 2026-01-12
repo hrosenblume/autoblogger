@@ -497,12 +497,6 @@ function AISettingsContent() {
       .then(([aiRes, settingsRes]) => {
         // Handle both wrapped { data: {...} } and unwrapped {...} response formats
         const data = aiRes.data || aiRes || {}
-        // #region agent log
-        console.log('[AUTOBLOGGER DEBUG] aiRes:', aiRes)
-        console.log('[AUTOBLOGGER DEBUG] data:', data)
-        console.log('[AUTOBLOGGER DEBUG] data.defaultPlanRules:', data.defaultPlanRules)
-        console.log('[AUTOBLOGGER DEBUG] data.planRules:', data.planRules)
-        // #endregion
         setRules(data.rules || '')
         setChatRules(data.chatRules || '')
         setRewriteRules(data.rewriteRules || '')

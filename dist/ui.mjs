@@ -7696,10 +7696,6 @@ function AISettingsContent() {
       fetch(`${apiBasePath}/settings`).then((res) => res.ok ? res.json() : Promise.reject())
     ]).then(([aiRes, settingsRes]) => {
       const data = aiRes.data || aiRes || {};
-      console.log("[AUTOBLOGGER DEBUG] aiRes:", aiRes);
-      console.log("[AUTOBLOGGER DEBUG] data:", data);
-      console.log("[AUTOBLOGGER DEBUG] data.defaultPlanRules:", data.defaultPlanRules);
-      console.log("[AUTOBLOGGER DEBUG] data.planRules:", data.planRules);
       setRules(data.rules || "");
       setChatRules(data.chatRules || "");
       setRewriteRules(data.rewriteRules || "");
