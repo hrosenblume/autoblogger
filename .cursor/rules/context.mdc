@@ -1,27 +1,21 @@
----
-description: "Package architecture, exports, and systems reference"
-globs: ["**/*"]
-alwaysApply: true
----
-
 # Project Context
 
 > ⚠️ **THIS FILE IS COMMITTED TO GIT.** Do not add sensitive data: no emails, URLs, passwords, API keys, or secrets.
 
 ## Overview
 
-**Autoblogger** — A reusable CMS package for Next.js applications. Provides a complete content management system with AI-powered writing, comments, revisions, and admin settings. Designed to be embedded in host Next.js apps via a catch-all route.
+**Autoblogger** — A reusable CMS package for Next.js applications. Provides a complete content management system with AI-powered writing, inline comments, revision history, and admin settings. Designed to be embedded in host Next.js apps via catch-all routes.
 
 ## Tech Stack
 
 | Layer | Technology |
-|-------|------------|
+|----|---|
 | Runtime | Node.js 20+ |
-| Build | tsup (ESM + CJS) |
+| Build | tsup (ESM + CJS dual output) |
 | Database | Prisma (uses host app's client) |
-| UI | React 18+ |
+| UI | React 18/19 |
 | Styling | Tailwind CSS (via host app) |
-| Editor | Tiptap WYSIWYG |
+| Editor | Tiptap WYSIWYG with markdown sync |
 | AI | Anthropic SDK + OpenAI SDK |
 | Markdown | marked + turndown |
 
@@ -29,15 +23,18 @@ alwaysApply: true
 
 ```typescript
 // Server-side (API routes, data layer)
-import { createAutoblogger, type AutobloggerServer } from 'autoblogger'
+import { createAutoblogger, createAPIHandler } from 'autoblogger'
 
-// Client-side (React components)
+// Client-side (React dashboard)
 import { AutobloggerDashboard } from 'autoblogger/ui'
 
 // Utilities
-import { renderMarkdown, parseMarkdown } from 'autoblogger/lib/markdown'
-import { ARTICLE_STYLES } from 'autoblogger/styles/article'
-import { generateSeoMetadata } from 'autoblogger/lib/seo'
+import { renderMarkdown, htmlToMarkdown } from 'autoblogger/markdown'
+import { ARTICLE_CLASSES } from 'autoblogger/styles/article'
+import { getSeoValues } from 'autoblogger/seo'
+
+// Comment utilities (for advanced integrations)
+import { createCommentsClient, CommentMark } from 'autoblogger'
 ```
 
 ## Project Structure
@@ -45,71 +42,71 @@ import { generateSeoMetadata } from 'autoblogger/lib/seo'
 ```
 autoblogger/
 ├── src/
-│   ├── index.ts              # Main entry: createAutoblogger()
-│   ├── server.ts             # AutobloggerServer class
-│   ├── config.ts             # Configuration types
-│   ├── schema.ts             # Zod schemas for validation
-│   ├── types.ts              # Shared TypeScript types
+│   ├── index.ts           # Main server exports: createAutoblogger(), utilities
+│   ├── server.ts          # AutobloggerServer class factory
+│   ├── config.ts          # Full config types (includes React types)
+│   ├── schema.ts          # Prisma schema validation helper
+│   ├── types.ts           # Core TypeScript types (Post, Revision, etc.)
 │   │
-│   ├── data/                 # Prisma data layer
-│   │   ├── index.ts          # Exports all data modules
-│   │   ├── posts.ts          # Post CRUD
-│   │   ├── revisions.ts      # Revision history
-│   │   ├── comments.ts       # Comment threads
-│   │   ├── tags.ts           # Tag management
-│   │   ├── topics.ts         # Topic subscriptions
-│   │   ├── news-items.ts     # RSS news items
-│   │   ├── users.ts          # User management
-│   │   └── ai-settings.ts    # AI configuration
+│   ├── data/              # Prisma data layer
+│   │   ├── index.ts       # Barrel exports
+│   │   ├── posts.ts       # Post CRUD + preview URLs
+│   │   ├── revisions.ts   # Revision history + restore
+│   │   ├── comments.ts    # Editor & public comments
+│   │   ├── tags.ts        # Tag management + post relations
+│   │   ├── topics.ts      # TopicSubscription CRUD
+│   │   ├── news-items.ts  # RSS news item tracking
+│   │   ├── users.ts       # User CRUD
+│   │   └── ai-settings.ts # AI config singleton
 │   │
-│   ├── api/                  # HTTP handlers
-│   │   ├── index.ts          # Route dispatcher
-│   │   ├── posts.ts          # /posts endpoints
-│   │   ├── revisions.ts      # /revisions endpoints
-│   │   ├── comments.ts       # /comments endpoints
-│   │   ├── tags.ts           # /tags endpoints
-│   │   ├── topics.ts         # /topics endpoints
-│   │   ├── users.ts          # /users endpoints
-│   │   ├── ai.ts             # /ai endpoints
-│   │   ├── settings.ts       # /settings endpoints
-│   │   ├── upload.ts         # /upload endpoint
-│   │   └── admin.ts          # Admin-only endpoints
+│   ├── api/               # HTTP route handlers
+│   │   ├── index.ts       # createAPIHandler() + route dispatcher
+│   │   ├── posts.ts       # /posts + /posts/:id/comments
+│   │   ├── revisions.ts   # /revisions + restore
+│   │   ├── comments.ts    # /comments (admin listing)
+│   │   ├── tags.ts        # /tags CRUD
+│   │   ├── topics.ts      # /topics + /topics/:id/generate
+│   │   ├── users.ts       # /users CRUD (admin only)
+│   │   ├── ai.ts          # /ai/settings, /ai/generate, /ai/chat
+│   │   ├── settings.ts    # /settings (integration settings)
+│   │   ├── upload.ts      # /upload (image upload)
+│   │   └── admin.ts       # /admin/counts
 │   │
-│   ├── ai/                   # AI integration
-│   │   ├── index.ts          # Exports
-│   │   ├── models.ts         # Model definitions (Claude/GPT)
-│   │   ├── provider.ts       # Unified SDK abstraction
-│   │   ├── generate.ts       # Essay generation
-│   │   ├── chat.ts           # Chat streaming
-│   │   └── system-prompt.ts  # Prompt builders
+│   ├── ai/                # AI integration
+│   │   ├── index.ts       # Barrel exports
+│   │   ├── models.ts      # AI_MODELS array (Claude, GPT)
+│   │   ├── provider.ts    # Unified streaming abstraction
+│   │   ├── generate.ts    # Essay generation
+│   │   ├── chat.ts        # Chat streaming with modes
+│   │   └── system-prompt.ts # Prompt templates + builders
 │   │
-│   ├── lib/                  # Utilities
-│   │   ├── cn.ts             # Class name utility
-│   │   ├── format.ts         # Date/time formatting
-│   │   ├── markdown.ts       # Markdown rendering
-│   │   ├── markdown-helpers.ts
-│   │   ├── models.ts         # UI model definitions
-│   │   ├── seo.ts            # SEO metadata generation
-│   │   ├── comments.ts       # Comment utilities
-│   │   ├── comment-mark.ts   # Tiptap comment extension
-│   │   └── editor-types.ts   # Editor type definitions
+│   ├── lib/               # Utilities
+│   │   ├── cn.ts          # clsx + tailwind-merge
+│   │   ├── format.ts      # formatDate, formatRelativeTime, countWords, truncate
+│   │   ├── markdown.ts    # renderMarkdown, parseMarkdown, htmlToMarkdown
+│   │   ├── markdown-helpers.ts # Cursor-based text manipulation for markdown mode
+│   │   ├── seo.ts         # getSeoValues (title, description fallbacks)
+│   │   ├── comments.ts    # createCommentsClient, permission helpers
+│   │   ├── comment-mark.ts # Tiptap CommentMark extension
+│   │   ├── editor-types.ts # RevisionState, AIState types
+│   │   └── models.ts      # LENGTH_OPTIONS, AIModelOption type
 │   │
-│   ├── styles/               # Style exports
-│   │   ├── article.ts        # Article layout classes
-│   │   └── preset.js         # Tailwind preset (future)
+│   ├── styles/            # Style exports
+│   │   ├── article.ts     # ARTICLE_CLASSES, ARTICLE_LAYOUT
+│   │   └── preset.js      # Tailwind preset (ab- prefixed tokens)
 │   │
-│   └── ui/                   # React components
-│       ├── index.ts          # UI exports
-│       ├── dashboard.tsx     # AutobloggerDashboard component
-│       ├── context.tsx       # DashboardProvider + hooks
-│       ├── types.ts          # UI-specific types
+│   └── ui/                # React components
+│       ├── index.ts       # UI barrel exports
+│       ├── dashboard.tsx  # AutobloggerDashboard wrapper
+│       ├── context.tsx    # DashboardProvider + hooks
+│       ├── types.ts       # CustomFieldConfig, CustomFieldProps
 │       │
-│       ├── pages/            # Page components
-│       │   ├── WriterDashboard.tsx
-│       │   ├── EditorPage.tsx
-│       │   └── SettingsPage.tsx
+│       ├── pages/         # Page components
+│       │   ├── WriterDashboard.tsx  # Post list + AI generation
+│       │   ├── EditorPage.tsx       # Tiptap editor + metadata
+│       │   └── SettingsPage.tsx     # Admin settings subpages
 │       │
-│       ├── components/       # Shared components
+│       ├── components/    # Shared components
 │       │   ├── Navbar.tsx
 │       │   ├── TiptapEditor.tsx
 │       │   ├── EditorToolbar.tsx
@@ -127,15 +124,15 @@ autoblogger/
 │       │       ├── MediaButtons.tsx
 │       │       └── HistoryButtons.tsx
 │       │
-│       └── hooks/            # Custom hooks
-│           ├── useComments.ts
-│           └── useKeyboard.ts
+│       └── hooks/
+│           ├── useComments.ts    # Comment state + CRUD
+│           └── useKeyboard.ts    # Keyboard shortcuts
 │
 ├── prisma/
-│   └── schema.prisma         # Reference schema (host app owns actual)
+│   └── schema.prisma      # Reference schema for host apps
 │
 ├── tsconfig.json
-├── tsup.config.ts            # Build configuration
+├── tsup.config.ts         # Dual ESM/CJS build config
 └── package.json
 ```
 
@@ -143,28 +140,41 @@ autoblogger/
 
 The package expects these Prisma models in the host app:
 
+### Core Models
+
 ```prisma
 model Post {
-  id             String     @id @default(uuid())
-  title          String
-  subtitle       String?
-  slug           String     @unique
-  markdown       String
-  status         String     @default("draft")  // draft, published, suggested
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  publishedAt    DateTime?
-  revisions      Revision[]
-  comments       Comment[]
-  tags           PostTag[]
-  // SEO
+  id          String    @id @default(uuid())
+  title       String
+  subtitle    String?
+  slug        String    @unique
+  markdown    String
+  status      String    @default("draft") // draft, published, suggested, deleted
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  // SEO fields
   seoTitle       String?
   seoDescription String?
   seoKeywords    String?
+  noIndex        Boolean  @default(false)
+  ogImage        String?
+
+  // Preview
+  previewToken  String?   @unique
+  previewExpiry DateTime?
+
+  // Relations
+  revisions Revision[]
+  tags      PostTag[]
+  comments  Comment[]
+  newsItem  NewsItem?
+
   // Auto-draft
-  sourceUrl      String?
-  topicId        String?
-  topic          TopicSubscription? @relation(...)
+  sourceUrl String?
+  topicId   String?
+  topic     TopicSubscription? @relation(...)
 }
 
 model Revision {
@@ -181,14 +191,16 @@ model Comment {
   id         String    @id @default(uuid())
   postId     String
   post       Post      @relation(...)
-  userId     String
-  user       User      @relation(...)
-  parentId   String?
-  parent     Comment?  @relation("CommentReplies", ...)
-  replies    Comment[] @relation("CommentReplies")
+  userId     String?
+  user       User?     @relation(...)
+  quotedText String    @default("")  // Highlighted text snapshot
   content    String
+  parentId   String?                  // Single-level replies
+  parent     Comment?  @relation("Replies", ...)
+  replies    Comment[] @relation("Replies")
   resolved   Boolean   @default(false)
-  deletedAt  DateTime?
+  deletedAt  DateTime?                // Soft delete
+  approved   Boolean   @default(true) // Legacy for public comments
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 }
@@ -197,41 +209,71 @@ model User {
   id        String    @id @default(uuid())
   email     String    @unique
   name      String?
-  role      String    @default("writer")  // admin, writer, drafter
-  comments  Comment[]
+  role      String    @default("writer") // admin, writer, drafter
   createdAt DateTime  @default(now())
+  comments  Comment[]
 }
 
 model Tag {
-  id    String    @id @default(uuid())
-  name  String    @unique
-  posts PostTag[]
+  id        String    @id @default(uuid())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  posts     PostTag[]
 }
 
 model PostTag {
-  id     String @id @default(uuid())
-  postId String
-  tagId  String
-  post   Post   @relation(...)
-  tag    Tag    @relation(...)
+  id        String   @id @default(uuid())
+  postId    String
+  tagId     String
+  post      Post     @relation(...)
+  tag       Tag      @relation(...)
+  createdAt DateTime @default(now())
   @@unique([postId, tagId])
+}
+```
+
+### AI & Integration Models
+
+```prisma
+model AISettings {
+  id                   String   @id @default("default")
+  rules                String   @default("")
+  chatRules            String   @default("")
+  rewriteRules         String?
+  autoDraftRules       String?
+  planRules            String?
+  defaultModel         String   @default("claude-sonnet")
+  autoDraftWordCount   Int      @default(800)
+  generateTemplate     String?
+  chatTemplate         String?
+  rewriteTemplate      String?
+  autoDraftTemplate    String?
+  planTemplate         String?
+  expandPlanTemplate   String?
+  updatedAt            DateTime @updatedAt
+}
+
+model IntegrationSettings {
+  id               String   @id @default("default")
+  autoDraftEnabled Boolean  @default(false)
+  updatedAt        DateTime @updatedAt
 }
 
 model TopicSubscription {
-  id               String     @id @default(uuid())
+  id               String    @id @default(uuid())
   name             String
-  keywords         String     // JSON array
-  rssFeeds         String     // JSON array
-  isActive         Boolean    @default(true)
-  useKeywordFilter Boolean    @default(true)
-  frequency        String     @default("daily")
-  maxPerPeriod     Int        @default(3)
+  keywords         String    // JSON array
+  rssFeeds         String    // JSON array
+  isActive         Boolean   @default(true)
+  useKeywordFilter Boolean   @default(true)
+  frequency        String    @default("daily")
+  maxPerPeriod     Int       @default(3)
   essayFocus       String?
   lastRunAt        DateTime?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
-  newsItems        NewsItem[]
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
   posts            Post[]
+  newsItems        NewsItem[]
 }
 
 model NewsItem {
@@ -242,33 +284,10 @@ model NewsItem {
   title       String
   summary     String?
   publishedAt DateTime?
-  status      String            @default("pending")
+  status      String            @default("pending") // pending, generated, skipped
   postId      String?           @unique
+  post        Post?             @relation(...)
   createdAt   DateTime          @default(now())
-}
-
-model AISettings {
-  id                    String   @id @default("default")
-  rules                 String   @default("")
-  chatRules             String   @default("")
-  rewriteRules          String?
-  planRules             String?
-  autoDraftRules        String?
-  defaultModel          String   @default("claude-sonnet")
-  autoDraftWordCount    Int      @default(800)
-  generateTemplate      String?
-  chatTemplate          String?
-  rewriteTemplate       String?
-  planTemplate          String?
-  expandPlanTemplate    String?
-  autoDraftTemplate     String?
-  updatedAt             DateTime @updatedAt
-}
-
-model SiteSettings {
-  id               String   @id @default("default")
-  autoDraftEnabled Boolean  @default(false)
-  updatedAt        DateTime @updatedAt
 }
 ```
 
@@ -276,11 +295,11 @@ model SiteSettings {
 
 ### Host App Integration
 
-The package is mounted via a catch-all route in the host app:
+The package is mounted via catch-all routes in the host app:
 
 ```typescript
 // app/api/cms/[...path]/route.ts
-import { createAutoblogger } from 'autoblogger'
+import { createAutoblogger, createAPIHandler } from 'autoblogger'
 import { prisma } from '@/lib/db'
 import { auth } from '@/lib/auth'
 
@@ -291,23 +310,28 @@ const cms = createAutoblogger({
     isAdmin: (session) => session?.user?.role === 'admin',
     canPublish: (session) => ['admin', 'writer'].includes(session?.user?.role),
   },
+  ai: {
+    anthropicKey: process.env.ANTHROPIC_API_KEY,
+    openaiKey: process.env.OPENAI_API_KEY,
+  },
 })
 
-export async function GET(req, { params }) {
-  return cms.handleRequest(req, params.path.join('/'))
-}
+const handler = createAPIHandler(cms, { basePath: '/api/cms' })
+
+export { handler as GET, handler as POST, handler as PATCH, handler as DELETE }
 ```
 
 ```typescript
 // app/(dashboard)/writer/[[...path]]/page.tsx
 import { AutobloggerDashboard } from 'autoblogger/ui'
 
-export default function WriterPage({ params }) {
+export default async function WriterPage({ params }) {
+  const session = await auth()
   return (
     <AutobloggerDashboard
       apiBasePath="/api/cms"
       session={session}
-      path={params.path?.join('/') || ''}
+      basePath="/writer"
     />
   )
 }
@@ -318,7 +342,25 @@ export default function WriterPage({ params }) {
 Internal SPA navigation via `DashboardContext`:
 - `navigate(path)` — Push to history, update URL, render new page
 - `goBack()` — Pop history or navigate to root
-- Routes: `/`, `/editor/:slug`, `/settings/*`, `/inbox`
+- `currentPath` — Current internal path
+- History depth tracking for proper back button behavior
+
+### Routes
+
+| Path | Component | Description |
+|------|-----------|-------------|
+| `/` | WriterDashboard | Post list, AI generation, suggested posts |
+| `/editor` | EditorPage | New post editor |
+| `/editor/:slug` | EditorPage | Edit existing post |
+| `/settings` | SettingsPage | Settings overview with counts |
+| `/settings/users` | SettingsPage | User management |
+| `/settings/ai` | SettingsPage | AI rules and templates |
+| `/settings/tags` | SettingsPage | Tag management |
+| `/settings/topics` | SettingsPage | RSS topic subscriptions |
+| `/settings/posts` | SettingsPage | All posts admin view |
+| `/settings/revisions` | SettingsPage | Revision history |
+| `/settings/revisions/:id` | SettingsPage | Revision detail + restore |
+| `/settings/comments` | SettingsPage | Comment moderation |
 
 ### AI Models
 
@@ -332,65 +374,69 @@ export const AI_MODELS = [
 ]
 ```
 
-### Settings Pages
-
-Rendered by `SettingsPage.tsx` based on path:
-- `/settings` — Dashboard with counts
-- `/settings/users` — User management
-- `/settings/ai` — AI configuration
-- `/settings/tags` — Tag management
-- `/settings/topics` — Topic subscriptions
-- `/settings/posts` — Post management
-- `/settings/revisions` — Revision history
-- `/settings/revisions/:id` — Revision detail
-- `/settings/comments` — Comment moderation
-
 ### Comments System
 
-- **Inline comments**: Tiptap `commentMark` extension
-- **Panel**: `CommentsPanel` slides in from right
-- **Thread**: `CommentThread` renders nested replies
-- **API**: `/comments` CRUD with pagination
-- **Deep linking**: `?comment=:id` URL param highlights comment
+- **Inline comments**: Tiptap `CommentMark` extension highlights text
+- **Panel**: `CommentsPanel` slides in from right (full-screen on mobile)
+- **Thread**: `CommentThread` renders comment with nested replies
+- **API**: `/posts/:id/comments` CRUD with resolve/unresolve
+- **Deep linking**: `?comment=:id` URL param highlights and scrolls to comment
 
 ### Editor System
 
 `EditorPage.tsx` provides:
 - Tiptap WYSIWYG with markdown sync
-- Auto-save (3s debounce)
-- Revision history on save
-- AI generation (streaming)
-- Comment inline highlighting
-- Metadata editing (slug, tags, SEO)
+- Markdown mode toggle (raw textarea)
+- Auto-save drafts (3s debounce)
+- Revision history with preview and restore
+- AI generation from URL params (`?idea=...&model=...&length=...`)
+- Inline comment highlighting
+- Custom fields support via `fields` config
+- SEO metadata editing
+
+### AI Prompt Templates
+
+Templates use `{{PLACEHOLDER}}` syntax:
+- `{{RULES}}` — Essay writing rules from settings
+- `{{CHAT_RULES}}` — Chat behavior rules
+- `{{WORD_COUNT}}` — Target word count
+- `{{ESSAY_CONTEXT}}` — Current essay content for chat
+- `{{STYLE_EXAMPLES}}` — Example posts for style matching
+- `{{PLAN}}` — Outline for expand_plan mode
 
 ## API Routes
 
 | Path | Methods | Description |
-|------|---------|-------------|
+|---|---|----|
 | `/posts` | GET, POST | List/create posts |
 | `/posts/:id` | GET, PATCH, DELETE | Single post CRUD |
+| `/posts/:id/comments` | GET, POST | Editor comments for post |
+| `/posts/:id/comments/:commentId` | PATCH, DELETE | Update/delete comment |
+| `/posts/:id/comments/:commentId/resolve` | POST | Toggle resolve |
+| `/posts/:id/comments/resolve-all` | POST | Resolve all open comments |
 | `/revisions` | GET | List revisions (paginated) |
-| `/revisions/:id` | GET | Single revision |
+| `/revisions/:id` | GET, DELETE | Single revision |
 | `/revisions/:id/restore` | POST | Restore revision |
-| `/comments` | GET, POST | List/create comments |
-| `/comments/:id` | GET, PATCH, DELETE | Single comment |
+| `/comments` | GET, POST | Admin comment listing |
+| `/comments/:id/approve` | PATCH | Approve comment |
 | `/tags` | GET, POST | List/create tags |
 | `/tags/:id` | PATCH, DELETE | Update/delete tag |
 | `/topics` | GET, POST | List/create topics |
 | `/topics/:id` | GET, PATCH, DELETE | Single topic |
-| `/topics/:id/run` | POST | Run topic (fetch RSS) |
+| `/topics/:id/generate` | POST | Trigger topic generation |
 | `/users` | GET, POST | List/create users |
-| `/users/:id` | PATCH, DELETE | Update/delete user |
+| `/users/:id` | GET, PATCH, DELETE | Single user |
 | `/ai/settings` | GET, PATCH | AI configuration |
-| `/ai/generate` | POST | Generate essay |
+| `/ai/generate` | POST | Generate essay (streaming) |
 | `/ai/chat` | POST | Chat streaming |
-| `/settings` | GET, PATCH | Site settings |
-| `/upload` | POST | File upload |
+| `/settings` | GET, PATCH | Integration settings |
+| `/upload` | POST | Image upload |
+| `/admin/counts` | GET | Dashboard counts |
 
 ## Commands
 
 | Command | Description |
-|---------|-------------|
+|---|----|
 | `npm run build` | Build package (ESM + CJS + types) |
 | `npm run dev` | Watch mode for development |
 | `npm run typecheck` | TypeScript check |
@@ -407,11 +453,11 @@ dist/
 ├── ui.mjs            # ESM UI components
 ├── ui.d.ts           # UI declarations
 ├── lib/
-│   ├── markdown.js
-│   ├── markdown.d.ts
-│   └── seo.js
+│   ├── markdown.js/mjs/d.ts
+│   └── seo.js/mjs/d.ts
 └── styles/
-    └── article.js
+    ├── article.js/mjs
+    └── preset.js     # Tailwind preset (copied)
 ```
 
 ## Development Workflow

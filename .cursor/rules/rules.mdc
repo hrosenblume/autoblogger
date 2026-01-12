@@ -1,9 +1,3 @@
----
-description: "⚠️ ALWAYS READ THIS FILE FIRST — Contains critical git commands (g/d/m/p/pf) and coding conventions"
-globs: ["**/*"]
-alwaysApply: true
----
-
 # Coding Rules
 
 > 🚨 **READ THIS ENTIRE FILE AT THE START OF EVERY CONVERSATION.** This contains single-letter git commands (`g`, `d`, `m`, `p`, `pf`) that must be executed immediately when typed.
@@ -14,16 +8,18 @@ alwaysApply: true
 
 ### TypeScript
 - Use strict mode
-- Prefer explicit types over `any`
+- Prefer explicit types over `any` (cast to `any` only when necessary for Prisma or Tiptap internals)
 - Export types from `src/types.ts` for public API
 - Internal types stay in their respective files
+- Use `unknown` for Prisma client in config (avoid direct dependency)
 
 ### React Components
 - Functional components only
-- All UI components are client-side (`'use client'` is implicit in the package)
-- Use `useCallback` and `useMemo` for performance
+- All UI components are client-side (`'use client'` added by tsup banner)
+- Use `useCallback` and `useMemo` for performance-critical operations
 - Props interfaces defined inline or in same file
 - Use `cn()` utility from `src/lib/cn.ts` for conditional classes
+- Prefer `useState` + `useEffect` over `useReducer` for simple state
 
 ### Styling
 - Use Tailwind CSS exclusively
@@ -32,35 +28,42 @@ alwaysApply: true
 - Mobile-first: Use responsive prefixes (`md:`, `lg:`) for desktop overrides
 - Touch targets: `min-h-[44px] md:min-h-0` for mobile-friendly buttons
 
-### Dropdown Menus
+### Dropdown Menus (Consistent Pattern)
 - Container: `bg-popover border border-border rounded-md shadow-lg p-1`
-- Items: `px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 rounded-sm hover:bg-accent cursor-default`
+- Items: `w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default`
 - Destructive: Add `text-destructive` class
 - Separator: `<div className="h-px bg-border my-1" />`
+
+### Toolbar Buttons
+- Use `ToolbarButton` component from `toolbar/ToolbarButton.tsx`
+- Consistent sizing: `px-2.5 py-1.5`
+- Active state: `bg-gray-100 dark:bg-gray-800`
+- Skeleton: Use `SkeletonButton` for loading states
 
 ## Package Architecture
 
 ### Layer Separation
 | Layer | Location | Purpose |
-|-------|----------|---------|
+|----|----|---|
 | Data | `src/data/` | Prisma queries, CRUD operations |
 | API | `src/api/` | HTTP handlers, request/response |
 | UI | `src/ui/` | React components, hooks, pages |
-| AI | `src/ai/` | LLM providers, prompts, generation |
+| AI | `src/ai/` | LLM providers, prompts, streaming |
 | Lib | `src/lib/` | Utilities, shared helpers |
 
 ### Export Structure
-- `autoblogger` — Server-side: data layer, API handlers
+- `autoblogger` — Server-side: data layer, API handlers, utilities
 - `autoblogger/ui` — Client-side: React components, hooks
 - `autoblogger/styles/article` — Article layout utilities
-- `autoblogger/lib/markdown` — Markdown parsing
-- `autoblogger/lib/seo` — SEO utilities
+- `autoblogger/markdown` — Markdown parsing
+- `autoblogger/seo` — SEO utilities
 
 ### File Conventions
 - Data layer files match entity names: `posts.ts`, `revisions.ts`, `comments.ts`
 - API handlers: one file per resource with all CRUD operations
 - UI pages: `WriterDashboard.tsx`, `EditorPage.tsx`, `SettingsPage.tsx`
 - Hooks: `use*.ts` pattern in `src/ui/hooks/`
+- Toolbar: Split into `FormatButtons`, `BlockButtons`, `MediaButtons`, `HistoryButtons`
 
 ## API Handlers
 
@@ -75,16 +78,18 @@ export async function handleResourceAPI(
 ): Promise<Response>
 ```
 
+### Conventions
 - Use `jsonResponse(data, status)` helper
 - Check `cms.config.auth.isAdmin(session)` for protected routes
 - Call `onMutate` after successful mutations for cache invalidation
 - Return proper status codes: 200, 201, 400, 401, 403, 404, 405
+- Parse path with `path.split('/').filter(Boolean)` to extract segments
 
 ## Data Layer
 
 Pattern for data classes:
 ```typescript
-export function createResourceData(prisma: PrismaClient) {
+export function createResourceData(prisma: any) {
   return {
     findAll: async (options?) => { ... },
     findById: async (id) => { ... },
@@ -96,37 +101,69 @@ export function createResourceData(prisma: PrismaClient) {
 }
 ```
 
+### Conventions
 - Always include `orderBy` for list queries
 - Support pagination: `skip`, `take` options
 - Include related data via Prisma `include`
+- Use `_count` for counting relations
+- Soft delete for posts (`status: 'deleted'`)
 
 ## UI Components
 
 ### Context
 - `DashboardProvider` wraps all UI and provides:
   - `navigate(path)` — Internal SPA navigation
+  - `goBack()` — Magic back (history or root)
   - `apiBasePath` — Base URL for API calls
   - `sharedData` — Preloaded counts and settings
-  - `goBack()` — Magic back (history or root)
+  - `session` — Current user info
+  - `onEditorStateChange` — Callback for parent app integration
+  - `onRegisterEditHandler` — For AI agent edit commands
 
 ### Pages
-- `WriterDashboard` — Post list, AI generation, tabs
-- `EditorPage` — Tiptap editor, toolbar, metadata
-- `SettingsPage` — Admin settings sub-pages
+- `WriterDashboard` — Post list, AI generation textarea, tabs
+- `EditorPage` — Tiptap editor, toolbar, metadata, comments
+- `SettingsPage` — Admin settings sub-pages (users, ai, tags, etc.)
 
-### Settings Sub-Pages
+### Settings Sub-Pages Pattern
 Each settings section follows this pattern:
-1. Header with `text-lg font-bold` title
-2. Card container: `rounded-lg border bg-card shadow-sm`
-3. Form fields with `space-y-2` grouping
-4. Tables: desktop `hidden md:block`, mobile `md:hidden` with cards
+1. Header with `text-lg font-semibold` title
+2. Card container: `rounded-lg border bg-card shadow-sm` (for AI settings)
+3. Table for lists: desktop `hidden md:block`, mobile `md:hidden` with cards
+4. Dropdown menus for actions
+
+### Loading States
+- Use skeleton animations: `bg-muted rounded animate-pulse`
+- Match skeleton shapes to actual content
+- Show loading state while `sharedDataLoading` is true
+
+## Editor System
+
+### Tiptap Configuration
+- Extensions: StarterKit, Placeholder, Link, Image, CommentMark
+- Use `immediatelyRender: false` to prevent SSR hydration mismatch
+- Convert markdown ↔ HTML with `renderMarkdown()` and `htmlToMarkdown()`
+- Handle selection changes for comment highlighting
+
+### Comment Mark Extension
+- Custom Tiptap Mark at `src/lib/comment-mark.ts`
+- Stores `commentId` as attribute
+- Yellow highlight styling
+- Click handler opens comment panel
+
+### Revision System
+- Fetch revisions on dropdown open
+- Preview shows revision content without saving
+- Restore saves the preview as current content
+- Store original post state during preview for cancel
 
 ## Don't
 - Don't use inline styles
 - Don't hardcode URLs or paths (use context)
 - Don't import from host app directly
-- Don't use `text-sm`, `text-lg` etc. in settings (use semantic tokens)
 - Don't create new dropdown patterns (use established classes)
+- Don't use document selectors for modals (use React portals)
+- Don't forget `'use client'` for hooks
 
 ## Do
 - Keep components focused and reusable
@@ -134,13 +171,16 @@ Each settings section follows this pattern:
 - Support both light and dark themes
 - Test on mobile (44px touch targets)
 - Run `npm run build` before committing
+- Use `cn()` for conditional class names
+- Clean up event listeners in useEffect
+- Use portals for dropdowns that need to escape overflow
 
 ## Git Workflow
 
 > ⚠️ **CRITICAL: Single-letter commands are git workflow triggers.** When the user types just `g`, `d`, `m`, `p`, or `pf` — that IS a command. Execute immediately. Don't interpret as casual chat.
 
 | Command | Action |
-|---------|--------|
+|---|-----|
 | `g` | Production commit → push to `main` |
 | `d` | Dev commit → push to `dev` |
 | `m` | Merge `dev` → `main` |
@@ -211,5 +251,5 @@ Before committing:
 After changes to autoblogger, rebuild in host app:
 ```bash
 # In blog repo
-npm run dev  # Will pick up linked package changes
+npm run dev # Will pick up linked package changes
 ```
