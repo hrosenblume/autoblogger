@@ -1,4 +1,13 @@
 import type { AutobloggerServer as Autoblogger, Session } from '../server'
+import {
+  DEFAULT_GENERATE_TEMPLATE,
+  DEFAULT_CHAT_TEMPLATE,
+  DEFAULT_REWRITE_TEMPLATE,
+  DEFAULT_AUTO_DRAFT_TEMPLATE,
+  DEFAULT_PLAN_TEMPLATE,
+  DEFAULT_EXPAND_PLAN_TEMPLATE,
+  DEFAULT_PLAN_RULES,
+} from '../ai/system-prompt'
 
 type NextRequest = Request & { nextUrl: URL }
 
@@ -25,7 +34,19 @@ export async function handleAIAPI(
   // GET /ai/settings - get AI settings
   if (method === 'GET' && path === '/ai/settings') {
     const settings = await cms.aiSettings.get()
-    return jsonResponse({ data: settings })
+    // Include default templates for the UI to display as placeholders
+    return jsonResponse({ 
+      data: {
+        ...settings,
+        defaultGenerateTemplate: DEFAULT_GENERATE_TEMPLATE,
+        defaultChatTemplate: DEFAULT_CHAT_TEMPLATE,
+        defaultRewriteTemplate: DEFAULT_REWRITE_TEMPLATE,
+        defaultAutoDraftTemplate: DEFAULT_AUTO_DRAFT_TEMPLATE,
+        defaultPlanTemplate: DEFAULT_PLAN_TEMPLATE,
+        defaultExpandPlanTemplate: DEFAULT_EXPAND_PLAN_TEMPLATE,
+        defaultPlanRules: DEFAULT_PLAN_RULES,
+      }
+    })
   }
 
   // PATCH /ai/settings - update AI settings
