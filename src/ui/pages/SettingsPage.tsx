@@ -495,7 +495,8 @@ function AISettingsContent() {
       fetch(`${apiBasePath}/settings`).then(res => res.ok ? res.json() : Promise.reject()),
     ])
       .then(([aiRes, settingsRes]) => {
-        const data = aiRes.data || {}
+        // Handle both wrapped { data: {...} } and unwrapped {...} response formats
+        const data = aiRes.data || aiRes || {}
         setRules(data.rules || '')
         setChatRules(data.chatRules || '')
         setRewriteRules(data.rewriteRules || '')
