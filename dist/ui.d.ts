@@ -239,7 +239,7 @@ interface EssayContext {
     subtitle?: string;
     markdown: string;
 }
-type ChatMode = 'ask' | 'agent' | 'plan';
+type ChatMode = 'ask' | 'agent' | 'plan' | 'search';
 interface EssayEdit {
     type: 'replace_all' | 'replace_section' | 'insert' | 'delete';
     title?: string;

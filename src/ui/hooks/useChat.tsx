@@ -22,7 +22,7 @@ export interface EssayContext {
   markdown: string
 }
 
-export type ChatMode = 'ask' | 'agent' | 'plan'
+export type ChatMode = 'ask' | 'agent' | 'plan' | 'search'
 
 export interface EssayEdit {
   type: 'replace_all' | 'replace_section' | 'insert' | 'delete'
