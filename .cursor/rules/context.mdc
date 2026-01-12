@@ -442,6 +442,23 @@ Templates use `{{PLACEHOLDER}}` syntax:
 | `npm run typecheck` | TypeScript check |
 | `npm run lint` | ESLint check |
 
+## CI/CD
+
+### GitHub Actions: Auto-publish to npm
+
+Located at `.github/workflows/publish.yml`. Triggers on every push to `main`:
+
+1. Checks out code and sets up Node.js 20
+2. Installs dependencies and builds
+3. Compares current `package.json` version with published npm version
+4. **Only publishes if version changed** — prevents duplicate publishes
+5. Requires `NPM_TOKEN` secret configured in GitHub repo settings
+
+To release a new version:
+1. Bump version in `package.json`
+2. Commit and push to `main`
+3. GitHub Actions automatically publishes to npm
+
 ## Build Output
 
 ```
