@@ -178,6 +178,9 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
           navigate(`/editor/${data.data.slug}`)
         }
       }
+    } catch (err) {
+      console.error('Save failed:', err)
+      throw err
     } finally {
       if (!silent) {
         setSaving(false)
@@ -194,14 +197,18 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       const method = post.id ? 'PATCH' : 'POST'
       const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`
 
+      // Use setPost's callback form to get current post state without adding post to deps
+      let currentPost: typeof post
+      setPost(p => { currentPost = p; return p })
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...post,
-          title: post.title || 'Untitled',
+          ...currentPost!,
+          title: currentPost!.title || 'Untitled',
           status: 'published',
-          ...Object.fromEntries(fields.map(f => [f.name, post[f.name]]))
+          ...Object.fromEntries(fields.map(f => [f.name, currentPost![f.name]]))
         }),
       })
 
@@ -212,7 +219,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       setSaving(false)
       setSavingAs(null)
     }
-  }, [post, apiBasePath, fields, navigate])
+  }, [post.id, apiBasePath, fields, navigate])
 
   // Comments hook - handles all comment logic
   const comments = useComments({
@@ -288,8 +295,16 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   }, [post.title, post.subtitle, post.markdown])
 
   // Report editor state to parent app (for navbar save button etc.)
+  // Use refs for callbacks to avoid triggering effect re-runs
+  const savePostRef = useRef(savePost)
+  const handlePublishRef = useRef(handlePublish)
+  const onEditorStateChangeRef = useRef(onEditorStateChange)
+  useEffect(() => { savePostRef.current = savePost }, [savePost])
+  useEffect(() => { handlePublishRef.current = handlePublish }, [handlePublish])
+  useEffect(() => { onEditorStateChangeRef.current = onEditorStateChange }, [onEditorStateChange])
+  
   useEffect(() => {
-    if (!onEditorStateChange) return
+    if (!onEditorStateChangeRef.current) return
 
     const confirmLeave = () => {
       if (hasUnsavedChanges) {
@@ -298,15 +313,15 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       return true
     }
 
-    onEditorStateChange({
+    onEditorStateChangeRef.current({
       hasUnsavedChanges,
       status: post.status,
       savingAs,
       onSave: (status) => {
         if (status === 'draft') {
-          savePost()
+          savePostRef.current()
         } else {
-          handlePublish()
+          handlePublishRef.current()
         }
       },
       confirmLeave,
@@ -319,9 +334,9 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     })
 
     return () => {
-      onEditorStateChange(null)
+      onEditorStateChangeRef.current?.(null)
     }
-  }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown, onEditorStateChange, savePost, handlePublish])
+  }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown])
 
   // Register edit handler for AI agent mode
   useEffect(() => {

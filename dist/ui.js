@@ -6896,6 +6896,9 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           navigate(`/editor/${data.data.slug}`);
         }
       }
+    } catch (err) {
+      console.error("Save failed:", err);
+      throw err;
     } finally {
       if (!silent) {
         setSaving(false);
@@ -6910,14 +6913,19 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     try {
       const method = post.id ? "PATCH" : "POST";
       const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`;
+      let currentPost;
+      setPost((p) => {
+        currentPost = p;
+        return p;
+      });
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...post,
-          title: post.title || "Untitled",
+          ...currentPost,
+          title: currentPost.title || "Untitled",
           status: "published",
-          ...Object.fromEntries(fields.map((f) => [f.name, post[f.name]]))
+          ...Object.fromEntries(fields.map((f) => [f.name, currentPost[f.name]]))
         })
       });
       if (res.ok) {
@@ -6927,7 +6935,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       setSaving(false);
       setSavingAs(null);
     }
-  }, [post, apiBasePath, fields, navigate]);
+  }, [post.id, apiBasePath, fields, navigate]);
   const comments = useComments({
     postId: post.id || null,
     editor,
@@ -6976,23 +6984,35 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     const current = JSON.stringify({ title: post.title, subtitle: post.subtitle, markdown: post.markdown });
     setHasUnsavedChanges(current !== savedContent.current && savedContent.current !== "");
   }, [post.title, post.subtitle, post.markdown]);
+  const savePostRef = (0, import_react16.useRef)(savePost);
+  const handlePublishRef = (0, import_react16.useRef)(handlePublish);
+  const onEditorStateChangeRef = (0, import_react16.useRef)(onEditorStateChange);
   (0, import_react16.useEffect)(() => {
-    if (!onEditorStateChange) return;
+    savePostRef.current = savePost;
+  }, [savePost]);
+  (0, import_react16.useEffect)(() => {
+    handlePublishRef.current = handlePublish;
+  }, [handlePublish]);
+  (0, import_react16.useEffect)(() => {
+    onEditorStateChangeRef.current = onEditorStateChange;
+  }, [onEditorStateChange]);
+  (0, import_react16.useEffect)(() => {
+    if (!onEditorStateChangeRef.current) return;
     const confirmLeave = () => {
       if (hasUnsavedChanges) {
         return confirm("You have unsaved changes. Leave anyway?");
       }
       return true;
     };
-    onEditorStateChange({
+    onEditorStateChangeRef.current({
       hasUnsavedChanges,
       status: post.status,
       savingAs,
       onSave: (status) => {
         if (status === "draft") {
-          savePost();
+          savePostRef.current();
         } else {
-          handlePublish();
+          handlePublishRef.current();
         }
       },
       confirmLeave,
@@ -7004,9 +7024,9 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       }
     });
     return () => {
-      onEditorStateChange(null);
+      onEditorStateChangeRef.current?.(null);
     };
-  }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown, onEditorStateChange, savePost, handlePublish]);
+  }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown]);
   (0, import_react16.useEffect)(() => {
     if (!onRegisterEditHandler) return;
     const handleEdit = (edit) => {
