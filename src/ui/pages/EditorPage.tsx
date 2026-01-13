@@ -8,6 +8,7 @@ import { TiptapEditor, type SelectionState } from '../components/TiptapEditor'
 import { CommentsPanel } from '../components/CommentsPanel'
 import { TagsSection } from '../components/TagsSection'
 import { useComments } from '../hooks/useComments'
+import { useChatContextOptional } from '../hooks/useChat'
 import { formatSavedTime, countWords } from '../../lib/format'
 
 interface Tag {
@@ -105,7 +106,11 @@ interface EditorPageProps {
 }
 
 export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }: EditorPageProps) {
-  const { apiBasePath, styles, fields, navigate, basePath, onRegisterEditHandler } = useDashboardContext()
+  const { apiBasePath, styles, fields, navigate, basePath, onRegisterEditHandler, sharedData } = useDashboardContext()
+  const postUrlPattern = sharedData?.settings?.postUrlPattern ?? '/e/{slug}'
+  // Extract prefix from pattern (everything before {slug})
+  const urlPrefix = postUrlPattern.split('{slug}')[0]
+  const chatContext = useChatContextOptional()
   // Use prop callback (passed from DashboardLayout for internal save button)
   const onEditorStateChange = onEditorStateChangeProp
   const [post, setPost] = useState<Post>({
@@ -122,6 +127,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [generating, setGenerating] = useState(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const savedContent = useRef<string>('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const hasTriggeredGeneration = useRef(false)
@@ -241,6 +247,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     web?: string
     thinking?: string
     comment?: string
+    fromPlan?: string
   }>({})
 
   useEffect(() => {
@@ -253,6 +260,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
         web: params.get('web') || undefined,
         thinking: params.get('thinking') || undefined,
         comment: params.get('comment') || undefined,
+        fromPlan: params.get('fromPlan') || undefined,
       })
     }
   }, [])
@@ -412,6 +420,184 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     }
   }, [post.markdown, onRegisterEditHandler])
 
+  // Expand plan into full essay - shared logic for both handler and URL param
+  const expandPlanToEssay = useCallback(async (plan: string, wordCount: number = 800) => {
+    // Don't expand if already generating or if there's content and user doesn't confirm
+    if (generating) return
+    if (post.title || post.subtitle || post.markdown) {
+      if (!confirm('This will replace your current content with a new essay. Continue?')) {
+        return
+      }
+    }
+
+    // Create abort controller for this generation
+    const abortController = new AbortController()
+    abortControllerRef.current = abortController
+
+    setGenerating(true)
+
+    try {
+      const res = await fetch(`${apiBasePath}/ai/generate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'expand_plan',
+          plan,
+          wordCount,
+          model: chatContext?.selectedModel,
+        }),
+        signal: abortController.signal,
+      })
+
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ error: 'Generation failed' }))
+        console.error('Plan expansion failed:', error)
+        return
+      }
+
+      // Consume SSE stream with real-time title/subtitle parsing (same as idea generation)
+      const reader = res.body?.getReader()
+      if (!reader) return
+
+      const decoder = new TextDecoder()
+      let fullContent = ''
+      let titleExtracted = false
+      let subtitleExtracted = false
+      let bodyStartIndex = 0
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        const sseLines = chunk.split('\n')
+
+        for (const line of sseLines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6)
+            if (data === '[DONE]') continue
+            try {
+              const parsed = JSON.parse(data)
+              if (parsed.text) {
+                fullContent += parsed.text
+                
+                // Parse title as soon as first line is complete
+                if (!titleExtracted && fullContent.includes('\n')) {
+                  const firstLine = fullContent.split('\n')[0]
+                  if (firstLine.startsWith('# ')) {
+                    const title = firstLine.slice(2).trim()
+                    setPost(prev => ({ ...prev, title }))
+                    titleExtracted = true
+                    bodyStartIndex = firstLine.length + 1
+                  }
+                }
+                
+                // Parse subtitle as soon as second line is complete
+                if (titleExtracted && !subtitleExtracted) {
+                  const afterTitle = fullContent.slice(bodyStartIndex)
+                  if (afterTitle.includes('\n')) {
+                    // Find first non-empty line (skip blank lines between title and subtitle)
+                    const lines = afterTitle.split('\n')
+                    let lineOffset = 0
+                    let rawSubtitleLine = ''
+                    for (let i = 0; i < lines.length - 1; i++) { // -1 to ensure there's a newline after
+                      if (lines[i].trim()) {
+                        rawSubtitleLine = lines[i]
+                        break
+                      }
+                      lineOffset += lines[i].length + 1 // +1 for newline
+                    }
+                    
+                    if (rawSubtitleLine) {
+                      const subtitleLine = rawSubtitleLine.trim()
+                      const italicMatch = subtitleLine.match(/^\*(.+)\*$/) || subtitleLine.match(/^_(.+)_$/)
+                      if (italicMatch) {
+                        const subtitle = italicMatch[1]
+                        setPost(prev => ({ ...prev, subtitle }))
+                        subtitleExtracted = true
+                        bodyStartIndex += lineOffset + rawSubtitleLine.length + 1
+                      } else {
+                        // Non-italic line found - treat as body start
+                        subtitleExtracted = true
+                        bodyStartIndex += lineOffset // Start from this line
+                      }
+                    }
+                  }
+                }
+                
+                // Update markdown after title/subtitle are parsed
+                if (titleExtracted) {
+                  const bodyContent = fullContent.slice(bodyStartIndex).trim()
+                  setPost(prev => ({ ...prev, markdown: bodyContent }))
+                }
+              }
+            } catch {
+              // Ignore parse errors for incomplete chunks
+            }
+          }
+        }
+      }
+      
+      // Final cleanup
+      const finalBody = fullContent.slice(bodyStartIndex).trim()
+      setPost(prev => ({
+        ...prev,
+        markdown: finalBody,
+      }))
+      
+      // Add to chat history
+      if (chatContext?.addMessage) {
+        chatContext.addMessage('assistant', '✓ Essay drafted from plan. You can now edit it or ask me questions about it.')
+      }
+    } catch (err) {
+      // Don't log abort errors - they're expected when user cancels
+      if (err instanceof Error && err.name === 'AbortError') {
+        // Generation was cancelled, keep whatever was generated
+        if (chatContext?.addMessage) {
+          chatContext.addMessage('assistant', '⏹ Generation stopped. You can continue editing what was generated.')
+        }
+      } else {
+        console.error('Plan expansion error:', err)
+      }
+    } finally {
+      setGenerating(false)
+      abortControllerRef.current = null
+    }
+  }, [generating, post.title, post.subtitle, post.markdown, apiBasePath, chatContext])
+
+  // Register expand plan handler for chat context
+  useEffect(() => {
+    if (!chatContext?.registerExpandPlanHandler) return
+
+    chatContext.registerExpandPlanHandler(expandPlanToEssay)
+
+    return () => {
+      chatContext.registerExpandPlanHandler(null)
+    }
+  }, [chatContext, expandPlanToEssay])
+
+  // Handle fromPlan URL param - load pending plan from sessionStorage and expand it
+  const hasTriggeredPlanExpansion = useRef(false)
+  useEffect(() => {
+    if (urlParams.fromPlan && !slug && !loading && !hasTriggeredPlanExpansion.current) {
+      hasTriggeredPlanExpansion.current = true
+      
+      // Get pending plan from sessionStorage
+      const pendingPlan = sessionStorage.getItem('pendingPlan')
+      if (pendingPlan) {
+        sessionStorage.removeItem('pendingPlan')
+        
+        // Clear the URL param
+        if (typeof window !== 'undefined') {
+          window.history.replaceState({}, '', `${basePath}/editor`)
+        }
+        
+        // Expand the plan
+        expandPlanToEssay(pendingPlan, 800)
+      }
+    }
+  }, [urlParams.fromPlan, slug, loading, basePath, expandPlanToEssay])
+
   // Auto-save drafts (3s debounce)
   // Deps include content fields to reset timer on each keystroke (debounce behavior)
   useEffect(() => {
@@ -438,23 +624,50 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       if (e.key === 'Escape') {
         if (previewingRevision) {
           cancelRevisionPreview()
+          e.stopImmediatePropagation()
           return
         }
-        if (generating) return
+        // If generating, stop the generation but stay on the page
+        if (generating) {
+          if (abortControllerRef.current) {
+            abortControllerRef.current.abort()
+          }
+          e.stopImmediatePropagation()
+          return
+        }
         if (hasUnsavedChanges && !confirm('You have unsaved changes. Leave anyway?')) return
         navigate('/')
       }
     }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    window.addEventListener('keydown', handler, true) // Use capture to run before dashboard handler
+    return () => window.removeEventListener('keydown', handler, true)
   }, [hasUnsavedChanges, generating, navigate, previewingRevision])
 
   // Auto-generate from idea param
   useEffect(() => {
     if (urlParams.idea && !slug && !loading && !hasTriggeredGeneration.current) {
+      // Check if there's existing content that would be overwritten
+      if (post.title || post.subtitle || post.markdown) {
+        if (!confirm('This will replace your current content. Continue?')) {
+          hasTriggeredGeneration.current = true // Prevent re-triggering
+          // Clear the URL params
+          if (typeof window !== 'undefined') {
+            window.history.replaceState({}, '', `${basePath}/editor`)
+          }
+          return
+        }
+      }
+      
       hasTriggeredGeneration.current = true
+      
+      // Create abort controller for this generation
+      const abortController = new AbortController()
+      abortControllerRef.current = abortController
+      
       setGenerating(true)
 
+      // Store these values before clearing URL params
+      const generationPrompt = urlParams.idea
       const wordCount = urlParams.length ? parseInt(urlParams.length) : 500
 
       // Clear the URL params immediately
@@ -471,7 +684,10 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               prompt: urlParams.idea,
               wordCount,
               model: urlParams.model,
+              useWebSearch: urlParams.web === '1',
+              useThinking: urlParams.thinking === '1',
             }),
+            signal: abortController.signal,
           })
 
           if (!res.ok) {
@@ -521,23 +737,41 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                     if (titleExtracted && !subtitleExtracted) {
                       const afterTitle = fullContent.slice(bodyStartIndex)
                       if (afterTitle.includes('\n')) {
-                        const secondLine = afterTitle.split('\n')[0].trim()
-                        const italicMatch = secondLine.match(/^\*(.+)\*$/) || secondLine.match(/^_(.+)_$/)
-                        if (italicMatch) {
-                          const subtitle = italicMatch[1]
-                          setPost(prev => ({ ...prev, subtitle }))
-                          subtitleExtracted = true
-                          bodyStartIndex += secondLine.length + 1 // +1 for newline
-                        } else if (secondLine) {
-                          // Second line exists but isn't a subtitle - body starts here
-                          subtitleExtracted = true
+                        // Find first non-empty line (skip blank lines between title and subtitle)
+                        const lines = afterTitle.split('\n')
+                        let lineOffset = 0
+                        let rawSubtitleLine = ''
+                        for (let i = 0; i < lines.length - 1; i++) { // -1 to ensure there's a newline after
+                          if (lines[i].trim()) {
+                            rawSubtitleLine = lines[i]
+                            break
+                          }
+                          lineOffset += lines[i].length + 1 // +1 for newline
+                        }
+                        
+                        if (rawSubtitleLine) {
+                          const subtitleLine = rawSubtitleLine.trim()
+                          const italicMatch = subtitleLine.match(/^\*(.+)\*$/) || subtitleLine.match(/^_(.+)_$/)
+                          if (italicMatch) {
+                            const subtitle = italicMatch[1]
+                            setPost(prev => ({ ...prev, subtitle }))
+                            subtitleExtracted = true
+                            bodyStartIndex += lineOffset + rawSubtitleLine.length + 1
+                          } else {
+                            // Non-italic line found - treat as body start
+                            subtitleExtracted = true
+                            bodyStartIndex += lineOffset // Start from this line
+                          }
                         }
                       }
                     }
                     
-                    // Update markdown with body content only (excluding title/subtitle)
-                    const bodyContent = fullContent.slice(bodyStartIndex).trim()
-                    setPost(prev => ({ ...prev, markdown: bodyContent }))
+                    // Only update markdown AFTER title/subtitle are parsed to avoid "moving up" effect
+                    // This ensures title goes directly to title field, not through markdown first
+                    if (titleExtracted) {
+                      const bodyContent = fullContent.slice(bodyStartIndex).trim()
+                      setPost(prev => ({ ...prev, markdown: bodyContent }))
+                    }
                   }
                 } catch {
                   // Ignore parse errors for incomplete chunks
@@ -552,16 +786,37 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
             ...prev,
             markdown: finalBody,
           }))
+          
+          // Add generation status to chat history (just a simple confirmation, not the full essay)
+          if (chatContext?.addMessage) {
+            chatContext.addMessage('user', `Generate essay: ${generationPrompt}`)
+            chatContext.addMessage('assistant', '✓ Essay generated successfully. You can now edit it in the editor or ask me questions about it.')
+          }
         } catch (err) {
-          console.error('Generation error:', err)
+          // Don't log abort errors - they're expected when user cancels
+          if (err instanceof Error && err.name === 'AbortError') {
+            // Generation was cancelled, keep whatever was generated
+            if (chatContext?.addMessage) {
+              chatContext.addMessage('user', `Generate essay: ${generationPrompt}`)
+              chatContext.addMessage('assistant', '⏹ Generation stopped. You can continue editing what was generated.')
+            }
+          } else {
+            console.error('Generation error:', err)
+            // Add error message to chat if generation was interrupted
+            if (chatContext?.addMessage) {
+              chatContext.addMessage('user', `Generate essay: ${generationPrompt}`)
+              chatContext.addMessage('assistant', '⚠ Generation started but was interrupted. You can try again or continue editing what was generated.')
+            }
+          }
         } finally {
           setGenerating(false)
+          abortControllerRef.current = null
         }
       }
 
       runGenerate()
     }
-  }, [urlParams, slug, loading, apiBasePath, basePath])
+  }, [urlParams, slug, loading, apiBasePath, basePath, chatContext])
 
   // Fetch revisions
   const fetchRevisions = useCallback(async () => {
@@ -638,7 +893,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
           onMarkdownChange={() => {}}
           loading={true}
         />
-        <main className="flex-1 overflow-auto pb-20">
+        <main className="flex-1 overflow-auto pb-20 pt-[41px]">
           <ContentSkeleton styles={styles} />
         </main>
       </div>
@@ -700,8 +955,8 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
         />
       )}
 
-      {/* Editor Content */}
-      <main className="flex-1 overflow-auto pb-20 overscroll-contain">
+      {/* Editor Content - pt-[41px] accounts for fixed toolbar height when visible */}
+      <main className={`flex-1 overflow-auto pb-20 overscroll-contain ${!previewingRevision ? 'pt-[41px]' : ''}`}>
         <article className={`${styles.container} pt-12 pb-24 mx-auto`}>
           {/* Header - Title & Subtitle */}
           <header className="space-y-2 mb-8">
@@ -787,7 +1042,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-500 w-14">URL</span>
-                  <span className="text-gray-400">/e/</span>
+                  <span className="text-gray-400">{urlPrefix}</span>
                   {isPublished ? (
                     <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
                       {post.slug}

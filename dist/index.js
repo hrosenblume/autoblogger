@@ -35,39 +35,136 @@ var DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, 
 var init_prompts = __esm({
   "src/ai/prompts.ts"() {
     "use strict";
-    DEFAULT_GENERATE_TEMPLATE = `You are an expert essay writer. Write engaging, thoughtful content.
+    DEFAULT_GENERATE_TEMPLATE = `<system>
+<role>Expert essay writer creating engaging, thoughtful content</role>
 
+<critical>
+ALWAYS output a complete essay. NEVER respond conversationally.
+- Do NOT ask questions or request clarification
+- Do NOT say "Here is your essay" or similar preamble
+- Do NOT explain what you're going to write
+- If the prompt is vague, make creative choices and proceed
+- Output ONLY the essay in markdown format
+</critical>
+
+<rules>
 {{RULES}}
+</rules>
 
-Write approximately {{WORD_COUNT}} words.`;
-    DEFAULT_CHAT_TEMPLATE = `You are a helpful writing assistant.
+<constraints>
+<word_count>{{WORD_COUNT}}</word_count>
+</constraints>
 
+<output_format>
+CRITICAL: Your response MUST start with exactly this format:
+
+Line 1: # [Your Title Here]
+Line 2: *[Your subtitle here]*
+Line 3: (blank line)
+Line 4+: Essay body in markdown
+
+<title_guidelines>
+- Be SPECIFIC, not generic (avoid "The Power of", "Why X Matters", "A Guide to")
+- Include a concrete detail, angle, or unexpected element
+- Create curiosity or make a bold claim
+- 5-12 words ideal
+</title_guidelines>
+
+<subtitle_guidelines>
+- One sentence that hooks the reader
+- Tease the main argument or reveal a key insight
+- Create tension, curiosity, or promise value
+- Make readers want to continue reading
+</subtitle_guidelines>
+</output_format>
+</system>`;
+    DEFAULT_CHAT_TEMPLATE = `<system>
+<role>Helpful writing assistant for essay creation and editing</role>
+
+<rules>
 {{CHAT_RULES}}
+</rules>
 
-{{ESSAY_CONTEXT}}`;
-    DEFAULT_REWRITE_TEMPLATE = `You are a writing assistant that improves text.
+<context>
+{{ESSAY_CONTEXT}}
+</context>
 
+<behavior>
+- Be concise and actionable
+- When suggesting edits, be specific about what to change
+- Match the author's voice and style when writing
+- Ask clarifying questions if the request is ambiguous
+</behavior>
+</system>`;
+    DEFAULT_REWRITE_TEMPLATE = `<system>
+<role>Writing assistant that improves text quality</role>
+
+<rules>
 {{REWRITE_RULES}}
+</rules>
 
-Keep the same meaning. Improve clarity and flow.`;
-    DEFAULT_AUTO_DRAFT_TEMPLATE = `You are an expert essay writer. Write an engaging essay based on the news article.
+<behavior>
+- Preserve the original meaning exactly
+- Improve clarity, flow, and readability
+- Fix grammar and punctuation issues
+- Maintain the author's voice and tone
+- Output only the improved text, no explanations
+</behavior>
+</system>`;
+    DEFAULT_AUTO_DRAFT_TEMPLATE = `<system>
+<role>Expert essay writer creating engaging content from news articles</role>
 
+<auto_draft_rules>
 {{AUTO_DRAFT_RULES}}
+</auto_draft_rules>
 
+<writing_rules>
 {{RULES}}
+</writing_rules>
 
-Write approximately {{AUTO_DRAFT_WORD_COUNT}} words.`;
-    DEFAULT_PLAN_TEMPLATE = `You are a writing assistant that outputs essay outlines.
+<constraints>
+<word_count>{{AUTO_DRAFT_WORD_COUNT}}</word_count>
+</constraints>
 
-Wrap your entire response in <plan> tags. Output nothing outside the tags.
+<output_format>
+CRITICAL: Your response MUST start with exactly this format:
 
+Line 1: # [Your Title Here]
+Line 2: *[Your subtitle here]*
+Line 3: (blank line)
+Line 4+: Essay body in markdown
+
+<title_guidelines>
+- Be SPECIFIC about the news angle, not generic
+- Include a concrete detail or unexpected element
+- Create curiosity or make a bold claim
+- 5-12 words ideal
+</title_guidelines>
+
+<subtitle_guidelines>
+- One sentence that hooks the reader
+- Tease the main argument or unique perspective
+- Create tension, curiosity, or promise value
+</subtitle_guidelines>
+</output_format>
+</system>`;
+    DEFAULT_PLAN_TEMPLATE = `<system>
+<role>Writing assistant that creates essay outlines</role>
+
+<critical>
+Wrap your ENTIRE response in <plan> tags. Output NOTHING outside the tags.
+</critical>
+
+<rules>
 {{PLAN_RULES}}
+</rules>
 
-## Style Reference
-{{STYLE_EXAMPLES}}`;
-    DEFAULT_PLAN_RULES = `STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bullets.
-
-Output format:
+<style_reference>
+{{STYLE_EXAMPLES}}
+</style_reference>
+</system>`;
+    DEFAULT_PLAN_RULES = `<format>
+STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bullets.
 
 <plan>
 # Essay Title
@@ -83,32 +180,65 @@ Output format:
 ## Section Name
 - Key point
 </plan>
+</format>
 
-Constraints:
+<constraints>
 - 4-6 section headings (## lines)
 - 1-3 bullets per section \u2014 NEVER 4 or more
 - Bullets are short phrases, not sentences
 - No prose, no paragraphs, no explanations
-- When revising, output the complete updated plan`;
-    DEFAULT_EXPAND_PLAN_TEMPLATE = `You are a writing assistant that expands essay outlines into full drafts.
+- When revising, output the complete updated plan
+</constraints>
 
-## Writing Rules (Follow these exactly)
+<title_guidelines>
+- Be SPECIFIC about the essay's angle
+- Include a concrete detail or unexpected element
+- Avoid generic patterns like "The Power of", "Why X Matters"
+- 5-12 words ideal
+</title_guidelines>
+
+<subtitle_guidelines>
+- One sentence that previews the main argument
+- Create curiosity or make a bold claim
+</subtitle_guidelines>`;
+    DEFAULT_EXPAND_PLAN_TEMPLATE = `<system>
+<role>Writing assistant that expands essay outlines into full drafts</role>
+
+<writing_rules>
 {{RULES}}
+</writing_rules>
 
-## Style Reference (Write in this voice)
+<style_reference>
 {{STYLE_EXAMPLES}}
+</style_reference>
 
----
-
-Write an essay following this exact structure:
-
+<plan_to_expand>
 {{PLAN}}
+</plan_to_expand>
 
-Rules:
-- Use the section headers as H2 headings
+<output_format>
+CRITICAL: Your response MUST start with exactly this format:
+
+Line 1: # [Title from plan, refined if needed]
+Line 2: *[Subtitle from plan, refined if needed]*
+Line 3: (blank line)
+Line 4+: Essay body with ## section headings
+
+<requirements>
+- Use the section headers from the plan as H2 headings
 - Expand each section's bullet points into full paragraphs
 - Match the author's voice and style from the examples
-- Output ONLY markdown. No preamble, no "Here is...", no explanations. Just the essay content.`;
+- Output ONLY markdown \u2014 no preamble, no "Here is...", no explanations
+</requirements>
+
+<title_refinement>
+If the plan title is generic, improve it to be:
+- More specific and concrete
+- Curiosity-inducing or bold
+- 5-12 words
+</title_refinement>
+</output_format>
+</system>`;
   }
 });
 
@@ -157,69 +287,212 @@ var init_models = __esm({
 });
 
 // src/ai/provider.ts
+var provider_exports = {};
+__export(provider_exports, {
+  createStream: () => createStream
+});
+async function fetchSearchResults(query, openaiKey) {
+  try {
+    console.log("[Web Search] Fetching search results for:", query.slice(0, 100));
+    const openai = new import_openai.default({
+      ...openaiKey && { apiKey: openaiKey }
+    });
+    const response = await openai.responses.create({
+      model: "gpt-5-mini",
+      input: `You are a research assistant. Provide a concise summary of the most relevant and recent information from the web about the following query. Include key facts, dates, and sources when available. Keep your response under 500 words.
+
+Query: ${query}`,
+      tools: [{ type: "web_search" }]
+    });
+    const result = response.output_text || null;
+    console.log("[Web Search] Got results:", result ? `${result.length} chars` : "null");
+    return result;
+  } catch (error) {
+    console.error("[Web Search] Failed:", error);
+    return null;
+  }
+}
+function extractSearchQuery(messages) {
+  const userMessages = messages.filter((m) => m.role === "user");
+  return userMessages[userMessages.length - 1]?.content || "";
+}
 async function createStream(options) {
   const modelConfig = getModel(options.model);
   if (!modelConfig) {
     throw new Error(`Unknown model: ${options.model}`);
   }
+  let searchContext = "";
+  if (options.useWebSearch && modelConfig.provider === "anthropic") {
+    const query = extractSearchQuery(options.messages);
+    if (query) {
+      const searchResults = await fetchSearchResults(query, options.openaiKey);
+      if (searchResults) {
+        searchContext = `
+
+<web_search_results>
+${searchResults}
+</web_search_results>
+
+Use the search results above to inform your response with current, accurate information.`;
+      }
+    }
+  }
   if (modelConfig.provider === "anthropic") {
-    if (!options.anthropicKey) {
-      throw new Error("Anthropic API key not configured");
-    }
-    return createAnthropicStream(options, modelConfig.modelId);
+    return createAnthropicStream(options, modelConfig.modelId, searchContext);
   } else {
-    if (!options.openaiKey) {
-      throw new Error("OpenAI API key not configured");
-    }
-    return createOpenAIStream(options, modelConfig.modelId);
+    return createOpenAIStream(options, modelConfig.modelId, options.useWebSearch);
   }
 }
-async function createAnthropicStream(options, modelId) {
-  const anthropic = new import_sdk.default({ apiKey: options.anthropicKey });
-  const systemMessage = options.messages.find((m) => m.role === "system")?.content || "";
+async function createAnthropicStream(options, modelId, searchContext = "") {
+  const anthropic = new import_sdk.default({
+    ...options.anthropicKey && { apiKey: options.anthropicKey }
+  });
+  const systemMessage = (options.messages.find((m) => m.role === "system")?.content || "") + searchContext;
   const chatMessages = options.messages.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content }));
-  const stream = await anthropic.messages.stream({
+  const requestParams = {
     model: modelId,
     max_tokens: options.maxTokens || 4096,
     system: systemMessage,
     messages: chatMessages
-  });
-  return new ReadableStream({
-    async start(controller) {
-      for await (const event of stream) {
-        if (event.type === "content_block_delta" && event.delta.type === "text_delta") {
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text: event.delta.text })}
+  };
+  if (options.useThinking && (modelId.includes("claude-sonnet") || modelId.includes("claude-opus"))) {
+    requestParams.thinking = {
+      type: "enabled",
+      budget_tokens: 1e4
+    };
+    requestParams.max_tokens = Math.max(requestParams.max_tokens, 16e3);
+  }
+  try {
+    const stream = await anthropic.messages.stream(requestParams);
+    return new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of stream) {
+            if (event.type === "content_block_delta") {
+              const delta = event.delta;
+              if (delta.type === "text_delta" && delta.text) {
+                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text: delta.text })}
 
 `));
+              } else if (delta.type === "thinking_delta" && delta.thinking) {
+                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ thinking: delta.thinking })}
+
+`));
+              }
+            }
+          }
+          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch (streamError) {
+          const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
+          console.error("[Anthropic Stream Error]", streamError);
+          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
+
+`));
+          controller.close();
         }
       }
-      controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-      controller.close();
-    }
-  });
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Anthropic API error";
+    console.error("[Anthropic API Error]", error);
+    throw new Error(errorMessage);
+  }
 }
-async function createOpenAIStream(options, modelId) {
-  const openai = new import_openai.default({ apiKey: options.openaiKey });
-  const stream = await openai.chat.completions.create({
+async function createOpenAIStream(options, modelId, useWebSearch = false) {
+  const openai = new import_openai.default({
+    ...options.openaiKey && { apiKey: options.openaiKey }
+  });
+  if (useWebSearch) {
+    return createOpenAIResponsesStream(openai, options, modelId);
+  }
+  const requestParams = {
     model: modelId,
     messages: options.messages,
-    max_tokens: options.maxTokens || 4096,
+    max_completion_tokens: options.maxTokens || 4096,
     stream: true
-  });
-  return new ReadableStream({
-    async start(controller) {
-      for await (const chunk of stream) {
-        const text = chunk.choices[0]?.delta?.content;
-        if (text) {
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text })}
+  };
+  try {
+    const stream = await openai.chat.completions.create(requestParams);
+    return new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of stream) {
+            const text = chunk.choices[0]?.delta?.content;
+            if (text) {
+              controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text })}
 
 `));
+            }
+          }
+          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch (streamError) {
+          const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
+          console.error("[OpenAI Stream Error]", streamError);
+          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
+
+`));
+          controller.close();
         }
       }
-      controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-      controller.close();
-    }
-  });
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "OpenAI API error";
+    console.error("[OpenAI API Error]", error);
+    throw new Error(errorMessage);
+  }
+}
+async function createOpenAIResponsesStream(openai, options, modelId) {
+  const systemMessage = options.messages.find((m) => m.role === "system")?.content || "";
+  const conversationMessages = options.messages.filter((m) => m.role !== "system");
+  const lastUserMessage = conversationMessages[conversationMessages.length - 1]?.content || "";
+  const conversationContext = conversationMessages.slice(0, -1).map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`).join("\n\n");
+  const fullInput = conversationContext ? `${systemMessage}
+
+Previous conversation:
+${conversationContext}
+
+User: ${lastUserMessage}` : `${systemMessage}
+
+${lastUserMessage}`;
+  try {
+    const response = await openai.responses.create({
+      model: modelId,
+      input: fullInput,
+      tools: [{ type: "web_search" }],
+      stream: true
+    });
+    return new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of response) {
+            if (event.type === "response.output_text.delta") {
+              const text = event.delta;
+              if (text) {
+                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text })}
+
+`));
+              }
+            }
+          }
+          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch (streamError) {
+          const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
+          console.error("[OpenAI Responses Stream Error]", streamError);
+          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
+
+`));
+          controller.close();
+        }
+      }
+    });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "OpenAI Responses API error";
+    console.error("[OpenAI Responses API Error]", error);
+    throw new Error(errorMessage);
+  }
 }
 var import_sdk, import_openai;
 var init_provider = __esm({
@@ -232,9 +505,18 @@ var init_provider = __esm({
 });
 
 // src/ai/builders.ts
+var builders_exports = {};
+__export(builders_exports, {
+  buildAutoDraftPrompt: () => buildAutoDraftPrompt,
+  buildChatPrompt: () => buildChatPrompt,
+  buildExpandPlanPrompt: () => buildExpandPlanPrompt,
+  buildGeneratePrompt: () => buildGeneratePrompt,
+  buildPlanPrompt: () => buildPlanPrompt,
+  buildRewritePrompt: () => buildRewritePrompt
+});
 function buildGeneratePrompt(options) {
   const template = options.template || DEFAULT_GENERATE_TEMPLATE;
-  return template.replace("{{RULES}}", options.rules || "").replace("{{WORD_COUNT}}", String(options.wordCount || 800));
+  return template.replace("{{RULES}}", options.rules || "").replace("{{WORD_COUNT}}", String(options.wordCount || 800)).replace("{{STYLE_EXAMPLES}}", options.styleExamples || "");
 }
 function buildChatPrompt(options) {
   const template = options.template || DEFAULT_CHAT_TEMPLATE;
@@ -249,16 +531,251 @@ Content:
 ${options.essayContext.markdown}
 `;
   }
-  return template.replace("{{CHAT_RULES}}", options.chatRules || "").replace("{{ESSAY_CONTEXT}}", essaySection);
+  return template.replace("{{CHAT_RULES}}", options.chatRules || "").replace("{{RULES}}", options.rules || "").replace("{{ESSAY_CONTEXT}}", essaySection).replace("{{STYLE_EXAMPLES}}", options.styleExamples || "");
 }
 function buildExpandPlanPrompt(options) {
   const template = options.template || DEFAULT_EXPAND_PLAN_TEMPLATE;
   return template.replace("{{RULES}}", options.rules || "").replace("{{STYLE_EXAMPLES}}", options.styleExamples || "").replace("{{PLAN}}", options.plan);
 }
+function buildPlanPrompt(options) {
+  const template = options.template || DEFAULT_PLAN_TEMPLATE;
+  const rules = options.planRules || DEFAULT_PLAN_RULES;
+  return template.replace("{{PLAN_RULES}}", rules).replace("{{STYLE_EXAMPLES}}", options.styleExamples || "");
+}
+function buildRewritePrompt(options) {
+  const template = options.template || DEFAULT_REWRITE_TEMPLATE;
+  return template.replace("{{REWRITE_RULES}}", options.rewriteRules || "").replace("{{RULES}}", options.rules || "").replace("{{STYLE_EXAMPLES}}", options.styleExamples || "");
+}
+function buildAutoDraftPrompt(options) {
+  const template = options.template || DEFAULT_AUTO_DRAFT_TEMPLATE;
+  return template.replace("{{AUTO_DRAFT_RULES}}", options.autoDraftRules || "").replace("{{RULES}}", options.rules || "").replace("{{AUTO_DRAFT_WORD_COUNT}}", String(options.wordCount || 800)).replace("{{STYLE_EXAMPLES}}", options.styleExamples || "").replace("{{TOPIC_NAME}}", options.topicName || "").replace("{{ARTICLE_TITLE}}", options.articleTitle || "").replace("{{ARTICLE_SUMMARY}}", options.articleSummary || "").replace("{{ARTICLE_URL}}", options.articleUrl || "");
+}
 var init_builders = __esm({
   "src/ai/builders.ts"() {
     "use strict";
     init_prompts();
+  }
+});
+
+// src/lib/url-extractor.ts
+var url_extractor_exports = {};
+__export(url_extractor_exports, {
+  buildUrlContext: () => buildUrlContext,
+  extractAndFetchUrls: () => extractAndFetchUrls,
+  extractUrls: () => extractUrls,
+  fetchUrlContent: () => fetchUrlContent
+});
+function isServerlessEnvironment() {
+  return !!(process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.VERCEL || process.env.NETLIFY || process.env.AWS_EXECUTION_ENV);
+}
+function extractUrls(text) {
+  const urls = [];
+  const withProtocol = text.match(URL_WITH_PROTOCOL);
+  if (withProtocol) urls.push(...withProtocol);
+  const wwwUrls = text.match(URL_WITHOUT_PROTOCOL);
+  if (wwwUrls) {
+    for (const url of wwwUrls) {
+      const normalized = `https://${url}`;
+      if (!urls.some((u) => u.includes(url))) {
+        urls.push(normalized);
+      }
+    }
+  }
+  const bareUrls = text.match(DOMAIN_ONLY);
+  if (bareUrls) {
+    for (const url of bareUrls) {
+      const normalized = `https://${url}`;
+      if (!urls.some((u) => u.includes(url.split("/")[0]))) {
+        urls.push(normalized);
+      }
+    }
+  }
+  return [...new Set(urls)];
+}
+function extractTextFromHtml(html, url) {
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const title = titleMatch ? titleMatch[1].trim() : void 0;
+  let text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "").replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "").replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "").replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "").replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "").replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, "").replace(/<!--[\s\S]*?-->/g, "").replace(/<(p|div|br|h[1-6]|li|tr)[^>]*>/gi, "\n").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").replace(/\n\s+/g, "\n").replace(/\n+/g, "\n").trim();
+  if (text.length > 4e3) {
+    text = text.slice(0, 4e3) + "\n\n[Content truncated...]";
+  }
+  if (text.length < 50) {
+    return { url, content: "", error: "Could not extract meaningful content" };
+  }
+  return { url, title, content: text };
+}
+async function parseWithReadability(html, url) {
+  try {
+    const { JSDOM } = await import("jsdom");
+    const { Readability } = await import("@mozilla/readability");
+    const doc = new JSDOM(html, {
+      url,
+      resources: void 0,
+      // Don't load ANY external resources (stylesheets, etc.)
+      runScripts: void 0
+      // Don't run any scripts
+    });
+    const reader = new Readability(doc.window.document);
+    const article = reader.parse();
+    if (!article || !article.textContent) {
+      console.log("[Readability] No article content, falling back to simple extraction");
+      return extractTextFromHtml(html, url);
+    }
+    let content = article.textContent.trim();
+    if (content.length > 4e3) {
+      content = content.slice(0, 4e3) + "\n\n[Content truncated...]";
+    }
+    return {
+      url,
+      title: article.title || void 0,
+      content
+    };
+  } catch (error) {
+    console.error("[JSDOM] Failed, using simple extraction:", error instanceof Error ? error.message : error);
+    return extractTextFromHtml(html, url);
+  }
+}
+async function fetchWithPuppeteer(url) {
+  let browser = null;
+  const isServerless = isServerlessEnvironment();
+  try {
+    console.log(`[Puppeteer] Launching browser for: ${url} (serverless: ${isServerless})`);
+    if (isServerless) {
+      const chromium = await import("@sparticuz/chromium");
+      const puppeteerCore = await import("puppeteer-core");
+      const executablePath = await chromium.default.executablePath();
+      browser = await puppeteerCore.default.launch({
+        args: chromium.default.args,
+        defaultViewport: chromium.default.defaultViewport,
+        executablePath,
+        headless: chromium.default.headless
+      });
+    } else {
+      try {
+        const puppeteer = await import("puppeteer");
+        browser = await puppeteer.default.launch({
+          headless: true,
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-accelerated-2d-canvas",
+            "--disable-gpu"
+          ]
+        });
+      } catch (puppeteerImportError) {
+        console.error("[Puppeteer] Import/launch failed:", puppeteerImportError);
+        return { url, content: "", error: "Puppeteer unavailable - falling back to simple fetch" };
+      }
+    }
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1920, height: 1080 });
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    );
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+      const resourceType = req.resourceType();
+      if (["image", "stylesheet", "font", "media"].includes(resourceType)) {
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
+    await page.goto(url, {
+      waitUntil: "networkidle2",
+      timeout: PUPPETEER_TIMEOUT
+    });
+    await new Promise((resolve) => setTimeout(resolve, CONTENT_WAIT_TIME));
+    const html = await page.content();
+    await browser.close();
+    browser = null;
+    console.log("[Puppeteer] Got HTML, parsing with Readability...");
+    return await parseWithReadability(html, url);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "Puppeteer error";
+    console.error("[Puppeteer] Failed:", errorMessage);
+    return { url, content: "", error: `Puppeteer: ${errorMessage}` };
+  } finally {
+    if (browser) {
+      try {
+        await browser.close();
+      } catch {
+      }
+    }
+  }
+}
+async function fetchWithSimpleRequest(url) {
+  try {
+    console.log("[SimpleFetch] Fetching:", url);
+    const res = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9"
+      }
+    });
+    if (!res.ok) {
+      return { url, content: "", error: `HTTP ${res.status}` };
+    }
+    const html = await res.text();
+    return parseWithReadability(html, url);
+  } catch (error) {
+    return {
+      url,
+      content: "",
+      error: error instanceof Error ? error.message : "Failed to fetch"
+    };
+  }
+}
+async function fetchUrlContent(url) {
+  console.log("[URL Extractor] Fetching content from:", url);
+  const puppeteerResult = await fetchWithPuppeteer(url);
+  if (!puppeteerResult.error && puppeteerResult.content && puppeteerResult.content.length > 100) {
+    console.log("[URL Extractor] Puppeteer succeeded, got", puppeteerResult.content.length, "chars");
+    return puppeteerResult;
+  }
+  console.log("[URL Extractor] Puppeteer failed or got minimal content, trying simple fetch...");
+  const simpleResult = await fetchWithSimpleRequest(url);
+  if (simpleResult.content && simpleResult.content.length > (puppeteerResult.content?.length || 0)) {
+    console.log("[URL Extractor] Simple fetch got more content:", simpleResult.content.length, "chars");
+    return simpleResult;
+  }
+  if (puppeteerResult.content && puppeteerResult.content.length > 0) {
+    return puppeteerResult;
+  }
+  return simpleResult.error ? simpleResult : puppeteerResult;
+}
+async function extractAndFetchUrls(text) {
+  const urls = extractUrls(text);
+  if (urls.length === 0) return [];
+  const toFetch = urls.slice(0, 3);
+  const results = await Promise.all(toFetch.map((url) => fetchUrlContent(url)));
+  return results;
+}
+function buildUrlContext(fetched) {
+  const successful = fetched.filter((f) => !f.error && f.content);
+  if (successful.length === 0) return "";
+  return `
+<referenced_urls>
+${successful.map(
+    (f) => `<url src="${f.url}"${f.title ? ` title="${f.title}"` : ""}>
+${f.content}
+</url>`
+  ).join("\n\n")}
+</referenced_urls>
+
+Use the content from these URLs when relevant to the conversation.`;
+}
+var URL_WITH_PROTOCOL, URL_WITHOUT_PROTOCOL, DOMAIN_ONLY, PUPPETEER_TIMEOUT, CONTENT_WAIT_TIME;
+var init_url_extractor = __esm({
+  "src/lib/url-extractor.ts"() {
+    "use strict";
+    URL_WITH_PROTOCOL = /https?:\/\/[^\s<>\[\]()]+(?:\([^\s<>\[\]()]*\))?[^\s<>\[\]().,;:!?"']*(?<![.,;:!?"'])/gi;
+    URL_WITHOUT_PROTOCOL = /(?:www\.)[a-zA-Z0-9][-a-zA-Z0-9]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s<>\[\]()]*)?/gi;
+    DOMAIN_ONLY = /(?<![/@])(?:[a-zA-Z0-9][-a-zA-Z0-9]*\.)+(?:com|org|net|edu|gov|io|co|app|dev|news|info)(?:\/[^\s<>\[\]()]*)?(?![a-zA-Z])/gi;
+    PUPPETEER_TIMEOUT = 15e3;
+    CONTENT_WAIT_TIME = 2e3;
   }
 });
 
@@ -272,17 +789,41 @@ async function generateStream(options) {
   const systemPrompt = buildGeneratePrompt({
     rules: options.rules,
     template: options.template,
-    wordCount: options.wordCount
+    wordCount: options.wordCount,
+    styleExamples: options.styleExamples
   });
+  let enrichedPrompt = options.prompt;
+  if (options.useWebSearch) {
+    try {
+      const fetched = await extractAndFetchUrls(options.prompt);
+      const successful = fetched.filter((f) => !f.error && f.content);
+      if (successful.length > 0) {
+        enrichedPrompt = `${options.prompt}
+
+<source_material>
+${successful.map(
+          (f) => `Source: ${f.url}${f.title ? ` (${f.title})` : ""}
+${f.content}`
+        ).join("\n\n---\n\n")}
+</source_material>
+
+Use the source material above as reference for the essay.`;
+      }
+    } catch (err) {
+      console.warn("URL extraction failed:", err);
+    }
+  }
   return createStream({
     model: options.model,
     messages: [
       { role: "system", content: systemPrompt },
-      { role: "user", content: options.prompt }
+      { role: "user", content: enrichedPrompt }
     ],
     anthropicKey: options.anthropicKey,
     openaiKey: options.openaiKey,
-    maxTokens: 8192
+    maxTokens: options.useThinking ? 16e3 : 8192,
+    useWebSearch: options.useWebSearch,
+    useThinking: options.useThinking
   });
 }
 async function expandPlanStream(options) {
@@ -308,6 +849,7 @@ var init_generate = __esm({
     "use strict";
     init_provider();
     init_builders();
+    init_url_extractor();
   }
 });
 
@@ -317,11 +859,56 @@ __export(chat_exports, {
   chatStream: () => chatStream
 });
 async function chatStream(options) {
-  const systemPrompt = buildChatPrompt({
+  const systemPrompt = options.mode === "plan" ? buildPlanPrompt({
+    planRules: options.planRules,
+    template: options.planTemplate,
+    styleExamples: options.styleExamples
+  }) : buildChatPrompt({
     chatRules: options.chatRules,
+    rules: options.rules,
     template: options.template,
-    essayContext: options.essayContext
+    essayContext: options.essayContext,
+    styleExamples: options.styleExamples
   });
+  let urlContext = "";
+  let urlExtractionStatus = "";
+  if (options.useWebSearch) {
+    const lastUserMsg = [...options.messages].reverse().find((m) => m.role === "user");
+    if (lastUserMsg) {
+      try {
+        const { extractUrls: extractUrls2 } = await Promise.resolve().then(() => (init_url_extractor(), url_extractor_exports));
+        const detectedUrls = extractUrls2(lastUserMsg.content);
+        if (detectedUrls.length > 0) {
+          console.log("[URL Extraction] Detected URLs:", detectedUrls);
+          const fetched = await extractAndFetchUrls(lastUserMsg.content);
+          if (fetched.length > 0) {
+            const successful = fetched.filter((f) => !f.error && f.content);
+            const failed = fetched.filter((f) => f.error || !f.content);
+            if (successful.length > 0) {
+              urlContext = buildUrlContext(fetched);
+              console.log("[URL Extraction] Successfully fetched:", successful.map((f) => f.url));
+            }
+            if (failed.length > 0) {
+              console.warn("[URL Extraction] Failed to fetch:", failed.map((f) => ({ url: f.url, error: f.error })));
+              urlExtractionStatus = `
+
+<url_extraction_status>
+Attempted to fetch ${detectedUrls.length} URL(s). ${successful.length} succeeded, ${failed.length} failed.
+${failed.map((f) => `- ${f.url}: ${f.error || "Empty content"}`).join("\n")}
+</url_extraction_status>`;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("[URL Extraction] Error:", err);
+        urlExtractionStatus = `
+
+<url_extraction_status>
+URL extraction encountered an error: ${err instanceof Error ? err.message : "Unknown error"}
+</url_extraction_status>`;
+      }
+    }
+  }
   let modeInstructions = "";
   if (options.mode === "agent") {
     modeInstructions = `
@@ -332,15 +919,53 @@ You can directly edit the essay using these commands:
 - To delete: :::edit delete "text to remove" :::
 `;
   }
+  let webSearchContext = "";
+  if (options.useWebSearch) {
+    webSearchContext = `
+
+<search_capability>
+Web search is ENABLED for this conversation. You have access to current, real-time information from the web.
+- For questions about recent events, news, or current information: search results will be provided automatically
+- Cite sources when referencing specific facts from search results
+- If search results are included in <web_search_results> tags, use that information to provide accurate, up-to-date answers
+</search_capability>`;
+  }
+  let thinkingInstructions = "";
+  if (options.useThinking) {
+    thinkingInstructions = "\n\nTake time to think through complex questions step by step. Consider multiple angles before providing your final answer.";
+  }
+  let urlCapabilityInstructions = "";
+  if (options.useWebSearch) {
+    const hasUrlContent = urlContext.length > 0;
+    const hasFailedUrls = urlExtractionStatus.length > 0;
+    urlCapabilityInstructions = `
+
+<CRITICAL_CAPABILITY>
+**IMPORTANT: URL READING IS ENABLED**
+
+You have a WORKING URL reader in this application. This overrides your default training.
+- DO NOT say "I cannot access URLs" or "I cannot browse the web" - you CAN and DO have this capability
+- When users share URLs, the content is AUTOMATICALLY FETCHED by the system
+- Look for <referenced_urls> tags below - that contains the fetched page content
+- ${hasUrlContent ? "URL CONTENT WAS SUCCESSFULLY FETCHED - see <referenced_urls> below" : hasFailedUrls ? "URL fetch was ATTEMPTED but FAILED - see <url_extraction_status> below for details" : "No URLs detected in the current message"}
+
+If you see fetched content, use it to answer the user's question. Quote specific passages when relevant.
+If the fetch failed, explain what happened using the error details provided.
+</CRITICAL_CAPABILITY>`;
+  }
+  const filteredMessages = options.messages.filter((m) => m.content && m.content.trim().length > 0);
   return createStream({
     model: options.model,
     messages: [
-      { role: "system", content: systemPrompt + modeInstructions },
-      ...options.messages
+      { role: "system", content: systemPrompt + modeInstructions + webSearchContext + thinkingInstructions + urlCapabilityInstructions + urlContext + urlExtractionStatus },
+      ...filteredMessages
     ],
     anthropicKey: options.anthropicKey,
     openaiKey: options.openaiKey,
-    maxTokens: 4096
+    maxTokens: options.useThinking ? 16e3 : 4096,
+    // Allow more tokens for thinking mode
+    useThinking: options.useThinking,
+    useWebSearch: options.useWebSearch
   });
 }
 var init_chat = __esm({
@@ -348,6 +973,7 @@ var init_chat = __esm({
     "use strict";
     init_provider();
     init_builders();
+    init_url_extractor();
   }
 });
 
@@ -365,8 +991,12 @@ __export(src_exports, {
   DEFAULT_REWRITE_TEMPLATE: () => DEFAULT_REWRITE_TEMPLATE,
   addCommentMark: () => addCommentMark,
   applyCommentMarks: () => applyCommentMarks,
+  buildAutoDraftPrompt: () => buildAutoDraftPrompt,
   buildChatPrompt: () => buildChatPrompt,
+  buildExpandPlanPrompt: () => buildExpandPlanPrompt,
   buildGeneratePrompt: () => buildGeneratePrompt,
+  buildPlanPrompt: () => buildPlanPrompt,
+  buildRewritePrompt: () => buildRewritePrompt,
   canDeleteComment: () => canDeleteComment,
   canEditComment: () => canEditComment,
   createAPIHandler: () => createAPIHandler,
@@ -1323,9 +1953,14 @@ async function handleAIAPI(req, cms, session, path) {
   if (authError) return authError;
   if (method === "GET" && path === "/ai/settings") {
     const settings = await cms.aiSettings.get();
+    const hasAnthropicEnvKey = !!(cms.config.ai?.anthropicKey || process.env.ANTHROPIC_API_KEY);
+    const hasOpenaiEnvKey = !!(cms.config.ai?.openaiKey || process.env.OPENAI_API_KEY);
     return jsonResponse2({
       data: {
         ...settings,
+        // Don't expose actual env keys, just indicate they exist
+        hasAnthropicEnvKey,
+        hasOpenaiEnvKey,
         defaultGenerateTemplate: DEFAULT_GENERATE_TEMPLATE,
         defaultChatTemplate: DEFAULT_CHAT_TEMPLATE,
         defaultRewriteTemplate: DEFAULT_REWRITE_TEMPLATE,
@@ -1345,11 +1980,36 @@ async function handleAIAPI(req, cms, session, path) {
   }
   if (method === "POST" && path === "/ai/generate") {
     const body = await req.json();
-    const { prompt, model, wordCount, mode, plan, styleExamples } = body;
+    const { prompt, model, wordCount, mode, plan, styleExamples: clientStyleExamples, useWebSearch, useThinking } = body;
     const settings = await cms.aiSettings.get();
     try {
       let stream;
+      const anthropicKey = cms.config.ai?.anthropicKey || settings.anthropicKey;
+      const openaiKey = cms.config.ai?.openaiKey || settings.openaiKey;
       if (mode === "expand_plan" && plan) {
+        let styleExamples = clientStyleExamples || "";
+        if (!styleExamples) {
+          try {
+            const publishedPosts = await cms.posts.findPublished();
+            const MAX_STYLE_EXAMPLES = 5;
+            const MAX_WORDS_PER_EXAMPLE = 500;
+            if (publishedPosts.length > 0) {
+              const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
+                const words = post.markdown.split(/\s+/);
+                const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
+                return `## ${post.title}
+${post.subtitle ? `*${post.subtitle}*
+` : ""}
+${truncatedContent}`;
+              }).join("\n\n---\n\n");
+              styleExamples = `The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
+
+${examples}`;
+            }
+          } catch (err) {
+            console.error("[AI Generate] Failed to fetch published essays:", err);
+          }
+        }
         const { expandPlanStream: expandPlanStream2 } = await Promise.resolve().then(() => (init_generate(), generate_exports));
         stream = await expandPlanStream2({
           plan,
@@ -1357,10 +2017,33 @@ async function handleAIAPI(req, cms, session, path) {
           rules: settings.rules,
           template: settings.expandPlanTemplate,
           styleExamples,
-          anthropicKey: cms.config.ai?.anthropicKey,
-          openaiKey: cms.config.ai?.openaiKey
+          anthropicKey,
+          openaiKey
         });
       } else {
+        let styleExamples = clientStyleExamples || "";
+        if (!styleExamples) {
+          try {
+            const publishedPosts = await cms.posts.findPublished();
+            const MAX_STYLE_EXAMPLES = 5;
+            const MAX_WORDS_PER_EXAMPLE = 500;
+            if (publishedPosts.length > 0) {
+              const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
+                const words = post.markdown.split(/\s+/);
+                const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
+                return `## ${post.title}
+${post.subtitle ? `*${post.subtitle}*
+` : ""}
+${truncatedContent}`;
+              }).join("\n\n---\n\n");
+              styleExamples = `The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
+
+${examples}`;
+            }
+          } catch (err) {
+            console.error("[AI Generate] Failed to fetch published essays:", err);
+          }
+        }
         const { generateStream: generateStream2 } = await Promise.resolve().then(() => (init_generate(), generate_exports));
         stream = await generateStream2({
           prompt,
@@ -1368,8 +2051,11 @@ async function handleAIAPI(req, cms, session, path) {
           wordCount,
           rules: settings.rules,
           template: settings.generateTemplate,
-          anthropicKey: cms.config.ai?.anthropicKey,
-          openaiKey: cms.config.ai?.openaiKey
+          styleExamples,
+          anthropicKey,
+          openaiKey,
+          useWebSearch,
+          useThinking
         });
       }
       return new Response(stream, {
@@ -1380,6 +2066,7 @@ async function handleAIAPI(req, cms, session, path) {
         }
       });
     } catch (error) {
+      console.error("[AI Generate Error]", error);
       return jsonResponse2({
         error: error instanceof Error ? error.message : "Generation failed"
       }, 500);
@@ -1387,8 +2074,33 @@ async function handleAIAPI(req, cms, session, path) {
   }
   if (method === "POST" && path === "/ai/chat") {
     const body = await req.json();
-    const { messages, model, essayContext, mode } = body;
+    const { messages, model, essayContext, mode, useWebSearch, useThinking } = body;
     const settings = await cms.aiSettings.get();
+    const anthropicKey = cms.config.ai?.anthropicKey || settings.anthropicKey;
+    const openaiKey = cms.config.ai?.openaiKey || settings.openaiKey;
+    let styleExamples = "";
+    try {
+      const publishedPosts = await cms.posts.findPublished();
+      const MAX_STYLE_EXAMPLES = 5;
+      const MAX_WORDS_PER_EXAMPLE = 500;
+      if (publishedPosts.length > 0) {
+        const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
+          const words = post.markdown.split(/\s+/);
+          const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
+          return `## ${post.title}
+${post.subtitle ? `*${post.subtitle}*
+` : ""}
+${truncatedContent}`;
+        }).join("\n\n---\n\n");
+        styleExamples = `<published_essays>
+The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
+
+${examples}
+</published_essays>`;
+      }
+    } catch (err) {
+      console.error("[AI Chat] Failed to fetch published essays:", err);
+    }
     const { chatStream: chatStream2 } = await Promise.resolve().then(() => (init_chat(), chat_exports));
     try {
       const stream = await chatStream2({
@@ -1397,9 +2109,16 @@ async function handleAIAPI(req, cms, session, path) {
         essayContext,
         mode,
         chatRules: settings.chatRules,
+        rules: settings.rules,
         template: settings.chatTemplate,
-        anthropicKey: cms.config.ai?.anthropicKey,
-        openaiKey: cms.config.ai?.openaiKey
+        // Plan mode specific settings
+        planTemplate: settings.planTemplate,
+        planRules: settings.planRules,
+        styleExamples,
+        anthropicKey,
+        openaiKey,
+        useWebSearch,
+        useThinking
       });
       return new Response(stream, {
         headers: {
@@ -1409,8 +2128,86 @@ async function handleAIAPI(req, cms, session, path) {
         }
       });
     } catch (error) {
+      console.error("[AI Chat Error]", error);
       return jsonResponse2({
         error: error instanceof Error ? error.message : "Chat failed"
+      }, 500);
+    }
+  }
+  if (method === "POST" && path === "/ai/rewrite") {
+    const body = await req.json();
+    const { text } = body;
+    if (!text || typeof text !== "string") {
+      return jsonResponse2({ error: "Text is required" }, 400);
+    }
+    const settings = await cms.aiSettings.get();
+    const anthropicKey = cms.config.ai?.anthropicKey || settings.anthropicKey;
+    const openaiKey = cms.config.ai?.openaiKey || settings.openaiKey;
+    let styleExamples = "";
+    try {
+      const publishedPosts = await cms.posts.findPublished();
+      const MAX_STYLE_EXAMPLES = 3;
+      const MAX_WORDS_PER_EXAMPLE = 300;
+      if (publishedPosts.length > 0) {
+        const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
+          const words = post.markdown.split(/\s+/);
+          const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
+          return `## ${post.title}
+${truncatedContent}`;
+        }).join("\n\n---\n\n");
+        styleExamples = examples;
+      }
+    } catch (err) {
+      console.error("[AI Rewrite] Failed to fetch published essays:", err);
+    }
+    const { buildRewritePrompt: buildRewritePrompt2 } = await Promise.resolve().then(() => (init_builders(), builders_exports));
+    const { createStream: createStream2 } = await Promise.resolve().then(() => (init_provider(), provider_exports));
+    try {
+      const systemPrompt = buildRewritePrompt2({
+        rewriteRules: settings.rewriteRules,
+        rules: settings.rules,
+        template: settings.rewriteTemplate,
+        styleExamples
+      });
+      const stream = await createStream2({
+        model: settings.defaultModel,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Rewrite the following text, preserving meaning but improving clarity and style:
+
+${text}` }
+        ],
+        anthropicKey,
+        openaiKey,
+        maxTokens: 2048
+      });
+      const reader = stream.getReader();
+      const decoder = new TextDecoder();
+      let rewrittenText = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split("\n");
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") continue;
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.text) {
+                rewrittenText += parsed.text;
+              }
+            } catch {
+            }
+          }
+        }
+      }
+      return jsonResponse2({ text: rewrittenText.trim() });
+    } catch (error) {
+      console.error("[AI Rewrite Error]", error);
+      return jsonResponse2({
+        error: error instanceof Error ? error.message : "Rewrite failed"
       }, 500);
     }
   }
@@ -1562,7 +2359,8 @@ async function handleSettingsAPI(req, cms, session, path) {
     });
     return jsonResponse2({
       data: {
-        autoDraftEnabled: integrationSettings?.autoDraftEnabled ?? false
+        autoDraftEnabled: integrationSettings?.autoDraftEnabled ?? false,
+        postUrlPattern: integrationSettings?.postUrlPattern ?? "/e/{slug}"
       }
     });
   }
@@ -1570,11 +2368,18 @@ async function handleSettingsAPI(req, cms, session, path) {
     const adminError = requireAdmin(cms, session);
     if (adminError) return adminError;
     const body = await req.json();
+    const updateData = {};
     if (typeof body.autoDraftEnabled === "boolean") {
+      updateData.autoDraftEnabled = body.autoDraftEnabled;
+    }
+    if (typeof body.postUrlPattern === "string") {
+      updateData.postUrlPattern = body.postUrlPattern;
+    }
+    if (Object.keys(updateData).length > 0) {
       await prisma.integrationSettings.upsert({
         where: { id: "default" },
-        create: { id: "default", autoDraftEnabled: body.autoDraftEnabled },
-        update: { autoDraftEnabled: body.autoDraftEnabled }
+        create: { id: "default", ...updateData },
+        update: updateData
       });
     }
     const integrationSettings = await prisma.integrationSettings.findUnique({
@@ -1582,7 +2387,8 @@ async function handleSettingsAPI(req, cms, session, path) {
     });
     return jsonResponse2({
       data: {
-        autoDraftEnabled: integrationSettings?.autoDraftEnabled ?? false
+        autoDraftEnabled: integrationSettings?.autoDraftEnabled ?? false,
+        postUrlPattern: integrationSettings?.postUrlPattern ?? "/e/{slug}"
       }
     });
   }
@@ -6059,8 +6865,12 @@ function scrollToComment(editor, commentId) {
   DEFAULT_REWRITE_TEMPLATE,
   addCommentMark,
   applyCommentMarks,
+  buildAutoDraftPrompt,
   buildChatPrompt,
+  buildExpandPlanPrompt,
   buildGeneratePrompt,
+  buildPlanPrompt,
+  buildRewritePrompt,
   canDeleteComment,
   canEditComment,
   createAPIHandler,

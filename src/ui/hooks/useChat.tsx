@@ -148,8 +148,8 @@ export function ChatProvider({
   const historyLoadedRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Resolve chat API path
-  const resolvedChatApiPath = chatApiPath || '/api/ai/chat'
+  // Resolve chat API path - use CMS API if not explicitly set
+  const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`
   
   const registerEditHandler = useCallback((handler: EditHandler | null) => {
     editHandlerRef.current = handler
@@ -214,7 +214,7 @@ export function ChatProvider({
           messages: newMessages,
           essayContext: essayContext,
           mode: mode,
-          modelId: selectedModel,
+          model: selectedModel,
           useWebSearch: webSearchEnabled,
           useThinking: thinkingEnabled,
         }),
@@ -229,12 +229,16 @@ export function ChatProvider({
           throw new Error('Rate limit exceeded. Please wait before trying again.')
         }
         const errorText = await response.text()
+        let errorMessage = `Server error (${response.status}). Please try again.`
         try {
-          const error = JSON.parse(errorText)
-          throw new Error(error.error || 'Failed to send message')
+          const errorJson = JSON.parse(errorText)
+          if (errorJson.error) {
+            errorMessage = errorJson.error
+          }
         } catch {
-          throw new Error(`Server error (${response.status}). Please try again.`)
+          // Couldn't parse JSON, use default error message
         }
+        throw new Error(errorMessage)
       }
 
       const reader = response.body?.getReader()
@@ -243,13 +247,43 @@ export function ChatProvider({
       const decoder = new TextDecoder()
       let assistantContent = ''
       let appliedEdits = false
+      let buffer = ''
 
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
 
-        const chunk = decoder.decode(value, { stream: true })
-        assistantContent += chunk
+        buffer += decoder.decode(value, { stream: true })
+        
+        // Process complete SSE lines
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || '' // Keep incomplete line in buffer
+        
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6) // Remove 'data: ' prefix
+            if (data === '[DONE]') continue
+            
+            try {
+              const parsed = JSON.parse(data)
+              if (parsed.error) {
+                // Error occurred during streaming
+                throw new Error(parsed.error)
+              }
+              if (parsed.text) {
+                assistantContent += parsed.text
+              }
+              // Optionally handle thinking content
+              // if (parsed.thinking) { ... }
+            } catch (parseError) {
+              // If it's our error, rethrow it
+              if (parseError instanceof Error && parseError.message !== 'Unexpected token') {
+                throw parseError
+              }
+              // Ignore parse errors for incomplete JSON
+            }
+          }
+        }
 
         setMessages(prev => {
           const updated = [...prev]
@@ -424,6 +458,11 @@ export function useChatContext() {
     throw new Error('useChatContext must be used within a ChatProvider')
   }
   return context
+}
+
+/** Optional chat context - returns null if not within ChatProvider */
+export function useChatContextOptional() {
+  return useContext(ChatContext)
 }
 
 export { ChatContext }

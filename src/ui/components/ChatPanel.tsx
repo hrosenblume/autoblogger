@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import { Loader2, X, Copy, Check, ArrowUp, Pencil, Undo2, ChevronDown, MessageSquare, Globe, Brain, Square, List } from 'lucide-react'
 import { useChatContext, type ChatMode } from '../hooks/useChat'
@@ -8,6 +8,7 @@ import { useAIModels } from '../hooks/useAIModels'
 import { ControlButton } from './ControlButton'
 import { ModelSelector } from './ModelSelector'
 import { markdownToHtml } from '../../lib/markdown'
+import { DashboardContext } from '../context'
 
 /** Default prose classes for chat messages */
 const DEFAULT_PROSE_CLASSES = 'prose prose-gray dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:underline'
@@ -32,8 +33,9 @@ interface ChatPanelProps {
 
 export function ChatPanel({ 
   proseClasses = DEFAULT_PROSE_CLASSES,
-  onNavigate,
+  onNavigate: onNavigateProp,
   isOnEditor: isOnEditorProp,
+  modelsApiPath,
 }: ChatPanelProps) {
   const { 
     messages, 
@@ -54,6 +56,10 @@ export function ChatPanel({
     setSelectedModel,
     expandPlan,
   } = useChatContext()
+  
+  // Try to get navigate from dashboard context as fallback
+  const dashboardContext = useContext(DashboardContext)
+  const onNavigate = onNavigateProp ?? dashboardContext?.navigate
   
   // Use essayContext presence to detect if we're editing (works with autoblogger)
   const isOnEditor = isOnEditorProp ?? !!essayContext
@@ -76,6 +82,7 @@ export function ChatPanel({
   const { models, currentModel } = useAIModels({
     externalSelectedModel: selectedModel,
     externalSetSelectedModel: setSelectedModel,
+    apiPath: modelsApiPath,
   })
   
   const onClose = useCallback(() => setIsOpen(false), [setIsOpen])
@@ -97,10 +104,15 @@ export function ChatPanel({
       expandPlan()
       setMode('agent')
     } else if (onNavigate) {
-      // Not on editor - store plan in sessionStorage and navigate
+      // Not on editor - store plan in sessionStorage and navigate to new editor
       sessionStorage.setItem('pendingPlan', lastAssistantMessage.content)
       setIsOpen(false)
       onNavigate('/editor?fromPlan=1')
+    } else {
+      // Fallback: try to navigate directly if no handler (browser navigation)
+      sessionStorage.setItem('pendingPlan', lastAssistantMessage.content)
+      setIsOpen(false)
+      window.location.href = '/writer/editor?fromPlan=1'
     }
   }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate])
   
@@ -258,12 +270,6 @@ export function ChatPanel({
 
   if (!isVisible || !mounted) return null
   
-  const getModeStyles = (m: ChatMode) => {
-    if (m === 'ask') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-    if (m === 'agent') return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-    return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-  }
-
   return createPortal(
     <>
       {/* Backdrop */}
@@ -398,58 +404,56 @@ export function ChatPanel({
           className="flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
         >
           {/* Controls Row: Mode Dropdown, Globe Toggle, Model Dropdown */}
-          <div className="mb-2 flex items-center gap-3">
+          <div className="mb-2 flex items-center gap-2">
             {/* Mode Dropdown */}
             <div ref={modeMenuRef} className="relative">
               <button
                 type="button"
                 onClick={() => setModeMenuOpen(!modeMenuOpen)}
-                className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors hover:opacity-80 ${getModeStyles(mode)}`}
                 title="Switch mode (⌘⇧A)"
+                className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${
+                  mode === 'ask' 
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                    : mode === 'agent' 
+                      ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                }`}
               >
                 {mode === 'ask' && <MessageSquare className="w-3 h-3" />}
                 {mode === 'agent' && <Pencil className="w-3 h-3" />}
                 {mode === 'plan' && <List className="w-3 h-3" />}
                 {mode === 'ask' ? 'Ask' : mode === 'agent' ? 'Agent' : 'Plan'}
-                <ChevronDown className="w-3 h-3 opacity-60" />
+                <ChevronDown className="w-2.5 h-2.5 opacity-60" />
               </button>
               {modeMenuOpen && (
-                <div className="absolute top-full left-0 mt-1 min-w-[140px] bg-popover border border-border rounded-md shadow-md z-[80]">
+                <div className="absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1">
                   <button
                     type="button"
                     onClick={() => { setMode('agent'); setModeMenuOpen(false); textareaRef.current?.focus() }}
                     disabled={!essayContext}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span className="flex items-center gap-2">
-                      <Pencil className="w-4 h-4" />
-                      Agent
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <span className="text-xs text-muted-foreground">⌘⇧A</span>
-                      {mode === 'agent' && <Check className="w-4 h-4" />}
-                    </span>
+                    <Pencil className="w-4 h-4" />
+                    <span className="flex-1">Agent</span>
+                    <span className="text-xs text-muted-foreground">⌘⇧A</span>
+                    {mode === 'agent' && <Check className="w-4 h-4" />}
                   </button>
                   <button
                     type="button"
                     onClick={() => { setMode('plan'); setModeMenuOpen(false); textareaRef.current?.focus() }}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
                   >
-                    <span className="flex items-center gap-2">
-                      <List className="w-4 h-4" />
-                      Plan
-                    </span>
+                    <List className="w-4 h-4" />
+                    <span className="flex-1">Plan</span>
                     {mode === 'plan' && <Check className="w-4 h-4" />}
                   </button>
                   <button
                     type="button"
                     onClick={() => { setMode('ask'); setModeMenuOpen(false); textareaRef.current?.focus() }}
-                    className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2"
                   >
-                    <span className="flex items-center gap-2">
-                      <MessageSquare className="w-4 h-4" />
-                      Ask
-                    </span>
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="flex-1">Ask</span>
                     {mode === 'ask' && <Check className="w-4 h-4" />}
                   </button>
                 </div>
@@ -460,7 +464,7 @@ export function ChatPanel({
             <ControlButton
               onClick={() => { setWebSearchEnabled(!webSearchEnabled); textareaRef.current?.focus() }}
               active={webSearchEnabled}
-              title={webSearchEnabled ? "Web search enabled" : "Enable web search"}
+              title={webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)"}
               tabIndex={-1}
             >
               <Globe className="w-4 h-4" />
@@ -499,7 +503,7 @@ export function ChatPanel({
                       ? "Ask about your essay..." 
                       : "Ask anything..."
               }
-              className="flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              className="flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none"
               rows={1}
               autoFocus
             />

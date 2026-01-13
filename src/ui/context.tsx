@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react'
 import type { CustomFieldConfig, StylesConfig } from './types'
 
 export interface DashboardConfig {
@@ -23,7 +23,7 @@ export interface Session {
 // Shared data fetched once by the provider
 export interface SharedData {
   counts: Record<string, number>
-  settings: { autoDraftEnabled: boolean }
+  settings: { autoDraftEnabled: boolean; postUrlPattern: string }
   posts: unknown[]
   suggestedPosts: unknown[]
   aiSettings: { defaultModel: string; availableModels: unknown[] }
@@ -132,11 +132,22 @@ export function DashboardProvider({
   const [sharedDataLoading, setSharedDataLoading] = useState(true)
   // Track navigation history within the dashboard
   const [historyDepth, setHistoryDepth] = useState(0)
+  // Track editor state for navigation warnings
+  const editorStateRef = useRef<EditorState | null>(null)
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setCurrentPath(extractPath(window.location.pathname, basePath))
       const handlePopState = () => {
+        // Check for unsaved changes before allowing back navigation
+        if (editorStateRef.current?.hasUnsavedChanges) {
+          if (!editorStateRef.current.confirmLeave()) {
+            // User cancelled - push the current path back to history
+            const currentFullPath = basePath + (currentPath === '/' ? '' : currentPath)
+            window.history.pushState({}, '', currentFullPath)
+            return
+          }
+        }
         setCurrentPath(extractPath(window.location.pathname, basePath))
         // Decrement history depth on back navigation
         setHistoryDepth(d => Math.max(0, d - 1))
@@ -144,9 +155,15 @@ export function DashboardProvider({
       window.addEventListener('popstate', handlePopState)
       return () => window.removeEventListener('popstate', handlePopState)
     }
-  }, [basePath])
+  }, [basePath, currentPath])
 
   const navigate = useCallback((path: string) => {
+    // Check for unsaved changes before navigating
+    if (editorStateRef.current?.hasUnsavedChanges) {
+      if (!editorStateRef.current.confirmLeave()) {
+        return // User cancelled navigation
+      }
+    }
     const fullPath = path.startsWith('/') ? basePath + path : basePath + '/' + path
     window.history.pushState({}, '', fullPath)
     setCurrentPath(path.startsWith('/') ? path : '/' + path)
@@ -157,6 +174,7 @@ export function DashboardProvider({
   const goBack = useCallback(() => {
     if (historyDepth > 0) {
       // We have navigation history, use browser back
+      // The popstate handler will check for unsaved changes
       window.history.back()
     } else {
       // No history (user landed directly on subpage), navigate to root
@@ -178,7 +196,8 @@ export function DashboardProvider({
       ])
 
       const autoDraftEnabled = settingsRes?.data?.autoDraftEnabled ?? false
-      
+      const postUrlPattern = settingsRes?.data?.postUrlPattern ?? '/e/{slug}'
+
       // Fetch suggested posts only if autoDraft is enabled
       let suggestedPosts: unknown[] = []
       if (autoDraftEnabled) {
@@ -188,7 +207,7 @@ export function DashboardProvider({
 
       setSharedData({
         counts: countsRes?.data || {},
-        settings: { autoDraftEnabled },
+        settings: { autoDraftEnabled, postUrlPattern },
         posts: postsRes?.data || [],
         suggestedPosts,
         aiSettings: {
@@ -200,7 +219,7 @@ export function DashboardProvider({
       console.error('Failed to fetch shared data:', err)
       setSharedData({
         counts: {},
-        settings: { autoDraftEnabled: false },
+        settings: { autoDraftEnabled: false, postUrlPattern: '/e/{slug}' },
         posts: [],
         suggestedPosts: [],
         aiSettings: { defaultModel: 'claude-sonnet', availableModels: [] },
@@ -213,6 +232,12 @@ export function DashboardProvider({
   useEffect(() => {
     fetchSharedData()
   }, [fetchSharedData])
+
+  // Wrap onEditorStateChange to track editor state for navigation warnings
+  const handleEditorStateChange = useCallback((state: EditorState | null) => {
+    editorStateRef.current = state
+    onEditorStateChange?.(state)
+  }, [onEditorStateChange])
 
   const mergedStyles = useMemo<Required<StylesConfig>>(
     () => ({ ...DEFAULT_STYLES, ...styles }),
@@ -238,7 +263,7 @@ export function DashboardProvider({
     sharedData,
     sharedDataLoading,
     refetchSharedData: fetchSharedData,
-    onEditorStateChange,
+    onEditorStateChange: handleEditorStateChange,
     onRegisterEditHandler,
   }), [
     basePath,
@@ -254,7 +279,7 @@ export function DashboardProvider({
     sharedData,
     sharedDataLoading,
     fetchSharedData,
-    onEditorStateChange,
+    handleEditorStateChange,
     onRegisterEditHandler,
   ])
 

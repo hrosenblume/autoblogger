@@ -28,6 +28,8 @@ export function createAISettingsData(prisma: any) {
       autoDraftTemplate?: string | null
       planTemplate?: string | null
       expandPlanTemplate?: string | null
+      anthropicKey?: string | null
+      openaiKey?: string | null
     }) {
       return prisma.aISettings.upsert({
         where: { id: DEFAULT_ID },

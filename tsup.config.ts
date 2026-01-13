@@ -30,4 +30,17 @@ export default defineConfig([
       options.banner = { js: '"use client";' }
     },
   },
+  // CLI entry
+  {
+    entry: {
+      'cli/index': 'src/cli/index.ts',
+    },
+    format: ['cjs'],
+    dts: false,
+    splitting: false,
+    sourcemap: false,
+    banner: {
+      js: '#!/usr/bin/env node',
+    },
+  },
 ])

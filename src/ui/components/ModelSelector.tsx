@@ -39,7 +39,7 @@ export function ModelSelector({
         <ChevronDown className="w-3.5 h-3.5" />
       </ControlButton>
       {open && (
-        <div className="absolute top-full left-0 mt-1 min-w-[180px] bg-popover border border-border rounded-md shadow-md z-50">
+        <div className="absolute bottom-full left-0 mb-1 min-w-[180px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1">
           {models.map(model => (
             <button
               key={model.id}

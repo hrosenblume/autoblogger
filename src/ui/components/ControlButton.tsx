@@ -13,7 +13,7 @@ export const ControlButton = forwardRef<HTMLButtonElement, ControlButtonProps>(
       ? "text-muted-foreground/30 cursor-not-allowed"
       : active
         ? "text-blue-500 dark:text-blue-400"
-        : "text-muted-foreground hover:text-foreground"
+        : "text-muted-foreground active:text-foreground md:hover:text-foreground"
     
     return (
       <button

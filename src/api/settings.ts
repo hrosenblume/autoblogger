@@ -26,6 +26,7 @@ export async function handleSettingsAPI(
     return jsonResponse({ 
       data: { 
         autoDraftEnabled: integrationSettings?.autoDraftEnabled ?? false,
+        postUrlPattern: integrationSettings?.postUrlPattern ?? '/e/{slug}',
       } 
     })
   }
@@ -38,12 +39,21 @@ export async function handleSettingsAPI(
 
     const body = await req.json()
     
-    // Update autoDraftEnabled in IntegrationSettings
+    // Build update object
+    const updateData: { autoDraftEnabled?: boolean; postUrlPattern?: string } = {}
     if (typeof body.autoDraftEnabled === 'boolean') {
+      updateData.autoDraftEnabled = body.autoDraftEnabled
+    }
+    if (typeof body.postUrlPattern === 'string') {
+      updateData.postUrlPattern = body.postUrlPattern
+    }
+    
+    // Upsert IntegrationSettings
+    if (Object.keys(updateData).length > 0) {
       await prisma.integrationSettings.upsert({
         where: { id: 'default' },
-        create: { id: 'default', autoDraftEnabled: body.autoDraftEnabled },
-        update: { autoDraftEnabled: body.autoDraftEnabled },
+        create: { id: 'default', ...updateData },
+        update: updateData,
       })
     }
 
@@ -54,6 +64,7 @@ export async function handleSettingsAPI(
     return jsonResponse({ 
       data: { 
         autoDraftEnabled: integrationSettings?.autoDraftEnabled ?? false,
+        postUrlPattern: integrationSettings?.postUrlPattern ?? '/e/{slug}',
       } 
     })
   }

@@ -190,6 +190,8 @@ declare function createAISettingsData(prisma: any): {
         autoDraftTemplate?: string | null;
         planTemplate?: string | null;
         expandPlanTemplate?: string | null;
+        anthropicKey?: string | null;
+        openaiKey?: string | null;
     }): Promise<any>;
 };
 
@@ -402,54 +404,97 @@ declare function buildGeneratePrompt(options: {
     rules?: string;
     template?: string | null;
     wordCount?: number;
+    styleExamples?: string;
 }): string;
 /**
  * Build a system prompt for chat interactions.
  */
 declare function buildChatPrompt(options: {
     chatRules?: string;
+    rules?: string;
     template?: string | null;
     essayContext?: {
         title: string;
         subtitle?: string;
         markdown: string;
     } | null;
+    styleExamples?: string;
+}): string;
+/**
+ * Build a system prompt for expanding a plan into a full essay.
+ */
+declare function buildExpandPlanPrompt(options: {
+    rules?: string;
+    template?: string | null;
+    plan: string;
+    styleExamples?: string;
+}): string;
+/**
+ * Build a system prompt for plan/outline generation.
+ */
+declare function buildPlanPrompt(options: {
+    planRules?: string;
+    template?: string | null;
+    styleExamples?: string;
+}): string;
+/**
+ * Build a system prompt for text rewriting.
+ */
+declare function buildRewritePrompt(options: {
+    rewriteRules?: string;
+    rules?: string;
+    template?: string | null;
+    styleExamples?: string;
+}): string;
+/**
+ * Build a system prompt for auto-drafting essays from news articles.
+ */
+declare function buildAutoDraftPrompt(options: {
+    autoDraftRules?: string;
+    rules?: string;
+    template?: string | null;
+    wordCount?: number;
+    styleExamples?: string;
+    topicName?: string;
+    articleTitle?: string;
+    articleSummary?: string;
+    articleUrl?: string;
 }): string;
 
 /**
  * Default template for essay generation.
  * Placeholders: {{RULES}}, {{WORD_COUNT}}
  */
-declare const DEFAULT_GENERATE_TEMPLATE = "You are an expert essay writer. Write engaging, thoughtful content.\n\n{{RULES}}\n\nWrite approximately {{WORD_COUNT}} words.";
+declare const DEFAULT_GENERATE_TEMPLATE = "<system>\n<role>Expert essay writer creating engaging, thoughtful content</role>\n\n<critical>\nALWAYS output a complete essay. NEVER respond conversationally.\n- Do NOT ask questions or request clarification\n- Do NOT say \"Here is your essay\" or similar preamble\n- Do NOT explain what you're going to write\n- If the prompt is vague, make creative choices and proceed\n- Output ONLY the essay in markdown format\n</critical>\n\n<rules>\n{{RULES}}\n</rules>\n\n<constraints>\n<word_count>{{WORD_COUNT}}</word_count>\n</constraints>\n\n<output_format>\nCRITICAL: Your response MUST start with exactly this format:\n\nLine 1: # [Your Title Here]\nLine 2: *[Your subtitle here]*\nLine 3: (blank line)\nLine 4+: Essay body in markdown\n\n<title_guidelines>\n- Be SPECIFIC, not generic (avoid \"The Power of\", \"Why X Matters\", \"A Guide to\")\n- Include a concrete detail, angle, or unexpected element\n- Create curiosity or make a bold claim\n- 5-12 words ideal\n</title_guidelines>\n\n<subtitle_guidelines>\n- One sentence that hooks the reader\n- Tease the main argument or reveal a key insight\n- Create tension, curiosity, or promise value\n- Make readers want to continue reading\n</subtitle_guidelines>\n</output_format>\n</system>";
 /**
  * Default template for chat interactions.
  * Placeholders: {{CHAT_RULES}}, {{ESSAY_CONTEXT}}
  */
-declare const DEFAULT_CHAT_TEMPLATE = "You are a helpful writing assistant.\n\n{{CHAT_RULES}}\n\n{{ESSAY_CONTEXT}}";
+declare const DEFAULT_CHAT_TEMPLATE = "<system>\n<role>Helpful writing assistant for essay creation and editing</role>\n\n<rules>\n{{CHAT_RULES}}\n</rules>\n\n<context>\n{{ESSAY_CONTEXT}}\n</context>\n\n<behavior>\n- Be concise and actionable\n- When suggesting edits, be specific about what to change\n- Match the author's voice and style when writing\n- Ask clarifying questions if the request is ambiguous\n</behavior>\n</system>";
 /**
  * Default template for text rewriting.
  * Placeholders: {{REWRITE_RULES}}
  */
-declare const DEFAULT_REWRITE_TEMPLATE = "You are a writing assistant that improves text.\n\n{{REWRITE_RULES}}\n\nKeep the same meaning. Improve clarity and flow.";
+declare const DEFAULT_REWRITE_TEMPLATE = "<system>\n<role>Writing assistant that improves text quality</role>\n\n<rules>\n{{REWRITE_RULES}}\n</rules>\n\n<behavior>\n- Preserve the original meaning exactly\n- Improve clarity, flow, and readability\n- Fix grammar and punctuation issues\n- Maintain the author's voice and tone\n- Output only the improved text, no explanations\n</behavior>\n</system>";
 /**
  * Default template for auto-drafting from news articles.
  * Placeholders: {{AUTO_DRAFT_RULES}}, {{RULES}}, {{AUTO_DRAFT_WORD_COUNT}}
  */
-declare const DEFAULT_AUTO_DRAFT_TEMPLATE = "You are an expert essay writer. Write an engaging essay based on the news article.\n\n{{AUTO_DRAFT_RULES}}\n\n{{RULES}}\n\nWrite approximately {{AUTO_DRAFT_WORD_COUNT}} words.";
+declare const DEFAULT_AUTO_DRAFT_TEMPLATE = "<system>\n<role>Expert essay writer creating engaging content from news articles</role>\n\n<auto_draft_rules>\n{{AUTO_DRAFT_RULES}}\n</auto_draft_rules>\n\n<writing_rules>\n{{RULES}}\n</writing_rules>\n\n<constraints>\n<word_count>{{AUTO_DRAFT_WORD_COUNT}}</word_count>\n</constraints>\n\n<output_format>\nCRITICAL: Your response MUST start with exactly this format:\n\nLine 1: # [Your Title Here]\nLine 2: *[Your subtitle here]*\nLine 3: (blank line)\nLine 4+: Essay body in markdown\n\n<title_guidelines>\n- Be SPECIFIC about the news angle, not generic\n- Include a concrete detail or unexpected element\n- Create curiosity or make a bold claim\n- 5-12 words ideal\n</title_guidelines>\n\n<subtitle_guidelines>\n- One sentence that hooks the reader\n- Tease the main argument or unique perspective\n- Create tension, curiosity, or promise value\n</subtitle_guidelines>\n</output_format>\n</system>";
 /**
  * Default template for essay outline generation.
  * Placeholders: {{PLAN_RULES}}, {{STYLE_EXAMPLES}}
  */
-declare const DEFAULT_PLAN_TEMPLATE = "You are a writing assistant that outputs essay outlines.\n\nWrap your entire response in <plan> tags. Output nothing outside the tags.\n\n{{PLAN_RULES}}\n\n## Style Reference\n{{STYLE_EXAMPLES}}";
+declare const DEFAULT_PLAN_TEMPLATE = "<system>\n<role>Writing assistant that creates essay outlines</role>\n\n<critical>\nWrap your ENTIRE response in <plan> tags. Output NOTHING outside the tags.\n</critical>\n\n<rules>\n{{PLAN_RULES}}\n</rules>\n\n<style_reference>\n{{STYLE_EXAMPLES}}\n</style_reference>\n</system>";
 /**
  * Default rules for plan generation format.
  */
-declare const DEFAULT_PLAN_RULES = "STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bullets.\n\nOutput format:\n\n<plan>\n# Essay Title\n*One-line subtitle*\n\n## Section Name\n- Key point\n\n## Section Name\n- Key point\n- Another point\n\n## Section Name\n- Key point\n</plan>\n\nConstraints:\n- 4-6 section headings (## lines)\n- 1-3 bullets per section \u2014 NEVER 4 or more\n- Bullets are short phrases, not sentences\n- No prose, no paragraphs, no explanations\n- When revising, output the complete updated plan";
+declare const DEFAULT_PLAN_RULES = "<format>\nSTRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bullets.\n\n<plan>\n# Essay Title\n*One-line subtitle*\n\n## Section Name\n- Key point\n\n## Section Name\n- Key point\n- Another point\n\n## Section Name\n- Key point\n</plan>\n</format>\n\n<constraints>\n- 4-6 section headings (## lines)\n- 1-3 bullets per section \u2014 NEVER 4 or more\n- Bullets are short phrases, not sentences\n- No prose, no paragraphs, no explanations\n- When revising, output the complete updated plan\n</constraints>\n\n<title_guidelines>\n- Be SPECIFIC about the essay's angle\n- Include a concrete detail or unexpected element\n- Avoid generic patterns like \"The Power of\", \"Why X Matters\"\n- 5-12 words ideal\n</title_guidelines>\n\n<subtitle_guidelines>\n- One sentence that previews the main argument\n- Create curiosity or make a bold claim\n</subtitle_guidelines>";
 /**
  * Default template for expanding outlines into full essays.
  * Placeholders: {{RULES}}, {{STYLE_EXAMPLES}}, {{PLAN}}
  */
-declare const DEFAULT_EXPAND_PLAN_TEMPLATE = "You are a writing assistant that expands essay outlines into full drafts.\n\n## Writing Rules (Follow these exactly)\n{{RULES}}\n\n## Style Reference (Write in this voice)\n{{STYLE_EXAMPLES}}\n\n---\n\nWrite an essay following this exact structure:\n\n{{PLAN}}\n\nRules:\n- Use the section headers as H2 headings\n- Expand each section's bullet points into full paragraphs\n- Match the author's voice and style from the examples\n- Output ONLY markdown. No preamble, no \"Here is...\", no explanations. Just the essay content.";
+declare const DEFAULT_EXPAND_PLAN_TEMPLATE = "<system>\n<role>Writing assistant that expands essay outlines into full drafts</role>\n\n<writing_rules>\n{{RULES}}\n</writing_rules>\n\n<style_reference>\n{{STYLE_EXAMPLES}}\n</style_reference>\n\n<plan_to_expand>\n{{PLAN}}\n</plan_to_expand>\n\n<output_format>\nCRITICAL: Your response MUST start with exactly this format:\n\nLine 1: # [Title from plan, refined if needed]\nLine 2: *[Subtitle from plan, refined if needed]*\nLine 3: (blank line)\nLine 4+: Essay body with ## section headings\n\n<requirements>\n- Use the section headers from the plan as H2 headings\n- Expand each section's bullet points into full paragraphs\n- Match the author's voice and style from the examples\n- Output ONLY markdown \u2014 no preamble, no \"Here is...\", no explanations\n</requirements>\n\n<title_refinement>\nIf the plan title is generic, improve it to be:\n- More specific and concrete\n- Curiosity-inducing or bold\n- 5-12 words\n</title_refinement>\n</output_format>\n</system>";
 
 /**
  * Format a date for display
@@ -536,4 +581,4 @@ declare function applyCommentMarks(editor: Editor, comments: CommentWithUser[]):
  */
 declare function scrollToComment(editor: Editor, commentId: string): void;
 
-export { type AIModel, AI_MODELS, type AutobloggerServer as Autoblogger, type AutobloggerServerConfig as AutobloggerConfig, type BaseCrud, CommentMark, type CommentWithUser, type CreateCommentData, type CrudOptions, type CustomFieldConfig, type CustomFieldProps, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_GENERATE_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_PLAN_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, Post, type SelectionState, type Session, type StylesConfig, addCommentMark, applyCommentMarks, buildChatPrompt, buildGeneratePrompt, canDeleteComment, canEditComment, createAPIHandler, createAutoblogger, createCommentsClient, createCrudData, formatDate, getDefaultModel, getModel, removeCommentMark, scrollToComment, truncate, validateSchema };
+export { type AIModel, AI_MODELS, type AutobloggerServer as Autoblogger, type AutobloggerServerConfig as AutobloggerConfig, type BaseCrud, CommentMark, type CommentWithUser, type CreateCommentData, type CrudOptions, type CustomFieldConfig, type CustomFieldProps, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_GENERATE_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_PLAN_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, Post, type SelectionState, type Session, type StylesConfig, addCommentMark, applyCommentMarks, buildAutoDraftPrompt, buildChatPrompt, buildExpandPlanPrompt, buildGeneratePrompt, buildPlanPrompt, buildRewritePrompt, canDeleteComment, canEditComment, createAPIHandler, createAutoblogger, createCommentsClient, createCrudData, formatDate, getDefaultModel, getModel, removeCommentMark, scrollToComment, truncate, validateSchema };

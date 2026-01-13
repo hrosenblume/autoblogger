@@ -1,18 +1,10 @@
-// Autoblogger Schema Template
-// Copy this to your project's prisma/schema.prisma and merge with your existing models
-// Then run: npx prisma migrate dev --name add-autoblogger
+import * as fs from 'fs'
+import * as path from 'path'
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql" // Change to "sqlite" for development
-  url      = env("DATABASE_URL")
-}
-
+// The autoblogger models to add - extracted from prisma/schema.prisma
+const AUTOBLOGGER_MODELS = `
 // ==========================================
-// AUTOBLOGGER MODELS - Copy these to your schema
+// AUTOBLOGGER MODELS
 // ==========================================
 
 model Post {
@@ -47,9 +39,6 @@ model Post {
   sourceUrl String?
   topicId   String?
   topic     TopicSubscription? @relation(fields: [topicId], references: [id])
-
-  // Add your custom fields below, e.g.:
-  // polyhedraShape String?
 }
 
 model Revision {
@@ -77,13 +66,13 @@ model Comment {
   authorEmail String?
 
   // Editor comment fields
-  quotedText String   @default("")  // Snapshot of highlighted text
+  quotedText String   @default("")
   content    String
-  parentId   String?                // For single-level replies
+  parentId   String?
   parent     Comment? @relation("Replies", fields: [parentId], references: [id], onDelete: Cascade)
   replies    Comment[] @relation("Replies")
   resolved   Boolean  @default(false)
-  deletedAt  DateTime?              // Soft delete timestamp
+  deletedAt  DateTime?
 
   // Legacy field
   approved  Boolean  @default(true)
@@ -137,26 +126,23 @@ model AISettings {
   autoDraftTemplate  String?
   planTemplate       String?
   expandPlanTemplate String?
-  anthropicKey       String?  // API key for Anthropic (Claude models)
-  openaiKey          String?  // API key for OpenAI (GPT models)
+  anthropicKey       String?
+  openaiKey          String?
   updatedAt          DateTime @updatedAt
 }
 
 model IntegrationSettings {
   id               String   @id @default("default")
   autoDraftEnabled Boolean  @default(false)
-  postUrlPattern   String   @default("/e/{slug}") // Pattern for post URLs, use {slug} placeholder
+  postUrlPattern   String   @default("/e/{slug}")
   updatedAt        DateTime @updatedAt
-  // Host app can add additional fields like:
-  // googleAnalyticsId String?
-  // contactEmail      String?
 }
 
 model TopicSubscription {
   id               String    @id @default(uuid())
   name             String
-  keywords         String // JSON array
-  rssFeeds         String // JSON array of feed URLs
+  keywords         String
+  rssFeeds         String
   isActive         Boolean   @default(true)
   useKeywordFilter Boolean   @default(true)
   frequency        String    @default("daily")
@@ -177,8 +163,86 @@ model NewsItem {
   title       String
   summary     String?
   publishedAt DateTime?
-  status      String             @default("pending") // pending, generated, skipped
+  status      String             @default("pending")
   postId      String?            @unique
   post        Post?              @relation(fields: [postId], references: [id])
   createdAt   DateTime           @default(now())
+}
+`
+
+const AUTOBLOGGER_MODEL_NAMES = [
+  'Post', 'Revision', 'Comment', 'User', 'Tag', 'PostTag',
+  'AISettings', 'IntegrationSettings', 'TopicSubscription', 'NewsItem'
+]
+
+export interface MergeResult {
+  success: boolean
+  conflicts: string[]
+  content?: string
+}
+
+export function extractModelNames(schemaContent: string): string[] {
+  const modelRegex = /model\s+(\w+)\s*\{/g
+  const models: string[] = []
+  let match
+  while ((match = modelRegex.exec(schemaContent)) !== null) {
+    models.push(match[1])
+  }
+  return models
+}
+
+export function checkConflicts(schemaPath: string): string[] {
+  if (!fs.existsSync(schemaPath)) {
+    return []
+  }
+
+  const content = fs.readFileSync(schemaPath, 'utf-8')
+  const existingModels = extractModelNames(content)
+  
+  return AUTOBLOGGER_MODEL_NAMES.filter(model => existingModels.includes(model))
+}
+
+export function mergeSchema(schemaPath: string, dbProvider?: string): MergeResult {
+  const conflicts = checkConflicts(schemaPath)
+  
+  if (conflicts.length > 0) {
+    return {
+      success: false,
+      conflicts,
+    }
+  }
+
+  let content: string
+
+  if (fs.existsSync(schemaPath)) {
+    // Append models to existing schema
+    const existing = fs.readFileSync(schemaPath, 'utf-8')
+    content = existing.trimEnd() + '\n' + AUTOBLOGGER_MODELS
+  } else {
+    // Create new schema
+    const provider = dbProvider || 'postgresql'
+    content = `generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "${provider}"
+  url      = env("DATABASE_URL")
+}
+${AUTOBLOGGER_MODELS}`
+  }
+
+  return {
+    success: true,
+    conflicts: [],
+    content,
+  }
+}
+
+export function writeSchema(schemaPath: string, content: string): void {
+  const dir = path.dirname(schemaPath)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
+  }
+  fs.writeFileSync(schemaPath, content, 'utf-8')
 }

@@ -204,7 +204,7 @@ export function DropdownItem({
       className={cn(
         'w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0',
         'text-left text-sm rounded-sm cursor-default',
-        'hover:bg-accent focus:bg-accent focus:outline-none',
+        'active:bg-accent md:hover:bg-accent focus:bg-accent focus:outline-none',
         destructive && 'text-destructive',
         disabled && 'opacity-50 cursor-not-allowed',
         className

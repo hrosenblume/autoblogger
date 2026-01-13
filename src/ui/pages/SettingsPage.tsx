@@ -64,6 +64,7 @@ export function SettingsPage({ subPath }: { subPath: string }) {
     { path: '/settings/revisions', label: 'Revisions', description: 'View revision history' },
     { path: '/settings/comments', label: 'Comments', description: 'Manage post comments' },
     { path: '/settings/topics', label: 'Topics', description: 'RSS subscriptions for auto-draft', countKey: 'topics' },
+    { path: '/settings/general', label: 'General', description: 'Post URLs and site settings' },
   ]
 
   // Filter out Topics if autoDraftEnabled is off
@@ -121,6 +122,7 @@ export function SettingsPage({ subPath }: { subPath: string }) {
   
   return (
     <div className="max-w-5xl mx-auto px-6 py-8">
+      {pageName === 'general' && <GeneralSettingsContent />}
       {pageName === 'users' && <UsersSettingsContent />}
       {pageName === 'ai' && <AISettingsContent />}
       {pageName === 'tags' && <TagsSettingsContent />}
@@ -461,8 +463,83 @@ function CollapsibleTemplate({
   )
 }
 
+function GeneralSettingsContent() {
+  const { apiBasePath, sharedData, refetchSharedData } = useDashboardContext()
+  const [postUrlPattern, setPostUrlPattern] = useState(sharedData?.settings?.postUrlPattern ?? '/e/{slug}')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  async function handleSave() {
+    setSaving(true)
+    setSaved(false)
+    await fetch(`${apiBasePath}/settings`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ postUrlPattern }),
+    })
+    setSaving(false)
+    setSaved(true)
+    await refetchSharedData()
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2 className="text-lg font-semibold">General Settings</h2>
+        <p className="text-sm text-muted-foreground">Configure site-wide settings.</p>
+      </div>
+
+      {/* Post URL Pattern Card */}
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-6 space-y-4">
+          <div>
+            <h3 className="text-base font-medium">Post URLs</h3>
+            <p className="text-sm text-muted-foreground">Configure the URL pattern for published posts.</p>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="postUrlPattern" className="text-sm font-medium leading-none">
+              URL Pattern
+            </label>
+            <input
+              id="postUrlPattern"
+              type="text"
+              value={postUrlPattern}
+              onChange={(e) => setPostUrlPattern(e.target.value)}
+              placeholder="/e/{slug}"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            <p className="text-sm text-muted-foreground">
+              Use <code className="px-1 py-0.5 bg-muted rounded text-xs">{'{slug}'}</code> as a placeholder for the post slug. Example: <code className="px-1 py-0.5 bg-muted rounded text-xs">/blog/{'{slug}'}</code>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Save Button */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+        {saved && (
+          <span className="text-sm text-green-600 dark:text-green-400">
+            Saved!
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function AISettingsContent() {
-  const { apiBasePath, navigate } = useDashboardContext()
+  const { apiBasePath, navigate, refetchSharedData } = useDashboardContext()
   const [rules, setRules] = useState('')
   const [chatRules, setChatRules] = useState('')
   const [rewriteRules, setRewriteRules] = useState('')
@@ -485,6 +562,10 @@ function AISettingsContent() {
   const [defaultPlanRules, setDefaultPlanRules] = useState('')
   const [defaultPlanTemplate, setDefaultPlanTemplate] = useState('')
   const [defaultExpandPlanTemplate, setDefaultExpandPlanTemplate] = useState('')
+  const [anthropicKey, setAnthropicKey] = useState('')
+  const [openaiKey, setOpenaiKey] = useState('')
+  const [hasAnthropicEnvKey, setHasAnthropicEnvKey] = useState(false)
+  const [hasOpenaiEnvKey, setHasOpenaiEnvKey] = useState(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -523,6 +604,10 @@ function AISettingsContent() {
         setDefaultPlanRules(data.defaultPlanRules || '')
         setDefaultPlanTemplate(data.defaultPlanTemplate || '')
         setDefaultExpandPlanTemplate(data.defaultExpandPlanTemplate || '')
+        setAnthropicKey(data.anthropicKey || '')
+        setOpenaiKey(data.openaiKey || '')
+        setHasAnthropicEnvKey(data.hasAnthropicEnvKey ?? false)
+        setHasOpenaiEnvKey(data.hasOpenaiEnvKey ?? false)
         // Settings
         setAutoDraftEnabled(settingsRes.data?.autoDraftEnabled ?? false)
         setLoading(false)
@@ -540,7 +625,9 @@ function AISettingsContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           rules, chatRules, rewriteRules, autoDraftRules, planRules, autoDraftWordCount, defaultModel,
-          generateTemplate, chatTemplate, rewriteTemplate, autoDraftTemplate, planTemplate, expandPlanTemplate
+          generateTemplate, chatTemplate, rewriteTemplate, autoDraftTemplate, planTemplate, expandPlanTemplate,
+          anthropicKey: anthropicKey || null,
+          openaiKey: openaiKey || null,
         }),
       }),
       fetch(`${apiBasePath}/settings`, {
@@ -551,6 +638,8 @@ function AISettingsContent() {
     ])
     setSaving(false)
     setSaved(true)
+    // Refresh shared data so Topics card visibility updates immediately
+    await refetchSharedData()
     setTimeout(() => setSaved(false), 2000)
   }
 
@@ -570,9 +659,65 @@ function AISettingsContent() {
         <p className="text-sm text-muted-foreground">Configure your AI writing assistant.</p>
       </div>
 
-      {/* Card container */}
+      {/* Section 1: Models */}
       <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
         <div className="p-6 space-y-6">
+          <div>
+            <h3 className="text-base font-medium">Models</h3>
+            <p className="text-sm text-muted-foreground">API keys and model configuration.</p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label htmlFor="anthropicKey" className="text-sm font-medium leading-none">Anthropic API Key</label>
+              {hasAnthropicEnvKey && !anthropicKey ? (
+                <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
+                  <span className="text-muted-foreground">••••••••</span>
+                  <span className="ml-2 text-xs text-green-600 dark:text-green-400">(from environment)</span>
+                </div>
+              ) : (
+                <input
+                  id="anthropicKey"
+                  type="password"
+                  value={anthropicKey}
+                  onChange={e => setAnthropicKey(e.target.value)}
+                  placeholder={hasAnthropicEnvKey ? "Override env variable..." : "sk-ant-..."}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 font-mono"
+                  disabled={saving}
+                />
+              )}
+              <p className="text-xs text-muted-foreground">
+                {hasAnthropicEnvKey && !anthropicKey 
+                  ? 'Using ANTHROPIC_API_KEY from environment. Enter a value above to override.' 
+                  : 'Required for Claude models (Sonnet, Opus)'}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="openaiKey" className="text-sm font-medium leading-none">OpenAI API Key</label>
+              {hasOpenaiEnvKey && !openaiKey ? (
+                <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
+                  <span className="text-muted-foreground">••••••••</span>
+                  <span className="ml-2 text-xs text-green-600 dark:text-green-400">(from environment)</span>
+                </div>
+              ) : (
+                <input
+                  id="openaiKey"
+                  type="password"
+                  value={openaiKey}
+                  onChange={e => setOpenaiKey(e.target.value)}
+                  placeholder={hasOpenaiEnvKey ? "Override env variable..." : "sk-..."}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 font-mono"
+                  disabled={saving}
+                />
+              )}
+              <p className="text-xs text-muted-foreground">
+                {hasOpenaiEnvKey && !openaiKey 
+                  ? 'Using OPENAI_API_KEY from environment. Enter a value above to override.' 
+                  : 'Required for GPT models'}
+              </p>
+            </div>
+          </div>
+
           <div className="flex items-center gap-4">
             <label className="text-sm font-medium leading-none shrink-0">Default Model</label>
             <div className="relative max-w-sm flex-1">
@@ -587,6 +732,16 @@ function AISettingsContent() {
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" />
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Section 2: Prompts */}
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-6 space-y-6">
+          <div>
+            <h3 className="text-base font-medium">Prompts</h3>
+            <p className="text-sm text-muted-foreground">Rules and templates for AI-generated content.</p>
           </div>
 
           <div className="space-y-2">
@@ -765,11 +920,20 @@ function AISettingsContent() {
               disabled={saving}
             />
           </div>
+        </div>
+      </div>
 
-          {/* Auto-Draft Feature Toggle */}
-          <div className="flex items-center justify-between py-4 border-t border-border">
+      {/* Section 3: Features */}
+      <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
+        <div className="p-6 space-y-6">
+          <div>
+            <h3 className="text-base font-medium">Features</h3>
+            <p className="text-sm text-muted-foreground">Enable or disable AI features.</p>
+          </div>
+
+          <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <label className="text-sm font-medium leading-none">Auto-Draft Feature</label>
+              <label className="text-sm font-medium leading-none">Auto-Draft</label>
               <p className="text-sm text-muted-foreground">
                 Enable RSS topic subscriptions and automatic draft generation.
               </p>
@@ -786,23 +950,24 @@ function AISettingsContent() {
               />
             </button>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
-            >
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {saving ? 'Saving...' : 'Save'}
-            </button>
-            {saved && (
-              <span className="text-sm text-green-600 dark:text-green-400">
-                Saved!
-              </span>
-            )}
-          </div>
         </div>
+      </div>
+
+      {/* Save Button */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+        {saved && (
+          <span className="text-sm text-green-600 dark:text-green-400">
+            Saved!
+          </span>
+        )}
       </div>
     </div>
   )
@@ -1228,6 +1393,7 @@ function TopicsSettingsContent() {
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
                   <option value="hourly">Hourly</option>
+                  <option value="manual">Manual</option>
                 </select>
               </div>
               <div>
@@ -1333,7 +1499,9 @@ interface PostWithRevisions {
 const POSTS_PER_PAGE = 25
 
 function PostsSettingsContent() {
-  const { apiBasePath, navigate } = useDashboardContext()
+  const { apiBasePath, navigate, sharedData } = useDashboardContext()
+  const postUrlPattern = sharedData?.settings?.postUrlPattern ?? '/e/{slug}'
+  const getPostUrl = (slug: string) => postUrlPattern.replace('{slug}', slug)
   const [posts, setPosts] = useState<PostWithRevisions[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -1519,7 +1687,7 @@ function PostsSettingsContent() {
                             </button>
                             {post.status === 'published' && (
                               <a
-                                href={`/e/${post.slug}`}
+                                href={getPostUrl(post.slug)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left hover:bg-accent"
@@ -1577,7 +1745,7 @@ function PostsSettingsContent() {
                       </button>
                       {post.status === 'published' && (
                         <a
-                          href={`/e/${post.slug}`}
+                          href={getPostUrl(post.slug)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left hover:bg-accent"

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useState, useEffect, type ReactNode } from 'react'
 import { Save, Loader2 } from 'lucide-react'
 import type { CustomFieldConfig, StylesConfig } from './types'
 import { DashboardProvider, useDashboardContext, type Session, type EditorState, type EditHandler } from './context'
@@ -9,6 +9,7 @@ import { EditorPage } from './pages/EditorPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { Navbar } from './components/Navbar'
 import { useDashboardKeyboard } from './hooks/useKeyboard'
+import { useChatContextOptional } from './hooks/useChat'
 
 interface AutobloggerDashboardProps {
   basePath?: string
@@ -70,6 +71,7 @@ function DashboardLayout({
 }: DashboardLayoutProps) {
   const { basePath, currentPath, navigate, onEditorStateChange } = useDashboardContext()
   const [editorState, setEditorState] = useState<EditorState | null>(null)
+  const chatContext = useChatContextOptional()
 
   // Extract slug from editor path
   const editorSlug = currentPath.startsWith('/editor/') 
@@ -83,6 +85,24 @@ function DashboardLayout({
     setEditorState(state)
     onEditorStateChange?.(state)
   }
+
+  // Sync essay context to chat when editor content changes
+  const setEssayContext = chatContext?.setEssayContext
+  useEffect(() => {
+    if (!setEssayContext) return
+    
+    if (isEditorPage && editorState?.content) {
+      // Set essay context when on editor page with content
+      setEssayContext({
+        title: editorState.content.title,
+        subtitle: editorState.content.subtitle,
+        markdown: editorState.content.markdown,
+      })
+    } else {
+      // Clear essay context when leaving editor
+      setEssayContext(null)
+    }
+  }, [isEditorPage, editorState?.content, setEssayContext])
 
   useDashboardKeyboard({
     basePath,

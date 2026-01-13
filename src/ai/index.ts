@@ -3,7 +3,7 @@ export type { AIModel } from './models'
 export { createStream } from './provider'
 export { generateStream, expandPlanStream } from './generate'
 export { chatStream } from './chat'
-export { buildGeneratePrompt, buildChatPrompt, buildExpandPlanPrompt } from './builders'
+export { buildGeneratePrompt, buildChatPrompt, buildExpandPlanPrompt, buildPlanPrompt, buildRewritePrompt, buildAutoDraftPrompt } from './builders'
 export {
   DEFAULT_GENERATE_TEMPLATE,
   DEFAULT_CHAT_TEMPLATE,

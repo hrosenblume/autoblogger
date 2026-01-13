@@ -55,10 +55,11 @@ export function EditorToolbar({
   apiBasePath = '/api/cms',
 }: EditorToolbarProps) {
   // Navbar height: py-4 (32px) + h-9 content (36px) + border (1px) = 69px
-  // Skeleton state - each button group renders its own skeletons
+  // Toolbar height: py-2 (16px) + content (~24px) + border (1px) = ~41px
+  // Using fixed positioning to ensure toolbar stays visible when scrolling
   if (loading) {
     return (
-      <div className="sticky top-[69px] z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto">
+      <div className="fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto">
         <FormatButtons loading={true} />
         <Divider />
         <BlockButtons loading={true} />
@@ -75,7 +76,7 @@ export function EditorToolbar({
   }
 
   return (
-    <div className="sticky top-[69px] z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto">
+    <div className="fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto">
       <FormatButtons
         editor={editor}
         textareaRef={textareaRef}

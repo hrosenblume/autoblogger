@@ -68,7 +68,47 @@ You'll also need API keys if you want AI features:
 
 ## Installation
 
-### Step 1: Install the package
+### Quick Start (CLI)
+
+The fastest way to set up Autoblogger is with the CLI:
+
+```bash
+npx autoblogger init
+```
+
+This command will:
+
+1. Detect your Next.js project and Prisma setup
+2. Merge the required models into your Prisma schema
+3. Create boilerplate files (`lib/cms.ts`, API route, dashboard page)
+4. Patch your Tailwind config to include Autoblogger's components
+5. Run the database migration
+6. Optionally import existing markdown content
+
+**CLI Options:**
+
+```bash
+npx autoblogger init --yes           # Skip prompts, use defaults
+npx autoblogger init --dry-run       # Preview changes without writing files
+npx autoblogger init --skip-migrate  # Skip database migration
+npx autoblogger init --import=./posts  # Import content after setup
+```
+
+**Import Existing Content:**
+
+If you have markdown or MDX files, import them into the database:
+
+```bash
+npx autoblogger import ./content/posts
+npx autoblogger import ./posts --status=published  # Import as published
+npx autoblogger import ./posts --tag=imported      # Add a tag to all
+```
+
+### Manual Installation
+
+If you prefer to set things up manually:
+
+#### Step 1: Install the package
 
 ```bash
 npm install autoblogger
@@ -76,7 +116,7 @@ npm install autoblogger
 
 This installs Autoblogger and its dependencies (Tiptap editor, AI SDKs, markdown utilities).
 
-### Step 2: Add the database models
+#### Step 2: Add the database models
 
 Autoblogger needs several tables in your database. Copy the models from the package's schema file into your own Prisma schema.
 
@@ -110,7 +150,7 @@ The required models are:
 | `TopicSubscription` | RSS feed subscriptions for auto-drafting |
 | `NewsItem` | Individual RSS items fetched from subscriptions |
 
-### Step 3: Run the migration
+#### Step 3: Run the migration
 
 After adding the models to your schema:
 
@@ -120,7 +160,7 @@ npx prisma migrate dev --name add-autoblogger
 
 This creates the tables in your database.
 
-### Step 4: Generate the Prisma client
+#### Step 4: Generate the Prisma client
 
 ```bash
 npx prisma generate
@@ -447,16 +487,52 @@ import { ARTICLE_STYLES } from 'autoblogger/styles/article'
 
 ---
 
+## CLI Reference
+
+Autoblogger includes a CLI for project setup and content management.
+
+### Commands
+
+| Command | Description |
+|---------|-------------|
+| `npx autoblogger init` | Set up Autoblogger in your Next.js project |
+| `npx autoblogger import <path>` | Import markdown/MDX content into the database |
+
+### Init Options
+
+| Option | Description |
+|--------|-------------|
+| `--yes`, `-y` | Skip prompts and use defaults |
+| `--skip-migrate` | Don't run database migration |
+| `--import=<path>` | Import content from specified path after setup |
+| `--dry-run` | Show what would be done without making changes |
+
+### Import Options
+
+| Option | Description |
+|--------|-------------|
+| `--status=<status>` | Set imported posts status (`draft` or `published`) |
+| `--tag=<tag>` | Add a tag to all imported posts |
+| `--dry-run` | Show what would be imported without making changes |
+
+---
+
 ## AI Models
 
 Autoblogger supports these AI models out of the box:
 
-| ID | Name | Provider | Best For |
-|----|------|----------|----------|
-| `claude-sonnet` | Claude Sonnet 4.5 | Anthropic | Fast, balanced writing |
-| `claude-opus` | Claude Opus 4.5 | Anthropic | Complex, nuanced essays |
-| `gpt-5.2` | GPT-5.2 | OpenAI | General purpose |
-| `gpt-5-mini` | GPT-5 Mini | OpenAI | Quick drafts |
+| ID | Name | Provider | Description |
+|----|------|----------|-------------|
+| `claude-sonnet` | Sonnet 4.5 | Anthropic | Fast, capable, best value |
+| `claude-opus` | Opus 4.5 | Anthropic | Highest quality, slower |
+| `gpt-5.2` | GPT-5.2 | OpenAI | Latest OpenAI flagship |
+| `gpt-5-mini` | GPT-5 Mini | OpenAI | Fast and cost-efficient |
+
+### AI Features
+
+- **URL Context**: Paste a URL into your prompt and the AI will fetch and read the article content
+- **Chat Modes**: Rewrite, expand, shorten, or chat freely with your content
+- **Custom Prompts**: Configure prompt templates in **Settings → AI**
 
 Configure the default model and custom prompts in the dashboard under **Settings → AI**.
 

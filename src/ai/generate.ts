@@ -1,5 +1,6 @@
 import { createStream } from './provider'
 import { buildGeneratePrompt, buildExpandPlanPrompt } from './builders'
+import { extractAndFetchUrls } from '../lib/url-extractor'
 
 interface GenerateOptions {
   prompt: string
@@ -7,8 +8,11 @@ interface GenerateOptions {
   wordCount?: number
   rules?: string
   template?: string | null
+  styleExamples?: string
   anthropicKey?: string
   openaiKey?: string
+  useWebSearch?: boolean  // Controls ALL internet access: URL extraction AND web search
+  useThinking?: boolean
 }
 
 export async function generateStream(options: GenerateOptions): Promise<ReadableStream> {
@@ -16,17 +20,46 @@ export async function generateStream(options: GenerateOptions): Promise<Readable
     rules: options.rules,
     template: options.template,
     wordCount: options.wordCount,
+    styleExamples: options.styleExamples,
   })
+
+  // Extract and fetch URL content when web access is enabled
+  let enrichedPrompt = options.prompt
+  if (options.useWebSearch) {
+    try {
+      const fetched = await extractAndFetchUrls(options.prompt)
+      const successful = fetched.filter((f) => !f.error && f.content)
+      if (successful.length > 0) {
+        enrichedPrompt = `${options.prompt}
+
+<source_material>
+${successful
+  .map(
+    (f) =>
+      `Source: ${f.url}${f.title ? ` (${f.title})` : ''}
+${f.content}`
+  )
+  .join('\n\n---\n\n')}
+</source_material>
+
+Use the source material above as reference for the essay.`
+      }
+    } catch (err) {
+      console.warn('URL extraction failed:', err)
+    }
+  }
 
   return createStream({
     model: options.model,
     messages: [
       { role: 'system', content: systemPrompt },
-      { role: 'user', content: options.prompt },
+      { role: 'user', content: enrichedPrompt },
     ],
     anthropicKey: options.anthropicKey,
     openaiKey: options.openaiKey,
-    maxTokens: 8192,
+    maxTokens: options.useThinking ? 16000 : 8192,
+    useWebSearch: options.useWebSearch,
+    useThinking: options.useThinking,
   })
 }
 

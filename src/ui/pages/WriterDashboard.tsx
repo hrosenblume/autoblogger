@@ -225,7 +225,7 @@ export function WriterDashboard() {
               )}
             </div>
             
-            <ControlButton onClick={() => setWebEnabled(!webEnabled)} active={webEnabled} title="Search the web">
+            <ControlButton onClick={() => setWebEnabled(!webEnabled)} active={webEnabled} title="Search the web (works with all models)">
               <Globe className="w-4 h-4" />
             </ControlButton>
             
@@ -295,7 +295,14 @@ export function WriterDashboard() {
               </div>
             ) : (
               <p className="text-muted-foreground text-sm">
-                No suggested essays — configure topics to generate drafts
+                No suggested essays —{' '}
+                <button
+                  onClick={() => navigate('/settings/topics')}
+                  className="text-primary hover:underline"
+                >
+                  configure topics
+                </button>{' '}
+                to generate drafts
               </p>
             )
           )}

@@ -63,6 +63,7 @@ interface SharedData {
     counts: Record<string, number>;
     settings: {
         autoDraftEnabled: boolean;
+        postUrlPattern: string;
     };
     posts: unknown[];
     suggestedPosts: unknown[];
@@ -284,6 +285,8 @@ interface ChatProviderProps {
 }
 declare function ChatProvider({ children, apiBasePath, chatApiPath, historyApiPath, }: ChatProviderProps): react_jsx_runtime.JSX.Element;
 declare function useChatContext(): ChatContextValue;
+/** Optional chat context - returns null if not within ChatProvider */
+declare function useChatContextOptional(): ChatContextValue | null;
 
 interface ChatPanelProps {
     /** Optional prose classes for message rendering */
@@ -295,7 +298,7 @@ interface ChatPanelProps {
     /** API path for fetching models (defaults to /api/cms/ai/settings) */
     modelsApiPath?: string;
 }
-declare function ChatPanel({ proseClasses, onNavigate, isOnEditor: isOnEditorProp, }: ChatPanelProps): react.ReactPortal | null;
+declare function ChatPanel({ proseClasses, onNavigate: onNavigateProp, isOnEditor: isOnEditorProp, modelsApiPath, }: ChatPanelProps): react.ReactPortal | null;
 
 /** AI model option for UI dropdowns */
 interface AIModelOption {
@@ -341,4 +344,4 @@ interface ControlButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 declare const ControlButton: react.ForwardRefExoticComponent<ControlButtonProps & react.RefAttributes<HTMLButtonElement>>;
 
-export { type AIModelOption, AutobloggerDashboard, type AutobloggerDashboardProps, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, type Message as ChatMessage, type ChatMode, ChatPanel, ChatProvider, CommentThread, CommentsPanel, type CommentsState, ControlButton, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, ModelSelector, Navbar, type NavbarProps, type Session, type SessionUser, type StylesConfig, useAIModels, useChatContext, useComments, useDashboardContext };
+export { type AIModelOption, AutobloggerDashboard, type AutobloggerDashboardProps, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, type Message as ChatMessage, type ChatMode, ChatPanel, ChatProvider, CommentThread, CommentsPanel, type CommentsState, ControlButton, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, ModelSelector, Navbar, type NavbarProps, type Session, type SessionUser, type StylesConfig, useAIModels, useChatContext, useChatContextOptional, useComments, useDashboardContext };

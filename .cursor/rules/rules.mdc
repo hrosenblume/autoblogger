@@ -58,6 +58,7 @@
 ### Layer Separation
 | Layer | Location | Purpose |
 |----|----|---|
+| CLI | `src/cli/` | Setup wizard, content import |
 | Data | `src/data/` | Prisma queries, CRUD operations |
 | API | `src/api/` | HTTP handlers, request/response |
 | UI | `src/ui/` | React components, hooks, pages |
@@ -97,6 +98,27 @@ export async function handleResourceAPI(
 - Call `onMutate` after successful mutations for cache invalidation
 - Return proper status codes: 200, 201, 400, 401, 403, 404, 405
 - Parse path with `path.split('/').filter(Boolean)` to extract segments
+
+## CLI Development
+
+### Conventions
+- Use `picocolors` for colored output (lightweight, no dependencies)
+- Use `prompts` for interactive questions
+- Log with `log(type, message)` helper: `check`, `write`, `skip`, `warn`, `error`, `info`, `run`, `backup`
+- Support `--dry-run` flag to preview changes
+- Support `--yes` flag for non-interactive mode
+- Create backups before modifying existing files
+
+### File Operations
+- Use Node.js `fs` and `path` modules directly
+- Check file existence before writing
+- Use `execSync` for running shell commands with `stdio: 'inherit'`
+- Clean up temporary files in `finally` blocks
+
+### Detection Utilities
+- `detectProject()` — Find Next.js version, Prisma schema, Tailwind config
+- `checkConflicts()` — Detect model name conflicts in Prisma schema
+- `countMarkdownFiles()` — Count importable content
 
 ## Data Layer
 
@@ -169,6 +191,23 @@ Each settings section follows this pattern:
 - Preview shows revision content without saving
 - Restore saves the preview as current content
 - Store original post state during preview for cancel
+
+## URL Content Extraction
+
+For AI prompts that reference URLs:
+- Use `extractAndFetchUrls(text)` to detect and fetch URLs from user input
+- URLs are detected with/without protocol (https://, www., bare domains)
+- Content is fetched with Puppeteer (JS-rendered) or simple fetch (fallback)
+- Use `buildUrlContext(fetched)` to create XML-formatted context for prompts
+- Limit to 3 URLs max per request
+- Content is truncated to ~4000 chars to avoid token bloat
+
+### Puppeteer Configuration
+- Auto-detects serverless (Vercel/Lambda) vs local environment
+- Serverless: Uses `@sparticuz/chromium` + `puppeteer-core`
+- Local: Uses regular `puppeteer` with bundled Chrome
+- Block images, stylesheets, fonts to speed up loading
+- 15s timeout for page load, 2s wait for JS rendering
 
 ## Don't
 - Don't use inline styles

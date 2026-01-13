@@ -22,7 +22,7 @@ export { useComments } from './hooks/useComments'
 export type { CommentsState } from './hooks/useComments'
 
 // Chat components and context
-export { ChatProvider, useChatContext, ChatContext } from './hooks/useChat'
+export { ChatProvider, useChatContext, useChatContextOptional, ChatContext } from './hooks/useChat'
 export type { 
   Message as ChatMessage,
   EssayContext as ChatEssayContext,

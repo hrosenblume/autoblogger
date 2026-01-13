@@ -50,6 +50,22 @@ autoblogger/
 │   ├── schema.ts          # Prisma schema validation helper
 │   ├── types.ts           # Core TypeScript types (Post, Revision, etc.)
 │   │
+│   ├── cli/               # CLI tool (npx autoblogger)
+│   │   ├── index.ts       # CLI entry point, command parser
+│   │   ├── init.ts        # `init` command — project setup
+│   │   ├── import.ts      # `import` command — content migration
+│   │   ├── templates/     # Boilerplate file templates
+│   │   │   ├── index.ts
+│   │   │   ├── cms-config.ts
+│   │   │   ├── api-route.ts
+│   │   │   └── dashboard-page.ts
+│   │   └── utils/         # CLI utilities
+│   │       ├── detect.ts      # Project detection (Next.js, Prisma, etc.)
+│   │       ├── backup.ts      # Pre-change backups
+│   │       ├── prisma-merge.ts # Schema conflict detection + merging
+│   │       ├── tailwind-patch.ts # Tailwind config patching (v3 + v4)
+│   │       └── prompts.ts     # Interactive prompts + logging
+│   │
 │   ├── types/             # Consolidated type definitions
 │   │   ├── index.ts       # Barrel exports
 │   │   ├── models.ts      # Core model interfaces (Post, Comment, etc.)
@@ -85,10 +101,10 @@ autoblogger/
 │   │
 │   ├── ai/                # AI integration
 │   │   ├── index.ts       # Barrel exports
-│   │   ├── models.ts      # AI_MODELS array (Claude, GPT)
+│   │   ├── models.ts      # AI_MODELS array (Claude, GPT) with descriptions
 │   │   ├── provider.ts    # Unified streaming abstraction
-│   │   ├── generate.ts    # Essay generation
-│   │   ├── chat.ts        # Chat streaming with modes
+│   │   ├── generate.ts    # Essay generation with URL context
+│   │   ├── chat.ts        # Chat streaming with modes (rewrite, expand, etc.)
 │   │   ├── prompts.ts     # Default prompt templates (all DEFAULT_* constants)
 │   │   └── builders.ts    # buildGeneratePrompt, buildChatPrompt
 │   │
@@ -101,7 +117,8 @@ autoblogger/
 │   │   ├── comments.ts    # createCommentsClient, permission helpers
 │   │   ├── comment-mark.ts # Tiptap CommentMark extension
 │   │   ├── editor-types.ts # RevisionState, AIState types
-│   │   └── models.ts      # LENGTH_OPTIONS, AIModelOption type
+│   │   ├── models.ts      # LENGTH_OPTIONS, AIModelOption type
+│   │   └── url-extractor.ts # URL detection + content fetching (Puppeteer/Readability)
 │   │
 │   ├── styles/            # Style exports
 │   │   ├── article.ts     # ARTICLE_CLASSES, ARTICLE_LAYOUT
@@ -124,6 +141,7 @@ autoblogger/
 │       │   ├── EditorToolbar.tsx
 │       │   ├── CommentsPanel.tsx
 │       │   ├── CommentThread.tsx
+│       │   ├── ChatPanel.tsx        # AI chat sidebar
 │       │   ├── TagsSection.tsx
 │       │   ├── ModelSelector.tsx
 │       │   ├── ControlButton.tsx
@@ -142,6 +160,7 @@ autoblogger/
 │       │
 │       └── hooks/
 │           ├── useComments.ts    # Comment state + CRUD
+│           ├── useChat.tsx       # AI chat state + streaming
 │           └── useKeyboard.ts    # Keyboard shortcuts
 │
 ├── prisma/
@@ -309,6 +328,49 @@ model NewsItem {
 
 ## Key Systems
 
+### CLI Tool
+
+The CLI (`npx autoblogger`) automates project setup:
+
+```bash
+npx autoblogger init          # Interactive setup
+npx autoblogger init --yes    # Non-interactive with defaults
+npx autoblogger import ./posts  # Import markdown content
+```
+
+**Init Process:**
+1. Detect project (Next.js version, Prisma schema, Tailwind config)
+2. Check for model name conflicts
+3. Merge Prisma schema (adds 11 models)
+4. Create boilerplate files (lib/cms.ts, API route, dashboard page)
+5. Patch Tailwind config (v3 JS/TS or v4 CSS)
+6. Run migration + generate
+7. Optionally import existing content
+
+**Files Created:**
+- `lib/cms.ts` — CMS configuration
+- `app/api/cms/[...path]/route.ts` — API catch-all route
+- `app/writer/[[...path]]/page.tsx` — Dashboard page
+
+### URL Content Extraction
+
+The `url-extractor.ts` module fetches article content from URLs:
+
+```typescript
+import { extractAndFetchUrls, buildUrlContext } from './lib/url-extractor'
+
+// Extract URLs from text and fetch their content
+const fetched = await extractAndFetchUrls(userPrompt)
+const context = buildUrlContext(fetched)  // XML format for AI prompts
+```
+
+**Features:**
+- Detects URLs with/without protocol (`https://`, `www.`, bare domains)
+- Uses Puppeteer for JS-rendered pages (auto-detects serverless vs local)
+- Falls back to simple HTTP fetch + Mozilla Readability
+- Limits content to ~4000 chars to avoid token bloat
+- Returns title + cleaned text content
+
 ### Host App Integration
 
 The package is mounted via catch-all routes in the host app:
@@ -451,12 +513,24 @@ Templates use `{{PLACEHOLDER}}` syntax:
 
 ## Commands
 
+### Development
+
 | Command | Description |
 |---|----|
 | `npm run build` | Build package (ESM + CJS + types) |
 | `npm run dev` | Watch mode for development |
 | `npm run typecheck` | TypeScript check |
 | `npm run lint` | ESLint check |
+
+### CLI
+
+| Command | Description |
+|---|----|
+| `npx autoblogger init` | Set up Autoblogger in a Next.js project |
+| `npx autoblogger init --yes` | Non-interactive setup with defaults |
+| `npx autoblogger init --dry-run` | Preview changes without writing |
+| `npx autoblogger import <path>` | Import markdown/MDX content |
+| `npx autoblogger import <path> --status=published` | Import as published |
 
 ## CI/CD
 
@@ -489,6 +563,8 @@ dist/
 ├── ui.js             # CJS UI components
 ├── ui.mjs            # ESM UI components
 ├── ui.d.ts           # UI declarations
+├── cli/
+│   └── index.js      # CLI entry (npx autoblogger)
 ├── lib/
 │   ├── markdown.js/mjs/d.ts
 │   └── seo.js/mjs/d.ts
