@@ -1,0 +1,165 @@
+/**
+ * Autoblogger Theme CSS (Isolated)
+ * 
+ * All styles are scoped under .autoblogger container
+ * Variables are prefixed with --ab- to avoid conflicts
+ */
+
+/* ============================================
+   CSS VARIABLES (namespaced with --ab-)
+   ============================================ */
+
+:root {
+  --ab-background: 0 0% 100%;
+  --ab-foreground: 240 10% 3.9%;
+  --ab-card: 0 0% 100%;
+  --ab-card-foreground: 240 10% 3.9%;
+  --ab-popover: 0 0% 100%;
+  --ab-popover-foreground: 240 10% 3.9%;
+  --ab-primary: 240 5.9% 10%;
+  --ab-primary-foreground: 0 0% 98%;
+  --ab-secondary: 240 4.8% 95.9%;
+  --ab-secondary-foreground: 240 5.9% 10%;
+  --ab-muted: 240 4.8% 95.9%;
+  --ab-muted-foreground: 240 3.8% 46.1%;
+  --ab-accent: 240 4.8% 95.9%;
+  --ab-accent-foreground: 240 5.9% 10%;
+  --ab-destructive: 0 84.2% 60.2%;
+  --ab-destructive-foreground: 0 0% 98%;
+  --ab-border: 240 5.9% 90%;
+  --ab-input: 240 5.9% 90%;
+  --ab-ring: 240 10% 3.9%;
+  --ab-radius: 0.5rem;
+}
+
+.dark {
+  --ab-background: 240 10% 3.9%;
+  --ab-foreground: 0 0% 98%;
+  --ab-card: 240 10% 3.9%;
+  --ab-card-foreground: 0 0% 98%;
+  --ab-popover: 240 10% 3.9%;
+  --ab-popover-foreground: 0 0% 98%;
+  --ab-primary: 0 0% 98%;
+  --ab-primary-foreground: 240 5.9% 10%;
+  --ab-secondary: 240 3.7% 15.9%;
+  --ab-secondary-foreground: 0 0% 98%;
+  --ab-muted: 240 3.7% 15.9%;
+  --ab-muted-foreground: 240 5% 64.9%;
+  --ab-accent: 240 3.7% 15.9%;
+  --ab-accent-foreground: 0 0% 98%;
+  --ab-destructive: 0 62.8% 30.6%;
+  --ab-destructive-foreground: 0 0% 98%;
+  --ab-border: 240 3.7% 15.9%;
+  --ab-input: 240 3.7% 15.9%;
+  --ab-ring: 240 4.9% 83.9%;
+}
+
+/* Alias --ab-* to standard names for Tailwind compatibility */
+.autoblogger {
+  --background: var(--ab-background);
+  --foreground: var(--ab-foreground);
+  --card: var(--ab-card);
+  --card-foreground: var(--ab-card-foreground);
+  --popover: var(--ab-popover);
+  --popover-foreground: var(--ab-popover-foreground);
+  --primary: var(--ab-primary);
+  --primary-foreground: var(--ab-primary-foreground);
+  --secondary: var(--ab-secondary);
+  --secondary-foreground: var(--ab-secondary-foreground);
+  --muted: var(--ab-muted);
+  --muted-foreground: var(--ab-muted-foreground);
+  --accent: var(--ab-accent);
+  --accent-foreground: var(--ab-accent-foreground);
+  --destructive: var(--ab-destructive);
+  --destructive-foreground: var(--ab-destructive-foreground);
+  --border: var(--ab-border);
+  --input: var(--ab-input);
+  --ring: var(--ab-ring);
+  --radius: var(--ab-radius);
+}
+
+/* ============================================
+   SCOPED BASE STYLES (only inside .autoblogger)
+   ============================================ */
+
+.autoblogger {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.autoblogger *, .autoblogger *::before, .autoblogger *::after {
+  border-color: hsl(var(--border));
+}
+
+.autoblogger * {
+  transition-property: background-color, border-color;
+  transition-duration: 150ms;
+  transition-timing-function: ease-out;
+}
+
+.autoblogger a, .autoblogger button {
+  touch-action: manipulation;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes ab-fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.autoblogger .animate-fade-in-up {
+  opacity: 0;
+  animation: ab-fadeInUp 0.5s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .autoblogger .animate-fade-in-up {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   PROSE STYLES (scoped)
+   ============================================ */
+
+.autoblogger .prose { max-width: none; }
+.autoblogger .prose h1 { font-size: 22px; line-height: 1.3; font-weight: 700; margin-bottom: 1.5rem; }
+.autoblogger .prose h2 { font-size: 18px; line-height: 1.4; font-weight: 700; margin-top: 2rem; margin-bottom: 1rem; }
+.autoblogger .prose h3 { font-size: 16px; line-height: 1.4; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+.autoblogger .prose p { margin-bottom: 1rem; line-height: 1.625; }
+.autoblogger .prose ul, .autoblogger .prose ol { margin-bottom: 1rem; padding-left: 1.5rem; }
+.autoblogger .prose li { margin-bottom: 0.5rem; }
+.autoblogger .prose ul li { list-style-type: disc; }
+.autoblogger .prose ol li { list-style-type: decimal; }
+.autoblogger .prose a { color: #2563eb; text-decoration: underline; }
+.dark .autoblogger .prose a { color: #60a5fa; }
+.autoblogger .prose code { background-color: hsl(var(--muted)); padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.875rem; }
+.autoblogger .prose pre { background-color: hsl(var(--muted)); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; }
+.autoblogger .prose pre code { background-color: transparent; padding: 0; }
+.autoblogger .prose blockquote { border-left: 4px solid hsl(var(--border)); padding-left: 1rem; font-style: italic; margin: 1rem 0; }
+.autoblogger .prose img { border-radius: 0.5rem; margin: 1rem 0; }
+.autoblogger .prose hr { margin: 2rem 0; border-color: hsl(var(--border)); }
+
+/* ============================================
+   TIPTAP EDITOR STYLES (scoped)
+   ============================================ */
+
+.autoblogger .ProseMirror:focus { outline: none; }
+.autoblogger .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #d1d5db;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
+.dark .autoblogger .ProseMirror p.is-editor-empty:first-child::before { color: #374151; }
+.autoblogger .ProseMirror h1 { font-size: 22px; line-height: 1.3; }
+.autoblogger .ProseMirror h2 { font-size: 18px; line-height: 1.4; }
+.autoblogger .ProseMirror h3 { font-size: 16px; line-height: 1.4; }

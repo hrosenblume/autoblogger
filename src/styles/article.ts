@@ -4,11 +4,11 @@ export const ARTICLE_LAYOUT = {
 } as const
 
 export const ARTICLE_CLASSES = {
-  container: 'max-w-ab-content mx-auto px-ab-content-padding',
-  title: 'text-ab-title font-bold',
-  subtitle: 'text-ab-h2 text-muted-foreground',
+  container: 'max-w-[680px] mx-auto px-6',
+  title: 'text-title font-bold',
+  subtitle: 'text-h2 text-muted-foreground',
   byline: 'text-sm text-muted-foreground',
-  body: 'text-ab-body prose dark:prose-invert',
+  body: 'text-body prose dark:prose-invert',
   prose: 'prose dark:prose-invert max-w-none',
 } as const
 

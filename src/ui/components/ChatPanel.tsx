@@ -287,7 +287,7 @@ export function ChatPanel({
         role="dialog"
         aria-modal="true"
         aria-label="Chat"
-        className={`fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`autoblogger fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Header */}
         <div className="flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between">

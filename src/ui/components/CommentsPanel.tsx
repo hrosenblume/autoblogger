@@ -150,7 +150,7 @@ export function CommentsPanel({
         aria-modal="true"
         aria-label="Comments"
         className={cn(
-          'fixed z-[70] flex flex-col bg-white dark:bg-gray-900 shadow-xl transition-transform duration-200 ease-out overflow-hidden',
+          'autoblogger fixed z-[70] flex flex-col bg-white dark:bg-gray-900 shadow-xl transition-transform duration-200 ease-out overflow-hidden',
           'inset-x-0 top-0 h-[100dvh]',
           'md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-gray-200 md:dark:border-gray-700',
           isAnimating ? 'translate-x-0' : 'translate-x-full'

@@ -21,6 +21,7 @@
     },
     "./styles/preset": "./dist/styles/preset.js",
     "./styles/editor.css": "./dist/styles/editor.css",
+    "./styles/autoblogger.css": "./dist/styles/autoblogger.css",
     "./styles/article": {
       "import": "./dist/styles/article.mjs",
       "require": "./dist/styles/article.js"
@@ -39,7 +40,7 @@
     "prisma"
   ],
   "scripts": {
-    "build": "tsup && cp src/styles/preset.js dist/styles/preset.js",
+    "build": "tsup && cp src/styles/preset.js dist/styles/preset.js && cp src/styles/autoblogger.css dist/styles/autoblogger.css",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",

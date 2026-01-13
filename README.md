@@ -313,68 +313,74 @@ The `[[...path]]` syntax is a catch-all route that captures the dashboard's inte
 
 ## Configuring Tailwind
 
-Autoblogger's UI uses Tailwind CSS classes. Add the package's files to your Tailwind content configuration so the classes aren't purged:
+Autoblogger's UI uses Tailwind CSS. Add the package's files to your Tailwind content configuration so the classes aren't purged:
 
 ```javascript
-// tailwind.config.js (or tailwind.config.ts)
+// tailwind.config.js
 module.exports = {
+  presets: [require('autoblogger/styles/preset')],
   content: [
     './app/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
     // Add this line to include Autoblogger's components
     './node_modules/autoblogger/dist/**/*.{js,mjs}',
   ],
+  darkMode: 'class',
   // ... rest of your config
 }
 ```
 
-The dashboard uses semantic color tokens like `bg-card`, `text-muted-foreground`, `border-border`, etc. These come from shadcn/ui conventions. If you're using shadcn, they'll work automatically. Otherwise, add these CSS variables to your globals:
+The `autoblogger/styles/preset` includes:
+- Typography scale (`text-title`, `text-h1`, `text-h2`, `text-h3`, `text-body`, `text-table`)
+- Color tokens (`bg-background`, `text-muted-foreground`, `border-border`, etc.)
+- Border radius utilities
+
+---
+
+## Styling
+
+Autoblogger includes a complete theme with CSS variables, prose styles, and editor styling. Import it in your global CSS:
 
 ```css
-/* globals.css */
-:root {
-  --background: 0 0% 100%;
-  --foreground: 0 0% 3.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 0 0% 3.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 0 0% 3.9%;
-  --primary: 0 0% 9%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 0 0% 96.1%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 0 0% 96.1%;
-  --muted-foreground: 0 0% 45.1%;
-  --accent: 0 0% 96.1%;
-  --accent-foreground: 0 0% 9%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 89.8%;
-  --input: 0 0% 89.8%;
-  --ring: 0 0% 3.9%;
-}
+/* app/globals.css */
+@import 'autoblogger/styles/autoblogger.css';
 
-.dark {
-  --background: 0 0% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 0 0% 3.9%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 9%;
-  --secondary: 0 0% 14.9%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 0 0% 14.9%;
-  --muted-foreground: 0 0% 63.9%;
-  --accent: 0 0% 14.9%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 14.9%;
-  --input: 0 0% 14.9%;
-  --ring: 0 0% 83.1%;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+This provides:
+- **Light and dark mode colors** — shadcn/ui Zinc theme tokens
+- **Typography scale** — Consistent heading and body sizes  
+- **Prose styles** — Article content formatting (headings, paragraphs, lists, code, blockquotes)
+- **Editor styles** — Tiptap focus states and placeholder styling
+- **Animations** — Fade-in effects with reduced motion support
+
+### Customizing
+
+Override any CSS variable after the import:
+
+```css
+@import 'autoblogger/styles/autoblogger.css';
+
+:root {
+  --primary: 221 83% 53%;  /* Custom blue primary */
 }
+```
+
+Or pass custom styles when creating the CMS:
+
+```typescript
+// lib/cms.ts
+export const cms = createAutoblogger({
+  // ... other config
+  styles: {
+    container: 'max-w-3xl mx-auto px-8',
+    title: 'text-4xl font-serif',
+    prose: 'prose prose-lg dark:prose-invert',
+  },
+})
 ```
 
 ---

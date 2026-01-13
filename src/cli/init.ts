@@ -7,6 +7,7 @@ import { detectProject, countMarkdownFiles } from './utils/detect'
 import { createBackup } from './utils/backup'
 import { checkConflicts, mergeSchema, writeSchema } from './utils/prisma-merge'
 import { patchTailwindConfig, patchTailwindCssConfig, writeTailwindConfig } from './utils/tailwind-patch'
+import { findGlobalsCss, patchGlobalsCss } from './utils/css-patch'
 import { promptInit, log, confirm } from './utils/prompts'
 import { CMS_CONFIG_TEMPLATE, API_ROUTE_TEMPLATE, DASHBOARD_PAGE_TEMPLATE } from './templates'
 import { importContent } from './import'
@@ -209,6 +210,21 @@ export async function init(options: InitOptions = {}) {
       log('warn', 'Could not auto-patch Tailwind v4 CSS config. Please add manually:')
       console.log(pc.gray('  @source "./node_modules/autoblogger/dist/**/*.{js,mjs}";'))
     }
+  }
+
+
+  // Step 7b: Patch globals.css to import autoblogger styles
+  const globalsCssPath = findGlobalsCss(cwd)
+  if (globalsCssPath) {
+    const cssResult = patchGlobalsCss(globalsCssPath)
+    if (cssResult.alreadyPatched) {
+      log('skip', 'globals.css already imports autoblogger styles')
+    } else if (cssResult.success) {
+      log('write', `Updated ${path.relative(cwd, globalsCssPath)} (added autoblogger CSS import)`)
+    }
+  } else {
+    log('warn', 'Could not find globals.css. Please add manually:')
+    console.log(pc.gray("  @import 'autoblogger/styles/autoblogger.css';"))
   }
 
   // Step 8: Run migration

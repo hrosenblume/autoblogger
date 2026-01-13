@@ -1263,7 +1263,7 @@ function Dropdown({
           ...align === "right" ? { right: position.right } : { left: position.left }
         },
         className: cn(
-          "z-50 min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1 overscroll-contain",
+          "autoblogger z-50 min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1 overscroll-contain",
           className
         ),
         onWheel: (e) => e.stopPropagation(),
@@ -6358,7 +6358,7 @@ function CommentsPanel({
           "aria-modal": "true",
           "aria-label": "Comments",
           className: cn(
-            "fixed z-[70] flex flex-col bg-white dark:bg-gray-900 shadow-xl transition-transform duration-200 ease-out overflow-hidden",
+            "autoblogger fixed z-[70] flex flex-col bg-white dark:bg-gray-900 shadow-xl transition-transform duration-200 ease-out overflow-hidden",
             "inset-x-0 top-0 h-[100dvh]",
             "md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-gray-200 md:dark:border-gray-700",
             isAnimating ? "translate-x-0" : "translate-x-full"
@@ -10294,7 +10294,7 @@ function DashboardLayout({
     ),
     navbarRightSlot
   ] });
-  return /* @__PURE__ */ jsxs16("div", { className: "min-h-screen bg-background flex flex-col", children: [
+  return /* @__PURE__ */ jsxs16("div", { className: "autoblogger min-h-screen bg-background flex flex-col", children: [
     /* @__PURE__ */ jsx22(
       Navbar,
       {
@@ -10563,7 +10563,7 @@ function ChatPanel({
           role: "dialog",
           "aria-modal": "true",
           "aria-label": "Chat",
-          className: `fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
+          className: `autoblogger fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
           children: [
             /* @__PURE__ */ jsxs17("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
               /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-2", children: [

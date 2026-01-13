@@ -145,7 +145,7 @@ function DashboardLayout({
   )
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="autoblogger min-h-screen bg-background flex flex-col">
       <Navbar
         onSignOut={onSignOut}
         onThemeToggle={onThemeToggle}
