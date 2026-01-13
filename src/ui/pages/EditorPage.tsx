@@ -352,73 +352,88 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     }
   }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown])
 
-  // Register edit handler for AI agent mode
-  useEffect(() => {
-    if (!onRegisterEditHandler) return
+  // Create edit handler for AI agent mode
+  const handleEdit = useCallback((edit: EditCommand): boolean => {
+    if (edit.type === 'replace_all') {
+      setPost(prev => ({
+        ...prev,
+        title: edit.title ?? prev.title,
+        subtitle: edit.subtitle ?? prev.subtitle,
+        markdown: edit.markdown ?? prev.markdown,
+      }))
+      return true
+    }
 
-    const handleEdit = (edit: EditCommand): boolean => {
-      if (edit.type === 'replace_all') {
-        setPost(prev => ({
-          ...prev,
-          title: edit.title ?? prev.title,
-          subtitle: edit.subtitle ?? prev.subtitle,
-          markdown: edit.markdown ?? prev.markdown,
-        }))
+    if (edit.type === 'replace_section' && edit.find && edit.replace !== undefined) {
+      // Use functional update to get current post state
+      let found = false
+      setPost(prev => {
+        if (prev.markdown.includes(edit.find!)) {
+          found = true
+          return { ...prev, markdown: prev.markdown.replace(edit.find!, edit.replace!) }
+        }
+        return prev
+      })
+      return found
+    }
+
+    if (edit.type === 'insert' && edit.replace !== undefined) {
+      if (edit.position === 'start') {
+        setPost(prev => ({ ...prev, markdown: edit.replace + prev.markdown }))
         return true
       }
-
-      if (edit.type === 'replace_section' && edit.find && edit.replace !== undefined) {
-        if (post.markdown.includes(edit.find)) {
-          setPost(prev => ({
-            ...prev,
-            markdown: prev.markdown.replace(edit.find!, edit.replace!),
-          }))
-          return true
-        }
-        return false
+      if (edit.position === 'end') {
+        setPost(prev => ({ ...prev, markdown: prev.markdown + edit.replace }))
+        return true
       }
-
-      if (edit.type === 'insert' && edit.replace !== undefined) {
-        if (edit.position === 'start') {
-          setPost(prev => ({ ...prev, markdown: edit.replace + prev.markdown }))
-          return true
-        }
-        if (edit.position === 'end') {
-          setPost(prev => ({ ...prev, markdown: prev.markdown + edit.replace }))
-          return true
-        }
-        if (edit.find && post.markdown.includes(edit.find)) {
-          const idx = post.markdown.indexOf(edit.find)
-          const insertPoint = edit.position === 'before' ? idx : idx + edit.find.length
-          setPost(prev => ({
-            ...prev,
-            markdown: prev.markdown.slice(0, insertPoint) + edit.replace + prev.markdown.slice(insertPoint),
-          }))
-          return true
-        }
-        return false
+      if (edit.find) {
+        let found = false
+        setPost(prev => {
+          if (prev.markdown.includes(edit.find!)) {
+            found = true
+            const idx = prev.markdown.indexOf(edit.find!)
+            const insertPoint = edit.position === 'before' ? idx : idx + edit.find!.length
+            return {
+              ...prev,
+              markdown: prev.markdown.slice(0, insertPoint) + edit.replace + prev.markdown.slice(insertPoint),
+            }
+          }
+          return prev
+        })
+        return found
       }
-
-      if (edit.type === 'delete' && edit.find) {
-        if (post.markdown.includes(edit.find)) {
-          setPost(prev => ({
-            ...prev,
-            markdown: prev.markdown.replace(edit.find!, ''),
-          }))
-          return true
-        }
-        return false
-      }
-
       return false
     }
 
-    onRegisterEditHandler(handleEdit)
-
-    return () => {
-      onRegisterEditHandler(null)
+    if (edit.type === 'delete' && edit.find) {
+      let found = false
+      setPost(prev => {
+        if (prev.markdown.includes(edit.find!)) {
+          found = true
+          return { ...prev, markdown: prev.markdown.replace(edit.find!, '') }
+        }
+        return prev
+      })
+      return found
     }
-  }, [post.markdown, onRegisterEditHandler])
+
+    return false
+  }, [])
+
+  // Register edit handler with dashboard context (for external use)
+  useEffect(() => {
+    if (!onRegisterEditHandler) return
+    onRegisterEditHandler(handleEdit)
+    return () => { onRegisterEditHandler(null) }
+  }, [handleEdit, onRegisterEditHandler])
+
+  // Register edit handler with chat context (for AI agent mode)
+  const registerEditHandler = chatContext?.registerEditHandler
+  useEffect(() => {
+    if (!registerEditHandler) return
+    registerEditHandler(handleEdit)
+    return () => { registerEditHandler(null) }
+  }, [handleEdit, registerEditHandler])
 
   // Expand plan into full essay - shared logic for both handler and URL param
   const expandPlanToEssay = useCallback(async (plan: string, wordCount: number = 800) => {

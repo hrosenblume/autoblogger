@@ -137,6 +137,7 @@ model AISettings {
   autoDraftTemplate  String?
   planTemplate       String?
   expandPlanTemplate String?
+  agentTemplate      String?  // Template for agent mode (direct editing)
   anthropicKey       String?  // API key for Anthropic (Claude models)
   openaiKey          String?  // API key for OpenAI (GPT models)
   updatedAt          DateTime @updatedAt

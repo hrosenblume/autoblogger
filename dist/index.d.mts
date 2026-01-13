@@ -190,6 +190,7 @@ declare function createAISettingsData(prisma: any): {
         autoDraftTemplate?: string | null;
         planTemplate?: string | null;
         expandPlanTemplate?: string | null;
+        agentTemplate?: string | null;
         anthropicKey?: string | null;
         openaiKey?: string | null;
     }): Promise<any>;

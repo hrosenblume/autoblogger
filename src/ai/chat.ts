@@ -1,6 +1,7 @@
 import { createStream } from './provider'
 import { buildChatPrompt, buildPlanPrompt } from './builders'
 import { extractAndFetchUrls, buildUrlContext } from '../lib/url-extractor'
+import { DEFAULT_AGENT_TEMPLATE } from './prompts'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -18,6 +19,8 @@ interface ChatOptions {
   // Plan mode specific
   planTemplate?: string | null
   planRules?: string
+  // Agent mode specific
+  agentTemplate?: string | null
   styleExamples?: string
   anthropicKey?: string
   openaiKey?: string
@@ -86,13 +89,8 @@ URL extraction encountered an error: ${err instanceof Error ? err.message : 'Unk
   // Add mode-specific instructions
   let modeInstructions = ''
   if (options.mode === 'agent') {
-    modeInstructions = `
-You can directly edit the essay using these commands:
-- To replace text: :::edit replace_section "old text" "new text" :::
-- To replace all: :::edit replace_all "title" "subtitle" "full markdown" :::
-- To insert: :::edit insert "position" "match_text" "new_text" ::: (position: before, after, start, end)
-- To delete: :::edit delete "text to remove" :::
-`
+    // Use custom agent template if set, otherwise use default
+    modeInstructions = '\n\n' + (options.agentTemplate || DEFAULT_AGENT_TEMPLATE)
   }
 
   // Add web search context if enabled

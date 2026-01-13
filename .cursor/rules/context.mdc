@@ -285,6 +285,7 @@ model AISettings {
   autoDraftTemplate    String?
   planTemplate         String?
   expandPlanTemplate   String?
+  agentTemplate        String?  // Template for agent mode (direct editing)
   updatedAt            DateTime @updatedAt
 }
 
@@ -481,6 +482,26 @@ Templates use `{{PLACEHOLDER}}` syntax:
 - `{{ESSAY_CONTEXT}}` — Current essay content for chat
 - `{{STYLE_EXAMPLES}}` — Example posts for style matching
 - `{{PLAN}}` — Outline for expand_plan mode
+
+### Agent Mode (Direct Editing)
+
+Agent mode allows AI to directly edit essays. Edit commands use JSON in `:::edit` blocks:
+
+```
+:::edit
+{"type": "replace_section", "find": "exact text", "replace": "new text"}
+:::
+```
+
+Command types:
+- `replace_section` — Find and replace specific text
+- `replace_all` — Replace entire essay (title, subtitle, markdown)
+- `insert` — Insert text (position: before, after, start, end)
+- `delete` — Remove text
+
+Template is customizable via Settings → AI → Agent Mode Template.
+
+Keyboard shortcut: **Cmd/Ctrl + Shift + A** toggles agent/ask mode.
 
 ## API Routes
 

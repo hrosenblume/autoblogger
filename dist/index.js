@@ -31,7 +31,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/ai/prompts.ts
-var DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_PLAN_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_EXPAND_PLAN_TEMPLATE;
+var DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_PLAN_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_AGENT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE;
 var init_prompts = __esm({
   "src/ai/prompts.ts"() {
     "use strict";
@@ -201,6 +201,39 @@ STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bulle
 - One sentence that previews the main argument
 - Create curiosity or make a bold claim
 </subtitle_guidelines>`;
+    DEFAULT_AGENT_TEMPLATE = `<agent_mode>
+You are in AGENT MODE - you can directly edit the essay. Wrap edits in :::edit and ::: tags with a JSON object.
+
+EDIT COMMANDS (use valid JSON):
+
+1. Replace specific text:
+:::edit
+{"type": "replace_section", "find": "exact text to find", "replace": "replacement text"}
+:::
+
+2. Replace entire essay:
+:::edit
+{"type": "replace_all", "title": "New Title", "subtitle": "New subtitle", "markdown": "Full essay content..."}
+:::
+
+3. Insert text:
+:::edit
+{"type": "insert", "position": "after", "find": "text to find", "replace": "text to insert"}
+:::
+(position can be: "before", "after", "start", "end")
+
+4. Delete text:
+:::edit
+{"type": "delete", "find": "text to delete"}
+:::
+
+RULES:
+- Use EXACT text matches for "find" - copy precisely from the essay
+- One edit block per change
+- You can include multiple edit blocks in one response
+- Add brief explanation before/after edit blocks
+- Edits are applied automatically - the user will see the changes
+</agent_mode>`;
     DEFAULT_EXPAND_PLAN_TEMPLATE = `<system>
 <role>Writing assistant that expands essay outlines into full drafts</role>
 
@@ -911,13 +944,7 @@ URL extraction encountered an error: ${err instanceof Error ? err.message : "Unk
   }
   let modeInstructions = "";
   if (options.mode === "agent") {
-    modeInstructions = `
-You can directly edit the essay using these commands:
-- To replace text: :::edit replace_section "old text" "new text" :::
-- To replace all: :::edit replace_all "title" "subtitle" "full markdown" :::
-- To insert: :::edit insert "position" "match_text" "new_text" ::: (position: before, after, start, end)
-- To delete: :::edit delete "text to remove" :::
-`;
+    modeInstructions = "\n\n" + (options.agentTemplate || DEFAULT_AGENT_TEMPLATE);
   }
   let webSearchContext = "";
   if (options.useWebSearch) {
@@ -974,6 +1001,7 @@ var init_chat = __esm({
     init_provider();
     init_builders();
     init_url_extractor();
+    init_prompts();
   }
 });
 
@@ -1967,6 +1995,7 @@ async function handleAIAPI(req, cms, session, path) {
         defaultAutoDraftTemplate: DEFAULT_AUTO_DRAFT_TEMPLATE,
         defaultPlanTemplate: DEFAULT_PLAN_TEMPLATE,
         defaultExpandPlanTemplate: DEFAULT_EXPAND_PLAN_TEMPLATE,
+        defaultAgentTemplate: DEFAULT_AGENT_TEMPLATE,
         defaultPlanRules: DEFAULT_PLAN_RULES
       }
     });
@@ -2114,6 +2143,8 @@ ${examples}
         // Plan mode specific settings
         planTemplate: settings.planTemplate,
         planRules: settings.planRules,
+        // Agent mode specific settings
+        agentTemplate: settings.agentTemplate,
         styleExamples,
         anthropicKey,
         openaiKey,

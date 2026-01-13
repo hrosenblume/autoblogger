@@ -7,6 +7,7 @@ import {
   DEFAULT_PLAN_TEMPLATE,
   DEFAULT_EXPAND_PLAN_TEMPLATE,
   DEFAULT_PLAN_RULES,
+  DEFAULT_AGENT_TEMPLATE,
 } from '../ai/prompts'
 import { jsonResponse, requireAuth, requireAdmin } from './utils'
 
@@ -45,6 +46,7 @@ export async function handleAIAPI(
         defaultAutoDraftTemplate: DEFAULT_AUTO_DRAFT_TEMPLATE,
         defaultPlanTemplate: DEFAULT_PLAN_TEMPLATE,
         defaultExpandPlanTemplate: DEFAULT_EXPAND_PLAN_TEMPLATE,
+        defaultAgentTemplate: DEFAULT_AGENT_TEMPLATE,
         defaultPlanRules: DEFAULT_PLAN_RULES,
       }
     })
@@ -243,6 +245,8 @@ ${examples}
         // Plan mode specific settings
         planTemplate: settings.planTemplate,
         planRules: settings.planRules,
+        // Agent mode specific settings
+        agentTemplate: settings.agentTemplate,
         styleExamples,
         anthropicKey,
         openaiKey,

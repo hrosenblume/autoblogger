@@ -249,24 +249,28 @@ export function ChatPanel({
     }
   }
   
-  // Keyboard shortcut for agent mode (Cmd/Ctrl + Shift + A)
+  // Keyboard shortcut to toggle agent/ask mode (Cmd/Ctrl + Shift + A)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
         e.preventDefault()
-        if (!open) {
-          setIsOpen(true)
-        }
-        // Only switch to agent mode if there's an essay context
         if (essayContext) {
-          setMode('agent')
+          // With essay context: open chat if closed, toggle agent/ask if open
+          if (!open) {
+            setIsOpen(true)
+          }
+          setMode(mode === 'agent' ? 'ask' : 'agent')
+        } else {
+          // No essay context (dashboard): toggle chat open/closed
+          setIsOpen(!open)
+          setMode('ask')
         }
       }
     }
     
     document.addEventListener('keydown', handleGlobalKeyDown)
     return () => document.removeEventListener('keydown', handleGlobalKeyDown)
-  }, [open, setIsOpen, setMode, essayContext])
+  }, [open, setIsOpen, setMode, essayContext, mode])
 
   if (!isVisible || !mounted) return null
   
@@ -290,7 +294,7 @@ export function ChatPanel({
           <div className="flex items-center gap-2">
             <h2 className="font-medium">Chat</h2>
             {essayContext && (
-              <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[120px]">
+              <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[140px]">
                 {essayContext.title || 'Untitled'}
               </span>
             )}

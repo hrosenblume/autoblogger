@@ -555,6 +555,7 @@ function AISettingsContent() {
   const [autoDraftTemplate, setAutoDraftTemplate] = useState<string | null>(null)
   const [planTemplate, setPlanTemplate] = useState<string | null>(null)
   const [expandPlanTemplate, setExpandPlanTemplate] = useState<string | null>(null)
+  const [agentTemplate, setAgentTemplate] = useState<string | null>(null)
   const [defaultGenerateTemplate, setDefaultGenerateTemplate] = useState('')
   const [defaultChatTemplate, setDefaultChatTemplate] = useState('')
   const [defaultRewriteTemplate, setDefaultRewriteTemplate] = useState('')
@@ -562,6 +563,7 @@ function AISettingsContent() {
   const [defaultPlanRules, setDefaultPlanRules] = useState('')
   const [defaultPlanTemplate, setDefaultPlanTemplate] = useState('')
   const [defaultExpandPlanTemplate, setDefaultExpandPlanTemplate] = useState('')
+  const [defaultAgentTemplate, setDefaultAgentTemplate] = useState('')
   const [anthropicKey, setAnthropicKey] = useState('')
   const [openaiKey, setOpenaiKey] = useState('')
   const [hasAnthropicEnvKey, setHasAnthropicEnvKey] = useState(false)
@@ -597,6 +599,7 @@ function AISettingsContent() {
         setAutoDraftTemplate(data.autoDraftTemplate ?? null)
         setPlanTemplate(data.planTemplate ?? null)
         setExpandPlanTemplate(data.expandPlanTemplate ?? null)
+        setAgentTemplate(data.agentTemplate ?? null)
         setDefaultGenerateTemplate(data.defaultGenerateTemplate || '')
         setDefaultChatTemplate(data.defaultChatTemplate || '')
         setDefaultRewriteTemplate(data.defaultRewriteTemplate || '')
@@ -604,6 +607,7 @@ function AISettingsContent() {
         setDefaultPlanRules(data.defaultPlanRules || '')
         setDefaultPlanTemplate(data.defaultPlanTemplate || '')
         setDefaultExpandPlanTemplate(data.defaultExpandPlanTemplate || '')
+        setDefaultAgentTemplate(data.defaultAgentTemplate || '')
         setAnthropicKey(data.anthropicKey || '')
         setOpenaiKey(data.openaiKey || '')
         setHasAnthropicEnvKey(data.hasAnthropicEnvKey ?? false)
@@ -625,7 +629,7 @@ function AISettingsContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           rules, chatRules, rewriteRules, autoDraftRules, planRules, autoDraftWordCount, defaultModel,
-          generateTemplate, chatTemplate, rewriteTemplate, autoDraftTemplate, planTemplate, expandPlanTemplate,
+          generateTemplate, chatTemplate, rewriteTemplate, autoDraftTemplate, planTemplate, expandPlanTemplate, agentTemplate,
           anthropicKey: anthropicKey || null,
           openaiKey: openaiKey || null,
         }),
@@ -917,6 +921,22 @@ function AISettingsContent() {
               onChange={setExpandPlanTemplate}
               onReset={() => setExpandPlanTemplate(null)}
               placeholders="{{RULES}}, {{STYLE_EXAMPLES}}, {{PLAN}}"
+              disabled={saving}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium leading-none">Agent Mode Template</label>
+            <p className="text-sm text-muted-foreground">
+              Instructions for Agent mode in chat. Controls how the AI makes direct edits to essays.
+            </p>
+            <CollapsibleTemplate
+              label="Agent"
+              value={agentTemplate}
+              defaultValue={defaultAgentTemplate}
+              onChange={setAgentTemplate}
+              onReset={() => setAgentTemplate(null)}
+              placeholders="(no placeholders - appended to chat prompt)"
               disabled={saving}
             />
           </div>

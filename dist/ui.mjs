@@ -7349,65 +7349,82 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       onEditorStateChangeRef.current?.(null);
     };
   }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown]);
-  useEffect11(() => {
-    if (!onRegisterEditHandler) return;
-    const handleEdit = (edit) => {
-      if (edit.type === "replace_all") {
-        setPost((prev) => ({
-          ...prev,
-          title: edit.title ?? prev.title,
-          subtitle: edit.subtitle ?? prev.subtitle,
-          markdown: edit.markdown ?? prev.markdown
-        }));
+  const handleEdit = useCallback10((edit) => {
+    if (edit.type === "replace_all") {
+      setPost((prev) => ({
+        ...prev,
+        title: edit.title ?? prev.title,
+        subtitle: edit.subtitle ?? prev.subtitle,
+        markdown: edit.markdown ?? prev.markdown
+      }));
+      return true;
+    }
+    if (edit.type === "replace_section" && edit.find && edit.replace !== void 0) {
+      let found = false;
+      setPost((prev) => {
+        if (prev.markdown.includes(edit.find)) {
+          found = true;
+          return { ...prev, markdown: prev.markdown.replace(edit.find, edit.replace) };
+        }
+        return prev;
+      });
+      return found;
+    }
+    if (edit.type === "insert" && edit.replace !== void 0) {
+      if (edit.position === "start") {
+        setPost((prev) => ({ ...prev, markdown: edit.replace + prev.markdown }));
         return true;
       }
-      if (edit.type === "replace_section" && edit.find && edit.replace !== void 0) {
-        if (post.markdown.includes(edit.find)) {
-          setPost((prev) => ({
-            ...prev,
-            markdown: prev.markdown.replace(edit.find, edit.replace)
-          }));
-          return true;
-        }
-        return false;
+      if (edit.position === "end") {
+        setPost((prev) => ({ ...prev, markdown: prev.markdown + edit.replace }));
+        return true;
       }
-      if (edit.type === "insert" && edit.replace !== void 0) {
-        if (edit.position === "start") {
-          setPost((prev) => ({ ...prev, markdown: edit.replace + prev.markdown }));
-          return true;
-        }
-        if (edit.position === "end") {
-          setPost((prev) => ({ ...prev, markdown: prev.markdown + edit.replace }));
-          return true;
-        }
-        if (edit.find && post.markdown.includes(edit.find)) {
-          const idx = post.markdown.indexOf(edit.find);
-          const insertPoint = edit.position === "before" ? idx : idx + edit.find.length;
-          setPost((prev) => ({
-            ...prev,
-            markdown: prev.markdown.slice(0, insertPoint) + edit.replace + prev.markdown.slice(insertPoint)
-          }));
-          return true;
-        }
-        return false;
-      }
-      if (edit.type === "delete" && edit.find) {
-        if (post.markdown.includes(edit.find)) {
-          setPost((prev) => ({
-            ...prev,
-            markdown: prev.markdown.replace(edit.find, "")
-          }));
-          return true;
-        }
-        return false;
+      if (edit.find) {
+        let found = false;
+        setPost((prev) => {
+          if (prev.markdown.includes(edit.find)) {
+            found = true;
+            const idx = prev.markdown.indexOf(edit.find);
+            const insertPoint = edit.position === "before" ? idx : idx + edit.find.length;
+            return {
+              ...prev,
+              markdown: prev.markdown.slice(0, insertPoint) + edit.replace + prev.markdown.slice(insertPoint)
+            };
+          }
+          return prev;
+        });
+        return found;
       }
       return false;
-    };
+    }
+    if (edit.type === "delete" && edit.find) {
+      let found = false;
+      setPost((prev) => {
+        if (prev.markdown.includes(edit.find)) {
+          found = true;
+          return { ...prev, markdown: prev.markdown.replace(edit.find, "") };
+        }
+        return prev;
+      });
+      return found;
+    }
+    return false;
+  }, []);
+  useEffect11(() => {
+    if (!onRegisterEditHandler) return;
     onRegisterEditHandler(handleEdit);
     return () => {
       onRegisterEditHandler(null);
     };
-  }, [post.markdown, onRegisterEditHandler]);
+  }, [handleEdit, onRegisterEditHandler]);
+  const registerEditHandler = chatContext?.registerEditHandler;
+  useEffect11(() => {
+    if (!registerEditHandler) return;
+    registerEditHandler(handleEdit);
+    return () => {
+      registerEditHandler(null);
+    };
+  }, [handleEdit, registerEditHandler]);
   const expandPlanToEssay = useCallback10(async (plan, wordCount = 800) => {
     if (generating) return;
     if (post.title || post.subtitle || post.markdown) {
@@ -8478,6 +8495,7 @@ function AISettingsContent() {
   const [autoDraftTemplate, setAutoDraftTemplate] = useState13(null);
   const [planTemplate, setPlanTemplate] = useState13(null);
   const [expandPlanTemplate, setExpandPlanTemplate] = useState13(null);
+  const [agentTemplate, setAgentTemplate] = useState13(null);
   const [defaultGenerateTemplate, setDefaultGenerateTemplate] = useState13("");
   const [defaultChatTemplate, setDefaultChatTemplate] = useState13("");
   const [defaultRewriteTemplate, setDefaultRewriteTemplate] = useState13("");
@@ -8485,6 +8503,7 @@ function AISettingsContent() {
   const [defaultPlanRules, setDefaultPlanRules] = useState13("");
   const [defaultPlanTemplate, setDefaultPlanTemplate] = useState13("");
   const [defaultExpandPlanTemplate, setDefaultExpandPlanTemplate] = useState13("");
+  const [defaultAgentTemplate, setDefaultAgentTemplate] = useState13("");
   const [anthropicKey, setAnthropicKey] = useState13("");
   const [openaiKey, setOpenaiKey] = useState13("");
   const [hasAnthropicEnvKey, setHasAnthropicEnvKey] = useState13(false);
@@ -8517,6 +8536,7 @@ function AISettingsContent() {
       setAutoDraftTemplate(data.autoDraftTemplate ?? null);
       setPlanTemplate(data.planTemplate ?? null);
       setExpandPlanTemplate(data.expandPlanTemplate ?? null);
+      setAgentTemplate(data.agentTemplate ?? null);
       setDefaultGenerateTemplate(data.defaultGenerateTemplate || "");
       setDefaultChatTemplate(data.defaultChatTemplate || "");
       setDefaultRewriteTemplate(data.defaultRewriteTemplate || "");
@@ -8524,6 +8544,7 @@ function AISettingsContent() {
       setDefaultPlanRules(data.defaultPlanRules || "");
       setDefaultPlanTemplate(data.defaultPlanTemplate || "");
       setDefaultExpandPlanTemplate(data.defaultExpandPlanTemplate || "");
+      setDefaultAgentTemplate(data.defaultAgentTemplate || "");
       setAnthropicKey(data.anthropicKey || "");
       setOpenaiKey(data.openaiKey || "");
       setHasAnthropicEnvKey(data.hasAnthropicEnvKey ?? false);
@@ -8553,6 +8574,7 @@ function AISettingsContent() {
           autoDraftTemplate,
           planTemplate,
           expandPlanTemplate,
+          agentTemplate,
           anthropicKey: anthropicKey || null,
           openaiKey: openaiKey || null
         })
@@ -8832,6 +8854,22 @@ function AISettingsContent() {
             onChange: setExpandPlanTemplate,
             onReset: () => setExpandPlanTemplate(null),
             placeholders: "{{RULES}}, {{STYLE_EXAMPLES}}, {{PLAN}}",
+            disabled: saving
+          }
+        )
+      ] }),
+      /* @__PURE__ */ jsxs14("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx20("label", { className: "text-sm font-medium leading-none", children: "Agent Mode Template" }),
+        /* @__PURE__ */ jsx20("p", { className: "text-sm text-muted-foreground", children: "Instructions for Agent mode in chat. Controls how the AI makes direct edits to essays." }),
+        /* @__PURE__ */ jsx20(
+          CollapsibleTemplate,
+          {
+            label: "Agent",
+            value: agentTemplate,
+            defaultValue: defaultAgentTemplate,
+            onChange: setAgentTemplate,
+            onReset: () => setAgentTemplate(null),
+            placeholders: "(no placeholders - appended to chat prompt)",
             disabled: saving
           }
         )
@@ -10495,17 +10533,20 @@ function ChatPanel({
     const handleGlobalKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
         e.preventDefault();
-        if (!open) {
-          setIsOpen(true);
-        }
         if (essayContext) {
-          setMode("agent");
+          if (!open) {
+            setIsOpen(true);
+          }
+          setMode(mode === "agent" ? "ask" : "agent");
+        } else {
+          setIsOpen(!open);
+          setMode("ask");
         }
       }
     };
     document.addEventListener("keydown", handleGlobalKeyDown);
     return () => document.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [open, setIsOpen, setMode, essayContext]);
+  }, [open, setIsOpen, setMode, essayContext, mode]);
   if (!isVisible || !mounted) return null;
   return createPortal3(
     /* @__PURE__ */ jsxs17(Fragment13, { children: [
@@ -10527,7 +10568,7 @@ function ChatPanel({
             /* @__PURE__ */ jsxs17("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
               /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-2", children: [
                 /* @__PURE__ */ jsx23("h2", { className: "font-medium", children: "Chat" }),
-                essayContext && /* @__PURE__ */ jsx23("span", { className: "inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[120px]", children: essayContext.title || "Untitled" })
+                essayContext && /* @__PURE__ */ jsx23("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[140px]", children: essayContext.title || "Untitled" })
               ] }),
               /* @__PURE__ */ jsx23(
                 "button",
