@@ -8,7 +8,9 @@ import {
   DEFAULT_EXPAND_PLAN_TEMPLATE,
   DEFAULT_PLAN_RULES,
   DEFAULT_AGENT_TEMPLATE,
+  DEFAULT_SEARCH_ONLY_PROMPT,
 } from '../ai/prompts'
+import { getModelOptions } from '../ai/models'
 import { jsonResponse, requireAuth, requireAdmin } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
@@ -48,6 +50,7 @@ export async function handleAIAPI(
         defaultExpandPlanTemplate: DEFAULT_EXPAND_PLAN_TEMPLATE,
         defaultAgentTemplate: DEFAULT_AGENT_TEMPLATE,
         defaultPlanRules: DEFAULT_PLAN_RULES,
+        availableModels: getModelOptions(),
       }
     })
   }
@@ -81,33 +84,7 @@ export async function handleAIAPI(
         // Fetch published essays as style examples if not provided by client
         let styleExamples = clientStyleExamples || ''
         if (!styleExamples) {
-          try {
-            const publishedPosts = await cms.posts.findPublished()
-            const MAX_STYLE_EXAMPLES = 5
-            const MAX_WORDS_PER_EXAMPLE = 500
-            
-            if (publishedPosts.length > 0) {
-              const examples = publishedPosts
-                .slice(0, MAX_STYLE_EXAMPLES)
-                .map((post: { title: string; subtitle?: string; markdown: string }) => {
-                  const words = post.markdown.split(/\s+/)
-                  const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE
-                    ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(' ') + '...'
-                    : post.markdown
-                  
-                  return `## ${post.title}
-${post.subtitle ? `*${post.subtitle}*\n` : ''}
-${truncatedContent}`
-                })
-                .join('\n\n---\n\n')
-              
-              styleExamples = `The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
-
-${examples}`
-            }
-          } catch (err) {
-            console.error('[AI Generate] Failed to fetch published essays:', err)
-          }
+          styleExamples = await fetchStyleExamples(cms)
         }
         
         // Draft essay from plan mode
@@ -125,33 +102,7 @@ ${examples}`
         // Fetch published essays as style examples for standard generation too
         let styleExamples = clientStyleExamples || ''
         if (!styleExamples) {
-          try {
-            const publishedPosts = await cms.posts.findPublished()
-            const MAX_STYLE_EXAMPLES = 5
-            const MAX_WORDS_PER_EXAMPLE = 500
-            
-            if (publishedPosts.length > 0) {
-              const examples = publishedPosts
-                .slice(0, MAX_STYLE_EXAMPLES)
-                .map((post: { title: string; subtitle?: string; markdown: string }) => {
-                  const words = post.markdown.split(/\s+/)
-                  const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE
-                    ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(' ') + '...'
-                    : post.markdown
-                  
-                  return `## ${post.title}
-${post.subtitle ? `*${post.subtitle}*\n` : ''}
-${truncatedContent}`
-                })
-                .join('\n\n---\n\n')
-              
-              styleExamples = `The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
-
-${examples}`
-            }
-          } catch (err) {
-            console.error('[AI Generate] Failed to fetch published essays:', err)
-          }
+          styleExamples = await fetchStyleExamples(cms)
         }
         
         // Standard generation
@@ -185,7 +136,7 @@ ${examples}`
     }
   }
 
-  // POST /ai/chat - chat with AI (streaming)
+  // POST /ai/chat - chat with AI (streaming or search mode)
   if (method === 'POST' && path === '/ai/chat') {
     const body = await req.json()
     const { messages, model, essayContext, mode, useWebSearch, useThinking } = body
@@ -196,8 +147,45 @@ ${examples}`
     const anthropicKey = cms.config.ai?.anthropicKey || settings.anthropicKey
     const openaiKey = cms.config.ai?.openaiKey || settings.openaiKey
     
+    // Handle search mode - non-streaming JSON response
+    if (mode === 'search') {
+      try {
+        const { generate } = await import('../ai/provider')
+        
+        // Get the last user message as the search query
+        const lastUserMessage = [...messages].reverse().find((m: { role: string }) => m.role === 'user')
+        if (!lastUserMessage) {
+          return jsonResponse({ error: 'No user message found' }, 400)
+        }
+        
+        const result = await generate(
+          model || settings.defaultModel,
+          DEFAULT_SEARCH_ONLY_PROMPT,
+          lastUserMessage.content,
+          {
+            anthropicKey,
+            openaiKey,
+            maxTokens: 4096,
+            useWebSearch: true, // Always use web search in search mode
+          }
+        )
+        
+        return jsonResponse({ 
+          content: result.text,
+          usage: {
+            inputTokens: result.inputTokens,
+            outputTokens: result.outputTokens,
+          }
+        })
+      } catch (error) {
+        console.error('[AI Search Error]', error)
+        return jsonResponse({ 
+          error: error instanceof Error ? error.message : 'Search failed' 
+        }, 500)
+      }
+    }
+    
     // Fetch published essays as style examples
-    // Limit to most recent essays to keep prompt reasonable
     let styleExamples = ''
     try {
       const publishedPosts = await cms.posts.findPublished()
@@ -372,4 +360,36 @@ ${truncatedContent}`
   }
 
   return jsonResponse({ error: 'Not found' }, 404)
+}
+
+// Helper to fetch published essays as style examples
+async function fetchStyleExamples(cms: Autoblogger): Promise<string> {
+  try {
+    const publishedPosts = await cms.posts.findPublished()
+    const MAX_STYLE_EXAMPLES = 5
+    const MAX_WORDS_PER_EXAMPLE = 500
+    
+    if (publishedPosts.length > 0) {
+      const examples = publishedPosts
+        .slice(0, MAX_STYLE_EXAMPLES)
+        .map((post: { title: string; subtitle?: string; markdown: string }) => {
+          const words = post.markdown.split(/\s+/)
+          const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE
+            ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(' ') + '...'
+            : post.markdown
+          
+          return `## ${post.title}
+${post.subtitle ? `*${post.subtitle}*\n` : ''}
+${truncatedContent}`
+        })
+        .join('\n\n---\n\n')
+      
+      return `The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
+
+${examples}`
+    }
+  } catch (err) {
+    console.error('[AI] Failed to fetch published essays:', err)
+  }
+  return ''
 }

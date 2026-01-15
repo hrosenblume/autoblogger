@@ -17,5 +17,18 @@ declare function parseMarkdown(markdown: string): marked.TokensList;
  * Convert HTML to markdown
  */
 declare function htmlToMarkdown(html: string): string;
+/**
+ * Count words in text (markdown or plain text)
+ */
+declare function wordCount(text: string): number;
+/**
+ * Generate URL-safe slug from title
+ */
+declare function generateSlug(title: string): string;
+/**
+ * Render markdown to sanitized HTML.
+ * Safe for public-facing pages where user content is displayed.
+ */
+declare function renderMarkdownSanitized(markdown: string): string;
 
-export { htmlToMarkdown, markdownToHtml, parseMarkdown, renderMarkdown };
+export { generateSlug, htmlToMarkdown, markdownToHtml, parseMarkdown, renderMarkdown, renderMarkdownSanitized, wordCount };

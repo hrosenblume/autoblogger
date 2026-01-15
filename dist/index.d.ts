@@ -1,9 +1,51 @@
 import { P as Post } from './seo-DUb5WwP3.js';
 export { A as AISettings, C as Comment, N as NewsItem, a as PostTag, R as Revision, T as Tag, b as TopicSubscription, g as getSeoValues } from './seo-DUb5WwP3.js';
 import { ComponentType } from 'react';
-export { htmlToMarkdown, parseMarkdown, renderMarkdown } from './lib/markdown.js';
+export { generateSlug, htmlToMarkdown, markdownToHtml, parseMarkdown, renderMarkdown, renderMarkdownSanitized, wordCount } from './lib/markdown.js';
 import { Mark, Editor } from '@tiptap/core';
 import 'marked';
+
+interface RssArticle {
+    title: string;
+    url: string;
+    summary: string | null;
+    publishedAt: Date | null;
+}
+/**
+ * Fetch and parse multiple RSS feeds, combining all articles.
+ */
+declare function fetchRssFeeds(feedUrls: string[]): Promise<RssArticle[]>;
+
+/**
+ * Filter articles by keyword matching.
+ * Case-insensitive substring match on title and summary.
+ */
+declare function filterByKeywords(articles: RssArticle[], keywords: string[]): RssArticle[];
+
+interface GenerationResult {
+    topicId: string;
+    topicName: string;
+    generated: number;
+    skipped: number;
+}
+interface AutoDraftConfig {
+    prisma: any;
+    anthropicKey?: string;
+    openaiKey?: string;
+    /** Called after generating an essay, before creating the post. Return additional post fields. */
+    onPostCreate?: (article: RssArticle, essay: {
+        title: string;
+        subtitle: string | null;
+        markdown: string;
+    }) => Record<string, unknown> | Promise<Record<string, unknown>>;
+}
+/**
+ * Run auto-draft for one or all active topics.
+ * @param config - Configuration including prisma client and API keys
+ * @param topicId - Optional: run for a specific topic only
+ * @param skipFrequencyCheck - If true, ignore frequency settings (for manual trigger)
+ */
+declare function runAutoDraft(config: AutoDraftConfig, topicId?: string, skipFrequencyCheck?: boolean): Promise<GenerationResult[]>;
 
 interface PostHooks {
     beforePublish?: (post: Post) => Promise<void>;
@@ -323,6 +365,12 @@ interface AutobloggerServerConfig {
     hooks?: {
         beforePublish?: (post: Post) => Promise<void>;
         afterSave?: (post: Post) => Promise<void>;
+        /** Called during auto-draft after generating essay, return extra fields for post creation */
+        onAutoDraftPostCreate?: (article: RssArticle, essay: {
+            title: string;
+            subtitle: string | null;
+            markdown: string;
+        }) => Record<string, unknown> | Promise<Record<string, unknown>>;
     };
 }
 
@@ -338,6 +386,12 @@ interface AutobloggerServer {
     topics: ReturnType<typeof createTopicsData>;
     newsItems: ReturnType<typeof createNewsItemsData>;
     users: ReturnType<typeof createUsersData>;
+    /** Handle an API request - convenience method for route handlers */
+    handleRequest: (req: Request, path: string) => Promise<Response>;
+    /** Auto-draft runner */
+    autoDraft: {
+        run: (topicId?: string, skipFrequencyCheck?: boolean) => Promise<GenerationResult[]>;
+    };
 }
 declare function createAutoblogger(config: AutobloggerServerConfig): AutobloggerServer;
 
@@ -387,16 +441,44 @@ interface BaseCrud<T> {
  */
 declare function createCrudData<T>(prisma: any, options: CrudOptions): BaseCrud<T>;
 
+/** Full model definition with provider details */
 interface AIModel {
     id: string;
     name: string;
     provider: 'anthropic' | 'openai';
     modelId: string;
     description?: string;
+    searchModel: 'native' | null;
 }
 declare const AI_MODELS: AIModel[];
 declare function getModel(id: string): AIModel | undefined;
 declare function getDefaultModel(): AIModel;
+/**
+ * Resolve a model ID, falling back to database default or hardcoded default.
+ * Used by AI API routes to avoid duplicating model resolution logic.
+ *
+ * @param providedModelId - Optional model ID from request
+ * @param getDefaultModelId - Async function to get default from DB (avoids Prisma import here)
+ * @returns Resolved AIModel
+ * @throws Error if model not found
+ */
+declare function resolveModel(providedModelId: string | undefined, getDefaultModelId: () => Promise<string | null>): Promise<AIModel>;
+
+interface GenerateResult {
+    text: string;
+    inputTokens?: number;
+    outputTokens?: number;
+}
+/**
+ * Generate text using the specified model (non-streaming).
+ * Used for search mode and other non-streaming requests.
+ */
+declare function generate(modelId: string, systemPrompt: string, userPrompt: string, options?: {
+    anthropicKey?: string;
+    openaiKey?: string;
+    maxTokens?: number;
+    useWebSearch?: boolean;
+}): Promise<GenerateResult>;
 
 /**
  * Build a system prompt for essay generation.
@@ -498,6 +580,21 @@ declare const DEFAULT_PLAN_RULES = "<format>\nSTRICT LIMIT: Maximum 3 bullets pe
 declare const DEFAULT_EXPAND_PLAN_TEMPLATE = "<system>\n<role>Writing assistant that expands essay outlines into full drafts</role>\n\n<writing_rules>\n{{RULES}}\n</writing_rules>\n\n<style_reference>\n{{STYLE_EXAMPLES}}\n</style_reference>\n\n<plan_to_expand>\n{{PLAN}}\n</plan_to_expand>\n\n<output_format>\nCRITICAL: Your response MUST start with exactly this format:\n\nLine 1: # [Title from plan, refined if needed]\nLine 2: *[Subtitle from plan, refined if needed]*\nLine 3: (blank line)\nLine 4+: Essay body with ## section headings\n\n<requirements>\n- Use the section headers from the plan as H2 headings\n- Expand each section's bullet points into full paragraphs\n- Match the author's voice and style from the examples\n- Output ONLY markdown \u2014 no preamble, no \"Here is...\", no explanations\n</requirements>\n\n<title_refinement>\nIf the plan title is generic, improve it to be:\n- More specific and concrete\n- Curiosity-inducing or bold\n- 5-12 words\n</title_refinement>\n</output_format>\n</system>";
 
 /**
+ * Parse AI-generated markdown to extract title, subtitle, and body.
+ *
+ * Expects format:
+ * # Title
+ * *Subtitle*
+ *
+ * Body content...
+ */
+declare function parseGeneratedContent(markdown: string): {
+    title: string;
+    subtitle: string;
+    body: string;
+};
+
+/**
  * Format a date for display
  */
 declare function formatDate(date: Date | string, options?: Intl.DateTimeFormatOptions): string;
@@ -582,4 +679,4 @@ declare function applyCommentMarks(editor: Editor, comments: CommentWithUser[]):
  */
 declare function scrollToComment(editor: Editor, commentId: string): void;
 
-export { type AIModel, AI_MODELS, type AutobloggerServer as Autoblogger, type AutobloggerServerConfig as AutobloggerConfig, type BaseCrud, CommentMark, type CommentWithUser, type CreateCommentData, type CrudOptions, type CustomFieldConfig, type CustomFieldProps, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_GENERATE_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_PLAN_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, Post, type SelectionState, type Session, type StylesConfig, addCommentMark, applyCommentMarks, buildAutoDraftPrompt, buildChatPrompt, buildExpandPlanPrompt, buildGeneratePrompt, buildPlanPrompt, buildRewritePrompt, canDeleteComment, canEditComment, createAPIHandler, createAutoblogger, createCommentsClient, createCrudData, formatDate, getDefaultModel, getModel, removeCommentMark, scrollToComment, truncate, validateSchema };
+export { type AIModel, AI_MODELS, type AutoDraftConfig, type AutobloggerServer as Autoblogger, type AutobloggerServerConfig as AutobloggerConfig, type BaseCrud, CommentMark, type CommentWithUser, type CreateCommentData, type CrudOptions, type CustomFieldConfig, type CustomFieldProps, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_GENERATE_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_PLAN_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, type GenerationResult, Post, type RssArticle, type SelectionState, type Session, type StylesConfig, addCommentMark, applyCommentMarks, buildAutoDraftPrompt, buildChatPrompt, buildExpandPlanPrompt, buildGeneratePrompt, buildPlanPrompt, buildRewritePrompt, canDeleteComment, canEditComment, createAPIHandler, createAutoblogger, createCommentsClient, createCrudData, fetchRssFeeds, filterByKeywords, formatDate, generate, getDefaultModel, getModel, parseGeneratedContent, removeCommentMark, resolveModel, runAutoDraft, scrollToComment, truncate, validateSchema };

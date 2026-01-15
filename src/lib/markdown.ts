@@ -42,3 +42,42 @@ const turndownService = new TurndownService({
 export function htmlToMarkdown(html: string): string {
   return turndownService.turndown(html)
 }
+
+/**
+ * Count words in text (markdown or plain text)
+ */
+export function wordCount(text: string): number {
+  if (!text) return 0
+  return text.trim().split(/\s+/).filter(Boolean).length
+}
+
+/**
+ * Generate URL-safe slug from title
+ */
+export function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .substring(0, 60)
+}
+
+import sanitizeHtml from 'sanitize-html'
+
+/**
+ * Render markdown to sanitized HTML.
+ * Safe for public-facing pages where user content is displayed.
+ */
+export function renderMarkdownSanitized(markdown: string): string {
+  const html = renderMarkdown(markdown)
+  return sanitizeHtml(html, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'h1', 'h2']),
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      img: ['src', 'alt', 'title'],
+      a: ['href', 'target', 'rel'],
+    },
+  })
+}

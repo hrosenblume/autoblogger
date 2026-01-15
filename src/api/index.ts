@@ -9,6 +9,7 @@ import { handleUsersAPI } from './users'
 import { handleAdminAPI } from './admin'
 import { handleSettingsAPI } from './settings'
 import { handleRevisionsAPI } from './revisions'
+import { handleChatHistoryAPI } from './chat-history'
 
 interface APIHandlerOptions {
   basePath?: string
@@ -98,6 +99,10 @@ export function createAPIHandler(cms: AutobloggerServer, options: APIHandlerOpti
         return handleRevisionsAPI(req, cms, session, path, options.onMutate)
       }
       
+      if (path.startsWith('/chat/history')) {
+        return handleChatHistoryAPI(req, cms.config.prisma, !!session)
+      }
+      
       return jsonResponse({ error: 'Not found' }, 404)
     } catch (error) {
       console.error('API error:', error)
@@ -118,3 +123,4 @@ export { handleUsersAPI } from './users'
 export { handleAdminAPI } from './admin'
 export { handleSettingsAPI } from './settings'
 export { handleRevisionsAPI } from './revisions'
+export { handleChatHistoryAPI } from './chat-history'

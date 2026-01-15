@@ -9,7 +9,7 @@ var __export = (target, all) => {
 };
 
 // src/ai/prompts.ts
-var DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_PLAN_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_AGENT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE;
+var DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_PLAN_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_AGENT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_SEARCH_ONLY_PROMPT;
 var init_prompts = __esm({
   "src/ai/prompts.ts"() {
     "use strict";
@@ -250,6 +250,18 @@ If the plan title is generic, improve it to be:
 </title_refinement>
 </output_format>
 </system>`;
+    DEFAULT_SEARCH_ONLY_PROMPT = `You are a research assistant helping a writer gather facts and information.
+
+Your task is to provide accurate, well-sourced information to help with essay writing.
+
+Guidelines:
+- Focus on facts, data, and specific examples
+- Include dates, names, and sources when relevant
+- Present information clearly and concisely
+- Note any conflicting information or debates
+- Suggest interesting angles or perspectives the writer might explore
+
+Do NOT write the essay - just provide research findings.`;
   }
 });
 
@@ -259,6 +271,28 @@ function getModel(id) {
 }
 function getDefaultModel() {
   return AI_MODELS[0];
+}
+async function resolveModel(providedModelId, getDefaultModelId) {
+  let modelId = providedModelId;
+  if (!modelId) {
+    modelId = await getDefaultModelId() || "claude-sonnet";
+  }
+  const model = getModel(modelId);
+  if (!model) {
+    throw new Error(`Unknown model: ${modelId}. Available: ${AI_MODELS.map((m) => m.id).join(", ")}`);
+  }
+  return model;
+}
+function toModelOption(model) {
+  return {
+    id: model.id,
+    name: model.name,
+    description: model.description,
+    hasNativeSearch: model.searchModel === "native"
+  };
+}
+function getModelOptions() {
+  return AI_MODELS.map(toModelOption);
 }
 var AI_MODELS;
 var init_models = __esm({
@@ -270,28 +304,35 @@ var init_models = __esm({
         name: "Sonnet 4.5",
         provider: "anthropic",
         modelId: "claude-sonnet-4-5-20250929",
-        description: "Fast, capable, best value"
+        description: "Fast, capable, best value",
+        searchModel: null
+        // No native search, uses search-first flow
       },
       {
         id: "claude-opus",
         name: "Opus 4.5",
         provider: "anthropic",
         modelId: "claude-opus-4-5-20251101",
-        description: "Highest quality, slower"
+        description: "Highest quality, slower",
+        searchModel: null
       },
       {
         id: "gpt-5.2",
         name: "GPT-5.2",
         provider: "openai",
         modelId: "gpt-5.2",
-        description: "Latest OpenAI flagship"
+        description: "Latest OpenAI flagship",
+        searchModel: "native"
+        // Uses tools-based web search
       },
       {
         id: "gpt-5-mini",
         name: "GPT-5 Mini",
         provider: "openai",
         modelId: "gpt-5-mini",
-        description: "Fast and cost-efficient"
+        description: "Fast and cost-efficient",
+        searchModel: "native"
+        // Uses tools-based web search
       }
     ];
   }
@@ -300,10 +341,32 @@ var init_models = __esm({
 // src/ai/provider.ts
 var provider_exports = {};
 __export(provider_exports, {
-  createStream: () => createStream
+  createStream: () => createStream,
+  generate: () => generate,
+  getApiKey: () => getApiKey
 });
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
+async function getApiKey(provider, prisma) {
+  if (prisma?.aISettings) {
+    try {
+      const settings = await prisma.aISettings.findUnique({
+        where: { id: "default" }
+      });
+      if (provider === "anthropic" && settings?.anthropicKey) {
+        return settings.anthropicKey;
+      }
+      if (provider === "openai" && settings?.openaiKey) {
+        return settings.openaiKey;
+      }
+    } catch {
+    }
+  }
+  if (provider === "anthropic") {
+    return process.env.ANTHROPIC_API_KEY || null;
+  }
+  return process.env.OPENAI_API_KEY || null;
+}
 async function fetchSearchResults(query, openaiKey) {
   try {
     console.log("[Web Search] Fetching search results for:", query.slice(0, 100));
@@ -328,6 +391,77 @@ Query: ${query}`,
 function extractSearchQuery(messages) {
   const userMessages = messages.filter((m) => m.role === "user");
   return userMessages[userMessages.length - 1]?.content || "";
+}
+async function generate(modelId, systemPrompt, userPrompt, options = {}) {
+  const model = getModel(modelId);
+  if (!model) {
+    throw new Error(`Unknown model: ${modelId}`);
+  }
+  if (model.provider === "anthropic") {
+    return generateWithAnthropic(model.modelId, systemPrompt, userPrompt, options);
+  }
+  return generateWithOpenAI(model.modelId, systemPrompt, userPrompt, options);
+}
+async function generateWithAnthropic(modelId, systemPrompt, userPrompt, options) {
+  const anthropic = new Anthropic({
+    ...options.anthropicKey && { apiKey: options.anthropicKey }
+  });
+  const response = await anthropic.messages.create({
+    model: modelId,
+    max_tokens: options.maxTokens || 4096,
+    system: systemPrompt,
+    messages: [{ role: "user", content: userPrompt }]
+  });
+  const textContent = response.content.find((c) => c.type === "text");
+  if (!textContent || textContent.type !== "text") {
+    throw new Error("No text content in response");
+  }
+  return {
+    text: textContent.text,
+    inputTokens: response.usage?.input_tokens,
+    outputTokens: response.usage?.output_tokens
+  };
+}
+async function generateWithOpenAI(modelId, systemPrompt, userPrompt, options) {
+  const openai = new OpenAI({
+    ...options.openaiKey && { apiKey: options.openaiKey }
+  });
+  if (options.useWebSearch) {
+    const response2 = await openai.responses.create({
+      model: modelId,
+      instructions: systemPrompt,
+      input: userPrompt,
+      max_output_tokens: options.maxTokens || 4096,
+      tools: [{ type: "web_search" }]
+    });
+    const textOutput = response2.output?.find((item) => item.type === "message");
+    const content2 = textOutput?.content?.find((c) => c.type === "output_text")?.text;
+    if (!content2) {
+      throw new Error("No content in response");
+    }
+    return {
+      text: content2,
+      inputTokens: response2.usage?.input_tokens,
+      outputTokens: response2.usage?.output_tokens
+    };
+  }
+  const response = await openai.chat.completions.create({
+    model: modelId,
+    max_completion_tokens: options.maxTokens || 4096,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ]
+  });
+  const content = response.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error("No content in response");
+  }
+  return {
+    text: content,
+    inputTokens: response.usage?.prompt_tokens,
+    outputTokens: response.usage?.completion_tokens
+  };
 }
 async function createStream(options) {
   const modelConfig = getModel(options.model);
@@ -1665,38 +1799,6 @@ function createUsersData(prisma) {
   };
 }
 
-// src/types/config.ts
-var DEFAULT_STYLES = {
-  container: "max-w-ab-content mx-auto px-ab-content-padding",
-  title: "text-ab-title font-bold",
-  subtitle: "text-ab-h2 text-muted-foreground",
-  byline: "text-sm text-muted-foreground",
-  prose: "prose dark:prose-invert max-w-none"
-};
-
-// src/server.ts
-function createAutoblogger(config) {
-  const prisma = config.prisma;
-  const mergedStyles = {
-    ...DEFAULT_STYLES,
-    ...config.styles
-  };
-  return {
-    config: {
-      ...config,
-      styles: mergedStyles
-    },
-    posts: createPostsData(prisma, config.hooks),
-    comments: createCommentsData(prisma, config.comments),
-    tags: createTagsData(prisma),
-    revisions: createRevisionsData(prisma),
-    aiSettings: createAISettingsData(prisma),
-    topics: createTopicsData(prisma),
-    newsItems: createNewsItemsData(prisma),
-    users: createUsersData(prisma)
-  };
-}
-
 // src/api/posts.ts
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -1912,6 +2014,7 @@ async function handleTagsAPI(req, cms, session, path, onMutate) {
 
 // src/api/ai.ts
 init_prompts();
+init_models();
 async function handleAIAPI(req, cms, session, path) {
   const method = req.method;
   const authError = requireAuth(session);
@@ -1933,7 +2036,8 @@ async function handleAIAPI(req, cms, session, path) {
         defaultPlanTemplate: DEFAULT_PLAN_TEMPLATE,
         defaultExpandPlanTemplate: DEFAULT_EXPAND_PLAN_TEMPLATE,
         defaultAgentTemplate: DEFAULT_AGENT_TEMPLATE,
-        defaultPlanRules: DEFAULT_PLAN_RULES
+        defaultPlanRules: DEFAULT_PLAN_RULES,
+        availableModels: getModelOptions()
       }
     });
   }
@@ -1946,7 +2050,7 @@ async function handleAIAPI(req, cms, session, path) {
   }
   if (method === "POST" && path === "/ai/generate") {
     const body = await req.json();
-    const { prompt, model, wordCount, mode, plan, styleExamples: clientStyleExamples, useWebSearch, useThinking } = body;
+    const { prompt, model, wordCount: wordCount2, mode, plan, styleExamples: clientStyleExamples, useWebSearch, useThinking } = body;
     const settings = await cms.aiSettings.get();
     try {
       let stream;
@@ -1955,26 +2059,7 @@ async function handleAIAPI(req, cms, session, path) {
       if (mode === "expand_plan" && plan) {
         let styleExamples = clientStyleExamples || "";
         if (!styleExamples) {
-          try {
-            const publishedPosts = await cms.posts.findPublished();
-            const MAX_STYLE_EXAMPLES = 5;
-            const MAX_WORDS_PER_EXAMPLE = 500;
-            if (publishedPosts.length > 0) {
-              const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
-                const words = post.markdown.split(/\s+/);
-                const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
-                return `## ${post.title}
-${post.subtitle ? `*${post.subtitle}*
-` : ""}
-${truncatedContent}`;
-              }).join("\n\n---\n\n");
-              styleExamples = `The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
-
-${examples}`;
-            }
-          } catch (err) {
-            console.error("[AI Generate] Failed to fetch published essays:", err);
-          }
+          styleExamples = await fetchStyleExamples(cms);
         }
         const { expandPlanStream: expandPlanStream2 } = await Promise.resolve().then(() => (init_generate(), generate_exports));
         stream = await expandPlanStream2({
@@ -1989,32 +2074,13 @@ ${examples}`;
       } else {
         let styleExamples = clientStyleExamples || "";
         if (!styleExamples) {
-          try {
-            const publishedPosts = await cms.posts.findPublished();
-            const MAX_STYLE_EXAMPLES = 5;
-            const MAX_WORDS_PER_EXAMPLE = 500;
-            if (publishedPosts.length > 0) {
-              const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
-                const words = post.markdown.split(/\s+/);
-                const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
-                return `## ${post.title}
-${post.subtitle ? `*${post.subtitle}*
-` : ""}
-${truncatedContent}`;
-              }).join("\n\n---\n\n");
-              styleExamples = `The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
-
-${examples}`;
-            }
-          } catch (err) {
-            console.error("[AI Generate] Failed to fetch published essays:", err);
-          }
+          styleExamples = await fetchStyleExamples(cms);
         }
         const { generateStream: generateStream2 } = await Promise.resolve().then(() => (init_generate(), generate_exports));
         stream = await generateStream2({
           prompt,
           model: model || settings.defaultModel,
-          wordCount,
+          wordCount: wordCount2,
           rules: settings.rules,
           template: settings.generateTemplate,
           styleExamples,
@@ -2044,6 +2110,39 @@ ${examples}`;
     const settings = await cms.aiSettings.get();
     const anthropicKey = cms.config.ai?.anthropicKey || settings.anthropicKey;
     const openaiKey = cms.config.ai?.openaiKey || settings.openaiKey;
+    if (mode === "search") {
+      try {
+        const { generate: generate2 } = await Promise.resolve().then(() => (init_provider(), provider_exports));
+        const lastUserMessage = [...messages].reverse().find((m) => m.role === "user");
+        if (!lastUserMessage) {
+          return jsonResponse2({ error: "No user message found" }, 400);
+        }
+        const result = await generate2(
+          model || settings.defaultModel,
+          DEFAULT_SEARCH_ONLY_PROMPT,
+          lastUserMessage.content,
+          {
+            anthropicKey,
+            openaiKey,
+            maxTokens: 4096,
+            useWebSearch: true
+            // Always use web search in search mode
+          }
+        );
+        return jsonResponse2({
+          content: result.text,
+          usage: {
+            inputTokens: result.inputTokens,
+            outputTokens: result.outputTokens
+          }
+        });
+      } catch (error) {
+        console.error("[AI Search Error]", error);
+        return jsonResponse2({
+          error: error instanceof Error ? error.message : "Search failed"
+        }, 500);
+      }
+    }
     let styleExamples = "";
     try {
       const publishedPosts = await cms.posts.findPublished();
@@ -2128,10 +2227,10 @@ ${truncatedContent}`;
     } catch (err) {
       console.error("[AI Rewrite] Failed to fetch published essays:", err);
     }
-    const { buildRewritePrompt: buildRewritePrompt2 } = await Promise.resolve().then(() => (init_builders(), builders_exports));
+    const { buildRewritePrompt: buildRewritePrompt3 } = await Promise.resolve().then(() => (init_builders(), builders_exports));
     const { createStream: createStream2 } = await Promise.resolve().then(() => (init_provider(), provider_exports));
     try {
-      const systemPrompt = buildRewritePrompt2({
+      const systemPrompt = buildRewritePrompt3({
         rewriteRules: settings.rewriteRules,
         rules: settings.rules,
         template: settings.rewriteTemplate,
@@ -2180,6 +2279,29 @@ ${text}` }
     }
   }
   return jsonResponse2({ error: "Not found" }, 404);
+}
+async function fetchStyleExamples(cms) {
+  try {
+    const publishedPosts = await cms.posts.findPublished();
+    const MAX_STYLE_EXAMPLES = 5;
+    const MAX_WORDS_PER_EXAMPLE = 500;
+    if (publishedPosts.length > 0) {
+      const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
+        const words = post.markdown.split(/\s+/);
+        const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
+        return `## ${post.title}
+${post.subtitle ? `*${post.subtitle}*
+` : ""}
+${truncatedContent}`;
+      }).join("\n\n---\n\n");
+      return `The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
+
+${examples}`;
+    }
+  } catch (err) {
+    console.error("[AI] Failed to fetch published essays:", err);
+  }
+  return "";
 }
 
 // src/api/upload.ts
@@ -2262,6 +2384,9 @@ async function handleTopicsAPI(req, cms, session, path, onMutate) {
 }
 
 // src/api/users.ts
+function normalizeEmail(email) {
+  return email.toLowerCase().trim();
+}
 async function handleUsersAPI(req, cms, session, path) {
   const method = req.method;
   const { id: userId } = parsePath(path);
@@ -2281,7 +2406,16 @@ async function handleUsersAPI(req, cms, session, path) {
     if (!body.email) {
       return jsonResponse2({ error: "Email required" }, 400);
     }
-    const user = await cms.users.create(body);
+    const email = normalizeEmail(body.email);
+    const existing = await cms.users.findByEmail(email);
+    if (existing) {
+      return jsonResponse2({ error: "User with this email already exists" }, 400);
+    }
+    const user = await cms.users.create({
+      ...body,
+      email
+      // Use normalized email
+    });
     return jsonResponse2({ data: user }, 201);
   }
   if (method === "PATCH" && userId) {
@@ -2405,6 +2539,65 @@ async function handleRevisionsAPI(req, cms, session, path, onMutate) {
   return jsonResponse2({ error: "Method not allowed" }, 405);
 }
 
+// src/api/chat-history.ts
+async function handleChatHistoryAPI(req, prisma, isAuthenticated) {
+  if (!isAuthenticated) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+  const method = req.method;
+  try {
+    if (method === "GET") {
+      const messages = await prisma.chatMessage.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 50
+      });
+      return new Response(JSON.stringify(messages.reverse()), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (method === "POST") {
+      const body = await req.json();
+      if (!body.role || !body.content) {
+        return new Response(JSON.stringify({ error: "Missing role or content" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+      const message = await prisma.chatMessage.create({
+        data: {
+          role: body.role,
+          content: body.content
+        }
+      });
+      return new Response(JSON.stringify(message), {
+        status: 201,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    if (method === "DELETE") {
+      await prisma.chatMessage.deleteMany({});
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (error) {
+    console.error("[Chat History API Error]", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}
+
 // src/api/index.ts
 function extractPath(pathname, basePath) {
   const normalized = pathname.replace(/\/$/, "");
@@ -2466,6 +2659,9 @@ function createAPIHandler(cms, options = {}) {
       if (path.startsWith("/revisions")) {
         return handleRevisionsAPI(req, cms, session, path, options.onMutate);
       }
+      if (path.startsWith("/chat/history")) {
+        return handleChatHistoryAPI(req, cms.config.prisma, !!session);
+      }
       return jsonResponse3({ error: "Not found" }, 404);
     } catch (error) {
       console.error("API error:", error);
@@ -2474,6 +2670,357 @@ function createAPIHandler(cms, options = {}) {
       }, 500);
     }
   };
+}
+
+// src/auto-draft/rss.ts
+import Parser from "rss-parser";
+var parser = new Parser({
+  timeout: 1e4,
+  headers: {
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+  }
+});
+async function fetchRssFeeds(feedUrls) {
+  const articles = [];
+  for (const url of feedUrls) {
+    try {
+      const feed = await parser.parseURL(url);
+      for (const item of feed.items) {
+        if (!item.title || !item.link) continue;
+        articles.push({
+          title: item.title,
+          url: item.link,
+          summary: item.contentSnippet || item.content || null,
+          publishedAt: item.pubDate ? new Date(item.pubDate) : null
+        });
+      }
+    } catch (error) {
+      console.error(`Failed to fetch RSS feed: ${url}`, error);
+    }
+  }
+  return articles;
+}
+
+// src/auto-draft/keywords.ts
+function filterByKeywords(articles, keywords) {
+  if (keywords.length === 0) return articles;
+  const lowerKeywords = keywords.map((k) => k.toLowerCase().trim());
+  return articles.filter((article) => {
+    const searchText = `${article.title} ${article.summary || ""}`.toLowerCase();
+    return lowerKeywords.some((keyword) => searchText.includes(keyword));
+  });
+}
+
+// src/ai/index.ts
+init_models();
+init_provider();
+init_generate();
+init_chat();
+init_builders();
+init_prompts();
+
+// src/ai/parse.ts
+function parseGeneratedContent(markdown) {
+  const lines = markdown.trim().split("\n");
+  let title = "";
+  let subtitle = "";
+  let bodyStartIndex = 0;
+  if (lines[0]?.startsWith("# ")) {
+    title = lines[0].replace(/^#\s+/, "").trim();
+    bodyStartIndex = 1;
+  }
+  for (let i = bodyStartIndex; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line === "") continue;
+    const italicMatch = line.match(/^\*(.+)\*$/) || line.match(/^_(.+)_$/);
+    if (italicMatch) {
+      subtitle = italicMatch[1].trim();
+      bodyStartIndex = i + 1;
+    }
+    break;
+  }
+  while (bodyStartIndex < lines.length && lines[bodyStartIndex].trim() === "") {
+    bodyStartIndex++;
+  }
+  const body = lines.slice(bodyStartIndex).join("\n").trim();
+  return { title, subtitle, body };
+}
+
+// src/lib/markdown.ts
+import { marked } from "marked";
+import TurndownService from "turndown";
+import sanitizeHtml from "sanitize-html";
+marked.setOptions({
+  gfm: true,
+  breaks: false
+});
+function renderMarkdown(markdown) {
+  return marked.parse(markdown);
+}
+function markdownToHtml(markdown) {
+  return marked.parse(markdown, { gfm: true, breaks: true });
+}
+function parseMarkdown(markdown) {
+  return marked.lexer(markdown);
+}
+var turndownService = new TurndownService({
+  headingStyle: "atx",
+  codeBlockStyle: "fenced",
+  bulletListMarker: "-"
+});
+function htmlToMarkdown(html) {
+  return turndownService.turndown(html);
+}
+function wordCount(text) {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+function generateSlug(title) {
+  return title.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").substring(0, 60);
+}
+function renderMarkdownSanitized(markdown) {
+  const html = renderMarkdown(markdown);
+  return sanitizeHtml(html, {
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2"]),
+    allowedAttributes: {
+      ...sanitizeHtml.defaults.allowedAttributes,
+      img: ["src", "alt", "title"],
+      a: ["href", "target", "rel"]
+    }
+  });
+}
+
+// src/auto-draft/runner.ts
+async function getStyleContext(prisma) {
+  const settings = await prisma.aISettings.findUnique({ where: { id: "default" } });
+  const posts = await prisma.post.findMany({
+    where: { status: "published" },
+    select: { title: true, subtitle: true, markdown: true },
+    orderBy: { publishedAt: "desc" },
+    take: 10
+  });
+  const styleExamples = posts.map(
+    (p) => `# ${p.title}
+${p.subtitle ? `*${p.subtitle}*
+
+` : ""}${p.markdown}`
+  ).join("\n\n---\n\n");
+  return {
+    rules: settings?.rules || "",
+    autoDraftRules: settings?.autoDraftRules || "",
+    styleExamples
+  };
+}
+function shouldRunTopic(topic) {
+  if (topic.frequency === "manual") return false;
+  if (!topic.lastRunAt) return true;
+  const now = /* @__PURE__ */ new Date();
+  const lastRun = new Date(topic.lastRunAt);
+  const hoursSinceLastRun = (now.getTime() - lastRun.getTime()) / (1e3 * 60 * 60);
+  if (topic.frequency === "daily") return hoursSinceLastRun >= 23;
+  if (topic.frequency === "weekly") return hoursSinceLastRun >= 167;
+  return true;
+}
+async function deduplicateArticles(prisma, articles) {
+  const articleUrls = articles.map((a) => a.url);
+  const existingUrls = await prisma.newsItem.findMany({
+    where: { url: { in: articleUrls } },
+    select: { url: true }
+  });
+  const urlSet = new Set(existingUrls.map((n) => n.url));
+  return articles.filter((a) => !urlSet.has(a.url));
+}
+async function generateUniqueSlug2(prisma, title) {
+  const baseSlug = generateSlug(title);
+  const existing = await prisma.post.findUnique({ where: { slug: baseSlug } });
+  if (!existing) return baseSlug;
+  let suffix = 2;
+  while (suffix < 100) {
+    const candidateSlug = `${baseSlug}-${suffix}`;
+    const exists = await prisma.post.findUnique({ where: { slug: candidateSlug } });
+    if (!exists) return candidateSlug;
+    suffix++;
+  }
+  return `${baseSlug}-${Date.now()}`;
+}
+async function generateEssayFromArticle(config, article, topicName, essayFocus) {
+  const context = await getStyleContext(config.prisma);
+  const systemPrompt = buildAutoDraftPrompt({
+    autoDraftRules: context.autoDraftRules,
+    rules: context.rules,
+    wordCount: 800,
+    styleExamples: context.styleExamples,
+    topicName,
+    articleTitle: article.title,
+    articleSummary: article.summary || "",
+    articleUrl: article.url
+  });
+  const model = await resolveModel(void 0, async () => {
+    const settings = await config.prisma.aISettings.findUnique({ where: { id: "default" } });
+    return settings?.defaultModel || null;
+  });
+  const userPrompt = essayFocus ? `Write the essay now. Focus on: ${essayFocus}` : "Write the essay now.";
+  const result = await generate(model.id, systemPrompt, userPrompt, {
+    maxTokens: 4096,
+    anthropicKey: config.anthropicKey,
+    openaiKey: config.openaiKey
+  });
+  const parsed = parseGeneratedContent(result.text);
+  return {
+    title: parsed.title || article.title,
+    subtitle: parsed.subtitle || null,
+    markdown: parsed.body
+  };
+}
+async function runAutoDraft(config, topicId, skipFrequencyCheck = false) {
+  const { prisma } = config;
+  const integrationSettings = await prisma.integrationSettings.findUnique({
+    where: { id: "default" }
+  });
+  if (!integrationSettings?.autoDraftEnabled) {
+    console.log("Auto-draft is disabled. Skipping.");
+    return [];
+  }
+  const topics = topicId ? await prisma.topicSubscription.findMany({ where: { id: topicId, isActive: true } }) : await prisma.topicSubscription.findMany({ where: { isActive: true } });
+  const results = [];
+  for (const topic of topics) {
+    if (!skipFrequencyCheck && !shouldRunTopic(topic)) {
+      continue;
+    }
+    try {
+      const feedUrls = JSON.parse(topic.rssFeeds);
+      const articles = await fetchRssFeeds(feedUrls);
+      const keywords = JSON.parse(topic.keywords);
+      const relevant = topic.useKeywordFilter ? filterByKeywords(articles, keywords) : articles;
+      const newArticles = await deduplicateArticles(prisma, relevant);
+      const toGenerate = newArticles.slice(0, topic.maxPerPeriod);
+      let generated = 0;
+      for (const article of toGenerate) {
+        try {
+          const newsItem = await prisma.newsItem.create({
+            data: {
+              topicId: topic.id,
+              url: article.url,
+              title: article.title,
+              summary: article.summary,
+              publishedAt: article.publishedAt,
+              status: "pending"
+            }
+          });
+          const essay = await generateEssayFromArticle(config, article, topic.name, topic.essayFocus);
+          const slug = await generateUniqueSlug2(prisma, essay.title);
+          const extraFields = config.onPostCreate ? await config.onPostCreate(article, essay) : {};
+          const post = await prisma.post.create({
+            data: {
+              title: essay.title,
+              subtitle: essay.subtitle,
+              slug,
+              markdown: essay.markdown,
+              status: "suggested",
+              sourceUrl: article.url,
+              topicId: topic.id,
+              ...extraFields
+            }
+          });
+          await prisma.newsItem.update({
+            where: { id: newsItem.id },
+            data: { postId: post.id, status: "generated" }
+          });
+          generated++;
+        } catch (articleError) {
+          console.error(`Failed to process article: ${article.title}`, articleError);
+        }
+      }
+      await prisma.topicSubscription.update({
+        where: { id: topic.id },
+        data: { lastRunAt: /* @__PURE__ */ new Date() }
+      });
+      results.push({
+        topicId: topic.id,
+        topicName: topic.name,
+        generated,
+        skipped: relevant.length - generated
+      });
+    } catch (topicError) {
+      console.error(`Failed to process topic: ${topic.name}`, topicError);
+      results.push({
+        topicId: topic.id,
+        topicName: topic.name,
+        generated: 0,
+        skipped: 0
+      });
+    }
+  }
+  return results;
+}
+
+// src/types/config.ts
+var DEFAULT_STYLES = {
+  container: "max-w-ab-content mx-auto px-ab-content-padding",
+  title: "text-ab-title font-bold",
+  subtitle: "text-ab-h2 text-muted-foreground",
+  byline: "text-sm text-muted-foreground",
+  prose: "prose dark:prose-invert max-w-none"
+};
+
+// src/server.ts
+function createAutoblogger(config) {
+  const prisma = config.prisma;
+  const mergedStyles = {
+    ...DEFAULT_STYLES,
+    ...config.styles
+  };
+  const baseServer = {
+    config: {
+      ...config,
+      styles: mergedStyles
+    },
+    posts: createPostsData(prisma, config.hooks),
+    comments: createCommentsData(prisma, config.comments),
+    tags: createTagsData(prisma),
+    revisions: createRevisionsData(prisma),
+    aiSettings: createAISettingsData(prisma),
+    topics: createTopicsData(prisma),
+    newsItems: createNewsItemsData(prisma),
+    users: createUsersData(prisma)
+  };
+  const server = {
+    ...baseServer,
+    handleRequest: async () => new Response("Not initialized", { status: 500 }),
+    autoDraft: {
+      run: async (topicId, skipFrequencyCheck) => {
+        const autoDraftConfig = {
+          prisma,
+          anthropicKey: config.ai?.anthropicKey,
+          openaiKey: config.ai?.openaiKey,
+          onPostCreate: config.hooks?.onAutoDraftPostCreate
+        };
+        return runAutoDraft(autoDraftConfig, topicId, skipFrequencyCheck);
+      }
+    }
+  };
+  const apiHandler = createAPIHandler(server);
+  server.handleRequest = async (req, path) => {
+    const normalizedPath = "/" + path.replace(/^\//, "");
+    const originalUrl = new URL(req.url);
+    const newUrl = new URL(originalUrl.origin + "/api/cms" + normalizedPath);
+    originalUrl.searchParams.forEach((value, key) => {
+      newUrl.searchParams.set(key, value);
+    });
+    const handlerReq = new Request(newUrl.toString(), {
+      method: req.method,
+      headers: req.headers,
+      body: req.method !== "GET" && req.method !== "HEAD" ? req.body : void 0,
+      // @ts-ignore - duplex is needed for streaming bodies
+      duplex: req.method !== "GET" && req.method !== "HEAD" ? "half" : void 0
+    });
+    Object.defineProperty(handlerReq, "nextUrl", {
+      value: newUrl,
+      writable: false
+    });
+    return apiHandler(handlerReq);
+  };
+  return server;
 }
 
 // src/schema.ts
@@ -2508,36 +3055,6 @@ async function validateSchema(prisma) {
     valid: missingTables.length === 0,
     missingTables
   };
-}
-
-// src/ai/index.ts
-init_models();
-init_provider();
-init_generate();
-init_chat();
-init_builders();
-init_prompts();
-
-// src/lib/markdown.ts
-import { marked } from "marked";
-import TurndownService from "turndown";
-marked.setOptions({
-  gfm: true,
-  breaks: false
-});
-function renderMarkdown(markdown) {
-  return marked.parse(markdown);
-}
-function parseMarkdown(markdown) {
-  return marked.lexer(markdown);
-}
-var turndownService = new TurndownService({
-  headingStyle: "atx",
-  codeBlockStyle: "fenced",
-  bulletListMarker: "-"
-});
-function htmlToMarkdown(html) {
-  return turndownService.turndown(html);
 }
 
 // src/lib/format.ts
@@ -3301,11 +3818,11 @@ function createNodeFromContent(content, schema, options) {
         });
       }
     }
-    const parser = DOMParser.fromSchema(schema);
+    const parser2 = DOMParser.fromSchema(schema);
     if (options.slice) {
-      return parser.parseSlice(elementFromString(content), options.parseOptions).content;
+      return parser2.parseSlice(elementFromString(content), options.parseOptions).content;
     }
-    return parser.parse(elementFromString(content), options.parseOptions);
+    return parser2.parse(elementFromString(content), options.parseOptions);
   }
   return createNodeFromContent("", schema, options);
 }
@@ -6849,16 +7366,26 @@ export {
   createAutoblogger,
   createCommentsClient,
   createCrudData,
+  fetchRssFeeds,
+  filterByKeywords,
   formatDate,
+  generate,
+  generateSlug,
   getDefaultModel,
   getModel,
   getSeoValues,
   htmlToMarkdown,
+  markdownToHtml,
+  parseGeneratedContent,
   parseMarkdown,
   removeCommentMark,
   renderMarkdown,
+  renderMarkdownSanitized,
+  resolveModel,
+  runAutoDraft,
   scrollToComment,
   truncate,
-  validateSchema
+  validateSchema,
+  wordCount
 };
 //# sourceMappingURL=index.mjs.map

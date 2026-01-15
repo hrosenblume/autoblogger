@@ -7,6 +7,8 @@ import { createAISettingsData } from './data/ai-settings'
 import { createTopicsData } from './data/topics'
 import { createNewsItemsData } from './data/news-items'
 import { createUsersData } from './data/users'
+import { createAPIHandler } from './api'
+import { runAutoDraft as runAutoDraftInternal, type AutoDraftConfig } from './auto-draft'
 import type { AutobloggerServerConfig, StylesConfig } from './types/config'
 import { DEFAULT_STYLES } from './types/config'
 
@@ -25,6 +27,12 @@ export interface AutobloggerServer {
   topics: ReturnType<typeof createTopicsData>
   newsItems: ReturnType<typeof createNewsItemsData>
   users: ReturnType<typeof createUsersData>
+  /** Handle an API request - convenience method for route handlers */
+  handleRequest: (req: Request, path: string) => Promise<Response>
+  /** Auto-draft runner */
+  autoDraft: {
+    run: (topicId?: string, skipFrequencyCheck?: boolean) => Promise<import('./auto-draft').GenerationResult[]>
+  }
 }
 
 // Create autoblogger server instance
@@ -36,7 +44,8 @@ export function createAutoblogger(config: AutobloggerServerConfig): AutobloggerS
     ...config.styles,
   }
 
-  return {
+  // Create the base server object first (without handleRequest)
+  const baseServer = {
     config: {
       ...config,
       styles: mergedStyles,
@@ -50,4 +59,58 @@ export function createAutoblogger(config: AutobloggerServerConfig): AutobloggerS
     newsItems: createNewsItemsData(prisma),
     users: createUsersData(prisma),
   }
+
+  // Create the full server with handleRequest and autoDraft
+  const server: AutobloggerServer = {
+    ...baseServer,
+    handleRequest: async () => new Response('Not initialized', { status: 500 }),
+    autoDraft: {
+      run: async (topicId?: string, skipFrequencyCheck?: boolean) => {
+        const autoDraftConfig: AutoDraftConfig = {
+          prisma,
+          anthropicKey: config.ai?.anthropicKey,
+          openaiKey: config.ai?.openaiKey,
+          onPostCreate: config.hooks?.onAutoDraftPostCreate,
+        }
+        return runAutoDraftInternal(autoDraftConfig, topicId, skipFrequencyCheck)
+      },
+    },
+  }
+
+  // Create the API handler with the server
+  const apiHandler = createAPIHandler(server)
+
+  // Now set the real handleRequest implementation
+  server.handleRequest = async (req: Request, path: string): Promise<Response> => {
+    // Normalize path to start with /
+    const normalizedPath = '/' + path.replace(/^\//, '')
+    
+    // Build the full URL the handler expects
+    const originalUrl = new URL(req.url)
+    const newUrl = new URL(originalUrl.origin + '/api/cms' + normalizedPath)
+    
+    // Copy search params
+    originalUrl.searchParams.forEach((value, key) => {
+      newUrl.searchParams.set(key, value)
+    })
+    
+    // Create a new request with nextUrl property (required by the handler)
+    const handlerReq = new Request(newUrl.toString(), {
+      method: req.method,
+      headers: req.headers,
+      body: req.method !== 'GET' && req.method !== 'HEAD' ? req.body : undefined,
+      // @ts-ignore - duplex is needed for streaming bodies
+      duplex: req.method !== 'GET' && req.method !== 'HEAD' ? 'half' : undefined,
+    }) as Request & { nextUrl: URL }
+    
+    // Add nextUrl property
+    Object.defineProperty(handlerReq, 'nextUrl', {
+      value: newUrl,
+      writable: false,
+    })
+    
+    return apiHandler(handlerReq)
+  }
+
+  return server
 }

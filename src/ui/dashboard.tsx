@@ -8,6 +8,10 @@ import { WriterDashboard } from './pages/WriterDashboard'
 import { EditorPage } from './pages/EditorPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { Navbar } from './components/Navbar'
+import { ChatButton } from './components/ChatButton'
+import { ChatPanel } from './components/ChatPanel'
+import { ThemeProvider } from './components/ThemeProvider'
+import { ChatProvider } from './hooks/useChat'
 import { useDashboardKeyboard } from './hooks/useKeyboard'
 import { useChatContextOptional } from './hooks/useChat'
 
@@ -22,9 +26,14 @@ interface AutobloggerDashboardProps {
   onToggleView?: (currentPath: string, slug?: string) => void
   // Navbar props
   onSignOut?: () => void
-  onThemeToggle?: () => void
-  theme?: 'light' | 'dark'
   navbarRightSlot?: ReactNode
+  // Chat props
+  chatApiPath?: string
+  historyApiPath?: string
+  proseClasses?: string
+  // Theme props
+  /** Skip internal ThemeProvider when host app already provides one (e.g., next-themes) */
+  skipThemeProvider?: boolean
 }
 
 export function AutobloggerDashboard({
@@ -37,39 +46,56 @@ export function AutobloggerDashboard({
   onRegisterEditHandler,
   onToggleView,
   onSignOut,
-  onThemeToggle,
-  theme,
   navbarRightSlot,
+  chatApiPath,
+  historyApiPath,
+  proseClasses,
+  skipThemeProvider = false,
 }: AutobloggerDashboardProps) {
+  // Resolve default paths
+  const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`
+  const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`
+
+  // Wrapper component - either ThemeProvider or Fragment
+  const ThemeWrapper = skipThemeProvider ? ({ children }: { children: React.ReactNode }) => <>{children}</> : ThemeProvider
+
   return (
-    <DashboardProvider basePath={basePath} apiBasePath={apiBasePath} styles={styles} fields={fields} session={session} onEditorStateChange={onEditorStateChange} onRegisterEditHandler={onRegisterEditHandler}>
-      <DashboardLayout 
-        onToggleView={onToggleView}
-        onSignOut={onSignOut}
-        onThemeToggle={onThemeToggle}
-        theme={theme}
-        navbarRightSlot={navbarRightSlot}
-      />
-    </DashboardProvider>
+    <ThemeWrapper>
+      <ChatProvider 
+        apiBasePath={apiBasePath}
+        chatApiPath={resolvedChatApiPath}
+        historyApiPath={resolvedHistoryApiPath}
+      >
+        <DashboardProvider basePath={basePath} apiBasePath={apiBasePath} styles={styles} fields={fields} session={session} onEditorStateChange={onEditorStateChange} onRegisterEditHandler={onRegisterEditHandler}>
+          <DashboardLayout 
+            basePath={basePath}
+            onToggleView={onToggleView}
+            onSignOut={onSignOut}
+            navbarRightSlot={navbarRightSlot}
+            proseClasses={proseClasses}
+          />
+        </DashboardProvider>
+      </ChatProvider>
+    </ThemeWrapper>
   )
 }
 
 interface DashboardLayoutProps {
+  basePath: string
   onToggleView?: (currentPath: string, slug?: string) => void
   onSignOut?: () => void
-  onThemeToggle?: () => void
-  theme?: 'light' | 'dark'
   navbarRightSlot?: ReactNode
+  proseClasses?: string
 }
 
 function DashboardLayout({ 
+  basePath,
   onToggleView,
   onSignOut,
-  onThemeToggle,
-  theme,
   navbarRightSlot,
+  proseClasses,
 }: DashboardLayoutProps) {
-  const { basePath, currentPath, navigate, onEditorStateChange } = useDashboardContext()
+  const { currentPath, navigate, onEditorStateChange } = useDashboardContext()
   const [editorState, setEditorState] = useState<EditorState | null>(null)
   const chatContext = useChatContextOptional()
 
@@ -119,8 +145,8 @@ function DashboardLayout({
     },
   })
 
-  // Build the right slot with save button + any custom slot from host app
-  const rightSlotWithSave = (
+  // Build the right slot with save button, chat button, and any custom slot from host app
+  const rightSlotWithButtons = (
     <>
       {/* Save button - only show on editor page */}
       {isEditorPage && editorState && (
@@ -139,6 +165,8 @@ function DashboardLayout({
           )}
         </button>
       )}
+      {/* Chat button - built-in, always available */}
+      <ChatButton />
       {/* Extra slot from host app */}
       {navbarRightSlot}
     </>
@@ -148,13 +176,13 @@ function DashboardLayout({
     <div className="autoblogger min-h-screen bg-background flex flex-col">
       <Navbar
         onSignOut={onSignOut}
-        onThemeToggle={onThemeToggle}
-        theme={theme}
-        rightSlot={rightSlotWithSave}
+        rightSlot={rightSlotWithButtons}
       />
       <main className="flex-1">
         <DashboardRouter path={currentPath} onEditorStateChange={handleEditorStateChange} />
       </main>
+      {/* Chat Panel - built-in */}
+      <ChatPanel proseClasses={proseClasses} />
     </div>
   )
 }

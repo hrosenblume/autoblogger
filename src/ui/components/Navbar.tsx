@@ -1,23 +1,19 @@
 'use client'
 
-import { ChevronLeft, Moon, Sun } from 'lucide-react'
 import { useDashboardContext } from '../context'
 import { Dropdown, DropdownItem, DropdownDivider } from './Dropdown'
+import { ThemeToggle } from './ThemeToggle'
+import { ChevronLeftIcon } from './Icons'
 
 export interface NavbarProps {
   // Callbacks
   onSignOut?: () => void
-  onThemeToggle?: () => void
-  // Current theme for icon display
-  theme?: 'light' | 'dark'
-  // Extra slot for host-app specific buttons (e.g., chat toggle)
+  // Extra slot for host-app specific buttons (e.g., additional actions)
   rightSlot?: React.ReactNode
 }
 
 export function Navbar({
   onSignOut,
-  onThemeToggle,
-  theme,
   rightSlot,
 }: NavbarProps) {
   const { session, currentPath, navigate, goBack, basePath } = useDashboardContext()
@@ -57,7 +53,7 @@ export function Navbar({
             onClick={handleBack}
             className="h-9 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-sm font-medium rounded-md active:bg-accent md:hover:bg-accent active:text-accent-foreground md:hover:text-accent-foreground touch-manipulation"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeftIcon />
             <span className="hidden sm:inline">Back</span>
           </button>
         )}
@@ -67,17 +63,8 @@ export function Navbar({
           {/* Extra slot from host app */}
           {rightSlot}
 
-          {/* Theme toggle */}
-          {onThemeToggle && (
-            <button
-              type="button"
-              onClick={onThemeToggle}
-              className="w-9 h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center"
-              aria-label="Toggle theme"
-            >
-              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </button>
-          )}
+          {/* Theme toggle - always shown, uses next-themes internally */}
+          <ThemeToggle />
 
           {/* User menu */}
           {session && (

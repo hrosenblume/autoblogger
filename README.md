@@ -38,7 +38,8 @@ You keep full control. Autoblogger uses your Prisma client, respects your auth, 
 
 | Feature | Description |
 |---------|-------------|
-| **AI Writing** | Generate essays with Claude or GPT. Stream responses in real-time. Chat to refine your content. |
+| **AI Writing** | Generate essays with Claude or GPT. Stream responses in real-time. Multiple chat modes for different workflows. |
+| **AI Chat Modes** | **Ask** for Q&A, **Agent** for direct editing, **Plan** for outlines. Toggle web search and thinking mode. |
 | **WYSIWYG Editor** | Tiptap-based editor with formatting toolbar. Syncs to markdown for storage. |
 | **Revision History** | Every save creates a revision. Browse and restore any previous version. |
 | **Inline Comments** | Highlight text and leave comments. Reply in threads. Resolve when done. |
@@ -149,6 +150,7 @@ The required models are:
 | `IntegrationSettings` | Feature flags like auto-draft enabled |
 | `TopicSubscription` | RSS feed subscriptions for auto-drafting |
 | `NewsItem` | Individual RSS items fetched from subscriptions |
+| `ChatMessage` | Persistent chat history for AI conversations |
 
 #### Step 3: Run the migration
 
@@ -258,8 +260,10 @@ This single file handles all CMS API routes:
 | `GET /api/cms/revisions` | List revisions |
 | `POST /api/cms/revisions/:id/restore` | Restore a revision |
 | `GET /api/cms/comments` | List comments |
-| `POST /api/cms/ai/generate` | Generate essay with AI |
-| `POST /api/cms/ai/chat` | Chat with AI (streaming) |
+| `POST /api/cms/ai/generate` | Generate essay with AI (streaming SSE) |
+| `POST /api/cms/ai/chat` | Chat with AI (streaming, supports modes) |
+| `GET /api/cms/chat/history` | Get persisted chat history |
+| `POST /api/cms/chat/history` | Save chat message |
 | ... | And more |
 
 ---
@@ -481,14 +485,20 @@ import { createAutoblogger } from 'autoblogger'
 // UI components — React dashboard (client-side)
 import { AutobloggerDashboard } from 'autoblogger/ui'
 
+// Chat components — for custom integrations
+import { ChatProvider, useChatContext, ChatPanel, ChatButton } from 'autoblogger/ui'
+
 // Markdown utilities — render markdown to HTML, parse HTML to markdown
-import { renderMarkdown, parseMarkdown } from 'autoblogger/markdown'
+import { renderMarkdown, parseMarkdown, htmlToMarkdown, markdownToHtml } from 'autoblogger/markdown'
 
 // SEO utilities — generate meta tags from post data
-import { generateSeoMetadata } from 'autoblogger/seo'
+import { getSeoValues } from 'autoblogger/seo'
 
 // Article styles — CSS class helpers for consistent article layout
 import { ARTICLE_STYLES } from 'autoblogger/styles/article'
+
+// Auto-draft — generate posts from RSS feeds
+import { runAutoDraft, fetchRssFeeds, filterByKeywords } from 'autoblogger'
 ```
 
 ---
@@ -531,14 +541,28 @@ Autoblogger supports these AI models out of the box:
 |----|------|----------|-------------|
 | `claude-sonnet` | Sonnet 4.5 | Anthropic | Fast, capable, best value |
 | `claude-opus` | Opus 4.5 | Anthropic | Highest quality, slower |
-| `gpt-5.2` | GPT-5.2 | OpenAI | Latest OpenAI flagship |
-| `gpt-5-mini` | GPT-5 Mini | OpenAI | Fast and cost-efficient |
+| `gpt-5.2` | GPT-5.2 | OpenAI | Latest OpenAI flagship, native web search |
+| `gpt-5-mini` | GPT-5 Mini | OpenAI | Fast and cost-efficient, native web search |
+
+### Chat Modes
+
+The AI chat panel supports multiple modes for different workflows:
+
+| Mode | Description |
+|------|-------------|
+| **Ask** | Default mode. Ask questions, get feedback, discuss ideas. |
+| **Agent** | Direct editing mode. AI outputs edit commands that are applied to your essay automatically. |
+| **Plan** | Outline mode. AI generates structured outlines with sections and bullet points. Click "Draft Essay" to expand into a full essay. |
+
+Toggle modes with the dropdown in the chat panel or use **⌘⇧A** (Cmd+Shift+A) to switch between Ask and Agent modes.
 
 ### AI Features
 
-- **URL Context**: Paste a URL into your prompt and the AI will fetch and read the article content
-- **Chat Modes**: Rewrite, expand, shorten, or chat freely with your content
-- **Custom Prompts**: Configure prompt templates in **Settings → AI**
+- **Web Search**: Toggle the globe icon to enable web search. Works with all models—GPT models use native tools, Claude uses a 2-call flow.
+- **Thinking Mode**: Toggle the brain icon to enable extended thinking for complex reasoning tasks.
+- **URL Context**: Paste a URL into your prompt and the AI will fetch and read the article content.
+- **Custom Prompts**: Configure prompt templates for generation, chat, rewrite, plan, and auto-draft in **Settings → AI**.
+- **Chat History**: Conversations are persisted across sessions.
 
 Configure the default model and custom prompts in the dashboard under **Settings → AI**.
 

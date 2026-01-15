@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback, useContext } from 'react'
 import { createPortal } from 'react-dom'
 import { Loader2, X, Copy, Check, ArrowUp, Pencil, Undo2, ChevronDown, MessageSquare, Globe, Brain, Square, List } from 'lucide-react'
 import { useChatContext, type ChatMode } from '../hooks/useChat'
-import { useAIModels } from '../hooks/useAIModels'
+import { DEFAULT_MODELS, type AIModelOption } from '../../lib/models'
 import { ControlButton } from './ControlButton'
 import { ModelSelector } from './ModelSelector'
 import { markdownToHtml } from '../../lib/markdown'
@@ -21,21 +21,20 @@ function stripPlanTags(content: string): string {
 }
 
 interface ChatPanelProps {
+  /** @deprecated Models are now fetched from DashboardContext */
+  modelsApiPath?: string
   /** Optional prose classes for message rendering */
   proseClasses?: string
   /** Optional callback when navigating (e.g., for expandPlan navigation) */
   onNavigate?: (path: string) => void
   /** Whether currently on an editor page (controls Draft Essay behavior) */
   isOnEditor?: boolean
-  /** API path for fetching models (defaults to /api/cms/ai/settings) */
-  modelsApiPath?: string
 }
 
 export function ChatPanel({ 
   proseClasses = DEFAULT_PROSE_CLASSES,
   onNavigate: onNavigateProp,
   isOnEditor: isOnEditorProp,
-  modelsApiPath,
 }: ChatPanelProps) {
   const { 
     messages, 
@@ -78,12 +77,11 @@ export function ChatPanel({
   const savedScrollPositionRef = useRef<number | null>(null)
   const lastUserMessageRef = useRef<HTMLDivElement>(null)
   
-  // Fetch models, use context for selection state
-  const { models, currentModel } = useAIModels({
-    externalSelectedModel: selectedModel,
-    externalSetSelectedModel: setSelectedModel,
-    apiPath: modelsApiPath,
-  })
+  
+  // Get models from dashboard context or use defaults
+  const contextModels = dashboardContext?.sharedData?.aiSettings?.availableModels as AIModelOption[] | undefined
+  const models = (contextModels && contextModels.length > 0) ? contextModels : DEFAULT_MODELS
+  const currentModel = models.find(m => m.id === selectedModel)
   
   const onClose = useCallback(() => setIsOpen(false), [setIsOpen])
   

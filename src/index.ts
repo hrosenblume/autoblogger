@@ -28,13 +28,20 @@ export {
   DEFAULT_PLAN_TEMPLATE,
   DEFAULT_PLAN_RULES,
   DEFAULT_EXPAND_PLAN_TEMPLATE,
+  parseGeneratedContent,
+  generate,
+  resolveModel,
 } from './ai'
 export type { AIModel } from './ai'
 
 // Utilities
-export { renderMarkdown, parseMarkdown, htmlToMarkdown } from './lib/markdown'
+export { renderMarkdown, parseMarkdown, htmlToMarkdown, markdownToHtml, wordCount, generateSlug, renderMarkdownSanitized } from './lib/markdown'
 export { getSeoValues } from './lib/seo'
 export { formatDate, truncate } from './lib/format'
+
+// Auto-draft
+export { runAutoDraft, fetchRssFeeds, filterByKeywords } from './auto-draft'
+export type { RssArticle, GenerationResult, AutoDraftConfig } from './auto-draft'
 
 // Comment utilities (for advanced integrations)
 export { createCommentsClient, canEditComment, canDeleteComment } from './lib/comments'

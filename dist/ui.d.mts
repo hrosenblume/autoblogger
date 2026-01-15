@@ -1,6 +1,7 @@
 import * as react_jsx_runtime from 'react/jsx-runtime';
 import * as react from 'react';
 import { ComponentType, ReactNode } from 'react';
+import { ThemeProviderProps } from 'next-themes';
 import { Editor } from '@tiptap/react';
 
 interface Post {
@@ -124,19 +125,35 @@ interface AutobloggerDashboardProps {
     onRegisterEditHandler?: (handler: EditHandler$1 | null) => void;
     onToggleView?: (currentPath: string, slug?: string) => void;
     onSignOut?: () => void;
-    onThemeToggle?: () => void;
-    theme?: 'light' | 'dark';
     navbarRightSlot?: ReactNode;
+    chatApiPath?: string;
+    historyApiPath?: string;
+    proseClasses?: string;
+    /** Skip internal ThemeProvider when host app already provides one (e.g., next-themes) */
+    skipThemeProvider?: boolean;
 }
-declare function AutobloggerDashboard({ basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, onToggleView, onSignOut, onThemeToggle, theme, navbarRightSlot, }: AutobloggerDashboardProps): react_jsx_runtime.JSX.Element;
+declare function AutobloggerDashboard({ basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, onToggleView, onSignOut, navbarRightSlot, chatApiPath, historyApiPath, proseClasses, skipThemeProvider, }: AutobloggerDashboardProps): react_jsx_runtime.JSX.Element;
 
 interface NavbarProps {
     onSignOut?: () => void;
-    onThemeToggle?: () => void;
-    theme?: 'light' | 'dark';
     rightSlot?: React.ReactNode;
 }
-declare function Navbar({ onSignOut, onThemeToggle, theme, rightSlot, }: NavbarProps): react_jsx_runtime.JSX.Element;
+declare function Navbar({ onSignOut, rightSlot, }: NavbarProps): react_jsx_runtime.JSX.Element;
+
+interface ThemeToggleProps {
+    className?: string;
+}
+declare function ThemeToggle({ className }: ThemeToggleProps): react_jsx_runtime.JSX.Element;
+
+declare function ThemeProvider({ children, ...props }: ThemeProviderProps): react_jsx_runtime.JSX.Element;
+
+interface IconProps {
+    className?: string;
+}
+declare const ChatIcon: ({ className }: IconProps) => react_jsx_runtime.JSX.Element;
+declare const SunIcon: ({ className }: IconProps) => react_jsx_runtime.JSX.Element;
+declare const MoonIcon: ({ className }: IconProps) => react_jsx_runtime.JSX.Element;
+declare const ChevronLeftIcon: ({ className }: IconProps) => react_jsx_runtime.JSX.Element;
 
 /**
  * Comment types and client-side API helpers for the editor commenting system.
@@ -289,16 +306,18 @@ declare function useChatContext(): ChatContextValue;
 declare function useChatContextOptional(): ChatContextValue | null;
 
 interface ChatPanelProps {
+    /** @deprecated Models are now fetched from DashboardContext */
+    modelsApiPath?: string;
     /** Optional prose classes for message rendering */
     proseClasses?: string;
     /** Optional callback when navigating (e.g., for expandPlan navigation) */
     onNavigate?: (path: string) => void;
     /** Whether currently on an editor page (controls Draft Essay behavior) */
     isOnEditor?: boolean;
-    /** API path for fetching models (defaults to /api/cms/ai/settings) */
-    modelsApiPath?: string;
 }
-declare function ChatPanel({ proseClasses, onNavigate: onNavigateProp, isOnEditor: isOnEditorProp, modelsApiPath, }: ChatPanelProps): react.ReactPortal | null;
+declare function ChatPanel({ proseClasses, onNavigate: onNavigateProp, isOnEditor: isOnEditorProp, }: ChatPanelProps): react.ReactPortal | null;
+
+declare function ChatButton(): react_jsx_runtime.JSX.Element | null;
 
 /** AI model option for UI dropdowns */
 interface AIModelOption {
@@ -344,4 +363,81 @@ interface ControlButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 declare const ControlButton: react.ForwardRefExoticComponent<ControlButtonProps & react.RefAttributes<HTMLButtonElement>>;
 
-export { type AIModelOption, AutobloggerDashboard, type AutobloggerDashboardProps, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, type Message as ChatMessage, type ChatMode, ChatPanel, ChatProvider, CommentThread, CommentsPanel, type CommentsState, ControlButton, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, ModelSelector, Navbar, type NavbarProps, type Session, type SessionUser, type StylesConfig, useAIModels, useChatContext, useChatContextOptional, useComments, useDashboardContext };
+interface KeyboardShortcut {
+    key: string;
+    metaKey?: boolean;
+    ctrlKey?: boolean;
+    shiftKey?: boolean;
+    altKey?: boolean;
+    action: () => void;
+    description?: string;
+    allowInInput?: boolean;
+}
+declare function useKeyboard(shortcuts: KeyboardShortcut[], enabled?: boolean): void;
+declare function useDashboardKeyboard(options: {
+    basePath: string;
+    onToggleView?: () => void;
+    onToggleSettings?: () => void;
+    onNewPost?: () => void;
+    onEscape?: () => void;
+}): void;
+
+/**
+ * Predefined keyboard shortcuts for the dashboard.
+ * These can be used with useKeyboard() hook.
+ */
+declare const SHORTCUTS: {
+    readonly THEME_TOGGLE: {
+        readonly key: ".";
+        readonly metaKey: true;
+        readonly allowInInput: true;
+    };
+    readonly TOGGLE_VIEW: {
+        readonly key: "/";
+        readonly metaKey: true;
+        readonly allowInInput: true;
+    };
+    readonly SETTINGS: {
+        readonly key: ";";
+        readonly metaKey: true;
+        readonly allowInInput: true;
+    };
+    readonly CHAT_TOGGLE: {
+        readonly key: "k";
+        readonly metaKey: true;
+        readonly allowInInput: true;
+    };
+    readonly NEW_ARTICLE: {
+        readonly key: "n";
+    };
+    readonly PREV: {
+        readonly key: "ArrowLeft";
+    };
+    readonly NEXT: {
+        readonly key: "ArrowRight";
+    };
+    readonly ESCAPE_BACK: {
+        readonly key: "Escape";
+        readonly allowInInput: true;
+    };
+    readonly TOGGLE_CHAT_MODE: {
+        readonly key: "a";
+        readonly metaKey: true;
+        readonly shiftKey: true;
+        readonly allowInInput: true;
+    };
+};
+
+interface GlobalShortcutsProps {
+    /** Path to navigate to when Cmd+/ is pressed (default: /writer) */
+    writerPath?: string;
+}
+/**
+ * Global keyboard shortcuts for use outside the dashboard.
+ * Add this to your root layout to enable Cmd+/ navigation to the writer.
+ *
+ * Zero-config: just add <GlobalShortcuts /> to your root layout.
+ */
+declare function GlobalShortcuts({ writerPath }?: GlobalShortcutsProps): null;
+
+export { type AIModelOption, AutobloggerDashboard, type AutobloggerDashboardProps, ChatButton, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, ChatIcon, type Message as ChatMessage, type ChatMode, ChatPanel, ChatProvider, ChevronLeftIcon, CommentThread, CommentsPanel, type CommentsState, ControlButton, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, GlobalShortcuts, ModelSelector, MoonIcon, Navbar, type NavbarProps, SHORTCUTS, type Session, type SessionUser, type StylesConfig, SunIcon, ThemeProvider, ThemeToggle, useAIModels, useChatContext, useChatContextOptional, useComments, useDashboardContext, useDashboardKeyboard, useKeyboard };

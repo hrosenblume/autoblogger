@@ -8,6 +8,13 @@ export type { AutobloggerDashboardProps } from './dashboard'
 export { Navbar } from './components/Navbar'
 export type { NavbarProps } from './components/Navbar'
 
+// Theme toggle and provider
+export { ThemeToggle } from './components/ThemeToggle'
+export { ThemeProvider } from './components/ThemeProvider'
+
+// Icons
+export { ChatIcon, SunIcon, MoonIcon, ChevronLeftIcon } from './components/Icons'
+
 // Context and types
 export { useDashboardContext } from './context'
 export type { Session, SessionUser, EditorState, EditorContent, EditCommand, EditHandler } from './context'
@@ -33,9 +40,19 @@ export type {
   ExpandPlanHandler,
 } from './hooks/useChat'
 export { ChatPanel } from './components/ChatPanel'
+export { ChatButton } from './components/ChatButton'
 export { useAIModels } from './hooks/useAIModels'
 export { ModelSelector } from './components/ModelSelector'
 export { ControlButton } from './components/ControlButton'
 
 // Types from lib
 export type { AIModelOption } from '../lib/models'
+
+// Keyboard hook
+export { useKeyboard, useDashboardKeyboard } from './hooks/useKeyboard'
+
+// Keyboard shortcuts
+export { SHORTCUTS } from './shortcuts'
+
+// Global shortcuts for use outside dashboard
+export { GlobalShortcuts } from './components/GlobalShortcuts'

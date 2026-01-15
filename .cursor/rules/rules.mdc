@@ -63,14 +63,15 @@
 | API | `src/api/` | HTTP handlers, request/response |
 | UI | `src/ui/` | React components, hooks, pages |
 | AI | `src/ai/` | LLM providers, prompts, streaming |
+| Auto-Draft | `src/auto-draft/` | RSS fetching, keyword filtering, draft generation |
 | Lib | `src/lib/` | Utilities, shared helpers |
 
 ### Export Structure
-- `autoblogger` — Server-side: data layer, API handlers, utilities
-- `autoblogger/ui` — Client-side: React components, hooks
+- `autoblogger` — Server-side: data layer, API handlers, utilities, auto-draft
+- `autoblogger/ui` — Client-side: React dashboard, ChatProvider, hooks
 - `autoblogger/styles/article` — Article layout utilities
-- `autoblogger/markdown` — Markdown parsing
-- `autoblogger/seo` — SEO utilities
+- `autoblogger/markdown` — Markdown parsing (renderMarkdown, htmlToMarkdown, markdownToHtml)
+- `autoblogger/seo` — SEO utilities (getSeoValues)
 
 ### File Conventions
 - Data layer files match entity names: `posts.ts`, `revisions.ts`, `comments.ts`
@@ -150,10 +151,18 @@ export function createResourceData(prisma: any) {
   - `navigate(path)` — Internal SPA navigation
   - `goBack()` — Magic back (history or root)
   - `apiBasePath` — Base URL for API calls
-  - `sharedData` — Preloaded counts and settings
+  - `sharedData` — Preloaded counts, settings, posts, aiSettings
   - `session` — Current user info
   - `onEditorStateChange` — Callback for parent app integration
   - `onRegisterEditHandler` — For AI agent edit commands
+
+- `ChatProvider` wraps DashboardProvider and provides:
+  - `messages` — Chat history
+  - `essayContext` — Current essay state (synced from editor)
+  - `mode` — Current chat mode (ask, agent, plan, search)
+  - `sendMessage(content)` — Send message and stream response
+  - `registerEditHandler` — Register callback for agent mode edits
+  - `registerExpandPlanHandler` — Register callback for plan expansion
 
 ### Pages
 - `WriterDashboard` — Post list, AI generation textarea, tabs
@@ -191,6 +200,48 @@ Each settings section follows this pattern:
 - Preview shows revision content without saving
 - Restore saves the preview as current content
 - Store original post state during preview for cancel
+
+## Chat System
+
+### ChatProvider (`src/ui/hooks/useChat.tsx`)
+Wraps dashboard and provides chat context for all components.
+
+Props:
+- `apiBasePath` — Base API path (default: `/api/cms`)
+- `chatApiPath` — Custom chat endpoint (default: `${apiBasePath}/ai/chat`)
+- `historyApiPath` — History persistence endpoint (default: `/api/chat/history`)
+
+### Chat Modes
+- `ask` — Default mode, answers questions about content
+- `agent` — Direct editing mode, AI outputs `:::edit` JSON blocks
+- `plan` — Outline mode, generates plans in `<plan>` tags
+- `search` — Research mode for fact-finding
+
+### Chat Context Values
+```typescript
+{
+  messages, essayContext, isStreaming, isOpen, mode,
+  webSearchEnabled, thinkingEnabled, selectedModel,
+  sendMessage, stopStreaming, addMessage, clearMessages,
+  setMode, setWebSearchEnabled, setThinkingEnabled,
+  registerEditHandler, undoEdit, expandPlan
+}
+```
+
+### Agent Mode Edit Parsing
+Edit blocks are parsed from assistant responses:
+```
+:::edit
+{"type": "replace_section", "find": "...", "replace": "..."}
+:::
+```
+
+The `registerEditHandler` callback is called for each edit. EditorPage registers a handler that updates post state.
+
+### Plan Mode
+- Output is cleaned by extracting from `<plan>` tags
+- "Draft Essay" button triggers `expandPlan()` which calls the registered `ExpandPlanHandler`
+- If on editor page, expands in place; otherwise navigates to `/editor?fromPlan=1`
 
 ## URL Content Extraction
 
@@ -298,10 +349,25 @@ Changes are preserved in stash (`git stash list` to see, `git stash pop` to rest
 Before committing:
 1. `npm run build` — TypeScript compilation + bundling
 2. Check for type errors in output
-3. Test in host app if making UI changes
+3. Test in linked host apps if making UI changes
 
-After changes to autoblogger, rebuild in host app:
+### Local Linking
+Autoblogger is linked to test projects for development:
+- `/Users/hunter/Local Documents/Code/sample-blog`
+- `/Users/hunter/Local Documents/Code/blog`
+
+After changes to autoblogger:
 ```bash
-# In blog repo
-npm run dev # Will pick up linked package changes
+# In autoblogger directory
+npm run build
+
+# Changes are immediately reflected in linked projects
+# Run the host app's dev server to test:
+cd /Users/hunter/Local\ Documents/Code/sample-blog
+npm run dev
+```
+
+If `npm install` breaks the link, restore with:
+```bash
+npm link autoblogger
 ```

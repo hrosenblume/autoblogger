@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import type { Post } from './models'
 import type { Session } from './session'
+import type { RssArticle } from '../auto-draft'
 
 // Style configuration for article rendering
 export interface StylesConfig {
@@ -65,6 +66,8 @@ export interface AutobloggerServerConfig {
   hooks?: {
     beforePublish?: (post: Post) => Promise<void>
     afterSave?: (post: Post) => Promise<void>
+    /** Called during auto-draft after generating essay, return extra fields for post creation */
+    onAutoDraftPostCreate?: (article: RssArticle, essay: { title: string; subtitle: string | null; markdown: string }) => Record<string, unknown> | Promise<Record<string, unknown>>
   }
 }
 

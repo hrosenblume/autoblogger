@@ -30,14 +30,18 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/lib/markdown.ts
 var markdown_exports = {};
 __export(markdown_exports, {
+  generateSlug: () => generateSlug,
   htmlToMarkdown: () => htmlToMarkdown,
   markdownToHtml: () => markdownToHtml,
   parseMarkdown: () => parseMarkdown,
-  renderMarkdown: () => renderMarkdown
+  renderMarkdown: () => renderMarkdown,
+  renderMarkdownSanitized: () => renderMarkdownSanitized,
+  wordCount: () => wordCount
 });
 module.exports = __toCommonJS(markdown_exports);
 var import_marked = require("marked");
 var import_turndown = __toESM(require("turndown"));
+var import_sanitize_html = __toESM(require("sanitize-html"));
 import_marked.marked.setOptions({
   gfm: true,
   breaks: false
@@ -59,11 +63,32 @@ var turndownService = new import_turndown.default({
 function htmlToMarkdown(html) {
   return turndownService.turndown(html);
 }
+function wordCount(text) {
+  if (!text) return 0;
+  return text.trim().split(/\s+/).filter(Boolean).length;
+}
+function generateSlug(title) {
+  return title.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").substring(0, 60);
+}
+function renderMarkdownSanitized(markdown) {
+  const html = renderMarkdown(markdown);
+  return (0, import_sanitize_html.default)(html, {
+    allowedTags: import_sanitize_html.default.defaults.allowedTags.concat(["img", "h1", "h2"]),
+    allowedAttributes: {
+      ...import_sanitize_html.default.defaults.allowedAttributes,
+      img: ["src", "alt", "title"],
+      a: ["href", "target", "rel"]
+    }
+  });
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  generateSlug,
   htmlToMarkdown,
   markdownToHtml,
   parseMarkdown,
-  renderMarkdown
+  renderMarkdown,
+  renderMarkdownSanitized,
+  wordCount
 });
 //# sourceMappingURL=markdown.js.map

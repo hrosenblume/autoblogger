@@ -183,3 +183,16 @@ model NewsItem {
   post        Post?              @relation(fields: [postId], references: [id])
   createdAt   DateTime           @default(now())
 }
+
+// ==========================================
+// CHAT HISTORY - For AI conversation persistence
+// ==========================================
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  role      String   // "user" or "assistant"
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

@@ -2,8 +2,8 @@
 "use client";
 
 // src/ui/dashboard.tsx
-import { useState as useState14, useEffect as useEffect14 } from "react";
-import { Save, Loader2 as Loader25 } from "lucide-react";
+import { useState as useState16, useEffect as useEffect16 } from "react";
+import { Save, Loader2 as Loader26 } from "lucide-react";
 
 // src/ui/context.tsx
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from "react";
@@ -1574,6 +1574,7 @@ import Image2 from "@tiptap/extension-image";
 // src/lib/markdown.ts
 import { marked } from "marked";
 import TurndownService from "turndown";
+import sanitizeHtml from "sanitize-html";
 marked.setOptions({
   gfm: true,
   breaks: false
@@ -10078,13 +10079,48 @@ function CommentsSettingsContent() {
   ] });
 }
 
+// src/ui/components/ThemeToggle.tsx
+import { useState as useState14, useEffect as useEffect13 } from "react";
+import { useTheme } from "next-themes";
+
+// src/ui/components/Icons.tsx
+import { jsx as jsx21 } from "react/jsx-runtime";
+var ChatIcon = ({ className }) => /* @__PURE__ */ jsx21("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" }) });
+var SunIcon = ({ className }) => /* @__PURE__ */ jsx21("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" }) });
+var MoonIcon = ({ className }) => /* @__PURE__ */ jsx21("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" }) });
+var ChevronLeftIcon = ({ className }) => /* @__PURE__ */ jsx21("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx21("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) });
+
+// src/ui/components/ThemeToggle.tsx
+import { jsx as jsx22 } from "react/jsx-runtime";
+function ThemeToggle({ className }) {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState14(false);
+  useEffect13(() => setMounted(true), []);
+  const handleToggle = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+  return /* @__PURE__ */ jsx22(
+    "button",
+    {
+      type: "button",
+      onClick: handleToggle,
+      className: cn(
+        "w-9 h-9 rounded-md border border-border",
+        "active:bg-accent md:hover:bg-accent",
+        "text-muted-foreground",
+        "flex items-center justify-center",
+        className
+      ),
+      "aria-label": "Toggle dark mode",
+      children: /* @__PURE__ */ jsx22("div", { className: "w-4 h-4 transition-transform duration-200 active:scale-90", children: !mounted ? /* @__PURE__ */ jsx22("div", { className: "w-4 h-4" }) : theme === "dark" ? /* @__PURE__ */ jsx22(SunIcon, { className: "w-4 h-4" }) : /* @__PURE__ */ jsx22(MoonIcon, { className: "w-4 h-4" }) })
+    }
+  );
+}
+
 // src/ui/components/Navbar.tsx
-import { ChevronLeft as ChevronLeft2, Moon, Sun } from "lucide-react";
-import { Fragment as Fragment11, jsx as jsx21, jsxs as jsxs15 } from "react/jsx-runtime";
+import { Fragment as Fragment11, jsx as jsx23, jsxs as jsxs15 } from "react/jsx-runtime";
 function Navbar({
   onSignOut,
-  onThemeToggle,
-  theme,
   rightSlot
 }) {
   const { session, currentPath, navigate, goBack, basePath } = useDashboardContext();
@@ -10101,14 +10137,14 @@ function Navbar({
       className: "relative w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground active:ring-2 md:hover:ring-2 active:ring-ring md:hover:ring-ring transition-shadow",
       children: [
         session?.user?.email?.charAt(0).toUpperCase() || "?",
-        /* @__PURE__ */ jsx21("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
+        /* @__PURE__ */ jsx23("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
       ]
     }
   );
-  return /* @__PURE__ */ jsx21("header", { className: "sticky top-0 z-50 border-b border-border bg-background overscroll-none", children: /* @__PURE__ */ jsxs15("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
+  return /* @__PURE__ */ jsx23("header", { className: "sticky top-0 z-50 border-b border-border bg-background overscroll-none", children: /* @__PURE__ */ jsxs15("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
     isRoot ? /* @__PURE__ */ jsxs15("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
       "Writer",
-      /* @__PURE__ */ jsx21("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
+      /* @__PURE__ */ jsx23("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
     ] }) : /* @__PURE__ */ jsxs15(
       "button",
       {
@@ -10116,61 +10152,535 @@ function Navbar({
         onClick: handleBack,
         className: "h-9 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-sm font-medium rounded-md active:bg-accent md:hover:bg-accent active:text-accent-foreground md:hover:text-accent-foreground touch-manipulation",
         children: [
-          /* @__PURE__ */ jsx21(ChevronLeft2, { className: "h-4 w-4" }),
-          /* @__PURE__ */ jsx21("span", { className: "hidden sm:inline", children: "Back" })
+          /* @__PURE__ */ jsx23(ChevronLeftIcon, {}),
+          /* @__PURE__ */ jsx23("span", { className: "hidden sm:inline", children: "Back" })
         ]
       }
     ),
     /* @__PURE__ */ jsxs15("div", { className: "flex items-center gap-2", children: [
       rightSlot,
-      onThemeToggle && /* @__PURE__ */ jsx21(
-        "button",
-        {
-          type: "button",
-          onClick: onThemeToggle,
-          className: "w-9 h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center",
-          "aria-label": "Toggle theme",
-          children: theme === "dark" ? /* @__PURE__ */ jsx21(Sun, { className: "h-4 w-4" }) : /* @__PURE__ */ jsx21(Moon, { className: "h-4 w-4" })
-        }
-      ),
+      /* @__PURE__ */ jsx23(ThemeToggle, {}),
       session && /* @__PURE__ */ jsxs15(Dropdown, { trigger: avatarTrigger, align: "right", className: "min-w-[180px]", children: [
         session.user?.role === "admin" && /* @__PURE__ */ jsxs15(Fragment11, { children: [
-          !isSettings ? /* @__PURE__ */ jsx21(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ jsx21(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
-          /* @__PURE__ */ jsx21(DropdownDivider, {})
+          !isSettings ? /* @__PURE__ */ jsx23(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ jsx23(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
+          /* @__PURE__ */ jsx23(DropdownDivider, {})
         ] }),
-        /* @__PURE__ */ jsx21(DropdownItem, { onClick: () => {
+        /* @__PURE__ */ jsx23(DropdownItem, { onClick: () => {
           window.location.href = "/";
         }, children: "Back to site" }),
-        onSignOut && /* @__PURE__ */ jsx21(DropdownItem, { onClick: onSignOut, children: "Logout" })
+        onSignOut && /* @__PURE__ */ jsx23(DropdownItem, { onClick: onSignOut, children: "Logout" })
       ] })
     ] })
   ] }) });
 }
 
+// src/ui/components/ChatButton.tsx
+import { jsx as jsx24 } from "react/jsx-runtime";
+function ChatButton() {
+  const chatContext = useChatContextOptional();
+  if (!chatContext) return null;
+  const { setIsOpen, isOpen } = chatContext;
+  return /* @__PURE__ */ jsx24(
+    "button",
+    {
+      type: "button",
+      onClick: () => setIsOpen(!isOpen),
+      className: `w-9 h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent flex items-center justify-center transition-colors ${isOpen ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`,
+      "aria-label": "Toggle chat",
+      title: "Chat (\u2318\u21E7A)",
+      children: /* @__PURE__ */ jsx24(ChatIcon, {})
+    }
+  );
+}
+
+// src/ui/components/ChatPanel.tsx
+import { useState as useState15, useRef as useRef10, useEffect as useEffect14, useCallback as useCallback11, useContext as useContext4 } from "react";
+import { createPortal as createPortal3 } from "react-dom";
+import { X as X4, Copy, Check as Check4, ArrowUp as ArrowUp3, Pencil as Pencil3, Undo2 as Undo22, ChevronDown as ChevronDown5, MessageSquare as MessageSquare3, Globe as Globe2, Brain as Brain2, Square, List as List2 } from "lucide-react";
+import { Fragment as Fragment12, jsx as jsx25, jsxs as jsxs16 } from "react/jsx-runtime";
+var DEFAULT_PROSE_CLASSES2 = "prose prose-gray dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:underline";
+function stripPlanTags(content) {
+  return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
+}
+function ChatPanel({
+  proseClasses = DEFAULT_PROSE_CLASSES2,
+  onNavigate: onNavigateProp,
+  isOnEditor: isOnEditorProp
+}) {
+  const {
+    messages,
+    isStreaming,
+    isOpen: open,
+    setIsOpen,
+    sendMessage: contextSendMessage,
+    stopStreaming,
+    essayContext,
+    mode,
+    setMode,
+    undoEdit,
+    webSearchEnabled,
+    setWebSearchEnabled,
+    thinkingEnabled,
+    setThinkingEnabled,
+    selectedModel,
+    setSelectedModel,
+    expandPlan
+  } = useChatContext();
+  const dashboardContext = useContext4(DashboardContext);
+  const onNavigate = onNavigateProp ?? dashboardContext?.navigate;
+  const isOnEditor = isOnEditorProp ?? !!essayContext;
+  const [input, setInput] = useState15("");
+  const [isAnimating, setIsAnimating] = useState15(false);
+  const [isVisible, setIsVisible] = useState15(false);
+  const [mounted, setMounted] = useState15(false);
+  const [copiedIndex, setCopiedIndex] = useState15(null);
+  const [modeMenuOpen, setModeMenuOpen] = useState15(false);
+  const modeMenuRef = useRef10(null);
+  const messagesEndRef = useRef10(null);
+  const messagesContainerRef = useRef10(null);
+  const textareaRef = useRef10(null);
+  const prevMessageCountRef = useRef10(0);
+  const savedScrollPositionRef = useRef10(null);
+  const lastUserMessageRef = useRef10(null);
+  const contextModels = dashboardContext?.sharedData?.aiSettings?.availableModels;
+  const models = contextModels && contextModels.length > 0 ? contextModels : DEFAULT_MODELS;
+  const currentModel = models.find((m) => m.id === selectedModel);
+  const onClose = useCallback11(() => setIsOpen(false), [setIsOpen]);
+  const copyToClipboard = useCallback11(async (text, index) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2e3);
+  }, []);
+  const handleDraftEssay = useCallback11(() => {
+    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
+    if (!lastAssistantMessage?.content) return;
+    if (isOnEditor) {
+      expandPlan();
+      setMode("agent");
+    } else if (onNavigate) {
+      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
+      setIsOpen(false);
+      onNavigate("/editor?fromPlan=1");
+    } else {
+      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
+      setIsOpen(false);
+      window.location.href = "/writer/editor?fromPlan=1";
+    }
+  }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate]);
+  useEffect14(() => {
+    function handleClick(e) {
+      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
+        setModeMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+  useEffect14(() => {
+    setMounted(true);
+  }, []);
+  useEffect14(() => {
+    if (open) {
+      setIsVisible(true);
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      document.body.style.top = `-${window.scrollY}px`;
+    } else {
+      setIsAnimating(false);
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.top = "";
+      window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+  useEffect14(() => {
+    if (isVisible && open && !isAnimating) {
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    }
+  }, [isVisible, open, isAnimating]);
+  useEffect14(() => {
+    if (!open && messagesContainerRef.current) {
+      savedScrollPositionRef.current = messagesContainerRef.current.scrollTop;
+    }
+  }, [open]);
+  useEffect14(() => {
+    if (!open || !isVisible) return;
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const prevCount = prevMessageCountRef.current;
+    const currentCount = messages.length;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (currentCount > prevCount) {
+          const behavior = prevCount === 0 ? "instant" : "smooth";
+          messagesEndRef.current?.scrollIntoView({ behavior });
+        } else if (savedScrollPositionRef.current !== null) {
+          container.scrollTop = savedScrollPositionRef.current;
+        }
+        prevMessageCountRef.current = currentCount;
+      });
+    });
+  }, [messages.length, open, isVisible]);
+  useEffect14(() => {
+    if (!isStreaming) return;
+    const container = messagesContainerRef.current;
+    const userMessage = lastUserMessageRef.current;
+    if (!container || !userMessage) return;
+    const containerRect = container.getBoundingClientRect();
+    const messageRect = userMessage.getBoundingClientRect();
+    const distanceFromTop = messageRect.top - containerRect.top;
+    if (distanceFromTop > 10) {
+      container.scrollTop += Math.min(distanceFromTop * 0.3, 30);
+    }
+  }, [messages, isStreaming]);
+  useEffect14(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+    }
+  }, [input]);
+  const sendMessage = useCallback11(async () => {
+    if (!input.trim() || isStreaming) return;
+    const content = input.trim();
+    setInput("");
+    await contextSendMessage(content);
+  }, [input, isStreaming, contextSendMessage]);
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      onClose();
+    }
+  };
+  useEffect14(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        if (essayContext) {
+          if (!open) {
+            setIsOpen(true);
+          }
+          setMode(mode === "agent" ? "ask" : "agent");
+        } else {
+          setIsOpen(!open);
+          setMode("ask");
+        }
+      }
+    };
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [open, setIsOpen, setMode, essayContext, mode]);
+  if (!isVisible || !mounted) return null;
+  return createPortal3(
+    /* @__PURE__ */ jsxs16(Fragment12, { children: [
+      /* @__PURE__ */ jsx25(
+        "div",
+        {
+          className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
+          onClick: onClose
+        }
+      ),
+      /* @__PURE__ */ jsxs16(
+        "div",
+        {
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": "Chat",
+          className: `autoblogger fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
+          children: [
+            /* @__PURE__ */ jsxs16("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
+              /* @__PURE__ */ jsxs16("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ jsx25("h2", { className: "font-medium", children: "Chat" }),
+                essayContext && /* @__PURE__ */ jsx25("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[140px]", children: essayContext.title || "Untitled" })
+              ] }),
+              /* @__PURE__ */ jsx25(
+                "button",
+                {
+                  onClick: onClose,
+                  className: "w-8 h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
+                  "aria-label": "Close chat",
+                  children: /* @__PURE__ */ jsx25(X4, { className: "w-4 h-4" })
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsx25("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto", children: messages.length === 0 ? /* @__PURE__ */ jsx25("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ jsx25("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ jsx25("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ jsxs16("div", { className: "px-4 py-4 space-y-4", children: [
+              messages.map((message, index) => {
+                const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
+                return /* @__PURE__ */ jsx25(
+                  "div",
+                  {
+                    ref: isLastUserMessage ? lastUserMessageRef : void 0,
+                    className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
+                    children: /* @__PURE__ */ jsxs16(
+                      "div",
+                      {
+                        className: `max-w-[85%] rounded-2xl px-3 py-2 text-sm relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
+                        children: [
+                          message.role === "assistant" ? /* @__PURE__ */ jsx25(
+                            "div",
+                            {
+                              className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
+                              dangerouslySetInnerHTML: { __html: markdownToHtml(stripPlanTags(message.content)) }
+                            }
+                          ) : /* @__PURE__ */ jsx25("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
+                          isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ jsx25("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
+                          message.appliedEdits && message.previousState && /* @__PURE__ */ jsxs16("div", { className: "flex items-center gap-2 mt-1.5", children: [
+                            /* @__PURE__ */ jsxs16("div", { className: "flex items-center gap-1 text-xs text-green-600 dark:text-green-400", children: [
+                              /* @__PURE__ */ jsx25(Pencil3, { className: "w-3 h-3" }),
+                              /* @__PURE__ */ jsx25("span", { children: "Edit applied" })
+                            ] }),
+                            /* @__PURE__ */ jsxs16(
+                              "button",
+                              {
+                                onClick: () => undoEdit(index),
+                                className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors",
+                                "aria-label": "Undo edit",
+                                children: [
+                                  /* @__PURE__ */ jsx25(Undo22, { className: "w-3 h-3" }),
+                                  /* @__PURE__ */ jsx25("span", { children: "Undo" })
+                                ]
+                              }
+                            )
+                          ] }),
+                          message.role === "assistant" && !isStreaming && /* @__PURE__ */ jsxs16("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
+                            /* @__PURE__ */ jsx25(
+                              "button",
+                              {
+                                onClick: () => copyToClipboard(message.content, index),
+                                className: "text-muted-foreground hover:text-foreground p-1 rounded",
+                                "aria-label": "Copy message",
+                                children: copiedIndex === index ? /* @__PURE__ */ jsx25(Check4, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ jsx25(Copy, { className: "w-3.5 h-3.5" })
+                              }
+                            ),
+                            message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ jsx25(
+                              "button",
+                              {
+                                onClick: handleDraftEssay,
+                                className: "text-xs text-muted-foreground hover:text-foreground px-1 rounded",
+                                children: "Draft Essay"
+                              }
+                            )
+                          ] })
+                        ]
+                      }
+                    )
+                  },
+                  index
+                );
+              }),
+              /* @__PURE__ */ jsx25("div", { ref: messagesEndRef })
+            ] }) }),
+            /* @__PURE__ */ jsxs16(
+              "form",
+              {
+                onSubmit: (e) => {
+                  e.preventDefault();
+                  sendMessage();
+                },
+                className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
+                children: [
+                  /* @__PURE__ */ jsxs16("div", { className: "mb-2 flex items-center gap-2", children: [
+                    /* @__PURE__ */ jsxs16("div", { ref: modeMenuRef, className: "relative", children: [
+                      /* @__PURE__ */ jsxs16(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => setModeMenuOpen(!modeMenuOpen),
+                          title: "Switch mode (\u2318\u21E7A)",
+                          className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${mode === "ask" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : mode === "agent" ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"}`,
+                          children: [
+                            mode === "ask" && /* @__PURE__ */ jsx25(MessageSquare3, { className: "w-3 h-3" }),
+                            mode === "agent" && /* @__PURE__ */ jsx25(Pencil3, { className: "w-3 h-3" }),
+                            mode === "plan" && /* @__PURE__ */ jsx25(List2, { className: "w-3 h-3" }),
+                            mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
+                            /* @__PURE__ */ jsx25(ChevronDown5, { className: "w-2.5 h-2.5 opacity-60" })
+                          ]
+                        }
+                      ),
+                      modeMenuOpen && /* @__PURE__ */ jsxs16("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
+                        /* @__PURE__ */ jsxs16(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => {
+                              setMode("agent");
+                              setModeMenuOpen(false);
+                              textareaRef.current?.focus();
+                            },
+                            disabled: !essayContext,
+                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
+                            children: [
+                              /* @__PURE__ */ jsx25(Pencil3, { className: "w-4 h-4" }),
+                              /* @__PURE__ */ jsx25("span", { className: "flex-1", children: "Agent" }),
+                              /* @__PURE__ */ jsx25("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
+                              mode === "agent" && /* @__PURE__ */ jsx25(Check4, { className: "w-4 h-4" })
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ jsxs16(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => {
+                              setMode("plan");
+                              setModeMenuOpen(false);
+                              textareaRef.current?.focus();
+                            },
+                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
+                            children: [
+                              /* @__PURE__ */ jsx25(List2, { className: "w-4 h-4" }),
+                              /* @__PURE__ */ jsx25("span", { className: "flex-1", children: "Plan" }),
+                              mode === "plan" && /* @__PURE__ */ jsx25(Check4, { className: "w-4 h-4" })
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ jsxs16(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => {
+                              setMode("ask");
+                              setModeMenuOpen(false);
+                              textareaRef.current?.focus();
+                            },
+                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
+                            children: [
+                              /* @__PURE__ */ jsx25(MessageSquare3, { className: "w-4 h-4" }),
+                              /* @__PURE__ */ jsx25("span", { className: "flex-1", children: "Ask" }),
+                              mode === "ask" && /* @__PURE__ */ jsx25(Check4, { className: "w-4 h-4" })
+                            ]
+                          }
+                        )
+                      ] })
+                    ] }),
+                    /* @__PURE__ */ jsx25(
+                      ControlButton,
+                      {
+                        onClick: () => {
+                          setWebSearchEnabled(!webSearchEnabled);
+                          textareaRef.current?.focus();
+                        },
+                        active: webSearchEnabled,
+                        title: webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)",
+                        tabIndex: -1,
+                        children: /* @__PURE__ */ jsx25(Globe2, { className: "w-4 h-4" })
+                      }
+                    ),
+                    /* @__PURE__ */ jsx25(
+                      ControlButton,
+                      {
+                        onClick: () => {
+                          setThinkingEnabled(!thinkingEnabled);
+                          textareaRef.current?.focus();
+                        },
+                        active: thinkingEnabled,
+                        title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
+                        tabIndex: -1,
+                        children: /* @__PURE__ */ jsx25(Brain2, { className: "w-4 h-4" })
+                      }
+                    ),
+                    /* @__PURE__ */ jsx25(
+                      ModelSelector,
+                      {
+                        models,
+                        selectedModel,
+                        onModelChange: (id) => {
+                          setSelectedModel(id);
+                          textareaRef.current?.focus();
+                        },
+                        currentModel
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ jsxs16("div", { className: "flex items-end gap-2", children: [
+                    /* @__PURE__ */ jsx25(
+                      "textarea",
+                      {
+                        ref: textareaRef,
+                        value: input,
+                        onChange: (e) => setInput(e.target.value),
+                        onKeyDown: handleKeyDown,
+                        placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
+                        className: "flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none",
+                        rows: 1,
+                        autoFocus: true
+                      }
+                    ),
+                    /* @__PURE__ */ jsx25(
+                      "button",
+                      {
+                        type: isStreaming ? "button" : "submit",
+                        onClick: isStreaming ? stopStreaming : void 0,
+                        disabled: !isStreaming && !input.trim(),
+                        className: "rounded-full w-10 h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
+                        children: isStreaming ? /* @__PURE__ */ jsx25(Square, { className: "h-4 w-4 fill-current" }) : /* @__PURE__ */ jsx25(ArrowUp3, { className: "h-5 w-5" })
+                      }
+                    )
+                  ] })
+                ]
+              }
+            )
+          ]
+        }
+      )
+    ] }),
+    document.body
+  );
+}
+
+// src/ui/components/ThemeProvider.tsx
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { jsx as jsx26 } from "react/jsx-runtime";
+function ThemeProvider({ children, ...props }) {
+  return /* @__PURE__ */ jsx26(
+    NextThemesProvider,
+    {
+      attribute: "class",
+      defaultTheme: "system",
+      enableSystem: true,
+      disableTransitionOnChange: true,
+      ...props,
+      children
+    }
+  );
+}
+
 // src/ui/hooks/useKeyboard.ts
-import { useEffect as useEffect13, useRef as useRef10 } from "react";
+import { useEffect as useEffect15, useRef as useRef11 } from "react";
 function useKeyboard(shortcuts, enabled = true) {
-  const shortcutsRef = useRef10(shortcuts);
+  const shortcutsRef = useRef11(shortcuts);
   shortcutsRef.current = shortcuts;
-  useEffect13(() => {
+  useEffect15(() => {
     if (!enabled) return;
     function handleKeyDown(event) {
       const target = event.target;
       const isTyping = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
-      if (isTyping) {
-        const hasMeta = event.metaKey || event.ctrlKey;
-        const isEscape = event.key === "Escape";
-        const isNavShortcut = hasMeta && (event.key === "/" || event.key === "'");
-        if (!isEscape && !isNavShortcut) {
-          return;
-        }
-      }
+      const isInDialog = target && (target.closest('[role="dialog"]') || target.closest('[role="alertdialog"]') || target.closest("[data-radix-dialog-content]") || target.closest("[data-radix-alert-dialog-content]"));
       for (const shortcut of shortcutsRef.current) {
+        if (isTyping && !shortcut.allowInInput) continue;
+        if (shortcut.key === "Escape" && isInDialog) continue;
         const metaMatch = shortcut.metaKey ? event.metaKey || event.ctrlKey : true;
         const ctrlMatch = shortcut.ctrlKey ? event.ctrlKey : true;
         const shiftMatch = shortcut.shiftKey ? event.shiftKey : !event.shiftKey;
-        const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase();
-        if (keyMatch && metaMatch && ctrlMatch && shiftMatch) {
+        const altMatch = shortcut.altKey ? event.altKey : !event.altKey;
+        const keyLower = event.key.toLowerCase();
+        const codeLower = event.code.toLowerCase();
+        const targetKey = shortcut.key.toLowerCase();
+        const keyMatch = keyLower === targetKey || shortcut.altKey && codeLower === `key${targetKey}`;
+        if (keyMatch && metaMatch && ctrlMatch && shiftMatch && altMatch) {
           event.preventDefault();
           shortcut.action();
           break;
@@ -10186,12 +10696,14 @@ function useDashboardKeyboard(options) {
     {
       key: "/",
       metaKey: true,
+      allowInInput: true,
       action: () => options.onToggleView?.(),
       description: "Toggle view"
     },
     {
       key: "'",
       metaKey: true,
+      allowInInput: true,
       action: () => options.onToggleSettings?.(),
       description: "Toggle settings"
     },
@@ -10202,6 +10714,7 @@ function useDashboardKeyboard(options) {
     },
     {
       key: "Escape",
+      allowInInput: true,
       action: () => options.onEscape?.(),
       description: "Go back"
     }
@@ -10210,7 +10723,7 @@ function useDashboardKeyboard(options) {
 }
 
 // src/ui/dashboard.tsx
-import { Fragment as Fragment12, jsx as jsx22, jsxs as jsxs16 } from "react/jsx-runtime";
+import { Fragment as Fragment13, jsx as jsx27, jsxs as jsxs17 } from "react/jsx-runtime";
 function AutobloggerDashboard({
   basePath = "/writer",
   apiBasePath = "/api/cms",
@@ -10221,30 +10734,43 @@ function AutobloggerDashboard({
   onRegisterEditHandler,
   onToggleView,
   onSignOut,
-  onThemeToggle,
-  theme,
-  navbarRightSlot
+  navbarRightSlot,
+  chatApiPath,
+  historyApiPath,
+  proseClasses,
+  skipThemeProvider = false
 }) {
-  return /* @__PURE__ */ jsx22(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ jsx22(
-    DashboardLayout,
+  const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
+  const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`;
+  const ThemeWrapper = skipThemeProvider ? ({ children }) => /* @__PURE__ */ jsx27(Fragment13, { children }) : ThemeProvider;
+  return /* @__PURE__ */ jsx27(ThemeWrapper, { children: /* @__PURE__ */ jsx27(
+    ChatProvider,
     {
-      onToggleView,
-      onSignOut,
-      onThemeToggle,
-      theme,
-      navbarRightSlot
+      apiBasePath,
+      chatApiPath: resolvedChatApiPath,
+      historyApiPath: resolvedHistoryApiPath,
+      children: /* @__PURE__ */ jsx27(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ jsx27(
+        DashboardLayout,
+        {
+          basePath,
+          onToggleView,
+          onSignOut,
+          navbarRightSlot,
+          proseClasses
+        }
+      ) })
     }
   ) });
 }
 function DashboardLayout({
+  basePath,
   onToggleView,
   onSignOut,
-  onThemeToggle,
-  theme,
-  navbarRightSlot
+  navbarRightSlot,
+  proseClasses
 }) {
-  const { basePath, currentPath, navigate, onEditorStateChange } = useDashboardContext();
-  const [editorState, setEditorState] = useState14(null);
+  const { currentPath, navigate, onEditorStateChange } = useDashboardContext();
+  const [editorState, setEditorState] = useState16(null);
   const chatContext = useChatContextOptional();
   const editorSlug = currentPath.startsWith("/editor/") ? currentPath.replace("/editor/", "") : currentPath === "/editor" ? void 0 : void 0;
   const isEditorPage = currentPath.startsWith("/editor");
@@ -10253,7 +10779,7 @@ function DashboardLayout({
     onEditorStateChange?.(state);
   };
   const setEssayContext = chatContext?.setEssayContext;
-  useEffect14(() => {
+  useEffect16(() => {
     if (!setEssayContext) return;
     if (isEditorPage && editorState?.content) {
       setEssayContext({
@@ -10279,8 +10805,8 @@ function DashboardLayout({
       if (currentPath !== "/" && currentPath !== "") navigate("/");
     }
   });
-  const rightSlotWithSave = /* @__PURE__ */ jsxs16(Fragment12, { children: [
-    isEditorPage && editorState && /* @__PURE__ */ jsx22(
+  const rightSlotWithButtons = /* @__PURE__ */ jsxs17(Fragment13, { children: [
+    isEditorPage && editorState && /* @__PURE__ */ jsx27(
       "button",
       {
         type: "button",
@@ -10289,53 +10815,48 @@ function DashboardLayout({
         className: "w-9 h-9 rounded-md border border-border hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
         "aria-label": "Save",
         title: editorState.hasUnsavedChanges ? "Save changes (\u2318S)" : "No unsaved changes",
-        children: editorState.savingAs ? /* @__PURE__ */ jsx22(Loader25, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ jsx22(Save, { className: "h-4 w-4" })
+        children: editorState.savingAs ? /* @__PURE__ */ jsx27(Loader26, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ jsx27(Save, { className: "h-4 w-4" })
       }
     ),
+    /* @__PURE__ */ jsx27(ChatButton, {}),
     navbarRightSlot
   ] });
-  return /* @__PURE__ */ jsxs16("div", { className: "autoblogger min-h-screen bg-background flex flex-col", children: [
-    /* @__PURE__ */ jsx22(
+  return /* @__PURE__ */ jsxs17("div", { className: "autoblogger min-h-screen bg-background flex flex-col", children: [
+    /* @__PURE__ */ jsx27(
       Navbar,
       {
         onSignOut,
-        onThemeToggle,
-        theme,
-        rightSlot: rightSlotWithSave
+        rightSlot: rightSlotWithButtons
       }
     ),
-    /* @__PURE__ */ jsx22("main", { className: "flex-1", children: /* @__PURE__ */ jsx22(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) })
+    /* @__PURE__ */ jsx27("main", { className: "flex-1", children: /* @__PURE__ */ jsx27(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
+    /* @__PURE__ */ jsx27(ChatPanel, { proseClasses })
   ] });
 }
 function DashboardRouter({ path, onEditorStateChange }) {
   const pathWithoutQuery = path.split("?")[0];
-  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ jsx22(WriterDashboard, {});
+  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ jsx27(WriterDashboard, {});
   if (pathWithoutQuery.startsWith("/editor")) {
     const slug = pathWithoutQuery.replace("/editor/", "").replace("/editor", "");
-    return /* @__PURE__ */ jsx22(EditorPage, { slug: slug || void 0, onEditorStateChange }, path);
+    return /* @__PURE__ */ jsx27(EditorPage, { slug: slug || void 0, onEditorStateChange }, path);
   }
-  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ jsx22(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
-  return /* @__PURE__ */ jsx22("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ jsxs16("p", { className: "text-muted-foreground", children: [
+  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ jsx27(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
+  return /* @__PURE__ */ jsx27("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ jsxs17("p", { className: "text-muted-foreground", children: [
     "Page not found: ",
     path
   ] }) });
 }
 
-// src/ui/components/ChatPanel.tsx
-import { useState as useState16, useRef as useRef11, useEffect as useEffect16, useCallback as useCallback11, useContext as useContext4 } from "react";
-import { createPortal as createPortal3 } from "react-dom";
-import { X as X4, Copy, Check as Check4, ArrowUp as ArrowUp3, Pencil as Pencil3, Undo2 as Undo22, ChevronDown as ChevronDown5, MessageSquare as MessageSquare3, Globe as Globe2, Brain as Brain2, Square, List as List2 } from "lucide-react";
-
 // src/ui/hooks/useAIModels.ts
-import { useState as useState15, useEffect as useEffect15 } from "react";
+import { useState as useState17, useEffect as useEffect17 } from "react";
 function useAIModels(options) {
-  const [models, setModels] = useState15([]);
-  const [internalSelectedModel, setInternalSelectedModel] = useState15("");
-  const [isLoading, setIsLoading] = useState15(true);
+  const [models, setModels] = useState17([]);
+  const [internalSelectedModel, setInternalSelectedModel] = useState17("");
+  const [isLoading, setIsLoading] = useState17(true);
   const selectedModel = options?.externalSelectedModel ?? internalSelectedModel;
   const setSelectedModel = options?.externalSetSelectedModel ?? setInternalSelectedModel;
   const apiPath = options?.apiPath ?? "/api/cms/ai/settings";
-  useEffect15(() => {
+  useEffect17(() => {
     fetch(apiPath).then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
@@ -10357,467 +10878,63 @@ function useAIModels(options) {
   };
 }
 
-// src/ui/components/ChatPanel.tsx
-import { Fragment as Fragment13, jsx as jsx23, jsxs as jsxs17 } from "react/jsx-runtime";
-var DEFAULT_PROSE_CLASSES2 = "prose prose-gray dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:underline";
-function stripPlanTags(content) {
-  return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
-}
-function ChatPanel({
-  proseClasses = DEFAULT_PROSE_CLASSES2,
-  onNavigate: onNavigateProp,
-  isOnEditor: isOnEditorProp,
-  modelsApiPath
-}) {
-  const {
-    messages,
-    isStreaming,
-    isOpen: open,
-    setIsOpen,
-    sendMessage: contextSendMessage,
-    stopStreaming,
-    essayContext,
-    mode,
-    setMode,
-    undoEdit,
-    webSearchEnabled,
-    setWebSearchEnabled,
-    thinkingEnabled,
-    setThinkingEnabled,
-    selectedModel,
-    setSelectedModel,
-    expandPlan
-  } = useChatContext();
-  const dashboardContext = useContext4(DashboardContext);
-  const onNavigate = onNavigateProp ?? dashboardContext?.navigate;
-  const isOnEditor = isOnEditorProp ?? !!essayContext;
-  const [input, setInput] = useState16("");
-  const [isAnimating, setIsAnimating] = useState16(false);
-  const [isVisible, setIsVisible] = useState16(false);
-  const [mounted, setMounted] = useState16(false);
-  const [copiedIndex, setCopiedIndex] = useState16(null);
-  const [modeMenuOpen, setModeMenuOpen] = useState16(false);
-  const modeMenuRef = useRef11(null);
-  const messagesEndRef = useRef11(null);
-  const messagesContainerRef = useRef11(null);
-  const textareaRef = useRef11(null);
-  const prevMessageCountRef = useRef11(0);
-  const savedScrollPositionRef = useRef11(null);
-  const lastUserMessageRef = useRef11(null);
-  const { models, currentModel } = useAIModels({
-    externalSelectedModel: selectedModel,
-    externalSetSelectedModel: setSelectedModel,
-    apiPath: modelsApiPath
-  });
-  const onClose = useCallback11(() => setIsOpen(false), [setIsOpen]);
-  const copyToClipboard = useCallback11(async (text, index) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2e3);
-  }, []);
-  const handleDraftEssay = useCallback11(() => {
-    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
-    if (!lastAssistantMessage?.content) return;
-    if (isOnEditor) {
-      expandPlan();
-      setMode("agent");
-    } else if (onNavigate) {
-      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
-      setIsOpen(false);
-      onNavigate("/editor?fromPlan=1");
-    } else {
-      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
-      setIsOpen(false);
-      window.location.href = "/writer/editor?fromPlan=1";
-    }
-  }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate]);
-  useEffect16(() => {
-    function handleClick(e) {
-      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
-        setModeMenuOpen(false);
+// src/ui/shortcuts.ts
+var SHORTCUTS = {
+  THEME_TOGGLE: { key: ".", metaKey: true, allowInInput: true },
+  TOGGLE_VIEW: { key: "/", metaKey: true, allowInInput: true },
+  // essay↔editor, home↔writer
+  SETTINGS: { key: ";", metaKey: true, allowInInput: true },
+  // toggle to/from /settings
+  CHAT_TOGGLE: { key: "k", metaKey: true, allowInInput: true },
+  // open/close chat panel
+  NEW_ARTICLE: { key: "n" },
+  PREV: { key: "ArrowLeft" },
+  NEXT: { key: "ArrowRight" },
+  ESCAPE_BACK: { key: "Escape", allowInInput: true },
+  // editor→writer
+  TOGGLE_CHAT_MODE: { key: "a", metaKey: true, shiftKey: true, allowInInput: true }
+  // Ask↔Agent mode
+};
+
+// src/ui/components/GlobalShortcuts.tsx
+function GlobalShortcuts({ writerPath = "/writer" } = {}) {
+  useKeyboard([
+    {
+      key: "/",
+      metaKey: true,
+      allowInInput: true,
+      action: () => {
+        window.location.href = writerPath;
       }
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-  useEffect16(() => {
-    setMounted(true);
-  }, []);
-  useEffect16(() => {
-    if (open) {
-      setIsVisible(true);
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.width = "100%";
-      document.body.style.top = `-${window.scrollY}px`;
-    } else {
-      setIsAnimating(false);
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.body.style.top = "";
-      window.scrollTo(0, parseInt(scrollY || "0") * -1);
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
-  useEffect16(() => {
-    if (isVisible && open && !isAnimating) {
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    }
-  }, [isVisible, open, isAnimating]);
-  useEffect16(() => {
-    if (!open && messagesContainerRef.current) {
-      savedScrollPositionRef.current = messagesContainerRef.current.scrollTop;
-    }
-  }, [open]);
-  useEffect16(() => {
-    if (!open || !isVisible) return;
-    const container = messagesContainerRef.current;
-    if (!container) return;
-    const prevCount = prevMessageCountRef.current;
-    const currentCount = messages.length;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (currentCount > prevCount) {
-          const behavior = prevCount === 0 ? "instant" : "smooth";
-          messagesEndRef.current?.scrollIntoView({ behavior });
-        } else if (savedScrollPositionRef.current !== null) {
-          container.scrollTop = savedScrollPositionRef.current;
-        }
-        prevMessageCountRef.current = currentCount;
-      });
-    });
-  }, [messages.length, open, isVisible]);
-  useEffect16(() => {
-    if (!isStreaming) return;
-    const container = messagesContainerRef.current;
-    const userMessage = lastUserMessageRef.current;
-    if (!container || !userMessage) return;
-    const containerRect = container.getBoundingClientRect();
-    const messageRect = userMessage.getBoundingClientRect();
-    const distanceFromTop = messageRect.top - containerRect.top;
-    if (distanceFromTop > 10) {
-      container.scrollTop += Math.min(distanceFromTop * 0.3, 30);
-    }
-  }, [messages, isStreaming]);
-  useEffect16(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
-    }
-  }, [input]);
-  const sendMessage = useCallback11(async () => {
-    if (!input.trim() || isStreaming) return;
-    const content = input.trim();
-    setInput("");
-    await contextSendMessage(content);
-  }, [input, isStreaming, contextSendMessage]);
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-    if (e.key === "Escape") {
-      e.stopPropagation();
-      onClose();
-    }
-  };
-  useEffect16(() => {
-    const handleGlobalKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
-        e.preventDefault();
-        if (essayContext) {
-          if (!open) {
-            setIsOpen(true);
-          }
-          setMode(mode === "agent" ? "ask" : "agent");
-        } else {
-          setIsOpen(!open);
-          setMode("ask");
-        }
-      }
-    };
-    document.addEventListener("keydown", handleGlobalKeyDown);
-    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [open, setIsOpen, setMode, essayContext, mode]);
-  if (!isVisible || !mounted) return null;
-  return createPortal3(
-    /* @__PURE__ */ jsxs17(Fragment13, { children: [
-      /* @__PURE__ */ jsx23(
-        "div",
-        {
-          className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
-          onClick: onClose
-        }
-      ),
-      /* @__PURE__ */ jsxs17(
-        "div",
-        {
-          role: "dialog",
-          "aria-modal": "true",
-          "aria-label": "Chat",
-          className: `autoblogger fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
-          children: [
-            /* @__PURE__ */ jsxs17("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
-              /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-2", children: [
-                /* @__PURE__ */ jsx23("h2", { className: "font-medium", children: "Chat" }),
-                essayContext && /* @__PURE__ */ jsx23("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[140px]", children: essayContext.title || "Untitled" })
-              ] }),
-              /* @__PURE__ */ jsx23(
-                "button",
-                {
-                  onClick: onClose,
-                  className: "w-8 h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
-                  "aria-label": "Close chat",
-                  children: /* @__PURE__ */ jsx23(X4, { className: "w-4 h-4" })
-                }
-              )
-            ] }),
-            /* @__PURE__ */ jsx23("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto", children: messages.length === 0 ? /* @__PURE__ */ jsx23("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ jsx23("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ jsx23("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ jsxs17("div", { className: "px-4 py-4 space-y-4", children: [
-              messages.map((message, index) => {
-                const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
-                return /* @__PURE__ */ jsx23(
-                  "div",
-                  {
-                    ref: isLastUserMessage ? lastUserMessageRef : void 0,
-                    className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
-                    children: /* @__PURE__ */ jsxs17(
-                      "div",
-                      {
-                        className: `max-w-[85%] rounded-2xl px-3 py-2 text-sm relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
-                        children: [
-                          message.role === "assistant" ? /* @__PURE__ */ jsx23(
-                            "div",
-                            {
-                              className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
-                              dangerouslySetInnerHTML: { __html: markdownToHtml(stripPlanTags(message.content)) }
-                            }
-                          ) : /* @__PURE__ */ jsx23("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
-                          isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ jsx23("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
-                          message.appliedEdits && message.previousState && /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-2 mt-1.5", children: [
-                            /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-1 text-xs text-green-600 dark:text-green-400", children: [
-                              /* @__PURE__ */ jsx23(Pencil3, { className: "w-3 h-3" }),
-                              /* @__PURE__ */ jsx23("span", { children: "Edit applied" })
-                            ] }),
-                            /* @__PURE__ */ jsxs17(
-                              "button",
-                              {
-                                onClick: () => undoEdit(index),
-                                className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors",
-                                "aria-label": "Undo edit",
-                                children: [
-                                  /* @__PURE__ */ jsx23(Undo22, { className: "w-3 h-3" }),
-                                  /* @__PURE__ */ jsx23("span", { children: "Undo" })
-                                ]
-                              }
-                            )
-                          ] }),
-                          message.role === "assistant" && !isStreaming && /* @__PURE__ */ jsxs17("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
-                            /* @__PURE__ */ jsx23(
-                              "button",
-                              {
-                                onClick: () => copyToClipboard(message.content, index),
-                                className: "text-muted-foreground hover:text-foreground p-1 rounded",
-                                "aria-label": "Copy message",
-                                children: copiedIndex === index ? /* @__PURE__ */ jsx23(Check4, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ jsx23(Copy, { className: "w-3.5 h-3.5" })
-                              }
-                            ),
-                            message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ jsx23(
-                              "button",
-                              {
-                                onClick: handleDraftEssay,
-                                className: "text-xs text-muted-foreground hover:text-foreground px-1 rounded",
-                                children: "Draft Essay"
-                              }
-                            )
-                          ] })
-                        ]
-                      }
-                    )
-                  },
-                  index
-                );
-              }),
-              /* @__PURE__ */ jsx23("div", { ref: messagesEndRef })
-            ] }) }),
-            /* @__PURE__ */ jsxs17(
-              "form",
-              {
-                onSubmit: (e) => {
-                  e.preventDefault();
-                  sendMessage();
-                },
-                className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
-                children: [
-                  /* @__PURE__ */ jsxs17("div", { className: "mb-2 flex items-center gap-2", children: [
-                    /* @__PURE__ */ jsxs17("div", { ref: modeMenuRef, className: "relative", children: [
-                      /* @__PURE__ */ jsxs17(
-                        "button",
-                        {
-                          type: "button",
-                          onClick: () => setModeMenuOpen(!modeMenuOpen),
-                          title: "Switch mode (\u2318\u21E7A)",
-                          className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${mode === "ask" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : mode === "agent" ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"}`,
-                          children: [
-                            mode === "ask" && /* @__PURE__ */ jsx23(MessageSquare3, { className: "w-3 h-3" }),
-                            mode === "agent" && /* @__PURE__ */ jsx23(Pencil3, { className: "w-3 h-3" }),
-                            mode === "plan" && /* @__PURE__ */ jsx23(List2, { className: "w-3 h-3" }),
-                            mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
-                            /* @__PURE__ */ jsx23(ChevronDown5, { className: "w-2.5 h-2.5 opacity-60" })
-                          ]
-                        }
-                      ),
-                      modeMenuOpen && /* @__PURE__ */ jsxs17("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
-                        /* @__PURE__ */ jsxs17(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => {
-                              setMode("agent");
-                              setModeMenuOpen(false);
-                              textareaRef.current?.focus();
-                            },
-                            disabled: !essayContext,
-                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
-                            children: [
-                              /* @__PURE__ */ jsx23(Pencil3, { className: "w-4 h-4" }),
-                              /* @__PURE__ */ jsx23("span", { className: "flex-1", children: "Agent" }),
-                              /* @__PURE__ */ jsx23("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
-                              mode === "agent" && /* @__PURE__ */ jsx23(Check4, { className: "w-4 h-4" })
-                            ]
-                          }
-                        ),
-                        /* @__PURE__ */ jsxs17(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => {
-                              setMode("plan");
-                              setModeMenuOpen(false);
-                              textareaRef.current?.focus();
-                            },
-                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
-                            children: [
-                              /* @__PURE__ */ jsx23(List2, { className: "w-4 h-4" }),
-                              /* @__PURE__ */ jsx23("span", { className: "flex-1", children: "Plan" }),
-                              mode === "plan" && /* @__PURE__ */ jsx23(Check4, { className: "w-4 h-4" })
-                            ]
-                          }
-                        ),
-                        /* @__PURE__ */ jsxs17(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => {
-                              setMode("ask");
-                              setModeMenuOpen(false);
-                              textareaRef.current?.focus();
-                            },
-                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
-                            children: [
-                              /* @__PURE__ */ jsx23(MessageSquare3, { className: "w-4 h-4" }),
-                              /* @__PURE__ */ jsx23("span", { className: "flex-1", children: "Ask" }),
-                              mode === "ask" && /* @__PURE__ */ jsx23(Check4, { className: "w-4 h-4" })
-                            ]
-                          }
-                        )
-                      ] })
-                    ] }),
-                    /* @__PURE__ */ jsx23(
-                      ControlButton,
-                      {
-                        onClick: () => {
-                          setWebSearchEnabled(!webSearchEnabled);
-                          textareaRef.current?.focus();
-                        },
-                        active: webSearchEnabled,
-                        title: webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)",
-                        tabIndex: -1,
-                        children: /* @__PURE__ */ jsx23(Globe2, { className: "w-4 h-4" })
-                      }
-                    ),
-                    /* @__PURE__ */ jsx23(
-                      ControlButton,
-                      {
-                        onClick: () => {
-                          setThinkingEnabled(!thinkingEnabled);
-                          textareaRef.current?.focus();
-                        },
-                        active: thinkingEnabled,
-                        title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
-                        tabIndex: -1,
-                        children: /* @__PURE__ */ jsx23(Brain2, { className: "w-4 h-4" })
-                      }
-                    ),
-                    /* @__PURE__ */ jsx23(
-                      ModelSelector,
-                      {
-                        models,
-                        selectedModel,
-                        onModelChange: (id) => {
-                          setSelectedModel(id);
-                          textareaRef.current?.focus();
-                        },
-                        currentModel
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ jsxs17("div", { className: "flex items-end gap-2", children: [
-                    /* @__PURE__ */ jsx23(
-                      "textarea",
-                      {
-                        ref: textareaRef,
-                        value: input,
-                        onChange: (e) => setInput(e.target.value),
-                        onKeyDown: handleKeyDown,
-                        placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
-                        className: "flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none",
-                        rows: 1,
-                        autoFocus: true
-                      }
-                    ),
-                    /* @__PURE__ */ jsx23(
-                      "button",
-                      {
-                        type: isStreaming ? "button" : "submit",
-                        onClick: isStreaming ? stopStreaming : void 0,
-                        disabled: !isStreaming && !input.trim(),
-                        className: "rounded-full w-10 h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
-                        children: isStreaming ? /* @__PURE__ */ jsx23(Square, { className: "h-4 w-4 fill-current" }) : /* @__PURE__ */ jsx23(ArrowUp3, { className: "h-5 w-5" })
-                      }
-                    )
-                  ] })
-                ]
-              }
-            )
-          ]
-        }
-      )
-    ] }),
-    document.body
-  );
+  ]);
+  return null;
 }
 export {
   AutobloggerDashboard,
+  ChatButton,
   ChatContext,
+  ChatIcon,
   ChatPanel,
   ChatProvider,
+  ChevronLeftIcon,
   CommentThread,
   CommentsPanel,
   ControlButton,
+  GlobalShortcuts,
   ModelSelector,
+  MoonIcon,
   Navbar,
+  SHORTCUTS,
+  SunIcon,
+  ThemeProvider,
+  ThemeToggle,
   useAIModels,
   useChatContext,
   useChatContextOptional,
   useComments,
-  useDashboardContext
+  useDashboardContext,
+  useDashboardKeyboard,
+  useKeyboard
 };
 //# sourceMappingURL=ui.mjs.map

@@ -301,3 +301,150 @@ If the plan title is generic, improve it to be:
 </title_refinement>
 </output_format>
 </system>`
+
+// ============================================
+// SEARCH MODE PROMPTS
+// ============================================
+
+/**
+ * Default template for search-only mode (fact-finding).
+ * Used when user wants to research a topic before writing.
+ */
+export const DEFAULT_SEARCH_ONLY_PROMPT = `You are a research assistant helping a writer gather facts and information.
+
+Your task is to provide accurate, well-sourced information to help with essay writing.
+
+Guidelines:
+- Focus on facts, data, and specific examples
+- Include dates, names, and sources when relevant
+- Present information clearly and concisely
+- Note any conflicting information or debates
+- Suggest interesting angles or perspectives the writer might explore
+
+Do NOT write the essay - just provide research findings.`
+
+// ============================================
+// PROMPT BUILDERS
+// ============================================
+
+export interface EssayContext {
+  title?: string
+  subtitle?: string
+  markdown?: string
+}
+
+export interface StyleContext {
+  rules?: string
+  chatRules?: string
+  rewriteRules?: string
+  planRules?: string
+  styleExamples?: string
+}
+
+/**
+ * Build the search-only prompt for fact-finding queries.
+ */
+export function buildSearchOnlyPrompt(query: string): string {
+  return `${DEFAULT_SEARCH_ONLY_PROMPT}
+
+Research Topic: ${query}`
+}
+
+/**
+ * Build the full plan prompt with context and essay state.
+ */
+export function buildPlanPrompt(
+  context: StyleContext,
+  essayContext?: EssayContext | null
+): string {
+  let prompt = DEFAULT_PLAN_TEMPLATE
+    .replace('{{PLAN_RULES}}', context.planRules || DEFAULT_PLAN_RULES)
+    .replace('{{STYLE_EXAMPLES}}', context.styleExamples || 'No style examples provided.')
+
+  if (essayContext) {
+    const currentState = formatEssayContext(essayContext)
+    prompt += `\n\n<current_essay>\n${currentState}\n</current_essay>`
+  }
+
+  return prompt
+}
+
+/**
+ * Build the chat prompt with essay context.
+ */
+export function buildChatPrompt(
+  context: StyleContext,
+  essayContext?: EssayContext | null
+): string {
+  let essayContextStr = 'No essay currently open.'
+  if (essayContext) {
+    essayContextStr = formatEssayContext(essayContext)
+  }
+
+  return DEFAULT_CHAT_TEMPLATE
+    .replace('{{CHAT_RULES}}', context.chatRules || 'Be helpful and concise.')
+    .replace('{{ESSAY_CONTEXT}}', essayContextStr)
+}
+
+/**
+ * Build the agent chat prompt for direct editing mode.
+ */
+export function buildAgentChatPrompt(
+  context: StyleContext,
+  essayContext?: EssayContext | null
+): string {
+  const basePrompt = buildChatPrompt(context, essayContext)
+  return basePrompt + '\n\n' + DEFAULT_AGENT_TEMPLATE
+}
+
+/**
+ * Build the generate prompt for essay creation.
+ */
+export function buildGeneratePrompt(
+  context: StyleContext,
+  wordCount: number = 800
+): string {
+  return DEFAULT_GENERATE_TEMPLATE
+    .replace('{{RULES}}', context.rules || '')
+    .replace('{{WORD_COUNT}}', wordCount.toString())
+}
+
+/**
+ * Build the rewrite prompt.
+ */
+export function buildRewritePrompt(context: StyleContext): string {
+  return DEFAULT_REWRITE_TEMPLATE
+    .replace('{{REWRITE_RULES}}', context.rewriteRules || 'Improve clarity and flow.')
+}
+
+/**
+ * Build the expand plan prompt.
+ */
+export function buildExpandPlanPrompt(
+  context: StyleContext,
+  plan: string
+): string {
+  return DEFAULT_EXPAND_PLAN_TEMPLATE
+    .replace('{{RULES}}', context.rules || '')
+    .replace('{{STYLE_EXAMPLES}}', context.styleExamples || 'No style examples provided.')
+    .replace('{{PLAN}}', plan)
+}
+
+/**
+ * Format essay context for inclusion in prompts.
+ */
+function formatEssayContext(essayContext: EssayContext): string {
+  const parts: string[] = []
+  
+  if (essayContext.title) {
+    parts.push(`Title: ${essayContext.title}`)
+  }
+  if (essayContext.subtitle) {
+    parts.push(`Subtitle: ${essayContext.subtitle}`)
+  }
+  if (essayContext.markdown) {
+    parts.push(`Content:\n${essayContext.markdown}`)
+  }
+  
+  return parts.join('\n') || 'Empty essay'
+}

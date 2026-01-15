@@ -30,13 +30,19 @@ import { createAutoblogger, createAPIHandler } from 'autoblogger'
 // Client-side (React dashboard)
 import { AutobloggerDashboard } from 'autoblogger/ui'
 
+// Chat components (for standalone use)
+import { ChatProvider, useChatContext, ChatPanel, ChatButton } from 'autoblogger/ui'
+
 // Utilities
-import { renderMarkdown, htmlToMarkdown } from 'autoblogger/markdown'
+import { renderMarkdown, htmlToMarkdown, markdownToHtml } from 'autoblogger/markdown'
 import { ARTICLE_CLASSES } from 'autoblogger/styles/article'
 import { getSeoValues } from 'autoblogger/seo'
 
 // Comment utilities (for advanced integrations)
 import { createCommentsClient, CommentMark } from 'autoblogger'
+
+// Auto-draft
+import { runAutoDraft, fetchRssFeeds, filterByKeywords } from 'autoblogger'
 ```
 
 ## Project Structure
@@ -49,6 +55,12 @@ autoblogger/
 │   ├── config.ts          # Full config types (includes React types)
 │   ├── schema.ts          # Prisma schema validation helper
 │   ├── types.ts           # Core TypeScript types (Post, Revision, etc.)
+│   │
+│   ├── auto-draft/        # Auto-draft from RSS feeds
+│   │   ├── index.ts       # Barrel exports
+│   │   ├── runner.ts      # runAutoDraft() orchestration
+│   │   ├── rss.ts         # fetchRssFeeds() RSS parsing
+│   │   └── keywords.ts    # filterByKeywords() article filtering
 │   │
 │   ├── cli/               # CLI tool (npx autoblogger)
 │   │   ├── index.ts       # CLI entry point, command parser
@@ -95,33 +107,36 @@ autoblogger/
 │   │   ├── topics.ts      # /topics + /topics/:id/generate
 │   │   ├── users.ts       # /users CRUD (admin only)
 │   │   ├── ai.ts          # /ai/settings, /ai/generate, /ai/chat
+│   │   ├── chat-history.ts # /chat/history persistence
 │   │   ├── settings.ts    # /settings (integration settings)
 │   │   ├── upload.ts      # /upload (image upload)
 │   │   └── admin.ts       # /admin/counts
 │   │
 │   ├── ai/                # AI integration
 │   │   ├── index.ts       # Barrel exports
-│   │   ├── models.ts      # AI_MODELS array (Claude, GPT) with descriptions
+│   │   ├── models.ts      # AI_MODELS array with searchModel property
 │   │   ├── provider.ts    # Unified streaming abstraction
 │   │   ├── generate.ts    # Essay generation with URL context
-│   │   ├── chat.ts        # Chat streaming with modes (rewrite, expand, etc.)
-│   │   ├── prompts.ts     # Default prompt templates (all DEFAULT_* constants)
-│   │   └── builders.ts    # buildGeneratePrompt, buildChatPrompt
+│   │   ├── chat.ts        # Chat streaming with modes
+│   │   ├── prompts.ts     # Default templates (generate, chat, plan, agent, etc.)
+│   │   ├── builders.ts    # buildGeneratePrompt, buildChatPrompt, etc.
+│   │   └── parse.ts       # parseGeneratedContent (title/subtitle extraction)
 │   │
 │   ├── lib/               # Utilities
 │   │   ├── cn.ts          # clsx + tailwind-merge
 │   │   ├── format.ts      # formatDate, formatRelativeTime, countWords, truncate
-│   │   ├── markdown.ts    # renderMarkdown, parseMarkdown, htmlToMarkdown
+│   │   ├── markdown.ts    # renderMarkdown, parseMarkdown, htmlToMarkdown, markdownToHtml
 │   │   ├── markdown-helpers.ts # Cursor-based text manipulation for markdown mode
 │   │   ├── seo.ts         # getSeoValues (title, description fallbacks)
 │   │   ├── comments.ts    # createCommentsClient, permission helpers
 │   │   ├── comment-mark.ts # Tiptap CommentMark extension
 │   │   ├── editor-types.ts # RevisionState, AIState types
-│   │   ├── models.ts      # LENGTH_OPTIONS, AIModelOption type
+│   │   ├── models.ts      # LENGTH_OPTIONS, AIModelOption, DEFAULT_MODELS
 │   │   └── url-extractor.ts # URL detection + content fetching (Puppeteer/Readability)
 │   │
 │   ├── styles/            # Style exports
 │   │   ├── article.ts     # ARTICLE_CLASSES, ARTICLE_LAYOUT
+│   │   ├── autoblogger.css # Complete theme CSS (colors, prose, editor)
 │   │   └── preset.js      # Tailwind preset (ab- prefixed tokens)
 │   │
 │   └── ui/                # React components
@@ -129,6 +144,7 @@ autoblogger/
 │       ├── dashboard.tsx  # AutobloggerDashboard wrapper
 │       ├── context.tsx    # DashboardProvider + hooks
 │       ├── types.ts       # CustomFieldConfig, CustomFieldProps
+│       ├── shortcuts.ts   # SHORTCUTS constant for keyboard shortcuts
 │       │
 │       ├── pages/         # Page components
 │       │   ├── WriterDashboard.tsx  # Post list + AI generation
@@ -141,7 +157,8 @@ autoblogger/
 │       │   ├── EditorToolbar.tsx
 │       │   ├── CommentsPanel.tsx
 │       │   ├── CommentThread.tsx
-│       │   ├── ChatPanel.tsx        # AI chat sidebar
+│       │   ├── ChatPanel.tsx        # AI chat sidebar with mode selector
+│       │   ├── ChatButton.tsx       # Floating chat toggle button
 │       │   ├── TagsSection.tsx
 │       │   ├── ModelSelector.tsx
 │       │   ├── ControlButton.tsx
@@ -150,6 +167,10 @@ autoblogger/
 │       │   ├── Dropdown.tsx         # Reusable dropdown menu
 │       │   ├── Form.tsx             # Form field components
 │       │   ├── SettingsListPage.tsx # Generic admin list page
+│       │   ├── ThemeProvider.tsx    # next-themes provider wrapper
+│       │   ├── ThemeToggle.tsx      # Light/dark mode toggle
+│       │   ├── GlobalShortcuts.tsx  # Global keyboard shortcuts
+│       │   ├── Icons.tsx            # Custom icon components
 │       │   └── toolbar/
 │       │       ├── index.ts
 │       │       ├── ToolbarButton.tsx
@@ -160,7 +181,8 @@ autoblogger/
 │       │
 │       └── hooks/
 │           ├── useComments.ts    # Comment state + CRUD
-│           ├── useChat.tsx       # AI chat state + streaming
+│           ├── useChat.tsx       # ChatProvider + useChatContext + modes
+│           ├── useAIModels.ts    # AI model fetching hook
 │           └── useKeyboard.ts    # Keyboard shortcuts
 │
 ├── prisma/
@@ -445,13 +467,27 @@ Internal SPA navigation via `DashboardContext`:
 
 Defined in `src/ai/models.ts`:
 ```typescript
-export const AI_MODELS = [
-  { id: 'claude-sonnet', name: 'Sonnet 4.5', provider: 'anthropic', modelId: 'claude-sonnet-4-5-20250929' },
-  { id: 'claude-opus', name: 'Opus 4.5', provider: 'anthropic', modelId: 'claude-opus-4-5-20251101' },
-  { id: 'gpt-5.2', name: 'GPT-5.2', provider: 'openai', modelId: 'gpt-5.2' },
-  { id: 'gpt-5-mini', name: 'GPT-5 Mini', provider: 'openai', modelId: 'gpt-5-mini' },
+export const AI_MODELS: AIModel[] = [
+  { id: 'claude-sonnet', name: 'Sonnet 4.5', provider: 'anthropic', modelId: 'claude-sonnet-4-5-20250929', searchModel: null },
+  { id: 'claude-opus', name: 'Opus 4.5', provider: 'anthropic', modelId: 'claude-opus-4-5-20251101', searchModel: null },
+  { id: 'gpt-5.2', name: 'GPT-5.2', provider: 'openai', modelId: 'gpt-5.2', searchModel: 'native' },
+  { id: 'gpt-5-mini', name: 'GPT-5 Mini', provider: 'openai', modelId: 'gpt-5-mini', searchModel: 'native' },
 ]
 ```
+
+`searchModel` property:
+- `null` — Claude models use 2-call flow (search query first, then generate)
+- `'native'` — GPT models use native tools-based web search
+
+### Chat Modes
+
+The chat system (`useChat.tsx`) supports multiple modes:
+- `ask` — Default chat mode, answers questions about essay
+- `agent` — Direct editing mode, AI outputs `:::edit` blocks with JSON commands
+- `plan` — Outline mode, generates structured plan wrapped in `<plan>` tags
+- `search` — Research mode, fact-finding without essay generation
+
+Toggle modes via dropdown in ChatPanel or keyboard shortcut **Cmd/Ctrl + Shift + A**.
 
 ### Comments System
 
@@ -475,13 +511,19 @@ export const AI_MODELS = [
 
 ### AI Prompt Templates
 
-Templates use `{{PLACEHOLDER}}` syntax:
-- `{{RULES}}` — Essay writing rules from settings
-- `{{CHAT_RULES}}` — Chat behavior rules
-- `{{WORD_COUNT}}` — Target word count
-- `{{ESSAY_CONTEXT}}` — Current essay content for chat
-- `{{STYLE_EXAMPLES}}` — Example posts for style matching
-- `{{PLAN}}` — Outline for expand_plan mode
+Templates use `{{PLACEHOLDER}}` syntax. Defined in `src/ai/prompts.ts`:
+
+| Template | Placeholders | Purpose |
+|----------|--------------|---------|
+| `DEFAULT_GENERATE_TEMPLATE` | `{{RULES}}`, `{{WORD_COUNT}}` | Essay generation |
+| `DEFAULT_CHAT_TEMPLATE` | `{{CHAT_RULES}}`, `{{ESSAY_CONTEXT}}` | Chat conversations |
+| `DEFAULT_REWRITE_TEMPLATE` | `{{REWRITE_RULES}}` | Text improvement |
+| `DEFAULT_PLAN_TEMPLATE` | `{{PLAN_RULES}}`, `{{STYLE_EXAMPLES}}` | Outline generation |
+| `DEFAULT_EXPAND_PLAN_TEMPLATE` | `{{RULES}}`, `{{STYLE_EXAMPLES}}`, `{{PLAN}}` | Plan to essay |
+| `DEFAULT_AUTO_DRAFT_TEMPLATE` | `{{AUTO_DRAFT_RULES}}`, `{{RULES}}`, `{{AUTO_DRAFT_WORD_COUNT}}` | RSS auto-draft |
+| `DEFAULT_AGENT_TEMPLATE` | (none, appended to chat) | Agent mode instructions |
+
+Builders: `buildGeneratePrompt()`, `buildChatPrompt()`, `buildAgentChatPrompt()`, `buildPlanPrompt()`, `buildExpandPlanPrompt()`, `buildRewritePrompt()`, `buildAutoDraftPrompt()`
 
 ### Agent Mode (Direct Editing)
 
@@ -502,6 +544,14 @@ Command types:
 Template is customizable via Settings → AI → Agent Mode Template.
 
 Keyboard shortcut: **Cmd/Ctrl + Shift + A** toggles agent/ask mode.
+
+### Chat History Persistence
+
+Chat messages are persisted via `/api/cms/chat/history` API:
+- `GET` — Fetch all messages
+- `POST` — Save a new message
+
+History is loaded on mount via `ChatProvider` and messages are saved after each exchange. The `ChatMessage` Prisma model stores role + content + timestamp.
 
 ## API Routes
 
@@ -526,8 +576,9 @@ Keyboard shortcut: **Cmd/Ctrl + Shift + A** toggles agent/ask mode.
 | `/users` | GET, POST | List/create users |
 | `/users/:id` | GET, PATCH, DELETE | Single user |
 | `/ai/settings` | GET, PATCH | AI configuration |
-| `/ai/generate` | POST | Generate essay (streaming) |
-| `/ai/chat` | POST | Chat streaming |
+| `/ai/generate` | POST | Generate essay (streaming SSE) |
+| `/ai/chat` | POST | Chat streaming (modes: ask, agent, plan, search) |
+| `/chat/history` | GET, POST | Chat history persistence |
 | `/settings` | GET, PATCH | Integration settings |
 | `/upload` | POST | Image upload |
 | `/admin/counts` | GET | Dashboard counts |
@@ -598,6 +649,26 @@ dist/
 
 1. Make changes in `src/`
 2. Run `npm run build` in autoblogger
-3. Changes are immediately available in linked host app
+3. Changes are immediately available in linked host apps
 4. Test in host app's dev server
 5. Commit with `d` for dev, `g` for production
+
+### Local Linking
+
+For local development, link autoblogger to host projects:
+
+```bash
+# In autoblogger directory (creates global symlink)
+npm link
+
+# In host project (e.g., sample-blog, blog)
+npm link autoblogger
+```
+
+Linked projects:
+- `/Users/hunter/Local Documents/Code/sample-blog` — Sample blog for testing
+- `/Users/hunter/Local Documents/Code/blog` — Production blog
+
+After making changes, run `npm run build` in autoblogger — changes are immediately reflected in linked projects via symlink.
+
+**Note:** Running `npm install` in a linked project may break the link. Re-run `npm link autoblogger` to restore.

@@ -33,24 +33,35 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var ui_exports = {};
 __export(ui_exports, {
   AutobloggerDashboard: () => AutobloggerDashboard,
+  ChatButton: () => ChatButton,
   ChatContext: () => ChatContext,
+  ChatIcon: () => ChatIcon,
   ChatPanel: () => ChatPanel,
   ChatProvider: () => ChatProvider,
+  ChevronLeftIcon: () => ChevronLeftIcon,
   CommentThread: () => CommentThread,
   CommentsPanel: () => CommentsPanel,
   ControlButton: () => ControlButton,
+  GlobalShortcuts: () => GlobalShortcuts,
   ModelSelector: () => ModelSelector,
+  MoonIcon: () => MoonIcon,
   Navbar: () => Navbar,
+  SHORTCUTS: () => SHORTCUTS,
+  SunIcon: () => SunIcon,
+  ThemeProvider: () => ThemeProvider,
+  ThemeToggle: () => ThemeToggle,
   useAIModels: () => useAIModels,
   useChatContext: () => useChatContext,
   useChatContextOptional: () => useChatContextOptional,
   useComments: () => useComments,
-  useDashboardContext: () => useDashboardContext
+  useDashboardContext: () => useDashboardContext,
+  useDashboardKeyboard: () => useDashboardKeyboard,
+  useKeyboard: () => useKeyboard
 });
 module.exports = __toCommonJS(ui_exports);
 
 // src/ui/dashboard.tsx
-var import_react20 = require("react");
+var import_react22 = require("react");
 var import_lucide_react13 = require("lucide-react");
 
 // src/ui/context.tsx
@@ -1622,6 +1633,7 @@ var import_extension_image = __toESM(require("@tiptap/extension-image"));
 // src/lib/markdown.ts
 var import_marked = require("marked");
 var import_turndown = __toESM(require("turndown"));
+var import_sanitize_html = __toESM(require("sanitize-html"));
 import_marked.marked.setOptions({
   gfm: true,
   breaks: false
@@ -10121,13 +10133,48 @@ function CommentsSettingsContent() {
   ] });
 }
 
-// src/ui/components/Navbar.tsx
-var import_lucide_react12 = require("lucide-react");
+// src/ui/components/ThemeToggle.tsx
+var import_react19 = require("react");
+var import_next_themes = require("next-themes");
+
+// src/ui/components/Icons.tsx
 var import_jsx_runtime21 = require("react/jsx-runtime");
+var ChatIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" }) });
+var SunIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" }) });
+var MoonIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" }) });
+var ChevronLeftIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) });
+
+// src/ui/components/ThemeToggle.tsx
+var import_jsx_runtime22 = require("react/jsx-runtime");
+function ThemeToggle({ className }) {
+  const { theme, setTheme } = (0, import_next_themes.useTheme)();
+  const [mounted, setMounted] = (0, import_react19.useState)(false);
+  (0, import_react19.useEffect)(() => setMounted(true), []);
+  const handleToggle = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+    "button",
+    {
+      type: "button",
+      onClick: handleToggle,
+      className: cn(
+        "w-9 h-9 rounded-md border border-border",
+        "active:bg-accent md:hover:bg-accent",
+        "text-muted-foreground",
+        "flex items-center justify-center",
+        className
+      ),
+      "aria-label": "Toggle dark mode",
+      children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "w-4 h-4 transition-transform duration-200 active:scale-90", children: !mounted ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "w-4 h-4" }) : theme === "dark" ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SunIcon, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(MoonIcon, { className: "w-4 h-4" }) })
+    }
+  );
+}
+
+// src/ui/components/Navbar.tsx
+var import_jsx_runtime23 = require("react/jsx-runtime");
 function Navbar({
   onSignOut,
-  onThemeToggle,
-  theme,
   rightSlot
 }) {
   const { session, currentPath, navigate, goBack, basePath } = useDashboardContext();
@@ -10137,83 +10184,557 @@ function Navbar({
     e.currentTarget.blur();
     goBack();
   };
-  const avatarTrigger = /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+  const avatarTrigger = /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
     "button",
     {
       type: "button",
       className: "relative w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground active:ring-2 md:hover:ring-2 active:ring-ring md:hover:ring-ring transition-shadow",
       children: [
         session?.user?.email?.charAt(0).toUpperCase() || "?",
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
       ]
     }
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("header", { className: "sticky top-0 z-50 border-b border-border bg-background overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
-    isRoot ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("header", { className: "sticky top-0 z-50 border-b border-border bg-background overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
+    isRoot ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
       "Writer",
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
       "button",
       {
         type: "button",
         onClick: handleBack,
         className: "h-9 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-sm font-medium rounded-md active:bg-accent md:hover:bg-accent active:text-accent-foreground md:hover:text-accent-foreground touch-manipulation",
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react12.ChevronLeft, { className: "h-4 w-4" }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "hidden sm:inline", children: "Back" })
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(ChevronLeftIcon, {}),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "hidden sm:inline", children: "Back" })
         ]
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "flex items-center gap-2", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
       rightSlot,
-      onThemeToggle && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
-        "button",
-        {
-          type: "button",
-          onClick: onThemeToggle,
-          className: "w-9 h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center",
-          "aria-label": "Toggle theme",
-          children: theme === "dark" ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react12.Sun, { className: "h-4 w-4" }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_lucide_react12.Moon, { className: "h-4 w-4" })
-        }
-      ),
-      session && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(Dropdown, { trigger: avatarTrigger, align: "right", className: "min-w-[180px]", children: [
-        session.user?.role === "admin" && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(import_jsx_runtime21.Fragment, { children: [
-          !isSettings ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DropdownDivider, {})
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(ThemeToggle, {}),
+      session && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Dropdown, { trigger: avatarTrigger, align: "right", className: "min-w-[180px]", children: [
+        session.user?.role === "admin" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
+          !isSettings ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownDivider, {})
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DropdownItem, { onClick: () => {
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownItem, { onClick: () => {
           window.location.href = "/";
         }, children: "Back to site" }),
-        onSignOut && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(DropdownItem, { onClick: onSignOut, children: "Logout" })
+        onSignOut && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownItem, { onClick: onSignOut, children: "Logout" })
       ] })
     ] })
   ] }) });
 }
 
+// src/ui/components/ChatButton.tsx
+var import_jsx_runtime24 = require("react/jsx-runtime");
+function ChatButton() {
+  const chatContext = useChatContextOptional();
+  if (!chatContext) return null;
+  const { setIsOpen, isOpen } = chatContext;
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+    "button",
+    {
+      type: "button",
+      onClick: () => setIsOpen(!isOpen),
+      className: `w-9 h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent flex items-center justify-center transition-colors ${isOpen ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`,
+      "aria-label": "Toggle chat",
+      title: "Chat (\u2318\u21E7A)",
+      children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ChatIcon, {})
+    }
+  );
+}
+
+// src/ui/components/ChatPanel.tsx
+var import_react20 = require("react");
+var import_react_dom3 = require("react-dom");
+var import_lucide_react12 = require("lucide-react");
+var import_jsx_runtime25 = require("react/jsx-runtime");
+var DEFAULT_PROSE_CLASSES2 = "prose prose-gray dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:underline";
+function stripPlanTags(content) {
+  return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
+}
+function ChatPanel({
+  proseClasses = DEFAULT_PROSE_CLASSES2,
+  onNavigate: onNavigateProp,
+  isOnEditor: isOnEditorProp
+}) {
+  const {
+    messages,
+    isStreaming,
+    isOpen: open,
+    setIsOpen,
+    sendMessage: contextSendMessage,
+    stopStreaming,
+    essayContext,
+    mode,
+    setMode,
+    undoEdit,
+    webSearchEnabled,
+    setWebSearchEnabled,
+    thinkingEnabled,
+    setThinkingEnabled,
+    selectedModel,
+    setSelectedModel,
+    expandPlan
+  } = useChatContext();
+  const dashboardContext = (0, import_react20.useContext)(DashboardContext);
+  const onNavigate = onNavigateProp ?? dashboardContext?.navigate;
+  const isOnEditor = isOnEditorProp ?? !!essayContext;
+  const [input, setInput] = (0, import_react20.useState)("");
+  const [isAnimating, setIsAnimating] = (0, import_react20.useState)(false);
+  const [isVisible, setIsVisible] = (0, import_react20.useState)(false);
+  const [mounted, setMounted] = (0, import_react20.useState)(false);
+  const [copiedIndex, setCopiedIndex] = (0, import_react20.useState)(null);
+  const [modeMenuOpen, setModeMenuOpen] = (0, import_react20.useState)(false);
+  const modeMenuRef = (0, import_react20.useRef)(null);
+  const messagesEndRef = (0, import_react20.useRef)(null);
+  const messagesContainerRef = (0, import_react20.useRef)(null);
+  const textareaRef = (0, import_react20.useRef)(null);
+  const prevMessageCountRef = (0, import_react20.useRef)(0);
+  const savedScrollPositionRef = (0, import_react20.useRef)(null);
+  const lastUserMessageRef = (0, import_react20.useRef)(null);
+  const contextModels = dashboardContext?.sharedData?.aiSettings?.availableModels;
+  const models = contextModels && contextModels.length > 0 ? contextModels : DEFAULT_MODELS;
+  const currentModel = models.find((m) => m.id === selectedModel);
+  const onClose = (0, import_react20.useCallback)(() => setIsOpen(false), [setIsOpen]);
+  const copyToClipboard = (0, import_react20.useCallback)(async (text, index) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2e3);
+  }, []);
+  const handleDraftEssay = (0, import_react20.useCallback)(() => {
+    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
+    if (!lastAssistantMessage?.content) return;
+    if (isOnEditor) {
+      expandPlan();
+      setMode("agent");
+    } else if (onNavigate) {
+      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
+      setIsOpen(false);
+      onNavigate("/editor?fromPlan=1");
+    } else {
+      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
+      setIsOpen(false);
+      window.location.href = "/writer/editor?fromPlan=1";
+    }
+  }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate]);
+  (0, import_react20.useEffect)(() => {
+    function handleClick(e) {
+      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
+        setModeMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+  (0, import_react20.useEffect)(() => {
+    setMounted(true);
+  }, []);
+  (0, import_react20.useEffect)(() => {
+    if (open) {
+      setIsVisible(true);
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      document.body.style.top = `-${window.scrollY}px`;
+    } else {
+      setIsAnimating(false);
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.top = "";
+      window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+  (0, import_react20.useEffect)(() => {
+    if (isVisible && open && !isAnimating) {
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    }
+  }, [isVisible, open, isAnimating]);
+  (0, import_react20.useEffect)(() => {
+    if (!open && messagesContainerRef.current) {
+      savedScrollPositionRef.current = messagesContainerRef.current.scrollTop;
+    }
+  }, [open]);
+  (0, import_react20.useEffect)(() => {
+    if (!open || !isVisible) return;
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    const prevCount = prevMessageCountRef.current;
+    const currentCount = messages.length;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (currentCount > prevCount) {
+          const behavior = prevCount === 0 ? "instant" : "smooth";
+          messagesEndRef.current?.scrollIntoView({ behavior });
+        } else if (savedScrollPositionRef.current !== null) {
+          container.scrollTop = savedScrollPositionRef.current;
+        }
+        prevMessageCountRef.current = currentCount;
+      });
+    });
+  }, [messages.length, open, isVisible]);
+  (0, import_react20.useEffect)(() => {
+    if (!isStreaming) return;
+    const container = messagesContainerRef.current;
+    const userMessage = lastUserMessageRef.current;
+    if (!container || !userMessage) return;
+    const containerRect = container.getBoundingClientRect();
+    const messageRect = userMessage.getBoundingClientRect();
+    const distanceFromTop = messageRect.top - containerRect.top;
+    if (distanceFromTop > 10) {
+      container.scrollTop += Math.min(distanceFromTop * 0.3, 30);
+    }
+  }, [messages, isStreaming]);
+  (0, import_react20.useEffect)(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+    }
+  }, [input]);
+  const sendMessage = (0, import_react20.useCallback)(async () => {
+    if (!input.trim() || isStreaming) return;
+    const content = input.trim();
+    setInput("");
+    await contextSendMessage(content);
+  }, [input, isStreaming, contextSendMessage]);
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      onClose();
+    }
+  };
+  (0, import_react20.useEffect)(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        if (essayContext) {
+          if (!open) {
+            setIsOpen(true);
+          }
+          setMode(mode === "agent" ? "ask" : "agent");
+        } else {
+          setIsOpen(!open);
+          setMode("ask");
+        }
+      }
+    };
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [open, setIsOpen, setMode, essayContext, mode]);
+  if (!isVisible || !mounted) return null;
+  return (0, import_react_dom3.createPortal)(
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+        "div",
+        {
+          className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
+          onClick: onClose
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+        "div",
+        {
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-label": "Chat",
+          className: `autoblogger fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { className: "font-medium", children: "Chat" }),
+                essayContext && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[140px]", children: essayContext.title || "Untitled" })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                "button",
+                {
+                  onClick: onClose,
+                  className: "w-8 h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
+                  "aria-label": "Close chat",
+                  children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.X, { className: "w-4 h-4" })
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto", children: messages.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "px-4 py-4 space-y-4", children: [
+              messages.map((message, index) => {
+                const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
+                return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                  "div",
+                  {
+                    ref: isLastUserMessage ? lastUserMessageRef : void 0,
+                    className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
+                    children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                      "div",
+                      {
+                        className: `max-w-[85%] rounded-2xl px-3 py-2 text-sm relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
+                        children: [
+                          message.role === "assistant" ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                            "div",
+                            {
+                              className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
+                              dangerouslySetInnerHTML: { __html: markdownToHtml(stripPlanTags(message.content)) }
+                            }
+                          ) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
+                          isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
+                          message.appliedEdits && message.previousState && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center gap-2 mt-1.5", children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center gap-1 text-xs text-green-600 dark:text-green-400", children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Pencil, { className: "w-3 h-3" }),
+                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "Edit applied" })
+                            ] }),
+                            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                              "button",
+                              {
+                                onClick: () => undoEdit(index),
+                                className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors",
+                                "aria-label": "Undo edit",
+                                children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Undo2, { className: "w-3 h-3" }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "Undo" })
+                                ]
+                              }
+                            )
+                          ] }),
+                          message.role === "assistant" && !isStreaming && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                              "button",
+                              {
+                                onClick: () => copyToClipboard(message.content, index),
+                                className: "text-muted-foreground hover:text-foreground p-1 rounded",
+                                "aria-label": "Copy message",
+                                children: copiedIndex === index ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Check, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Copy, { className: "w-3.5 h-3.5" })
+                              }
+                            ),
+                            message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                              "button",
+                              {
+                                onClick: handleDraftEssay,
+                                className: "text-xs text-muted-foreground hover:text-foreground px-1 rounded",
+                                children: "Draft Essay"
+                              }
+                            )
+                          ] })
+                        ]
+                      }
+                    )
+                  },
+                  index
+                );
+              }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { ref: messagesEndRef })
+            ] }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+              "form",
+              {
+                onSubmit: (e) => {
+                  e.preventDefault();
+                  sendMessage();
+                },
+                className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mb-2 flex items-center gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { ref: modeMenuRef, className: "relative", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => setModeMenuOpen(!modeMenuOpen),
+                          title: "Switch mode (\u2318\u21E7A)",
+                          className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${mode === "ask" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : mode === "agent" ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"}`,
+                          children: [
+                            mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.MessageSquare, { className: "w-3 h-3" }),
+                            mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Pencil, { className: "w-3 h-3" }),
+                            mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.List, { className: "w-3 h-3" }),
+                            mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
+                            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.ChevronDown, { className: "w-2.5 h-2.5 opacity-60" })
+                          ]
+                        }
+                      ),
+                      modeMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => {
+                              setMode("agent");
+                              setModeMenuOpen(false);
+                              textareaRef.current?.focus();
+                            },
+                            disabled: !essayContext,
+                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Pencil, { className: "w-4 h-4" }),
+                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "flex-1", children: "Agent" }),
+                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
+                              mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => {
+                              setMode("plan");
+                              setModeMenuOpen(false);
+                              textareaRef.current?.focus();
+                            },
+                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.List, { className: "w-4 h-4" }),
+                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "flex-1", children: "Plan" }),
+                              mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
+                            ]
+                          }
+                        ),
+                        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => {
+                              setMode("ask");
+                              setModeMenuOpen(false);
+                              textareaRef.current?.focus();
+                            },
+                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.MessageSquare, { className: "w-4 h-4" }),
+                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "flex-1", children: "Ask" }),
+                              mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
+                            ]
+                          }
+                        )
+                      ] })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                      ControlButton,
+                      {
+                        onClick: () => {
+                          setWebSearchEnabled(!webSearchEnabled);
+                          textareaRef.current?.focus();
+                        },
+                        active: webSearchEnabled,
+                        title: webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)",
+                        tabIndex: -1,
+                        children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Globe, { className: "w-4 h-4" })
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                      ControlButton,
+                      {
+                        onClick: () => {
+                          setThinkingEnabled(!thinkingEnabled);
+                          textareaRef.current?.focus();
+                        },
+                        active: thinkingEnabled,
+                        title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
+                        tabIndex: -1,
+                        children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Brain, { className: "w-4 h-4" })
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                      ModelSelector,
+                      {
+                        models,
+                        selectedModel,
+                        onModelChange: (id) => {
+                          setSelectedModel(id);
+                          textareaRef.current?.focus();
+                        },
+                        currentModel
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-end gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                      "textarea",
+                      {
+                        ref: textareaRef,
+                        value: input,
+                        onChange: (e) => setInput(e.target.value),
+                        onKeyDown: handleKeyDown,
+                        placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
+                        className: "flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none",
+                        rows: 1,
+                        autoFocus: true
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                      "button",
+                      {
+                        type: isStreaming ? "button" : "submit",
+                        onClick: isStreaming ? stopStreaming : void 0,
+                        disabled: !isStreaming && !input.trim(),
+                        className: "rounded-full w-10 h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
+                        children: isStreaming ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Square, { className: "h-4 w-4 fill-current" }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.ArrowUp, { className: "h-5 w-5" })
+                      }
+                    )
+                  ] })
+                ]
+              }
+            )
+          ]
+        }
+      )
+    ] }),
+    document.body
+  );
+}
+
+// src/ui/components/ThemeProvider.tsx
+var import_next_themes2 = require("next-themes");
+var import_jsx_runtime26 = require("react/jsx-runtime");
+function ThemeProvider({ children, ...props }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+    import_next_themes2.ThemeProvider,
+    {
+      attribute: "class",
+      defaultTheme: "system",
+      enableSystem: true,
+      disableTransitionOnChange: true,
+      ...props,
+      children
+    }
+  );
+}
+
 // src/ui/hooks/useKeyboard.ts
-var import_react19 = require("react");
+var import_react21 = require("react");
 function useKeyboard(shortcuts, enabled = true) {
-  const shortcutsRef = (0, import_react19.useRef)(shortcuts);
+  const shortcutsRef = (0, import_react21.useRef)(shortcuts);
   shortcutsRef.current = shortcuts;
-  (0, import_react19.useEffect)(() => {
+  (0, import_react21.useEffect)(() => {
     if (!enabled) return;
     function handleKeyDown(event) {
       const target = event.target;
       const isTyping = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
-      if (isTyping) {
-        const hasMeta = event.metaKey || event.ctrlKey;
-        const isEscape = event.key === "Escape";
-        const isNavShortcut = hasMeta && (event.key === "/" || event.key === "'");
-        if (!isEscape && !isNavShortcut) {
-          return;
-        }
-      }
+      const isInDialog = target && (target.closest('[role="dialog"]') || target.closest('[role="alertdialog"]') || target.closest("[data-radix-dialog-content]") || target.closest("[data-radix-alert-dialog-content]"));
       for (const shortcut of shortcutsRef.current) {
+        if (isTyping && !shortcut.allowInInput) continue;
+        if (shortcut.key === "Escape" && isInDialog) continue;
         const metaMatch = shortcut.metaKey ? event.metaKey || event.ctrlKey : true;
         const ctrlMatch = shortcut.ctrlKey ? event.ctrlKey : true;
         const shiftMatch = shortcut.shiftKey ? event.shiftKey : !event.shiftKey;
-        const keyMatch = event.key.toLowerCase() === shortcut.key.toLowerCase();
-        if (keyMatch && metaMatch && ctrlMatch && shiftMatch) {
+        const altMatch = shortcut.altKey ? event.altKey : !event.altKey;
+        const keyLower = event.key.toLowerCase();
+        const codeLower = event.code.toLowerCase();
+        const targetKey = shortcut.key.toLowerCase();
+        const keyMatch = keyLower === targetKey || shortcut.altKey && codeLower === `key${targetKey}`;
+        if (keyMatch && metaMatch && ctrlMatch && shiftMatch && altMatch) {
           event.preventDefault();
           shortcut.action();
           break;
@@ -10229,12 +10750,14 @@ function useDashboardKeyboard(options) {
     {
       key: "/",
       metaKey: true,
+      allowInInput: true,
       action: () => options.onToggleView?.(),
       description: "Toggle view"
     },
     {
       key: "'",
       metaKey: true,
+      allowInInput: true,
       action: () => options.onToggleSettings?.(),
       description: "Toggle settings"
     },
@@ -10245,6 +10768,7 @@ function useDashboardKeyboard(options) {
     },
     {
       key: "Escape",
+      allowInInput: true,
       action: () => options.onEscape?.(),
       description: "Go back"
     }
@@ -10253,7 +10777,7 @@ function useDashboardKeyboard(options) {
 }
 
 // src/ui/dashboard.tsx
-var import_jsx_runtime22 = require("react/jsx-runtime");
+var import_jsx_runtime27 = require("react/jsx-runtime");
 function AutobloggerDashboard({
   basePath = "/writer",
   apiBasePath = "/api/cms",
@@ -10264,30 +10788,43 @@ function AutobloggerDashboard({
   onRegisterEditHandler,
   onToggleView,
   onSignOut,
-  onThemeToggle,
-  theme,
-  navbarRightSlot
+  navbarRightSlot,
+  chatApiPath,
+  historyApiPath,
+  proseClasses,
+  skipThemeProvider = false
 }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
-    DashboardLayout,
+  const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
+  const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`;
+  const ThemeWrapper = skipThemeProvider ? ({ children }) => /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_jsx_runtime27.Fragment, { children }) : ThemeProvider;
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ThemeWrapper, { children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+    ChatProvider,
     {
-      onToggleView,
-      onSignOut,
-      onThemeToggle,
-      theme,
-      navbarRightSlot
+      apiBasePath,
+      chatApiPath: resolvedChatApiPath,
+      historyApiPath: resolvedHistoryApiPath,
+      children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+        DashboardLayout,
+        {
+          basePath,
+          onToggleView,
+          onSignOut,
+          navbarRightSlot,
+          proseClasses
+        }
+      ) })
     }
   ) });
 }
 function DashboardLayout({
+  basePath,
   onToggleView,
   onSignOut,
-  onThemeToggle,
-  theme,
-  navbarRightSlot
+  navbarRightSlot,
+  proseClasses
 }) {
-  const { basePath, currentPath, navigate, onEditorStateChange } = useDashboardContext();
-  const [editorState, setEditorState] = (0, import_react20.useState)(null);
+  const { currentPath, navigate, onEditorStateChange } = useDashboardContext();
+  const [editorState, setEditorState] = (0, import_react22.useState)(null);
   const chatContext = useChatContextOptional();
   const editorSlug = currentPath.startsWith("/editor/") ? currentPath.replace("/editor/", "") : currentPath === "/editor" ? void 0 : void 0;
   const isEditorPage = currentPath.startsWith("/editor");
@@ -10296,7 +10833,7 @@ function DashboardLayout({
     onEditorStateChange?.(state);
   };
   const setEssayContext = chatContext?.setEssayContext;
-  (0, import_react20.useEffect)(() => {
+  (0, import_react22.useEffect)(() => {
     if (!setEssayContext) return;
     if (isEditorPage && editorState?.content) {
       setEssayContext({
@@ -10322,8 +10859,8 @@ function DashboardLayout({
       if (currentPath !== "/" && currentPath !== "") navigate("/");
     }
   });
-  const rightSlotWithSave = /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(import_jsx_runtime22.Fragment, { children: [
-    isEditorPage && editorState && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+  const rightSlotWithButtons = /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
+    isEditorPage && editorState && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
       "button",
       {
         type: "button",
@@ -10332,53 +10869,48 @@ function DashboardLayout({
         className: "w-9 h-9 rounded-md border border-border hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
         "aria-label": "Save",
         title: editorState.hasUnsavedChanges ? "Save changes (\u2318S)" : "No unsaved changes",
-        children: editorState.savingAs ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_lucide_react13.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(import_lucide_react13.Save, { className: "h-4 w-4" })
+        children: editorState.savingAs ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react13.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react13.Save, { className: "h-4 w-4" })
       }
     ),
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ChatButton, {}),
     navbarRightSlot
   ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "autoblogger min-h-screen bg-background flex flex-col", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "autoblogger min-h-screen bg-background flex flex-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
       Navbar,
       {
         onSignOut,
-        onThemeToggle,
-        theme,
-        rightSlot: rightSlotWithSave
+        rightSlot: rightSlotWithButtons
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) })
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ChatPanel, { proseClasses })
   ] });
 }
 function DashboardRouter({ path, onEditorStateChange }) {
   const pathWithoutQuery = path.split("?")[0];
-  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(WriterDashboard, {});
+  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(WriterDashboard, {});
   if (pathWithoutQuery.startsWith("/editor")) {
     const slug = pathWithoutQuery.replace("/editor/", "").replace("/editor", "");
-    return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(EditorPage, { slug: slug || void 0, onEditorStateChange }, path);
+    return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(EditorPage, { slug: slug || void 0, onEditorStateChange }, path);
   }
-  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("p", { className: "text-muted-foreground", children: [
+  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("p", { className: "text-muted-foreground", children: [
     "Page not found: ",
     path
   ] }) });
 }
 
-// src/ui/components/ChatPanel.tsx
-var import_react22 = require("react");
-var import_react_dom3 = require("react-dom");
-var import_lucide_react14 = require("lucide-react");
-
 // src/ui/hooks/useAIModels.ts
-var import_react21 = require("react");
+var import_react23 = require("react");
 function useAIModels(options) {
-  const [models, setModels] = (0, import_react21.useState)([]);
-  const [internalSelectedModel, setInternalSelectedModel] = (0, import_react21.useState)("");
-  const [isLoading, setIsLoading] = (0, import_react21.useState)(true);
+  const [models, setModels] = (0, import_react23.useState)([]);
+  const [internalSelectedModel, setInternalSelectedModel] = (0, import_react23.useState)("");
+  const [isLoading, setIsLoading] = (0, import_react23.useState)(true);
   const selectedModel = options?.externalSelectedModel ?? internalSelectedModel;
   const setSelectedModel = options?.externalSetSelectedModel ?? setInternalSelectedModel;
   const apiPath = options?.apiPath ?? "/api/cms/ai/settings";
-  (0, import_react21.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     fetch(apiPath).then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
@@ -10400,468 +10932,64 @@ function useAIModels(options) {
   };
 }
 
-// src/ui/components/ChatPanel.tsx
-var import_jsx_runtime23 = require("react/jsx-runtime");
-var DEFAULT_PROSE_CLASSES2 = "prose prose-gray dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:underline";
-function stripPlanTags(content) {
-  return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
-}
-function ChatPanel({
-  proseClasses = DEFAULT_PROSE_CLASSES2,
-  onNavigate: onNavigateProp,
-  isOnEditor: isOnEditorProp,
-  modelsApiPath
-}) {
-  const {
-    messages,
-    isStreaming,
-    isOpen: open,
-    setIsOpen,
-    sendMessage: contextSendMessage,
-    stopStreaming,
-    essayContext,
-    mode,
-    setMode,
-    undoEdit,
-    webSearchEnabled,
-    setWebSearchEnabled,
-    thinkingEnabled,
-    setThinkingEnabled,
-    selectedModel,
-    setSelectedModel,
-    expandPlan
-  } = useChatContext();
-  const dashboardContext = (0, import_react22.useContext)(DashboardContext);
-  const onNavigate = onNavigateProp ?? dashboardContext?.navigate;
-  const isOnEditor = isOnEditorProp ?? !!essayContext;
-  const [input, setInput] = (0, import_react22.useState)("");
-  const [isAnimating, setIsAnimating] = (0, import_react22.useState)(false);
-  const [isVisible, setIsVisible] = (0, import_react22.useState)(false);
-  const [mounted, setMounted] = (0, import_react22.useState)(false);
-  const [copiedIndex, setCopiedIndex] = (0, import_react22.useState)(null);
-  const [modeMenuOpen, setModeMenuOpen] = (0, import_react22.useState)(false);
-  const modeMenuRef = (0, import_react22.useRef)(null);
-  const messagesEndRef = (0, import_react22.useRef)(null);
-  const messagesContainerRef = (0, import_react22.useRef)(null);
-  const textareaRef = (0, import_react22.useRef)(null);
-  const prevMessageCountRef = (0, import_react22.useRef)(0);
-  const savedScrollPositionRef = (0, import_react22.useRef)(null);
-  const lastUserMessageRef = (0, import_react22.useRef)(null);
-  const { models, currentModel } = useAIModels({
-    externalSelectedModel: selectedModel,
-    externalSetSelectedModel: setSelectedModel,
-    apiPath: modelsApiPath
-  });
-  const onClose = (0, import_react22.useCallback)(() => setIsOpen(false), [setIsOpen]);
-  const copyToClipboard = (0, import_react22.useCallback)(async (text, index) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2e3);
-  }, []);
-  const handleDraftEssay = (0, import_react22.useCallback)(() => {
-    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
-    if (!lastAssistantMessage?.content) return;
-    if (isOnEditor) {
-      expandPlan();
-      setMode("agent");
-    } else if (onNavigate) {
-      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
-      setIsOpen(false);
-      onNavigate("/editor?fromPlan=1");
-    } else {
-      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
-      setIsOpen(false);
-      window.location.href = "/writer/editor?fromPlan=1";
-    }
-  }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate]);
-  (0, import_react22.useEffect)(() => {
-    function handleClick(e) {
-      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
-        setModeMenuOpen(false);
+// src/ui/shortcuts.ts
+var SHORTCUTS = {
+  THEME_TOGGLE: { key: ".", metaKey: true, allowInInput: true },
+  TOGGLE_VIEW: { key: "/", metaKey: true, allowInInput: true },
+  // essay↔editor, home↔writer
+  SETTINGS: { key: ";", metaKey: true, allowInInput: true },
+  // toggle to/from /settings
+  CHAT_TOGGLE: { key: "k", metaKey: true, allowInInput: true },
+  // open/close chat panel
+  NEW_ARTICLE: { key: "n" },
+  PREV: { key: "ArrowLeft" },
+  NEXT: { key: "ArrowRight" },
+  ESCAPE_BACK: { key: "Escape", allowInInput: true },
+  // editor→writer
+  TOGGLE_CHAT_MODE: { key: "a", metaKey: true, shiftKey: true, allowInInput: true }
+  // Ask↔Agent mode
+};
+
+// src/ui/components/GlobalShortcuts.tsx
+function GlobalShortcuts({ writerPath = "/writer" } = {}) {
+  useKeyboard([
+    {
+      key: "/",
+      metaKey: true,
+      allowInInput: true,
+      action: () => {
+        window.location.href = writerPath;
       }
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-  (0, import_react22.useEffect)(() => {
-    setMounted(true);
-  }, []);
-  (0, import_react22.useEffect)(() => {
-    if (open) {
-      setIsVisible(true);
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.width = "100%";
-      document.body.style.top = `-${window.scrollY}px`;
-    } else {
-      setIsAnimating(false);
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.body.style.top = "";
-      window.scrollTo(0, parseInt(scrollY || "0") * -1);
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
-  (0, import_react22.useEffect)(() => {
-    if (isVisible && open && !isAnimating) {
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    }
-  }, [isVisible, open, isAnimating]);
-  (0, import_react22.useEffect)(() => {
-    if (!open && messagesContainerRef.current) {
-      savedScrollPositionRef.current = messagesContainerRef.current.scrollTop;
-    }
-  }, [open]);
-  (0, import_react22.useEffect)(() => {
-    if (!open || !isVisible) return;
-    const container = messagesContainerRef.current;
-    if (!container) return;
-    const prevCount = prevMessageCountRef.current;
-    const currentCount = messages.length;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (currentCount > prevCount) {
-          const behavior = prevCount === 0 ? "instant" : "smooth";
-          messagesEndRef.current?.scrollIntoView({ behavior });
-        } else if (savedScrollPositionRef.current !== null) {
-          container.scrollTop = savedScrollPositionRef.current;
-        }
-        prevMessageCountRef.current = currentCount;
-      });
-    });
-  }, [messages.length, open, isVisible]);
-  (0, import_react22.useEffect)(() => {
-    if (!isStreaming) return;
-    const container = messagesContainerRef.current;
-    const userMessage = lastUserMessageRef.current;
-    if (!container || !userMessage) return;
-    const containerRect = container.getBoundingClientRect();
-    const messageRect = userMessage.getBoundingClientRect();
-    const distanceFromTop = messageRect.top - containerRect.top;
-    if (distanceFromTop > 10) {
-      container.scrollTop += Math.min(distanceFromTop * 0.3, 30);
-    }
-  }, [messages, isStreaming]);
-  (0, import_react22.useEffect)(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
-    }
-  }, [input]);
-  const sendMessage = (0, import_react22.useCallback)(async () => {
-    if (!input.trim() || isStreaming) return;
-    const content = input.trim();
-    setInput("");
-    await contextSendMessage(content);
-  }, [input, isStreaming, contextSendMessage]);
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-    if (e.key === "Escape") {
-      e.stopPropagation();
-      onClose();
-    }
-  };
-  (0, import_react22.useEffect)(() => {
-    const handleGlobalKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
-        e.preventDefault();
-        if (essayContext) {
-          if (!open) {
-            setIsOpen(true);
-          }
-          setMode(mode === "agent" ? "ask" : "agent");
-        } else {
-          setIsOpen(!open);
-          setMode("ask");
-        }
-      }
-    };
-    document.addEventListener("keydown", handleGlobalKeyDown);
-    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [open, setIsOpen, setMode, essayContext, mode]);
-  if (!isVisible || !mounted) return null;
-  return (0, import_react_dom3.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-        "div",
-        {
-          className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
-          onClick: onClose
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-        "div",
-        {
-          role: "dialog",
-          "aria-modal": "true",
-          "aria-label": "Chat",
-          className: `autoblogger fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("h2", { className: "font-medium", children: "Chat" }),
-                essayContext && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[140px]", children: essayContext.title || "Untitled" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                "button",
-                {
-                  onClick: onClose,
-                  className: "w-8 h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
-                  "aria-label": "Close chat",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.X, { className: "w-4 h-4" })
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto", children: messages.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "px-4 py-4 space-y-4", children: [
-              messages.map((message, index) => {
-                const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
-                return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                  "div",
-                  {
-                    ref: isLastUserMessage ? lastUserMessageRef : void 0,
-                    className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
-                    children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-                      "div",
-                      {
-                        className: `max-w-[85%] rounded-2xl px-3 py-2 text-sm relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
-                        children: [
-                          message.role === "assistant" ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                            "div",
-                            {
-                              className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
-                              dangerouslySetInnerHTML: { __html: markdownToHtml(stripPlanTags(message.content)) }
-                            }
-                          ) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
-                          isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
-                          message.appliedEdits && message.previousState && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2 mt-1.5", children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-1 text-xs text-green-600 dark:text-green-400", children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Pencil, { className: "w-3 h-3" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "Edit applied" })
-                            ] }),
-                            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-                              "button",
-                              {
-                                onClick: () => undoEdit(index),
-                                className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors",
-                                "aria-label": "Undo edit",
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Undo2, { className: "w-3 h-3" }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "Undo" })
-                                ]
-                              }
-                            )
-                          ] }),
-                          message.role === "assistant" && !isStreaming && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                              "button",
-                              {
-                                onClick: () => copyToClipboard(message.content, index),
-                                className: "text-muted-foreground hover:text-foreground p-1 rounded",
-                                "aria-label": "Copy message",
-                                children: copiedIndex === index ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Check, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Copy, { className: "w-3.5 h-3.5" })
-                              }
-                            ),
-                            message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                              "button",
-                              {
-                                onClick: handleDraftEssay,
-                                className: "text-xs text-muted-foreground hover:text-foreground px-1 rounded",
-                                children: "Draft Essay"
-                              }
-                            )
-                          ] })
-                        ]
-                      }
-                    )
-                  },
-                  index
-                );
-              }),
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { ref: messagesEndRef })
-            ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-              "form",
-              {
-                onSubmit: (e) => {
-                  e.preventDefault();
-                  sendMessage();
-                },
-                className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mb-2 flex items-center gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { ref: modeMenuRef, className: "relative", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-                        "button",
-                        {
-                          type: "button",
-                          onClick: () => setModeMenuOpen(!modeMenuOpen),
-                          title: "Switch mode (\u2318\u21E7A)",
-                          className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${mode === "ask" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : mode === "agent" ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"}`,
-                          children: [
-                            mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.MessageSquare, { className: "w-3 h-3" }),
-                            mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Pencil, { className: "w-3 h-3" }),
-                            mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.List, { className: "w-3 h-3" }),
-                            mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
-                            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.ChevronDown, { className: "w-2.5 h-2.5 opacity-60" })
-                          ]
-                        }
-                      ),
-                      modeMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => {
-                              setMode("agent");
-                              setModeMenuOpen(false);
-                              textareaRef.current?.focus();
-                            },
-                            disabled: !essayContext,
-                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Pencil, { className: "w-4 h-4" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "flex-1", children: "Agent" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
-                              mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Check, { className: "w-4 h-4" })
-                            ]
-                          }
-                        ),
-                        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => {
-                              setMode("plan");
-                              setModeMenuOpen(false);
-                              textareaRef.current?.focus();
-                            },
-                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.List, { className: "w-4 h-4" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "flex-1", children: "Plan" }),
-                              mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Check, { className: "w-4 h-4" })
-                            ]
-                          }
-                        ),
-                        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => {
-                              setMode("ask");
-                              setModeMenuOpen(false);
-                              textareaRef.current?.focus();
-                            },
-                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.MessageSquare, { className: "w-4 h-4" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "flex-1", children: "Ask" }),
-                              mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Check, { className: "w-4 h-4" })
-                            ]
-                          }
-                        )
-                      ] })
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                      ControlButton,
-                      {
-                        onClick: () => {
-                          setWebSearchEnabled(!webSearchEnabled);
-                          textareaRef.current?.focus();
-                        },
-                        active: webSearchEnabled,
-                        title: webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)",
-                        tabIndex: -1,
-                        children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Globe, { className: "w-4 h-4" })
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                      ControlButton,
-                      {
-                        onClick: () => {
-                          setThinkingEnabled(!thinkingEnabled);
-                          textareaRef.current?.focus();
-                        },
-                        active: thinkingEnabled,
-                        title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
-                        tabIndex: -1,
-                        children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Brain, { className: "w-4 h-4" })
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                      ModelSelector,
-                      {
-                        models,
-                        selectedModel,
-                        onModelChange: (id) => {
-                          setSelectedModel(id);
-                          textareaRef.current?.focus();
-                        },
-                        currentModel
-                      }
-                    )
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-end gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                      "textarea",
-                      {
-                        ref: textareaRef,
-                        value: input,
-                        onChange: (e) => setInput(e.target.value),
-                        onKeyDown: handleKeyDown,
-                        placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
-                        className: "flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none",
-                        rows: 1,
-                        autoFocus: true
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-                      "button",
-                      {
-                        type: isStreaming ? "button" : "submit",
-                        onClick: isStreaming ? stopStreaming : void 0,
-                        disabled: !isStreaming && !input.trim(),
-                        className: "rounded-full w-10 h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
-                        children: isStreaming ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.Square, { className: "h-4 w-4 fill-current" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_lucide_react14.ArrowUp, { className: "h-5 w-5" })
-                      }
-                    )
-                  ] })
-                ]
-              }
-            )
-          ]
-        }
-      )
-    ] }),
-    document.body
-  );
+  ]);
+  return null;
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AutobloggerDashboard,
+  ChatButton,
   ChatContext,
+  ChatIcon,
   ChatPanel,
   ChatProvider,
+  ChevronLeftIcon,
   CommentThread,
   CommentsPanel,
   ControlButton,
+  GlobalShortcuts,
   ModelSelector,
+  MoonIcon,
   Navbar,
+  SHORTCUTS,
+  SunIcon,
+  ThemeProvider,
+  ThemeToggle,
   useAIModels,
   useChatContext,
   useChatContextOptional,
   useComments,
-  useDashboardContext
+  useDashboardContext,
+  useDashboardKeyboard,
+  useKeyboard
 });
 //# sourceMappingURL=ui.js.map

@@ -2,14 +2,59 @@ import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
 import { getModel } from './models'
 
+/** Message format for chat conversations */
+export interface ChatMessage {
+  role: 'user' | 'assistant' | 'system'
+  content: string
+}
+
 interface StreamOptions {
   model: string
-  messages: Array<{ role: 'user' | 'assistant' | 'system'; content: string }>
+  messages: ChatMessage[]
   anthropicKey?: string
   openaiKey?: string
   maxTokens?: number
   useThinking?: boolean
   useWebSearch?: boolean
+}
+
+interface GenerateResult {
+  text: string
+  inputTokens?: number
+  outputTokens?: number
+}
+
+/**
+ * Get API key for a provider, checking DB first then falling back to env var.
+ * Accepts a prisma client to avoid importing it directly.
+ */
+export async function getApiKey(
+  provider: 'anthropic' | 'openai',
+  prisma?: { aISettings?: { findUnique: (args: any) => Promise<any> } }
+): Promise<string | null> {
+  // Try AISettings DB first if prisma is provided
+  if (prisma?.aISettings) {
+    try {
+      const settings = await prisma.aISettings.findUnique({
+        where: { id: 'default' },
+      })
+      
+      if (provider === 'anthropic' && settings?.anthropicKey) {
+        return settings.anthropicKey
+      }
+      if (provider === 'openai' && settings?.openaiKey) {
+        return settings.openaiKey
+      }
+    } catch {
+      // DB lookup failed, fall back to env vars
+    }
+  }
+  
+  // Fall back to env vars
+  if (provider === 'anthropic') {
+    return process.env.ANTHROPIC_API_KEY || null
+  }
+  return process.env.OPENAI_API_KEY || null
 }
 
 /**
@@ -19,12 +64,10 @@ interface StreamOptions {
 async function fetchSearchResults(query: string, openaiKey?: string): Promise<string | null> {
   try {
     console.log('[Web Search] Fetching search results for:', query.slice(0, 100))
-    // Only pass apiKey if explicitly provided, otherwise SDK reads from OPENAI_API_KEY env var
     const openai = new OpenAI({
       ...(openaiKey && { apiKey: openaiKey }),
     })
     
-    // Use GPT-5 Mini with web search via Responses API
     const response = await (openai as any).responses.create({
       model: 'gpt-5-mini',
       input: `You are a research assistant. Provide a concise summary of the most relevant and recent information from the web about the following query. Include key facts, dates, and sources when available. Keep your response under 500 words.\n\nQuery: ${query}`,
@@ -43,9 +86,120 @@ async function fetchSearchResults(query: string, openaiKey?: string): Promise<st
 /**
  * Extract the most recent user message to use as search query.
  */
-function extractSearchQuery(messages: Array<{ role: string; content: string }>): string {
+function extractSearchQuery(messages: ChatMessage[]): string {
   const userMessages = messages.filter(m => m.role === 'user')
   return userMessages[userMessages.length - 1]?.content || ''
+}
+
+/**
+ * Generate text using the specified model (non-streaming).
+ * Used for search mode and other non-streaming requests.
+ */
+export async function generate(
+  modelId: string,
+  systemPrompt: string,
+  userPrompt: string,
+  options: {
+    anthropicKey?: string
+    openaiKey?: string
+    maxTokens?: number
+    useWebSearch?: boolean
+  } = {}
+): Promise<GenerateResult> {
+  const model = getModel(modelId)
+  if (!model) {
+    throw new Error(`Unknown model: ${modelId}`)
+  }
+
+  if (model.provider === 'anthropic') {
+    return generateWithAnthropic(model.modelId, systemPrompt, userPrompt, options)
+  }
+  return generateWithOpenAI(model.modelId, systemPrompt, userPrompt, options)
+}
+
+async function generateWithAnthropic(
+  modelId: string,
+  systemPrompt: string,
+  userPrompt: string,
+  options: { anthropicKey?: string; maxTokens?: number }
+): Promise<GenerateResult> {
+  const anthropic = new Anthropic({
+    ...(options.anthropicKey && { apiKey: options.anthropicKey }),
+  })
+
+  const response = await anthropic.messages.create({
+    model: modelId,
+    max_tokens: options.maxTokens || 4096,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+  })
+
+  const textContent = response.content.find(c => c.type === 'text')
+  if (!textContent || textContent.type !== 'text') {
+    throw new Error('No text content in response')
+  }
+
+  return {
+    text: textContent.text,
+    inputTokens: response.usage?.input_tokens,
+    outputTokens: response.usage?.output_tokens,
+  }
+}
+
+async function generateWithOpenAI(
+  modelId: string,
+  systemPrompt: string,
+  userPrompt: string,
+  options: { openaiKey?: string; maxTokens?: number; useWebSearch?: boolean }
+): Promise<GenerateResult> {
+  const openai = new OpenAI({
+    ...(options.openaiKey && { apiKey: options.openaiKey }),
+  })
+
+  // Use Responses API for web search
+  if (options.useWebSearch) {
+    const response = await (openai as any).responses.create({
+      model: modelId,
+      instructions: systemPrompt,
+      input: userPrompt,
+      max_output_tokens: options.maxTokens || 4096,
+      tools: [{ type: 'web_search' }],
+    })
+
+    const textOutput = response.output?.find((item: { type: string }) => item.type === 'message')
+    const content = textOutput?.content?.find((c: { type: string }) => c.type === 'output_text')?.text
+
+    if (!content) {
+      throw new Error('No content in response')
+    }
+
+    return {
+      text: content,
+      inputTokens: response.usage?.input_tokens,
+      outputTokens: response.usage?.output_tokens,
+    }
+  }
+
+  // Standard chat completions
+  const response = await openai.chat.completions.create({
+    model: modelId,
+    max_completion_tokens: options.maxTokens || 4096,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+  })
+
+  const content = response.choices[0]?.message?.content
+  if (!content) {
+    throw new Error('No content in response')
+  }
+
+  return {
+    text: content,
+    inputTokens: response.usage?.prompt_tokens,
+    outputTokens: response.usage?.completion_tokens,
+  }
 }
 
 export async function createStream(options: StreamOptions): Promise<ReadableStream> {
@@ -59,7 +213,6 @@ export async function createStream(options: StreamOptions): Promise<ReadableStre
   if (options.useWebSearch && modelConfig.provider === 'anthropic') {
     const query = extractSearchQuery(options.messages)
     if (query) {
-      // SDK will read from OPENAI_API_KEY env var if not provided in config
       const searchResults = await fetchSearchResults(query, options.openaiKey)
       if (searchResults) {
         searchContext = `\n\n<web_search_results>\n${searchResults}\n</web_search_results>\n\nUse the search results above to inform your response with current, accurate information.`
@@ -68,27 +221,22 @@ export async function createStream(options: StreamOptions): Promise<ReadableStre
   }
 
   if (modelConfig.provider === 'anthropic') {
-    // Allow SDK to read from ANTHROPIC_API_KEY env var if not provided in config
     return createAnthropicStream(options, modelConfig.modelId, searchContext)
   } else {
-    // Allow SDK to read from OPENAI_API_KEY env var if not provided in config
     return createOpenAIStream(options, modelConfig.modelId, options.useWebSearch)
   }
 }
 
 async function createAnthropicStream(options: StreamOptions, modelId: string, searchContext: string = ''): Promise<ReadableStream> {
-  // Only pass apiKey if explicitly provided, otherwise SDK reads from ANTHROPIC_API_KEY env var
   const anthropic = new Anthropic({
     ...(options.anthropicKey && { apiKey: options.anthropicKey }),
   })
 
-  // Extract system message and append search context if available
   const systemMessage = (options.messages.find(m => m.role === 'system')?.content || '') + searchContext
   const chatMessages = options.messages
     .filter(m => m.role !== 'system')
     .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }))
 
-  // Build request params - extended thinking is supported on Claude models
   const requestParams: any = {
     model: modelId,
     max_tokens: options.maxTokens || 4096,
@@ -96,13 +244,11 @@ async function createAnthropicStream(options: StreamOptions, modelId: string, se
     messages: chatMessages,
   }
 
-  // Enable extended thinking for supported models when useThinking is enabled
   if (options.useThinking && (modelId.includes('claude-sonnet') || modelId.includes('claude-opus'))) {
     requestParams.thinking = {
       type: 'enabled',
       budget_tokens: 10000,
     }
-    // Extended thinking requires higher max_tokens
     requestParams.max_tokens = Math.max(requestParams.max_tokens, 16000)
   }
 
@@ -114,12 +260,10 @@ async function createAnthropicStream(options: StreamOptions, modelId: string, se
         try {
           for await (const event of stream) {
             if (event.type === 'content_block_delta') {
-              // Handle both text and thinking deltas
               const delta = event.delta as { type: string; text?: string; thinking?: string }
               if (delta.type === 'text_delta' && delta.text) {
                 controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text: delta.text })}\n\n`))
               } else if (delta.type === 'thinking_delta' && delta.thinking) {
-                // Optionally stream thinking content with a marker
                 controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ thinking: delta.thinking })}\n\n`))
               }
             }
@@ -135,7 +279,6 @@ async function createAnthropicStream(options: StreamOptions, modelId: string, se
       },
     })
   } catch (error) {
-    // Handle errors that occur before streaming starts (e.g., auth errors, invalid model)
     const errorMessage = error instanceof Error ? error.message : 'Anthropic API error'
     console.error('[Anthropic API Error]', error)
     throw new Error(errorMessage)
@@ -143,18 +286,14 @@ async function createAnthropicStream(options: StreamOptions, modelId: string, se
 }
 
 async function createOpenAIStream(options: StreamOptions, modelId: string, useWebSearch: boolean = false): Promise<ReadableStream> {
-  // Only pass apiKey if explicitly provided, otherwise SDK reads from OPENAI_API_KEY env var
   const openai = new OpenAI({
     ...(options.openaiKey && { apiKey: options.openaiKey }),
   })
 
-  // GPT-5+ models use the Responses API for web search
   if (useWebSearch) {
     return createOpenAIResponsesStream(openai, options, modelId)
   }
 
-  // Standard chat completions for non-web-search requests
-  // GPT-5+ models use max_completion_tokens instead of max_tokens
   const requestParams: any = {
     model: modelId,
     messages: options.messages,
@@ -185,23 +324,16 @@ async function createOpenAIStream(options: StreamOptions, modelId: string, useWe
       },
     })
   } catch (error) {
-    // Handle errors that occur before streaming starts (e.g., auth errors, invalid model)
     const errorMessage = error instanceof Error ? error.message : 'OpenAI API error'
     console.error('[OpenAI API Error]', error)
     throw new Error(errorMessage)
   }
 }
 
-/**
- * Create a stream using OpenAI's Responses API with web search tool.
- * GPT-5+ models require this API for web search functionality.
- */
 async function createOpenAIResponsesStream(openai: OpenAI, options: StreamOptions, modelId: string): Promise<ReadableStream> {
-  // Convert chat messages to a single input prompt for the Responses API
   const systemMessage = options.messages.find(m => m.role === 'system')?.content || ''
   const conversationMessages = options.messages.filter(m => m.role !== 'system')
   
-  // Build input from conversation - Responses API takes a simpler input format
   const lastUserMessage = conversationMessages[conversationMessages.length - 1]?.content || ''
   const conversationContext = conversationMessages.slice(0, -1)
     .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
@@ -212,7 +344,6 @@ async function createOpenAIResponsesStream(openai: OpenAI, options: StreamOption
     : `${systemMessage}\n\n${lastUserMessage}`
 
   try {
-    // Use the Responses API with web search tool
     const response = await (openai as any).responses.create({
       model: modelId,
       input: fullInput,
@@ -224,7 +355,6 @@ async function createOpenAIResponsesStream(openai: OpenAI, options: StreamOption
       async start(controller) {
         try {
           for await (const event of response) {
-            // Handle different event types from Responses API streaming
             if (event.type === 'response.output_text.delta') {
               const text = event.delta
               if (text) {

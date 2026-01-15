@@ -3,6 +3,13 @@ import { jsonResponse, parsePath, requireAdmin } from './utils'
 
 type NextRequest = Request & { nextUrl: URL }
 
+/**
+ * Normalize email address (lowercase, trim)
+ */
+function normalizeEmail(email: string): string {
+  return email.toLowerCase().trim()
+}
+
 export async function handleUsersAPI(
   req: NextRequest,
   cms: AutobloggerServer,
@@ -35,7 +42,19 @@ export async function handleUsersAPI(
     if (!body.email) {
       return jsonResponse({ error: 'Email required' }, 400)
     }
-    const user = await cms.users.create(body)
+
+    const email = normalizeEmail(body.email)
+    
+    // Check for duplicate email
+    const existing = await cms.users.findByEmail(email)
+    if (existing) {
+      return jsonResponse({ error: 'User with this email already exists' }, 400)
+    }
+
+    const user = await cms.users.create({
+      ...body,
+      email, // Use normalized email
+    })
     return jsonResponse({ data: user }, 201)
   }
 
