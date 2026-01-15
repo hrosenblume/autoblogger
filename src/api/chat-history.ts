@@ -26,9 +26,19 @@ export async function handleChatHistoryAPI(
 
   const method = req.method
 
+  // Check if ChatMessage model exists
+  const hasChatMessage = !!(prisma as any).chatMessage
+
   try {
     // GET - Fetch recent messages
     if (method === 'GET') {
+      if (!hasChatMessage) {
+        return new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      }
+      
       const messages = await (prisma as any).chatMessage.findMany({
         orderBy: { createdAt: 'desc' },
         take: 50,
@@ -43,6 +53,14 @@ export async function handleChatHistoryAPI(
 
     // POST - Save a new message
     if (method === 'POST') {
+      if (!hasChatMessage) {
+        // Silently succeed - chat still works, just not persisted
+        return new Response(JSON.stringify({ id: 'temp', role: 'user', content: '' }), {
+          status: 201,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      }
+
       const body: ChatHistoryRequest = await req.json()
       
       if (!body.role || !body.content) {
@@ -67,6 +85,13 @@ export async function handleChatHistoryAPI(
 
     // DELETE - Clear all messages
     if (method === 'DELETE') {
+      if (!hasChatMessage) {
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      }
+
       await (prisma as any).chatMessage.deleteMany({})
       
       return new Response(JSON.stringify({ success: true }), {

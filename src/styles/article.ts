@@ -8,8 +8,8 @@ export const ARTICLE_CLASSES = {
   title: 'text-title font-bold',
   subtitle: 'text-h2 text-muted-foreground',
   byline: 'text-sm text-muted-foreground',
-  body: 'text-body prose dark:prose-invert',
-  prose: 'prose dark:prose-invert max-w-none',
+  body: 'text-body prose',
+  prose: 'prose',
 } as const
 
 export type ArticleClasses = typeof ARTICLE_CLASSES

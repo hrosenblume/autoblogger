@@ -147,6 +147,12 @@ export function ChatProvider({
   const expandPlanHandlerRef = useRef<ExpandPlanHandler | null>(null)
   const historyLoadedRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
+  const essayContextRef = useRef<EssayContext | null>(null)
+  
+  // Keep ref in sync with state for use in async callbacks
+  useEffect(() => {
+    essayContextRef.current = essayContext
+  }, [essayContext])
 
   // Resolve chat API path - use CMS API if not explicitly set
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`
@@ -293,13 +299,13 @@ export function ChatProvider({
       }
       
       // Process agent mode edits
-      if (mode === 'agent' && editHandlerRef.current && essayContext) {
+      if (mode === 'agent' && editHandlerRef.current && essayContextRef.current) {
         const { edits, cleanContent } = parseEditBlocks(assistantContent)
         
         const previousState: EssaySnapshot = {
-          title: essayContext.title,
-          subtitle: essayContext.subtitle || '',
-          markdown: essayContext.markdown,
+          title: essayContextRef.current!.title,
+          subtitle: essayContextRef.current!.subtitle || '',
+          markdown: essayContextRef.current!.markdown,
         }
         
         for (const edit of edits) {

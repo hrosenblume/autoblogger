@@ -18,7 +18,7 @@ export const DEFAULT_STYLES: Required<StylesConfig> = {
   title: 'text-ab-title font-bold',
   subtitle: 'text-ab-h2 text-muted-foreground',
   byline: 'text-sm text-muted-foreground',
-  prose: 'prose dark:prose-invert max-w-none',
+  prose: 'prose',
 }
 
 // Custom field component props (UI-only)

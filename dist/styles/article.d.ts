@@ -7,8 +7,8 @@ declare const ARTICLE_CLASSES: {
     readonly title: "text-title font-bold";
     readonly subtitle: "text-h2 text-muted-foreground";
     readonly byline: "text-sm text-muted-foreground";
-    readonly body: "text-body prose dark:prose-invert";
-    readonly prose: "prose dark:prose-invert max-w-none";
+    readonly body: "text-body prose";
+    readonly prose: "prose";
 };
 type ArticleClasses = typeof ARTICLE_CLASSES;
 

@@ -111,6 +111,9 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   // Extract prefix from pattern (everything before {slug})
   const urlPrefix = postUrlPattern.split('{slug}')[0]
   const chatContext = useChatContextOptional()
+  // Extract stable references to avoid infinite loops in useEffects
+  const chatAddMessage = chatContext?.addMessage
+  const chatSelectedModel = chatContext?.selectedModel
   // Use prop callback (passed from DashboardLayout for internal save button)
   const onEditorStateChange = onEditorStateChangeProp
   const [post, setPost] = useState<Post>({
@@ -181,7 +184,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
         setLastSaved(new Date())
         setHasUnsavedChanges(false)
         if (!post.id && data.data.slug) {
-          navigate(`/editor/${data.data.slug}`)
+          navigate(`/editor/${data.data.slug}`, { skipConfirmation: true })
         }
       }
     } catch (err) {
@@ -219,7 +222,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       })
 
       if (res.ok) {
-        navigate('/')
+        navigate('/', { skipConfirmation: true })
       }
     } finally {
       setSaving(false)
@@ -289,6 +292,10 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
           if (found) {
             setPost(found)
             savedContent.current = JSON.stringify({ title: found.title, subtitle: found.subtitle, markdown: found.markdown })
+            // Initialize lastSaved from post's updatedAt so it shows "Saved X ago" not "Not saved yet"
+            if (found.updatedAt) {
+              setLastSaved(new Date(found.updatedAt))
+            }
           }
           setLoading(false)
         })
@@ -459,7 +466,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
           mode: 'expand_plan',
           plan,
           wordCount,
-          model: chatContext?.selectedModel,
+          model: chatSelectedModel,
         }),
         signal: abortController.signal,
       })
@@ -561,14 +568,14 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       }))
       
       // Add to chat history
-      if (chatContext?.addMessage) {
+      if (chatAddMessage) {
         chatContext.addMessage('assistant', '✓ Essay drafted from plan. You can now edit it or ask me questions about it.')
       }
     } catch (err) {
       // Don't log abort errors - they're expected when user cancels
       if (err instanceof Error && err.name === 'AbortError') {
         // Generation was cancelled, keep whatever was generated
-        if (chatContext?.addMessage) {
+        if (chatAddMessage) {
           chatContext.addMessage('assistant', '⏹ Generation stopped. You can continue editing what was generated.')
         }
       } else {
@@ -578,7 +585,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       setGenerating(false)
       abortControllerRef.current = null
     }
-  }, [generating, post.title, post.subtitle, post.markdown, apiBasePath, chatContext])
+  }, [generating, post.title, post.subtitle, post.markdown, apiBasePath, chatAddMessage, chatSelectedModel])
 
   // Register expand plan handler for chat context
   useEffect(() => {
@@ -803,7 +810,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
           }))
           
           // Add generation status to chat history (just a simple confirmation, not the full essay)
-          if (chatContext?.addMessage) {
+          if (chatAddMessage) {
             chatContext.addMessage('user', `Generate essay: ${generationPrompt}`)
             chatContext.addMessage('assistant', '✓ Essay generated successfully. You can now edit it in the editor or ask me questions about it.')
           }
@@ -811,14 +818,14 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
           // Don't log abort errors - they're expected when user cancels
           if (err instanceof Error && err.name === 'AbortError') {
             // Generation was cancelled, keep whatever was generated
-            if (chatContext?.addMessage) {
+            if (chatAddMessage) {
               chatContext.addMessage('user', `Generate essay: ${generationPrompt}`)
               chatContext.addMessage('assistant', '⏹ Generation stopped. You can continue editing what was generated.')
             }
           } else {
             console.error('Generation error:', err)
             // Add error message to chat if generation was interrupted
-            if (chatContext?.addMessage) {
+            if (chatAddMessage) {
               chatContext.addMessage('user', `Generate essay: ${generationPrompt}`)
               chatContext.addMessage('assistant', '⚠ Generation started but was interrupted. You can try again or continue editing what was generated.')
             }
@@ -831,7 +838,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
 
       runGenerate()
     }
-  }, [urlParams, slug, loading, apiBasePath, basePath, chatContext])
+  }, [urlParams, slug, loading, apiBasePath, basePath, chatAddMessage])
 
   // Fetch revisions
   const fetchRevisions = useCallback(async () => {
@@ -1052,7 +1059,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
 
           {/* Footer Metadata */}
           {!previewingRevision && (
-            <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 space-y-4">
+            <div className="mt-12 pt-8 border-t border-border space-y-4">
               {/* URL */}
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
@@ -1175,7 +1182,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               </div>
 
               {/* Word count */}
-              <div className="text-sm text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-800">
+              <div className="text-sm text-gray-500 pt-2 border-t border-border">
                 {words.toLocaleString()} words · ~{Math.ceil(words / 200)} min read
               </div>
             </div>
@@ -1184,7 +1191,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       </main>
 
       {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-800 px-4 py-3 bg-white dark:bg-black touch-none">
+      <footer className="fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none">
         <div className="flex items-center justify-end text-sm text-gray-500">
           {generating ? (
             <button className="hover:text-gray-900 dark:hover:text-white transition-colors">

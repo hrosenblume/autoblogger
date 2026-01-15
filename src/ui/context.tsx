@@ -66,7 +66,7 @@ export interface DashboardContextValue {
   styles: Required<StylesConfig>
   fields: CustomFieldConfig[]
   currentPath: string
-  navigate: (path: string) => void
+  navigate: (path: string, options?: { skipConfirmation?: boolean }) => void
   goBack: () => void
   canGoBack: boolean
   config: DashboardConfig
@@ -95,7 +95,7 @@ const DEFAULT_STYLES: Required<StylesConfig> = {
   title: 'text-2xl font-bold',
   subtitle: 'text-lg text-muted-foreground',
   byline: 'text-sm text-muted-foreground',
-  prose: 'prose dark:prose-invert max-w-none',
+  prose: 'prose',
 }
 
 function extractPath(pathname: string, basePath: string): string {
@@ -157,9 +157,9 @@ export function DashboardProvider({
     }
   }, [basePath, currentPath])
 
-  const navigate = useCallback((path: string) => {
-    // Check for unsaved changes before navigating
-    if (editorStateRef.current?.hasUnsavedChanges) {
+  const navigate = useCallback((path: string, options?: { skipConfirmation?: boolean }) => {
+    // Check for unsaved changes before navigating (unless explicitly skipped, e.g. after save)
+    if (!options?.skipConfirmation && editorStateRef.current?.hasUnsavedChanges) {
       if (!editorStateRef.current.confirmLeave()) {
         return // User cancelled navigation
       }

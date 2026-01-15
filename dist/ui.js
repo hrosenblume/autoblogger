@@ -78,7 +78,7 @@ var DEFAULT_STYLES = {
   title: "text-2xl font-bold",
   subtitle: "text-lg text-muted-foreground",
   byline: "text-sm text-muted-foreground",
-  prose: "prose dark:prose-invert max-w-none"
+  prose: "prose"
 };
 function extractPath(pathname, basePath) {
   const normalized = pathname.replace(/\/$/, "");
@@ -120,8 +120,8 @@ function DashboardProvider({
       return () => window.removeEventListener("popstate", handlePopState);
     }
   }, [basePath, currentPath]);
-  const navigate = (0, import_react.useCallback)((path) => {
-    if (editorStateRef.current?.hasUnsavedChanges) {
+  const navigate = (0, import_react.useCallback)((path, options) => {
+    if (!options?.skipConfirmation && editorStateRef.current?.hasUnsavedChanges) {
       if (!editorStateRef.current.confirmLeave()) {
         return;
       }
@@ -774,10 +774,10 @@ function ToolbarButton({ onClick, active, disabled, children, title }) {
       className: cn(
         "px-2.5 py-1.5 text-sm font-medium rounded transition-colors",
         "flex items-center justify-center",
-        "active:bg-gray-100 md:hover:bg-gray-100 dark:active:bg-gray-800 dark:md:hover:bg-gray-800",
+        "active:bg-accent md:hover:bg-accent",
         "disabled:opacity-50 disabled:cursor-not-allowed",
-        active && "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white",
-        !active && "text-gray-600 dark:text-gray-400"
+        active && "bg-accent text-accent-foreground",
+        !active && "text-muted-foreground"
       ),
       children
     }
@@ -1534,7 +1534,7 @@ function EditorToolbar({
   apiBasePath = "/api/cms"
 }) {
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
       /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(FormatButtons, { loading: true }),
       /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, {}),
       /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(BlockButtons, { loading: true }),
@@ -1547,7 +1547,7 @@ function EditorToolbar({
       /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(SkeletonButton, {})
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
     /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
       FormatButtons,
       {
@@ -5834,7 +5834,7 @@ function scrollToComment(editor, commentId) {
 
 // src/ui/components/TiptapEditor.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
-var DEFAULT_PROSE_CLASSES = "prose prose-gray dark:prose-invert max-w-none";
+var DEFAULT_PROSE_CLASSES = "prose";
 function TiptapEditor({
   content,
   onChange,
@@ -6891,6 +6891,10 @@ function ChatProvider({
   const expandPlanHandlerRef = (0, import_react16.useRef)(null);
   const historyLoadedRef = (0, import_react16.useRef)(false);
   const abortControllerRef = (0, import_react16.useRef)(null);
+  const essayContextRef = (0, import_react16.useRef)(null);
+  (0, import_react16.useEffect)(() => {
+    essayContextRef.current = essayContext;
+  }, [essayContext]);
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
   const registerEditHandler = (0, import_react16.useCallback)((handler) => {
     editHandlerRef.current = handler;
@@ -7003,12 +7007,12 @@ function ChatProvider({
           return updated;
         });
       }
-      if (mode === "agent" && editHandlerRef.current && essayContext) {
+      if (mode === "agent" && editHandlerRef.current && essayContextRef.current) {
         const { edits, cleanContent } = parseEditBlocks(assistantContent);
         const previousState = {
-          title: essayContext.title,
-          subtitle: essayContext.subtitle || "",
-          markdown: essayContext.markdown
+          title: essayContextRef.current.title,
+          subtitle: essayContextRef.current.subtitle || "",
+          markdown: essayContextRef.current.markdown
         };
         for (const edit of edits) {
           const success = editHandlerRef.current(edit);
@@ -7208,6 +7212,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   const postUrlPattern = sharedData?.settings?.postUrlPattern ?? "/e/{slug}";
   const urlPrefix = postUrlPattern.split("{slug}")[0];
   const chatContext = useChatContextOptional();
+  const chatAddMessage = chatContext?.addMessage;
+  const chatSelectedModel = chatContext?.selectedModel;
   const onEditorStateChange = onEditorStateChangeProp;
   const [post, setPost] = (0, import_react17.useState)({
     title: "",
@@ -7265,7 +7271,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         setLastSaved(/* @__PURE__ */ new Date());
         setHasUnsavedChanges(false);
         if (!post.id && data.data.slug) {
-          navigate(`/editor/${data.data.slug}`);
+          navigate(`/editor/${data.data.slug}`, { skipConfirmation: true });
         }
       }
     } catch (err) {
@@ -7301,7 +7307,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         })
       });
       if (res.ok) {
-        navigate("/");
+        navigate("/", { skipConfirmation: true });
       }
     } finally {
       setSaving(false);
@@ -7348,6 +7354,9 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         if (found) {
           setPost(found);
           savedContent.current = JSON.stringify({ title: found.title, subtitle: found.subtitle, markdown: found.markdown });
+          if (found.updatedAt) {
+            setLastSaved(new Date(found.updatedAt));
+          }
         }
         setLoading(false);
       }).catch(() => setLoading(false));
@@ -7498,7 +7507,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           mode: "expand_plan",
           plan,
           wordCount,
-          model: chatContext?.selectedModel
+          model: chatSelectedModel
         }),
         signal: abortController.signal
       });
@@ -7579,12 +7588,12 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         ...prev,
         markdown: finalBody
       }));
-      if (chatContext?.addMessage) {
+      if (chatAddMessage) {
         chatContext.addMessage("assistant", "\u2713 Essay drafted from plan. You can now edit it or ask me questions about it.");
       }
     } catch (err) {
       if (err instanceof Error && err.name === "AbortError") {
-        if (chatContext?.addMessage) {
+        if (chatAddMessage) {
           chatContext.addMessage("assistant", "\u23F9 Generation stopped. You can continue editing what was generated.");
         }
       } else {
@@ -7594,7 +7603,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       setGenerating(false);
       abortControllerRef.current = null;
     }
-  }, [generating, post.title, post.subtitle, post.markdown, apiBasePath, chatContext]);
+  }, [generating, post.title, post.subtitle, post.markdown, apiBasePath, chatAddMessage, chatSelectedModel]);
   (0, import_react17.useEffect)(() => {
     if (!chatContext?.registerExpandPlanHandler) return;
     chatContext.registerExpandPlanHandler(expandPlanToEssay);
@@ -7764,19 +7773,19 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             ...prev,
             markdown: finalBody
           }));
-          if (chatContext?.addMessage) {
+          if (chatAddMessage) {
             chatContext.addMessage("user", `Generate essay: ${generationPrompt}`);
             chatContext.addMessage("assistant", "\u2713 Essay generated successfully. You can now edit it in the editor or ask me questions about it.");
           }
         } catch (err) {
           if (err instanceof Error && err.name === "AbortError") {
-            if (chatContext?.addMessage) {
+            if (chatAddMessage) {
               chatContext.addMessage("user", `Generate essay: ${generationPrompt}`);
               chatContext.addMessage("assistant", "\u23F9 Generation stopped. You can continue editing what was generated.");
             }
           } else {
             console.error("Generation error:", err);
-            if (chatContext?.addMessage) {
+            if (chatAddMessage) {
               chatContext.addMessage("user", `Generate essay: ${generationPrompt}`);
               chatContext.addMessage("assistant", "\u26A0 Generation started but was interrupted. You can try again or continue editing what was generated.");
             }
@@ -7788,7 +7797,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       };
       runGenerate();
     }
-  }, [urlParams, slug, loading, apiBasePath, basePath, chatContext]);
+  }, [urlParams, slug, loading, apiBasePath, basePath, chatAddMessage]);
   const fetchRevisions = (0, import_react17.useCallback)(async () => {
     if (!post.id) return;
     setRevisionsLoading(true);
@@ -7975,7 +7984,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           }
         }
       ) }),
-      !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 space-y-4", children: [
+      !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "mt-12 pt-8 border-t border-border space-y-4", children: [
         /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center gap-2", children: [
           /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-gray-500 w-14", children: "URL" }),
           /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-gray-400", children: urlPrefix }),
@@ -8075,7 +8084,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "text-sm text-gray-500 pt-2 border-t border-gray-200 dark:border-gray-800", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "text-sm text-gray-500 pt-2 border-t border-border", children: [
           words.toLocaleString(),
           " words \xB7 ~",
           Math.ceil(words / 200),
@@ -8083,7 +8092,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-gray-200 dark:border-gray-800 px-4 py-3 bg-white dark:bg-black touch-none", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex items-center justify-end text-sm text-gray-500", children: generating ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "hover:text-gray-900 dark:hover:text-white transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex items-center justify-end text-sm text-gray-500", children: generating ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "hover:text-gray-900 dark:hover:text-white transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
       "button",
       {
         onClick: cancelRevisionPreview,
@@ -10252,7 +10261,7 @@ var import_react20 = require("react");
 var import_react_dom3 = require("react-dom");
 var import_lucide_react12 = require("lucide-react");
 var import_jsx_runtime25 = require("react/jsx-runtime");
-var DEFAULT_PROSE_CLASSES2 = "prose prose-gray dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:underline";
+var DEFAULT_PROSE_CLASSES2 = "prose";
 function stripPlanTags(content) {
   return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
 }
@@ -10491,24 +10500,6 @@ function ChatPanel({
                             }
                           ) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
                           isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
-                          message.appliedEdits && message.previousState && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center gap-2 mt-1.5", children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center gap-1 text-xs text-green-600 dark:text-green-400", children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Pencil, { className: "w-3 h-3" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "Edit applied" })
-                            ] }),
-                            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-                              "button",
-                              {
-                                onClick: () => undoEdit(index),
-                                className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors",
-                                "aria-label": "Undo edit",
-                                children: [
-                                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Undo2, { className: "w-3 h-3" }),
-                                  /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { children: "Undo" })
-                                ]
-                              }
-                            )
-                          ] }),
                           message.role === "assistant" && !isStreaming && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
                             /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
                               "button",
@@ -10517,6 +10508,15 @@ function ChatPanel({
                                 className: "text-muted-foreground hover:text-foreground p-1 rounded",
                                 "aria-label": "Copy message",
                                 children: copiedIndex === index ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Check, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Copy, { className: "w-3.5 h-3.5" })
+                              }
+                            ),
+                            message.appliedEdits && message.previousState && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+                              "button",
+                              {
+                                onClick: () => undoEdit(index),
+                                className: "text-muted-foreground hover:text-foreground p-1 rounded",
+                                "aria-label": "Undo edit",
+                                children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Undo2, { className: "w-3.5 h-3.5" })
                               }
                             ),
                             message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
@@ -10875,7 +10875,7 @@ function DashboardLayout({
     /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ChatButton, {}),
     navbarRightSlot
   ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "autoblogger min-h-screen bg-background flex flex-col", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "autoblogger h-dvh bg-background text-foreground flex flex-col overscroll-none", children: [
     /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
       Navbar,
       {
@@ -10883,7 +10883,7 @@ function DashboardLayout({
         rightSlot: rightSlotWithButtons
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("main", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("main", { className: "flex-1 overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
     /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ChatPanel, { proseClasses })
   ] });
 }

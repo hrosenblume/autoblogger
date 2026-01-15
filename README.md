@@ -628,6 +628,41 @@ Make sure you've:
 2. Run `npx prisma migrate dev`
 3. Run `npx prisma generate`
 
+### Markdown not rendering in chat
+
+Make sure you've imported the autoblogger CSS in your `app/globals.css`:
+
+```css
+@import 'autoblogger/styles/autoblogger.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+The import must come **before** the Tailwind directives. This provides the `.prose` styles needed for markdown rendering.
+
+### Chat history not persisting
+
+Make sure the `ChatMessage` model is in your Prisma schema:
+
+```prisma
+model ChatMessage {
+  id        String   @id @default(uuid())
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
+```
+
+Then run:
+```bash
+npx prisma migrate dev --name add-chat-message
+npx prisma generate
+```
+
 ---
 
 ## License

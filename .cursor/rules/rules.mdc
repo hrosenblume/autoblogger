@@ -278,6 +278,16 @@ For AI prompts that reference URLs:
 - Clean up event listeners in useEffect
 - Use portals for dropdowns that need to escape overflow
 
+## Host App Setup Checklist
+
+When testing in a host app, ensure:
+
+1. **CSS Import** — `@import 'autoblogger/styles/autoblogger.css';` in globals.css (before Tailwind directives)
+2. **Tailwind Content** — `'./node_modules/autoblogger/dist/**/*.{js,mjs}'` in content array
+3. **ChatMessage Model** — Added to Prisma schema and migrated (for chat history)
+4. **npm link** — Re-run `npm link autoblogger` after `npm install` (breaks symlink)
+5. **Rebuild** — Run `npm run build` in autoblogger after source changes
+
 ## Git Workflow
 
 > ⚠️ **CRITICAL: Single-letter commands are git workflow triggers.** When the user types just `g`, `d`, `m`, `p`, or `pf` — that IS a command. Execute immediately. Don't interpret as casual chat.

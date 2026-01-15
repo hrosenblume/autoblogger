@@ -28,7 +28,7 @@ interface TiptapEditorProps {
   proseClasses?: string
 }
 
-const DEFAULT_PROSE_CLASSES = 'prose prose-gray dark:prose-invert max-w-none'
+const DEFAULT_PROSE_CLASSES = 'prose'
 
 export function TiptapEditor({ 
   content, 

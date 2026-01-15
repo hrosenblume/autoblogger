@@ -438,6 +438,36 @@ export default async function WriterPage({ params }) {
 }
 ```
 
+### Host App Requirements
+
+**CSS Import** — Required for prose/markdown styling:
+```css
+/* app/globals.css */
+@import 'autoblogger/styles/autoblogger.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+**Tailwind Content** — Include autoblogger in content config:
+```javascript
+content: [
+  './node_modules/autoblogger/dist/**/*.{js,mjs}',
+]
+```
+
+**ChatMessage Model** — Required for chat history persistence:
+```prisma
+model ChatMessage {
+  id        String   @id @default(uuid())
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
+```
+
 ### Navigation System
 
 Internal SPA navigation via `DashboardContext`:

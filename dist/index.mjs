@@ -490,6 +490,20 @@ Use the search results above to inform your response with current, accurate info
     return createOpenAIStream(options, modelConfig.modelId, options.useWebSearch);
   }
 }
+function safeEnqueue(controller, data) {
+  try {
+    controller.enqueue(data);
+    return true;
+  } catch {
+    return false;
+  }
+}
+function safeClose(controller) {
+  try {
+    controller.close();
+  } catch {
+  }
+}
 async function createAnthropicStream(options, modelId, searchContext = "") {
   const anthropic = new Anthropic({
     ...options.anthropicKey && { apiKey: options.anthropicKey }
@@ -518,25 +532,29 @@ async function createAnthropicStream(options, modelId, searchContext = "") {
             if (event.type === "content_block_delta") {
               const delta = event.delta;
               if (delta.type === "text_delta" && delta.text) {
-                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text: delta.text })}
+                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text: delta.text })}
 
-`));
+`))) {
+                  return;
+                }
               } else if (delta.type === "thinking_delta" && delta.thinking) {
-                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ thinking: delta.thinking })}
+                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ thinking: delta.thinking })}
 
-`));
+`))) {
+                  return;
+                }
               }
             }
           }
-          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-          controller.close();
+          safeEnqueue(controller, new TextEncoder().encode("data: [DONE]\n\n"));
+          safeClose(controller);
         } catch (streamError) {
           const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
           console.error("[Anthropic Stream Error]", streamError);
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
+          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
 
 `));
-          controller.close();
+          safeClose(controller);
         }
       }
     });
@@ -567,20 +585,22 @@ async function createOpenAIStream(options, modelId, useWebSearch = false) {
           for await (const chunk of stream) {
             const text = chunk.choices[0]?.delta?.content;
             if (text) {
-              controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text })}
+              if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text })}
 
-`));
+`))) {
+                return;
+              }
             }
           }
-          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-          controller.close();
+          safeEnqueue(controller, new TextEncoder().encode("data: [DONE]\n\n"));
+          safeClose(controller);
         } catch (streamError) {
           const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
           console.error("[OpenAI Stream Error]", streamError);
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
+          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
 
 `));
-          controller.close();
+          safeClose(controller);
         }
       }
     });
@@ -617,21 +637,23 @@ ${lastUserMessage}`;
             if (event.type === "response.output_text.delta") {
               const text = event.delta;
               if (text) {
-                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text })}
+                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text })}
 
-`));
+`))) {
+                  return;
+                }
               }
             }
           }
-          controller.enqueue(new TextEncoder().encode("data: [DONE]\n\n"));
-          controller.close();
+          safeEnqueue(controller, new TextEncoder().encode("data: [DONE]\n\n"));
+          safeClose(controller);
         } catch (streamError) {
           const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
           console.error("[OpenAI Responses Stream Error]", streamError);
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
+          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
 
 `));
-          controller.close();
+          safeClose(controller);
         }
       }
     });
@@ -2548,8 +2570,15 @@ async function handleChatHistoryAPI(req, prisma, isAuthenticated) {
     });
   }
   const method = req.method;
+  const hasChatMessage = !!prisma.chatMessage;
   try {
     if (method === "GET") {
+      if (!hasChatMessage) {
+        return new Response(JSON.stringify([]), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
       const messages = await prisma.chatMessage.findMany({
         orderBy: { createdAt: "desc" },
         take: 50
@@ -2560,6 +2589,12 @@ async function handleChatHistoryAPI(req, prisma, isAuthenticated) {
       });
     }
     if (method === "POST") {
+      if (!hasChatMessage) {
+        return new Response(JSON.stringify({ id: "temp", role: "user", content: "" }), {
+          status: 201,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
       const body = await req.json();
       if (!body.role || !body.content) {
         return new Response(JSON.stringify({ error: "Missing role or content" }), {
@@ -2579,6 +2614,12 @@ async function handleChatHistoryAPI(req, prisma, isAuthenticated) {
       });
     }
     if (method === "DELETE") {
+      if (!hasChatMessage) {
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" }
+        });
+      }
       await prisma.chatMessage.deleteMany({});
       return new Response(JSON.stringify({ success: true }), {
         status: 200,
@@ -2960,7 +3001,7 @@ var DEFAULT_STYLES = {
   title: "text-ab-title font-bold",
   subtitle: "text-ab-h2 text-muted-foreground",
   byline: "text-sm text-muted-foreground",
-  prose: "prose dark:prose-invert max-w-none"
+  prose: "prose"
 };
 
 // src/server.ts

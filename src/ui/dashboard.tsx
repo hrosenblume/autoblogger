@@ -173,12 +173,12 @@ function DashboardLayout({
   )
 
   return (
-    <div className="autoblogger min-h-screen bg-background flex flex-col">
+    <div className="autoblogger h-dvh bg-background text-foreground flex flex-col overscroll-none">
       <Navbar
         onSignOut={onSignOut}
         rightSlot={rightSlotWithButtons}
       />
-      <main className="flex-1">
+      <main className="flex-1 overflow-auto">
         <DashboardRouter path={currentPath} onEditorStateChange={handleEditorStateChange} />
       </main>
       {/* Chat Panel - built-in */}

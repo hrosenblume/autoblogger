@@ -10,8 +10,8 @@ import { ModelSelector } from './ModelSelector'
 import { markdownToHtml } from '../../lib/markdown'
 import { DashboardContext } from '../context'
 
-/** Default prose classes for chat messages */
-const DEFAULT_PROSE_CLASSES = 'prose prose-gray dark:prose-invert max-w-none prose-p:leading-relaxed prose-a:underline'
+/** Default prose classes for chat messages (styling handled by autoblogger.css) */
+const DEFAULT_PROSE_CLASSES = 'prose'
 
 /** Strip <plan> tags for display during streaming */
 function stripPlanTags(content: string): string {
@@ -350,23 +350,6 @@ export function ChatPanel({
                     {isStreaming && index === messages.length - 1 && message.role === 'assistant' && (
                       <span className="inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" />
                     )}
-                    {/* Applied edit indicator with undo button */}
-                    {message.appliedEdits && message.previousState && (
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                          <Pencil className="w-3 h-3" />
-                          <span>Edit applied</span>
-                        </div>
-                        <button
-                          onClick={() => undoEdit(index)}
-                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                          aria-label="Undo edit"
-                        >
-                          <Undo2 className="w-3 h-3" />
-                          <span>Undo</span>
-                        </button>
-                      </div>
-                    )}
                     {/* Action buttons for assistant messages */}
                     {message.role === 'assistant' && !isStreaming && (
                       <div className="absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -381,6 +364,16 @@ export function ChatPanel({
                             <Copy className="w-3.5 h-3.5" />
                           )}
                         </button>
+                        {/* Undo button for agent mode edits */}
+                        {message.appliedEdits && message.previousState && (
+                          <button
+                            onClick={() => undoEdit(index)}
+                            className="text-muted-foreground hover:text-foreground p-1 rounded"
+                            aria-label="Undo edit"
+                          >
+                            <Undo2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         {/* Draft Essay button for plan mode */}
                         {message.mode === 'plan' && index === messages.length - 1 && message.content && (
                           <button

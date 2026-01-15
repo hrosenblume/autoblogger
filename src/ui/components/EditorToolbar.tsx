@@ -59,7 +59,7 @@ export function EditorToolbar({
   // Using fixed positioning to ensure toolbar stays visible when scrolling
   if (loading) {
     return (
-      <div className="fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto">
+      <div className="fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto">
         <FormatButtons loading={true} />
         <Divider />
         <BlockButtons loading={true} />
@@ -76,7 +76,7 @@ export function EditorToolbar({
   }
 
   return (
-    <div className="fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-black overflow-x-auto">
+    <div className="fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto">
       <FormatButtons
         editor={editor}
         textareaRef={textareaRef}

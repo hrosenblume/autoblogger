@@ -227,6 +227,26 @@ export async function createStream(options: StreamOptions): Promise<ReadableStre
   }
 }
 
+/** Helper to safely enqueue data to controller */
+function safeEnqueue(controller: ReadableStreamDefaultController, data: Uint8Array): boolean {
+  try {
+    controller.enqueue(data)
+    return true
+  } catch {
+    // Controller already closed
+    return false
+  }
+}
+
+/** Helper to safely close controller */
+function safeClose(controller: ReadableStreamDefaultController): void {
+  try {
+    controller.close()
+  } catch {
+    // Controller already closed
+  }
+}
+
 async function createAnthropicStream(options: StreamOptions, modelId: string, searchContext: string = ''): Promise<ReadableStream> {
   const anthropic = new Anthropic({
     ...(options.anthropicKey && { apiKey: options.anthropicKey }),
@@ -262,19 +282,23 @@ async function createAnthropicStream(options: StreamOptions, modelId: string, se
             if (event.type === 'content_block_delta') {
               const delta = event.delta as { type: string; text?: string; thinking?: string }
               if (delta.type === 'text_delta' && delta.text) {
-                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text: delta.text })}\n\n`))
+                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text: delta.text })}\n\n`))) {
+                  return // Controller closed, stop processing
+                }
               } else if (delta.type === 'thinking_delta' && delta.thinking) {
-                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ thinking: delta.thinking })}\n\n`))
+                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ thinking: delta.thinking })}\n\n`))) {
+                  return
+                }
               }
             }
           }
-          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
-          controller.close()
+          safeEnqueue(controller, new TextEncoder().encode('data: [DONE]\n\n'))
+          safeClose(controller)
         } catch (streamError) {
           const errorMessage = streamError instanceof Error ? streamError.message : 'Stream error'
           console.error('[Anthropic Stream Error]', streamError)
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
-          controller.close()
+          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
+          safeClose(controller)
         }
       },
     })
@@ -310,16 +334,18 @@ async function createOpenAIStream(options: StreamOptions, modelId: string, useWe
           for await (const chunk of stream) {
             const text = chunk.choices[0]?.delta?.content
             if (text) {
-              controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`))
+              if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`))) {
+                return
+              }
             }
           }
-          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
-          controller.close()
+          safeEnqueue(controller, new TextEncoder().encode('data: [DONE]\n\n'))
+          safeClose(controller)
         } catch (streamError) {
           const errorMessage = streamError instanceof Error ? streamError.message : 'Stream error'
           console.error('[OpenAI Stream Error]', streamError)
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
-          controller.close()
+          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
+          safeClose(controller)
         }
       },
     })
@@ -358,17 +384,19 @@ async function createOpenAIResponsesStream(openai: OpenAI, options: StreamOption
             if (event.type === 'response.output_text.delta') {
               const text = event.delta
               if (text) {
-                controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`))
+                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`))) {
+                  return
+                }
               }
             }
           }
-          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
-          controller.close()
+          safeEnqueue(controller, new TextEncoder().encode('data: [DONE]\n\n'))
+          safeClose(controller)
         } catch (streamError) {
           const errorMessage = streamError instanceof Error ? streamError.message : 'Stream error'
           console.error('[OpenAI Responses Stream Error]', streamError)
-          controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
-          controller.close()
+          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
+          safeClose(controller)
         }
       },
     })
