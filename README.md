@@ -18,8 +18,9 @@ npx autoblogger init
 The CLI automatically:
 - Detects your Next.js and Prisma setup
 - Adds required database models to your schema
-- Creates config, API route, and dashboard page
-- Patches Tailwind to include Autoblogger styles
+- Creates config, API route, and dashboard page (in isolated route group)
+- Adds the standalone CSS import to your globals.css
+- Fixes hydration warnings for theme switching
 - Runs the database migration
 
 Visit `/writer` to start writing.
@@ -37,9 +38,10 @@ Visit `/writer` to start writing.
 
 ## Requirements
 
-- Next.js 14 or 15 (App Router)
+- Next.js 14, 15, or 16 (App Router)
 - Prisma 5 or 6
 - Node.js 20+
+- Any CSS setup (Tailwind optional — standalone CSS included)
 
 For AI features, you'll need API keys from [Anthropic](https://console.anthropic.com/) and/or [OpenAI](https://platform.openai.com/).
 
@@ -151,23 +153,53 @@ import { getSeoValues } from 'autoblogger/seo'
 import { ARTICLE_CLASSES } from 'autoblogger/styles/article'
 ```
 
-## Troubleshooting
+## Styling
 
-**Tailwind classes not applying?** Add to your Tailwind content config:
-```javascript
-content: ['./node_modules/autoblogger/dist/**/*.{js,mjs}']
+Autoblogger ships with standalone CSS that works with any setup — no Tailwind required.
+
+**Using the CLI?** It automatically adds the import for you.
+
+**Manual setup?** Add to your `globals.css`:
+```css
+@import 'autoblogger/styles/standalone.css';
 ```
 
-**Styles missing?** Import in `globals.css` before Tailwind directives:
+This single import includes all styles needed for the dashboard. Works with Tailwind v3, v4, CSS Modules, vanilla CSS, or no CSS framework at all.
+
+### Advanced: Customizing Theme Colors
+
+If you use Tailwind and want autoblogger to inherit your theme colors, you can use the preset instead:
+
+```javascript
+// tailwind.config.js (Tailwind v3 only)
+module.exports = {
+  presets: [require('autoblogger/styles/preset')],
+  content: [
+    // your paths...
+    './node_modules/autoblogger/dist/**/*.{js,mjs}',
+  ],
+}
+```
+
+Then import the base styles (without utilities):
 ```css
 @import 'autoblogger/styles/autoblogger.css';
 ```
+
+## Troubleshooting
 
 **AI not working?** Check your environment variables:
 ```bash
 ANTHROPIC_API_KEY="sk-ant-..."
 OPENAI_API_KEY="sk-..."
 ```
+
+**Hydration warnings with theme?** The CLI automatically adds `suppressHydrationWarning` to your root layout. If you set up manually, add it to your `<html>` tag:
+```tsx
+<html lang="en" suppressHydrationWarning>
+```
+
+**Layout conflicts?** The CLI creates the writer dashboard in an isolated route group `app/(writer)/writer/` to prevent inheriting your app's navbar/footer.
 
 ## License
 

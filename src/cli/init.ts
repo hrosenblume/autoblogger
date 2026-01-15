@@ -6,10 +6,9 @@ import pc from 'picocolors'
 import { detectProject, countMarkdownFiles } from './utils/detect'
 import { createBackup } from './utils/backup'
 import { checkConflicts, mergeSchema, writeSchema } from './utils/prisma-merge'
-import { patchTailwindConfig, patchTailwindCssConfig, writeTailwindConfig } from './utils/tailwind-patch'
 import { findGlobalsCss, patchGlobalsCss } from './utils/css-patch'
 import { promptInit, log, confirm } from './utils/prompts'
-import { CMS_CONFIG_TEMPLATE, API_ROUTE_TEMPLATE, DASHBOARD_PAGE_TEMPLATE } from './templates'
+import { CMS_CONFIG_TEMPLATE, API_ROUTE_TEMPLATE, DASHBOARD_PAGE_TEMPLATE, WRITER_LAYOUT_TEMPLATE } from './templates'
 import { importContent } from './import'
 
 export interface InitOptions {
@@ -42,10 +41,6 @@ export async function init(options: InitOptions = {}) {
 
   if (project.hasPrisma) {
     log('check', `Found ${project.prismaSchemaPath}`)
-  }
-
-  if (project.hasTailwind) {
-    log('check', `Found ${path.basename(project.tailwindConfigPath!)}`)
   }
 
   if (!project.appRouterPath) {
@@ -105,10 +100,10 @@ export async function init(options: InitOptions = {}) {
     console.log(`  - ${prismaPath} (add 11 models)`)
     console.log(`  - lib/cms.ts`)
     console.log(`  - ${project.appRouterPath}/api/cms/[...path]/route.ts`)
-    console.log(`  - ${project.appRouterPath}/writer/[[...path]]/page.tsx`)
-    if (project.tailwindConfigPath) {
-      console.log(`  - ${project.tailwindConfigPath} (add content path)`)
-    }
+    console.log(`  - ${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx`)
+    console.log(`  - ${project.appRouterPath}/(writer)/layout.tsx`)
+    console.log(`  - globals.css (add CSS import)`)
+    console.log(`  - ${project.appRouterPath}/layout.tsx (add suppressHydrationWarning)`)
     
     if (answers.runMigration) {
       console.log('\nWould run:')
@@ -128,7 +123,6 @@ export async function init(options: InitOptions = {}) {
   // Step 4: Create backup
   const filesToBackup: string[] = []
   if (project.hasPrisma) filesToBackup.push('prisma/schema.prisma')
-  if (project.tailwindConfigPath) filesToBackup.push(path.relative(cwd, project.tailwindConfigPath))
   if (fs.existsSync(path.join(cwd, 'lib', 'cms.ts'))) filesToBackup.push('lib/cms.ts')
   
   if (filesToBackup.length > 0) {
@@ -172,48 +166,31 @@ export async function init(options: InitOptions = {}) {
     log('write', `Created ${project.appRouterPath}/api/cms/[...path]/route.ts`)
   }
 
-  // Dashboard page
-  const dashboardPath = path.join(cwd, project.appRouterPath!, 'writer', '[[...path]]', 'page.tsx')
+  // Dashboard page - in (writer) route group to avoid inheriting parent layouts
+  const writerRouteGroup = path.join(cwd, project.appRouterPath!, '(writer)')
+  const dashboardPath = path.join(writerRouteGroup, 'writer', '[[...path]]', 'page.tsx')
+  const writerLayoutPath = path.join(writerRouteGroup, 'layout.tsx')
+  
   if (fs.existsSync(dashboardPath)) {
-    log('skip', `${project.appRouterPath}/writer/[[...path]]/page.tsx already exists`)
+    log('skip', `${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx already exists`)
   } else {
     const dashboardDir = path.dirname(dashboardPath)
     if (!fs.existsSync(dashboardDir)) {
       fs.mkdirSync(dashboardDir, { recursive: true })
     }
     fs.writeFileSync(dashboardPath, DASHBOARD_PAGE_TEMPLATE)
-    log('write', `Created ${project.appRouterPath}/writer/[[...path]]/page.tsx`)
+    log('write', `Created ${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx`)
+  }
+  
+  // Minimal layout for writer route group (prevents inheriting navbar/footer from parent)
+  if (fs.existsSync(writerLayoutPath)) {
+    log('skip', `${project.appRouterPath}/(writer)/layout.tsx already exists`)
+  } else {
+    fs.writeFileSync(writerLayoutPath, WRITER_LAYOUT_TEMPLATE)
+    log('write', `Created ${project.appRouterPath}/(writer)/layout.tsx`)
   }
 
-  // Step 7: Patch Tailwind config
-  if (project.tailwindConfigPath) {
-    // Traditional JS/TS config
-    const patchResult = patchTailwindConfig(project.tailwindConfigPath)
-    if (patchResult.alreadyPatched) {
-      log('skip', 'Tailwind config already includes autoblogger')
-    } else if (patchResult.success && patchResult.content) {
-      writeTailwindConfig(project.tailwindConfigPath, patchResult.content)
-      log('write', `Updated ${path.basename(project.tailwindConfigPath)}`)
-    } else {
-      log('warn', 'Could not auto-patch Tailwind config. Please add manually:')
-      console.log(pc.gray("  content: ['./node_modules/autoblogger/dist/**/*.{js,mjs}']"))
-    }
-  } else if (project.tailwindCssPath) {
-    // Tailwind v4 CSS-based config
-    const patchResult = patchTailwindCssConfig(project.tailwindCssPath)
-    if (patchResult.alreadyPatched) {
-      log('skip', 'Tailwind CSS config already includes autoblogger')
-    } else if (patchResult.success && patchResult.content) {
-      writeTailwindConfig(project.tailwindCssPath, patchResult.content)
-      log('write', `Updated ${path.basename(project.tailwindCssPath)} (Tailwind v4)`)
-    } else {
-      log('warn', 'Could not auto-patch Tailwind v4 CSS config. Please add manually:')
-      console.log(pc.gray('  @source "./node_modules/autoblogger/dist/**/*.{js,mjs}";'))
-    }
-  }
-
-
-  // Step 7b: Patch globals.css to import autoblogger styles
+  // Step 7: Patch globals.css to import autoblogger styles
   const globalsCssPath = findGlobalsCss(cwd)
   if (globalsCssPath) {
     const cssResult = patchGlobalsCss(globalsCssPath)
@@ -224,7 +201,29 @@ export async function init(options: InitOptions = {}) {
     }
   } else {
     log('warn', 'Could not find globals.css. Please add manually:')
-    console.log(pc.gray("  @import 'autoblogger/styles/autoblogger.css';"))
+    console.log(pc.gray("  @import 'autoblogger/styles/standalone.css';"))
+  }
+
+  // Step 7b: Patch root layout for suppressHydrationWarning (fixes next-themes hydration)
+  const rootLayoutPath = path.join(cwd, project.appRouterPath!, 'layout.tsx')
+  if (fs.existsSync(rootLayoutPath)) {
+    let layoutContent = fs.readFileSync(rootLayoutPath, 'utf-8')
+    if (layoutContent.includes('suppressHydrationWarning')) {
+      log('skip', 'Root layout already has suppressHydrationWarning')
+    } else {
+      // Try to add suppressHydrationWarning to the <html> tag
+      const htmlTagRegex = /<html([^>]*)>/
+      const match = layoutContent.match(htmlTagRegex)
+      if (match) {
+        const existingAttrs = match[1]
+        const newHtmlTag = `<html${existingAttrs} suppressHydrationWarning>`
+        layoutContent = layoutContent.replace(htmlTagRegex, newHtmlTag)
+        fs.writeFileSync(rootLayoutPath, layoutContent)
+        log('write', `Updated ${project.appRouterPath}/layout.tsx (added suppressHydrationWarning)`)
+      } else {
+        log('warn', 'Could not find <html> tag in root layout. Please add suppressHydrationWarning manually.')
+      }
+    }
   }
 
   // Step 8: Run migration
@@ -270,7 +269,7 @@ export async function init(options: InitOptions = {}) {
   console.log('')
   console.log(pc.gray('Next steps:'))
   console.log(pc.gray('  1. Update lib/cms.ts with your auth configuration'))
-  console.log(pc.gray('  2. Add your auth check to app/writer/[[...path]]/page.tsx'))
+  console.log(pc.gray('  2. Add your auth check to app/(writer)/writer/[[...path]]/page.tsx'))
   console.log(pc.gray('  3. Set ANTHROPIC_API_KEY and/or OPENAI_API_KEY for AI features'))
   console.log('')
 }

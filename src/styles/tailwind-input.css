@@ -1,0 +1,10 @@
+/**
+ * Tailwind input for standalone CSS build
+ * This generates all utilities used by autoblogger UI components
+ */
+
+/* Import base autoblogger styles (CSS variables, prose, animations) */
+@import './autoblogger.css';
+
+/* Generate Tailwind utilities */
+@tailwind utilities;

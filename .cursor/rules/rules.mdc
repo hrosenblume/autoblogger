@@ -307,11 +307,12 @@ Show loading while `sharedDataLoading` is true.
 </do>
 
 <host_app_checklist>
-1. CSS Import: `@import 'autoblogger/styles/autoblogger.css';` before Tailwind
-2. Tailwind Content: `'./node_modules/autoblogger/dist/**/*.{js,mjs}'`
+1. CSS Import: `@import 'autoblogger/styles/standalone.css';` (includes all Tailwind utilities)
+2. No Tailwind config needed — standalone CSS works with any setup
 3. ChatMessage Model in Prisma schema
 4. Re-run `npm link autoblogger` after `npm install`
 5. Run `npm run build` after source changes
+6. Writer route: `app/(writer)/writer/[[...path]]/page.tsx` (isolated from parent layouts)
 </host_app_checklist>
 
 <build_and_test>

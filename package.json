@@ -22,6 +22,7 @@
     "./styles/preset": "./dist/styles/preset.js",
     "./styles/editor.css": "./dist/styles/editor.css",
     "./styles/autoblogger.css": "./dist/styles/autoblogger.css",
+    "./styles/standalone.css": "./dist/styles/standalone.css",
     "./styles/article": {
       "import": "./dist/styles/article.mjs",
       "require": "./dist/styles/article.js"
@@ -40,7 +41,7 @@
     "prisma"
   ],
   "scripts": {
-    "build": "tsup && cp src/styles/preset.js dist/styles/preset.js && cp src/styles/autoblogger.css dist/styles/autoblogger.css",
+    "build": "tsup && cp src/styles/preset.js dist/styles/preset.js && cp src/styles/autoblogger.css dist/styles/autoblogger.css && tailwindcss -c tailwind.standalone.config.js -i src/styles/tailwind-input.css -o dist/styles/standalone.css --minify",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
@@ -50,7 +51,7 @@
   "peerDependencies": {
     "@prisma/client": "^5.0.0 || ^6.0.0",
     "lucide-react": ">=0.400.0",
-    "next": "^14.0.0 || ^15.0.0",
+    "next": "^14.0.0 || ^15.0.0 || ^16.0.0",
     "next-themes": ">=0.3.0",
     "react": "^18.0.0 || ^19.0.0",
     "react-dom": "^18.0.0 || ^19.0.0"
@@ -89,6 +90,7 @@
     "@types/sanitize-html": "^2.16.0",
     "@types/turndown": "^5.0.0",
     "lucide-react": "^0.562.0",
+    "tailwindcss": "^3.4.0",
     "tsup": "^8.0.0",
     "typescript": "^5.0.0"
   },

@@ -51,7 +51,5 @@ export {
   buildRewritePrompt as buildRewritePromptFromPrompts,
   buildExpandPlanPrompt as buildExpandPlanPromptFromPrompts,
 } from './prompts'
-export type { EssayContext, StyleContext } from './prompts'
-
-// Parse
+export type { EssayContext, StyleContext } from './prompts'// Parse
 export { parseGeneratedContent } from './parse'

@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-const AUTOBLOGGER_CSS_IMPORT = "@import 'autoblogger/styles/autoblogger.css';"
+const AUTOBLOGGER_CSS_IMPORT = "@import 'autoblogger/styles/standalone.css';"
 
 export interface CssPatchResult {
   success: boolean

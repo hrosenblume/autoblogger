@@ -24,7 +24,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 
 // src/cli/init.ts
-var fs7 = __toESM(require("fs"));
+var fs6 = __toESM(require("fs"));
 var path6 = __toESM(require("path"));
 var import_child_process2 = require("child_process");
 var import_picocolors3 = __toESM(require("picocolors"));
@@ -388,90 +388,10 @@ function writeSchema(schemaPath, content) {
   fs3.writeFileSync(schemaPath, content, "utf-8");
 }
 
-// src/cli/utils/tailwind-patch.ts
-var fs4 = __toESM(require("fs"));
-var AUTOBLOGGER_CONTENT_PATH = "'./node_modules/autoblogger/dist/**/*.{js,mjs}'";
-var AUTOBLOGGER_SOURCE_PATH = '"./node_modules/autoblogger/dist/**/*.{js,mjs}"';
-function patchTailwindConfig(configPath) {
-  if (!fs4.existsSync(configPath)) {
-    return { success: false, alreadyPatched: false };
-  }
-  let content = fs4.readFileSync(configPath, "utf-8");
-  if (content.includes("autoblogger")) {
-    return { success: true, alreadyPatched: true };
-  }
-  const contentArrayRegex = /(content\s*:\s*\[)([^\]]*?)(\])/s;
-  const match = content.match(contentArrayRegex);
-  if (match) {
-    const [full, start, items, end] = match;
-    const trimmedItems = items.trimEnd();
-    const needsComma = trimmedItems.length > 0 && !trimmedItems.endsWith(",");
-    const newItems = trimmedItems + (needsComma ? "," : "") + "\n    // Autoblogger components\n    " + AUTOBLOGGER_CONTENT_PATH + ",\n  ";
-    content = content.replace(full, start + newItems + end);
-    return { success: true, alreadyPatched: false, content };
-  }
-  if (content.includes("export default")) {
-    const configObjRegex = /(export\s+default\s*\{)/;
-    if (configObjRegex.test(content)) {
-      content = content.replace(
-        configObjRegex,
-        `$1
-  content: [
-    // Autoblogger components
-    ${AUTOBLOGGER_CONTENT_PATH},
-  ],`
-      );
-      return { success: true, alreadyPatched: false, content };
-    }
-  }
-  if (content.includes("module.exports")) {
-    const moduleExportsRegex = /(module\.exports\s*=\s*\{)/;
-    if (moduleExportsRegex.test(content)) {
-      content = content.replace(
-        moduleExportsRegex,
-        `$1
-  content: [
-    // Autoblogger components
-    ${AUTOBLOGGER_CONTENT_PATH},
-  ],`
-      );
-      return { success: true, alreadyPatched: false, content };
-    }
-  }
-  return { success: false, alreadyPatched: false };
-}
-function patchTailwindCssConfig(cssPath) {
-  if (!fs4.existsSync(cssPath)) {
-    return { success: false, alreadyPatched: false, isCssConfig: true };
-  }
-  let content = fs4.readFileSync(cssPath, "utf-8");
-  if (!content.includes('@import "tailwindcss"') && !content.includes("@import 'tailwindcss'")) {
-    return { success: false, alreadyPatched: false, isCssConfig: false };
-  }
-  if (content.includes("autoblogger")) {
-    return { success: true, alreadyPatched: true, isCssConfig: true };
-  }
-  const importRegex = /(@import\s+["']tailwindcss["'];?\s*\n)/;
-  const match = content.match(importRegex);
-  if (match) {
-    content = content.replace(
-      importRegex,
-      `$1/* Autoblogger components */
-@source ${AUTOBLOGGER_SOURCE_PATH};
-`
-    );
-    return { success: true, alreadyPatched: false, content, isCssConfig: true };
-  }
-  return { success: false, alreadyPatched: false, isCssConfig: true };
-}
-function writeTailwindConfig(configPath, content) {
-  fs4.writeFileSync(configPath, content, "utf-8");
-}
-
 // src/cli/utils/css-patch.ts
-var fs5 = __toESM(require("fs"));
+var fs4 = __toESM(require("fs"));
 var path4 = __toESM(require("path"));
-var AUTOBLOGGER_CSS_IMPORT = "@import 'autoblogger/styles/autoblogger.css';";
+var AUTOBLOGGER_CSS_IMPORT = "@import 'autoblogger/styles/standalone.css';";
 function findGlobalsCss(projectRoot) {
   const candidates = [
     "app/globals.css",
@@ -483,22 +403,22 @@ function findGlobalsCss(projectRoot) {
   ];
   for (const candidate of candidates) {
     const fullPath = path4.join(projectRoot, candidate);
-    if (fs5.existsSync(fullPath)) {
+    if (fs4.existsSync(fullPath)) {
       return fullPath;
     }
   }
   return null;
 }
 function patchGlobalsCss(cssPath) {
-  if (!fs5.existsSync(cssPath)) {
+  if (!fs4.existsSync(cssPath)) {
     return { success: false, alreadyPatched: false };
   }
-  let content = fs5.readFileSync(cssPath, "utf-8");
+  let content = fs4.readFileSync(cssPath, "utf-8");
   if (content.includes("autoblogger")) {
     return { success: true, alreadyPatched: true, filePath: cssPath };
   }
   content = AUTOBLOGGER_CSS_IMPORT + "\n\n" + content;
-  fs5.writeFileSync(cssPath, content, "utf-8");
+  fs4.writeFileSync(cssPath, content, "utf-8");
   return { success: true, alreadyPatched: false, filePath: cssPath };
 }
 
@@ -702,8 +622,18 @@ export default async function WriterPage({
 }
 `;
 
+// src/cli/templates/writer-layout.ts
+var WRITER_LAYOUT_TEMPLATE = `export default function WriterLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return children
+}
+`;
+
 // src/cli/import.ts
-var fs6 = __toESM(require("fs"));
+var fs5 = __toESM(require("fs"));
 var path5 = __toESM(require("path"));
 var import_child_process = require("child_process");
 var import_picocolors2 = __toESM(require("picocolors"));
@@ -768,7 +698,7 @@ function slugify(text) {
 }
 function parseMarkdownFile(filePath) {
   try {
-    const content = fs6.readFileSync(filePath, "utf-8");
+    const content = fs5.readFileSync(filePath, "utf-8");
     const { frontmatter, body } = parseFrontmatter(content);
     let title = frontmatter.title;
     if (!title) {
@@ -806,7 +736,7 @@ function parseMarkdownFile(filePath) {
 function findMarkdownFiles(dir) {
   const files = [];
   function walk(currentDir) {
-    const entries = fs6.readdirSync(currentDir, { withFileTypes: true });
+    const entries = fs5.readdirSync(currentDir, { withFileTypes: true });
     for (const entry of entries) {
       const fullPath = path5.join(currentDir, entry.name);
       if (entry.isDirectory()) {
@@ -824,7 +754,7 @@ function findMarkdownFiles(dir) {
 async function importContent(dirPath, options = {}) {
   const cwd = process.cwd();
   const absolutePath = path5.isAbsolute(dirPath) ? dirPath : path5.join(cwd, dirPath);
-  if (!fs6.existsSync(absolutePath)) {
+  if (!fs5.existsSync(absolutePath)) {
     throw new Error(`Directory not found: ${dirPath}`);
   }
   const files = findMarkdownFiles(absolutePath);
@@ -851,7 +781,7 @@ async function importContent(dirPath, options = {}) {
   const status = options.status || "draft";
   const importScript = generateImportScript(posts, status, options.tag);
   const scriptPath = path5.join(cwd, ".autoblogger-import.mjs");
-  fs6.writeFileSync(scriptPath, importScript);
+  fs5.writeFileSync(scriptPath, importScript);
   try {
     (0, import_child_process.execSync)(`node ${scriptPath}`, {
       cwd,
@@ -859,8 +789,8 @@ async function importContent(dirPath, options = {}) {
     });
     log("check", `Imported ${posts.length} posts as ${status}`);
   } finally {
-    if (fs6.existsSync(scriptPath)) {
-      fs6.unlinkSync(scriptPath);
+    if (fs5.existsSync(scriptPath)) {
+      fs5.unlinkSync(scriptPath);
     }
   }
 }
@@ -956,9 +886,6 @@ async function init(options = {}) {
   if (project.hasPrisma) {
     log("check", `Found ${project.prismaSchemaPath}`);
   }
-  if (project.hasTailwind) {
-    log("check", `Found ${path6.basename(project.tailwindConfigPath)}`);
-  }
   if (!project.appRouterPath) {
     console.log(import_picocolors3.default.red("Error: Could not find App Router (app/ or src/app/ directory)"));
     console.log("Autoblogger requires Next.js App Router.");
@@ -1000,10 +927,10 @@ Error: Found conflicting model names in your Prisma schema:`));
     console.log(`  - ${prismaPath} (add 11 models)`);
     console.log(`  - lib/cms.ts`);
     console.log(`  - ${project.appRouterPath}/api/cms/[...path]/route.ts`);
-    console.log(`  - ${project.appRouterPath}/writer/[[...path]]/page.tsx`);
-    if (project.tailwindConfigPath) {
-      console.log(`  - ${project.tailwindConfigPath} (add content path)`);
-    }
+    console.log(`  - ${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx`);
+    console.log(`  - ${project.appRouterPath}/(writer)/layout.tsx`);
+    console.log(`  - globals.css (add CSS import)`);
+    console.log(`  - ${project.appRouterPath}/layout.tsx (add suppressHydrationWarning)`);
     if (answers.runMigration) {
       console.log("\nWould run:");
       console.log("  - npx prisma migrate dev --name add-autoblogger");
@@ -1019,8 +946,7 @@ Would import ${count} posts from ${answers.importPath}`);
   }
   const filesToBackup = [];
   if (project.hasPrisma) filesToBackup.push("prisma/schema.prisma");
-  if (project.tailwindConfigPath) filesToBackup.push(path6.relative(cwd, project.tailwindConfigPath));
-  if (fs7.existsSync(path6.join(cwd, "lib", "cms.ts"))) filesToBackup.push("lib/cms.ts");
+  if (fs6.existsSync(path6.join(cwd, "lib", "cms.ts"))) filesToBackup.push("lib/cms.ts");
   if (filesToBackup.length > 0) {
     const backupPath = createBackup(filesToBackup, cwd);
     log("backup", `Created backup at ${path6.relative(cwd, backupPath)}`);
@@ -1034,59 +960,44 @@ Would import ${count} posts from ${answers.importPath}`);
   log("write", `Updated ${path6.relative(cwd, prismaPath)} (added 11 models)`);
   const libDir = path6.join(cwd, "lib");
   const cmsConfigPath = path6.join(libDir, "cms.ts");
-  if (fs7.existsSync(cmsConfigPath)) {
+  if (fs6.existsSync(cmsConfigPath)) {
     log("skip", "lib/cms.ts already exists");
   } else {
-    if (!fs7.existsSync(libDir)) {
-      fs7.mkdirSync(libDir, { recursive: true });
+    if (!fs6.existsSync(libDir)) {
+      fs6.mkdirSync(libDir, { recursive: true });
     }
-    fs7.writeFileSync(cmsConfigPath, CMS_CONFIG_TEMPLATE);
+    fs6.writeFileSync(cmsConfigPath, CMS_CONFIG_TEMPLATE);
     log("write", "Created lib/cms.ts");
   }
   const apiRoutePath = path6.join(cwd, project.appRouterPath, "api", "cms", "[...path]", "route.ts");
-  if (fs7.existsSync(apiRoutePath)) {
+  if (fs6.existsSync(apiRoutePath)) {
     log("skip", `${project.appRouterPath}/api/cms/[...path]/route.ts already exists`);
   } else {
     const apiRouteDir = path6.dirname(apiRoutePath);
-    if (!fs7.existsSync(apiRouteDir)) {
-      fs7.mkdirSync(apiRouteDir, { recursive: true });
+    if (!fs6.existsSync(apiRouteDir)) {
+      fs6.mkdirSync(apiRouteDir, { recursive: true });
     }
-    fs7.writeFileSync(apiRoutePath, API_ROUTE_TEMPLATE);
+    fs6.writeFileSync(apiRoutePath, API_ROUTE_TEMPLATE);
     log("write", `Created ${project.appRouterPath}/api/cms/[...path]/route.ts`);
   }
-  const dashboardPath = path6.join(cwd, project.appRouterPath, "writer", "[[...path]]", "page.tsx");
-  if (fs7.existsSync(dashboardPath)) {
-    log("skip", `${project.appRouterPath}/writer/[[...path]]/page.tsx already exists`);
+  const writerRouteGroup = path6.join(cwd, project.appRouterPath, "(writer)");
+  const dashboardPath = path6.join(writerRouteGroup, "writer", "[[...path]]", "page.tsx");
+  const writerLayoutPath = path6.join(writerRouteGroup, "layout.tsx");
+  if (fs6.existsSync(dashboardPath)) {
+    log("skip", `${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx already exists`);
   } else {
     const dashboardDir = path6.dirname(dashboardPath);
-    if (!fs7.existsSync(dashboardDir)) {
-      fs7.mkdirSync(dashboardDir, { recursive: true });
+    if (!fs6.existsSync(dashboardDir)) {
+      fs6.mkdirSync(dashboardDir, { recursive: true });
     }
-    fs7.writeFileSync(dashboardPath, DASHBOARD_PAGE_TEMPLATE);
-    log("write", `Created ${project.appRouterPath}/writer/[[...path]]/page.tsx`);
+    fs6.writeFileSync(dashboardPath, DASHBOARD_PAGE_TEMPLATE);
+    log("write", `Created ${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx`);
   }
-  if (project.tailwindConfigPath) {
-    const patchResult = patchTailwindConfig(project.tailwindConfigPath);
-    if (patchResult.alreadyPatched) {
-      log("skip", "Tailwind config already includes autoblogger");
-    } else if (patchResult.success && patchResult.content) {
-      writeTailwindConfig(project.tailwindConfigPath, patchResult.content);
-      log("write", `Updated ${path6.basename(project.tailwindConfigPath)}`);
-    } else {
-      log("warn", "Could not auto-patch Tailwind config. Please add manually:");
-      console.log(import_picocolors3.default.gray("  content: ['./node_modules/autoblogger/dist/**/*.{js,mjs}']"));
-    }
-  } else if (project.tailwindCssPath) {
-    const patchResult = patchTailwindCssConfig(project.tailwindCssPath);
-    if (patchResult.alreadyPatched) {
-      log("skip", "Tailwind CSS config already includes autoblogger");
-    } else if (patchResult.success && patchResult.content) {
-      writeTailwindConfig(project.tailwindCssPath, patchResult.content);
-      log("write", `Updated ${path6.basename(project.tailwindCssPath)} (Tailwind v4)`);
-    } else {
-      log("warn", "Could not auto-patch Tailwind v4 CSS config. Please add manually:");
-      console.log(import_picocolors3.default.gray('  @source "./node_modules/autoblogger/dist/**/*.{js,mjs}";'));
-    }
+  if (fs6.existsSync(writerLayoutPath)) {
+    log("skip", `${project.appRouterPath}/(writer)/layout.tsx already exists`);
+  } else {
+    fs6.writeFileSync(writerLayoutPath, WRITER_LAYOUT_TEMPLATE);
+    log("write", `Created ${project.appRouterPath}/(writer)/layout.tsx`);
   }
   const globalsCssPath = findGlobalsCss(cwd);
   if (globalsCssPath) {
@@ -1098,7 +1009,26 @@ Would import ${count} posts from ${answers.importPath}`);
     }
   } else {
     log("warn", "Could not find globals.css. Please add manually:");
-    console.log(import_picocolors3.default.gray("  @import 'autoblogger/styles/autoblogger.css';"));
+    console.log(import_picocolors3.default.gray("  @import 'autoblogger/styles/standalone.css';"));
+  }
+  const rootLayoutPath = path6.join(cwd, project.appRouterPath, "layout.tsx");
+  if (fs6.existsSync(rootLayoutPath)) {
+    let layoutContent = fs6.readFileSync(rootLayoutPath, "utf-8");
+    if (layoutContent.includes("suppressHydrationWarning")) {
+      log("skip", "Root layout already has suppressHydrationWarning");
+    } else {
+      const htmlTagRegex = /<html([^>]*)>/;
+      const match = layoutContent.match(htmlTagRegex);
+      if (match) {
+        const existingAttrs = match[1];
+        const newHtmlTag = `<html${existingAttrs} suppressHydrationWarning>`;
+        layoutContent = layoutContent.replace(htmlTagRegex, newHtmlTag);
+        fs6.writeFileSync(rootLayoutPath, layoutContent);
+        log("write", `Updated ${project.appRouterPath}/layout.tsx (added suppressHydrationWarning)`);
+      } else {
+        log("warn", "Could not find <html> tag in root layout. Please add suppressHydrationWarning manually.");
+      }
+    }
   }
   if (answers.runMigration) {
     console.log("");
@@ -1135,7 +1065,7 @@ Would import ${count} posts from ${answers.importPath}`);
   console.log("");
   console.log(import_picocolors3.default.gray("Next steps:"));
   console.log(import_picocolors3.default.gray("  1. Update lib/cms.ts with your auth configuration"));
-  console.log(import_picocolors3.default.gray("  2. Add your auth check to app/writer/[[...path]]/page.tsx"));
+  console.log(import_picocolors3.default.gray("  2. Add your auth check to app/(writer)/writer/[[...path]]/page.tsx"));
   console.log(import_picocolors3.default.gray("  3. Set ANTHROPIC_API_KEY and/or OPENAI_API_KEY for AI features"));
   console.log("");
 }
