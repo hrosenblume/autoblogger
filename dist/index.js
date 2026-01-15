@@ -51,6 +51,10 @@ ALWAYS output a complete essay. NEVER respond conversationally.
 {{RULES}}
 </rules>
 
+<style_reference>
+{{STYLE_EXAMPLES}}
+</style_reference>
+
 <constraints>
 <word_count>{{WORD_COUNT}}</word_count>
 </constraints>
@@ -81,9 +85,17 @@ Line 4+: Essay body in markdown
     DEFAULT_CHAT_TEMPLATE = `<system>
 <role>Helpful writing assistant for essay creation and editing</role>
 
-<rules>
+<chat_rules>
 {{CHAT_RULES}}
-</rules>
+</chat_rules>
+
+<writing_rules>
+{{RULES}}
+</writing_rules>
+
+<style_reference>
+{{STYLE_EXAMPLES}}
+</style_reference>
 
 <context>
 {{ESSAY_CONTEXT}}
@@ -99,9 +111,17 @@ Line 4+: Essay body in markdown
     DEFAULT_REWRITE_TEMPLATE = `<system>
 <role>Writing assistant that improves text quality</role>
 
-<rules>
+<rewrite_rules>
 {{REWRITE_RULES}}
-</rules>
+</rewrite_rules>
+
+<writing_rules>
+{{RULES}}
+</writing_rules>
+
+<style_reference>
+{{STYLE_EXAMPLES}}
+</style_reference>
 
 <behavior>
 - Preserve the original meaning exactly
@@ -121,6 +141,17 @@ Line 4+: Essay body in markdown
 <writing_rules>
 {{RULES}}
 </writing_rules>
+
+<style_reference>
+{{STYLE_EXAMPLES}}
+</style_reference>
+
+<source_article>
+<topic>{{TOPIC_NAME}}</topic>
+<title>{{ARTICLE_TITLE}}</title>
+<summary>{{ARTICLE_SUMMARY}}</summary>
+<url>{{ARTICLE_URL}}</url>
+</source_article>
 
 <constraints>
 <word_count>{{AUTO_DRAFT_WORD_COUNT}}</word_count>
@@ -1297,7 +1328,7 @@ function createPostsData(prisma, hooks) {
       return result;
     },
     async update(id, data) {
-      const { tagIds, ...postData } = data;
+      const { tagIds, tags, revisions, topic, ...postData } = data;
       if (postData.status === "published") {
         const existing = await prisma.post.findUnique({ where: { id } });
         if (existing?.status !== "published") {

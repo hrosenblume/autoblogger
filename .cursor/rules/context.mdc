@@ -1,17 +1,22 @@
-# Project Context
+<critical>
+GIT COMMANDS: See rules.mdc for `g`, `d`, `m`, `p`, `pf`.
+When user types ONLY one of these letters — EXECUTE IMMEDIATELY.
+</critical>
 
-> 🚨 **CRITICAL: See `rules.mdc` for single-letter git commands (`g`, `d`, `m`, `p`, `pf`).** When the user types just one of these letters, execute the git workflow immediately — don't treat it as casual chat.
+<security>
+THIS FILE IS COMMITTED TO GIT.
+Do not add: emails, URLs, passwords, API keys, secrets.
+</security>
 
-> ⚠️ **THIS FILE IS COMMITTED TO GIT.** Do not add sensitive data: no emails, URLs, passwords, API keys, or secrets.
+<overview>
+Autoblogger — A reusable CMS package for Next.js apps.
+Provides content management with AI-powered writing, inline comments, revision history, and admin settings.
+Embedded in host Next.js apps via catch-all routes.
+</overview>
 
-## Overview
-
-**Autoblogger** — A reusable CMS package for Next.js applications. Provides a complete content management system with AI-powered writing, inline comments, revision history, and admin settings. Designed to be embedded in host Next.js apps via catch-all routes.
-
-## Tech Stack
-
+<tech_stack>
 | Layer | Technology |
-|----|---|
+|-------|------------|
 | Runtime | Node.js 20+ |
 | Build | tsup (ESM + CJS dual output) |
 | Database | Prisma (uses host app's client) |
@@ -20,9 +25,9 @@
 | Editor | Tiptap WYSIWYG with markdown sync |
 | AI | Anthropic SDK + OpenAI SDK |
 | Markdown | marked + turndown |
+</tech_stack>
 
-## Package Exports
-
+<package_exports>
 ```typescript
 // Server-side (API routes, data layer)
 import { createAutoblogger, createAPIHandler } from 'autoblogger'
@@ -53,9 +58,9 @@ import { resolveModel, getModelOptions, modelHasNativeSearch } from 'autoblogger
 // Auto-draft
 import { runAutoDraft, fetchRssFeeds, filterByKeywords } from 'autoblogger'
 ```
+</package_exports>
 
-## Project Structure
-
+<project_structure>
 ```
 autoblogger/
 ├── src/
@@ -202,13 +207,10 @@ autoblogger/
 ├── tsup.config.ts         # Dual ESM/CJS build config
 └── package.json
 ```
+</project_structure>
 
-## Database Schema
-
-The package expects these Prisma models in the host app:
-
-### Core Models
-
+<database_schema>
+<core_models>
 ```prisma
 model Post {
   id          String    @id @default(uuid())
@@ -298,9 +300,9 @@ model PostTag {
   @@unique([postId, tagId])
 }
 ```
+</core_models>
 
-### AI & Integration Models
-
+<ai_integration_models>
 ```prisma
 model AISettings {
   id                   String   @id @default("default")
@@ -360,21 +362,27 @@ model NewsItem {
   post        Post?             @relation(...)
   createdAt   DateTime          @default(now())
 }
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+  @@index([createdAt])
+}
 ```
+</ai_integration_models>
+</database_schema>
 
-## Key Systems
-
-### CLI Tool
-
-The CLI (`npx autoblogger`) automates project setup:
-
+<key_systems>
+<cli_tool>
 ```bash
 npx autoblogger init          # Interactive setup
 npx autoblogger init --yes    # Non-interactive with defaults
 npx autoblogger import ./posts  # Import markdown content
 ```
 
-**Init Process:**
+Init Process:
 1. Detect project (Next.js version, Prisma schema, Tailwind config)
 2. Check for model name conflicts
 3. Merge Prisma schema (adds 11 models)
@@ -383,34 +391,28 @@ npx autoblogger import ./posts  # Import markdown content
 6. Run migration + generate
 7. Optionally import existing content
 
-**Files Created:**
-- `lib/cms.ts` — CMS configuration
-- `app/api/cms/[...path]/route.ts` — API catch-all route
-- `app/writer/[[...path]]/page.tsx` — Dashboard page
+Files Created:
+- lib/cms.ts — CMS configuration
+- app/api/cms/[...path]/route.ts — API catch-all route
+- app/writer/[[...path]]/page.tsx — Dashboard page
+</cli_tool>
 
-### URL Content Extraction
-
-The `url-extractor.ts` module fetches article content from URLs:
-
+<url_content_extraction>
 ```typescript
 import { extractAndFetchUrls, buildUrlContext } from './lib/url-extractor'
 
-// Extract URLs from text and fetch their content
 const fetched = await extractAndFetchUrls(userPrompt)
 const context = buildUrlContext(fetched)  // XML format for AI prompts
 ```
 
-**Features:**
-- Detects URLs with/without protocol (`https://`, `www.`, bare domains)
+Features:
+- Detects URLs with/without protocol (https://, www., bare domains)
 - Uses Puppeteer for JS-rendered pages (auto-detects serverless vs local)
 - Falls back to simple HTTP fetch + Mozilla Readability
 - Limits content to ~4000 chars to avoid token bloat
-- Returns title + cleaned text content
+</url_content_extraction>
 
-### Host App Integration
-
-The package is mounted via catch-all routes in the host app:
-
+<host_app_integration>
 ```typescript
 // app/api/cms/[...path]/route.ts
 import { createAutoblogger, createAPIHandler } from 'autoblogger'
@@ -428,16 +430,14 @@ const cms = createAutoblogger({
     anthropicKey: process.env.ANTHROPIC_API_KEY,
     openaiKey: process.env.OPENAI_API_KEY,
   },
-  // Optional: Lifecycle hooks
   hooks: {
-    beforePublish: async (post) => { /* validate before publishing */ },
-    afterSave: async (post) => { /* trigger revalidation, etc. */ },
-    onAutoDraftPostCreate: (article, essay) => ({ customField: 'value' }),  // Add extra fields to auto-drafted posts
+    beforePublish: async (post) => { /* validate */ },
+    afterSave: async (post) => { /* revalidate */ },
+    onAutoDraftPostCreate: (article, essay) => ({ customField: 'value' }),
   },
 })
 
 const handler = createAPIHandler(cms, { basePath: '/api/cms' })
-
 export { handler as GET, handler as POST, handler as PATCH, handler as DELETE }
 ```
 
@@ -456,10 +456,10 @@ export default async function WriterPage({ params }) {
   )
 }
 ```
+</host_app_integration>
 
-### Host App Requirements
-
-**CSS Import** — Required for prose/markdown styling:
+<host_app_requirements>
+CSS Import (required for prose/markdown styling):
 ```css
 /* app/globals.css */
 @import 'autoblogger/styles/autoblogger.css';
@@ -469,52 +469,36 @@ export default async function WriterPage({ params }) {
 @tailwind utilities;
 ```
 
-**Tailwind Content** — Include autoblogger in content config:
+Tailwind Content:
 ```javascript
-content: [
-  './node_modules/autoblogger/dist/**/*.{js,mjs}',
-]
+content: ['./node_modules/autoblogger/dist/**/*.{js,mjs}']
 ```
+</host_app_requirements>
+</key_systems>
 
-**ChatMessage Model** — Required for chat history persistence:
-```prisma
-model ChatMessage {
-  id        String   @id @default(uuid())
-  role      String
-  content   String
-  createdAt DateTime @default(now())
-  @@index([createdAt])
-}
-```
-
-### Navigation System
-
-Internal SPA navigation via `DashboardContext`:
-- `navigate(path)` — Push to history, update URL, render new page
-- `goBack()` — Pop history or navigate to root
-- `currentPath` — Current internal path
-- History depth tracking for proper back button behavior
-
-### Routes
+<navigation>
+Internal SPA navigation via DashboardContext:
+- navigate(path) — Push to history, update URL
+- goBack() — Pop history or navigate to root
+- currentPath — Current internal path
 
 | Path | Component | Description |
 |------|-----------|-------------|
-| `/` | WriterDashboard | Post list, AI generation, suggested posts |
-| `/editor` | EditorPage | New post editor |
-| `/editor/:slug` | EditorPage | Edit existing post |
-| `/settings` | SettingsPage | Settings overview with counts |
-| `/settings/users` | SettingsPage | User management |
-| `/settings/ai` | SettingsPage | AI rules and templates |
-| `/settings/tags` | SettingsPage | Tag management |
-| `/settings/topics` | SettingsPage | RSS topic subscriptions |
-| `/settings/posts` | SettingsPage | All posts admin view |
-| `/settings/revisions` | SettingsPage | Revision history |
-| `/settings/revisions/:id` | SettingsPage | Revision detail + restore |
-| `/settings/comments` | SettingsPage | Comment moderation |
+| / | WriterDashboard | Post list, AI generation |
+| /editor | EditorPage | New post |
+| /editor/:slug | EditorPage | Edit post |
+| /settings | SettingsPage | Settings overview |
+| /settings/users | SettingsPage | User management |
+| /settings/ai | SettingsPage | AI rules and templates |
+| /settings/tags | SettingsPage | Tag management |
+| /settings/topics | SettingsPage | RSS topic subscriptions |
+| /settings/posts | SettingsPage | All posts admin |
+| /settings/revisions | SettingsPage | Revision history |
+| /settings/revisions/:id | SettingsPage | Revision detail |
+| /settings/comments | SettingsPage | Comment moderation |
+</navigation>
 
-### AI Models
-
-Defined in `src/ai/models.ts`:
+<ai_models>
 ```typescript
 export const AI_MODELS: AIModel[] = [
   { id: 'claude-sonnet', name: 'Sonnet 4.5', provider: 'anthropic', modelId: 'claude-sonnet-4-5-20250929', searchModel: null },
@@ -524,60 +508,22 @@ export const AI_MODELS: AIModel[] = [
 ]
 ```
 
-`searchModel` property:
-- `null` — Claude models use 2-call flow (search query first, then generate)
-- `'native'` — GPT models use native tools-based web search
+searchModel property:
+- null — Claude uses 2-call flow (search query first)
+- 'native' — GPT uses native tools-based web search
+</ai_models>
 
-### Chat Modes
+<chat_modes>
+- ask — Default, answers questions
+- agent — Direct editing, outputs :::edit JSON blocks
+- plan — Outline mode, generates &lt;plan&gt; tags
+- search — Research mode
 
-The chat system (`useChat.tsx`) supports multiple modes:
-- `ask` — Default chat mode, answers questions about essay
-- `agent` — Direct editing mode, AI outputs `:::edit` blocks with JSON commands
-- `plan` — Outline mode, generates structured plan wrapped in `<plan>` tags
-- `search` — Research mode, fact-finding without essay generation
+Toggle via dropdown or Cmd+Shift+A.
+</chat_modes>
 
-Toggle modes via dropdown in ChatPanel or keyboard shortcut **Cmd/Ctrl + Shift + A**.
-
-### Comments System
-
-- **Inline comments**: Tiptap `CommentMark` extension highlights text
-- **Panel**: `CommentsPanel` slides in from right (full-screen on mobile)
-- **Thread**: `CommentThread` renders comment with nested replies
-- **API**: `/posts/:id/comments` CRUD with resolve/unresolve
-- **Deep linking**: `?comment=:id` URL param highlights and scrolls to comment
-
-### Editor System
-
-`EditorPage.tsx` provides:
-- Tiptap WYSIWYG with markdown sync
-- Markdown mode toggle (raw textarea)
-- Auto-save drafts (3s debounce)
-- Revision history with preview and restore
-- AI generation from URL params (`?idea=...&model=...&length=...`)
-- Inline comment highlighting
-- Custom fields support via `fields` config
-- SEO metadata editing
-
-### AI Prompt Templates
-
-Templates use `{{PLACEHOLDER}}` syntax. Defined in `src/ai/prompts.ts`:
-
-| Template | Placeholders | Purpose |
-|----------|--------------|---------|
-| `DEFAULT_GENERATE_TEMPLATE` | `{{RULES}}`, `{{WORD_COUNT}}` | Essay generation |
-| `DEFAULT_CHAT_TEMPLATE` | `{{CHAT_RULES}}`, `{{ESSAY_CONTEXT}}` | Chat conversations |
-| `DEFAULT_REWRITE_TEMPLATE` | `{{REWRITE_RULES}}` | Text improvement |
-| `DEFAULT_PLAN_TEMPLATE` | `{{PLAN_RULES}}`, `{{STYLE_EXAMPLES}}` | Outline generation |
-| `DEFAULT_EXPAND_PLAN_TEMPLATE` | `{{RULES}}`, `{{STYLE_EXAMPLES}}`, `{{PLAN}}` | Plan to essay |
-| `DEFAULT_AUTO_DRAFT_TEMPLATE` | `{{AUTO_DRAFT_RULES}}`, `{{RULES}}`, `{{AUTO_DRAFT_WORD_COUNT}}` | RSS auto-draft |
-| `DEFAULT_AGENT_TEMPLATE` | (none, appended to chat) | Agent mode instructions |
-
-Builders: `buildGeneratePrompt()`, `buildChatPrompt()`, `buildAgentChatPrompt()`, `buildPlanPrompt()`, `buildExpandPlanPrompt()`, `buildRewritePrompt()`, `buildAutoDraftPrompt()`
-
-### Agent Mode (Direct Editing)
-
-Agent mode allows AI to directly edit essays. Edit commands use JSON in `:::edit` blocks:
-
+<agent_mode>
+Edit commands use JSON in :::edit blocks:
 ```
 :::edit
 {"type": "replace_section", "find": "exact text", "replace": "new text"}
@@ -585,155 +531,129 @@ Agent mode allows AI to directly edit essays. Edit commands use JSON in `:::edit
 ```
 
 Command types:
-- `replace_section` — Find and replace specific text
-- `replace_all` — Replace entire essay (title, subtitle, markdown)
-- `insert` — Insert text (position: before, after, start, end)
-- `delete` — Remove text
+- replace_section — Find and replace
+- replace_all — Replace entire essay
+- insert — Insert text (position: before, after, start, end)
+- delete — Remove text
+</agent_mode>
 
-Template is customizable via Settings → AI → Agent Mode Template.
+<prompt_templates>
+Templates use {{PLACEHOLDER}} syntax. Defined in src/ai/prompts.ts:
 
-Keyboard shortcut: **Cmd/Ctrl + Shift + A** toggles agent/ask mode.
+| Template | Placeholders | Purpose |
+|----------|--------------|---------|
+| DEFAULT_GENERATE_TEMPLATE | RULES, WORD_COUNT | Essay generation |
+| DEFAULT_CHAT_TEMPLATE | CHAT_RULES, ESSAY_CONTEXT | Chat |
+| DEFAULT_REWRITE_TEMPLATE | REWRITE_RULES | Text improvement |
+| DEFAULT_PLAN_TEMPLATE | PLAN_RULES, STYLE_EXAMPLES | Outlines |
+| DEFAULT_EXPAND_PLAN_TEMPLATE | RULES, STYLE_EXAMPLES, PLAN | Plan to essay |
+| DEFAULT_AUTO_DRAFT_TEMPLATE | AUTO_DRAFT_RULES, RULES, AUTO_DRAFT_WORD_COUNT | RSS auto-draft |
+| DEFAULT_AGENT_TEMPLATE | (appended to chat) | Agent mode |
 
-### Chat History Persistence
+Builders: buildGeneratePrompt(), buildChatPrompt(), buildAgentChatPrompt(), buildPlanPrompt(), buildExpandPlanPrompt(), buildRewritePrompt(), buildAutoDraftPrompt()
+</prompt_templates>
 
-Chat messages are persisted via `/api/cms/chat/history` API:
-- `GET` — Fetch all messages (last 50, chronological order)
-- `POST` — Save a new message
-- `DELETE` — Clear all messages
-
-History is loaded on mount via `ChatProvider` and messages are saved after each exchange. The `ChatMessage` Prisma model stores role + content + timestamp.
-
-### Keyboard Shortcuts
-
-Defined in `src/ui/shortcuts.ts` and used with `useKeyboard()` hook:
-
+<keyboard_shortcuts>
 | Shortcut | Action |
 |----------|--------|
-| Cmd+. | Toggle theme (light/dark) |
-| Cmd+/ | Toggle view (essay↔editor, home↔writer) |
+| Cmd+. | Toggle theme |
+| Cmd+/ | Toggle view |
 | Cmd+; | Toggle settings |
-| Cmd+K | Open/close chat panel |
+| Cmd+K | Open/close chat |
 | Cmd+Shift+A | Toggle Ask/Agent mode |
-| N | New article (not in input fields) |
-| Escape | Go back to writer |
-| ←/→ | Navigate posts (not in input fields) |
+| N | New article |
+| Escape | Go back |
+| ←/→ | Navigate posts |
+</keyboard_shortcuts>
 
-## API Routes
-
+<api_routes>
 | Path | Methods | Description |
-|---|---|----|
-| `/posts` | GET, POST | List/create posts |
-| `/posts/:id` | GET, PATCH, DELETE | Single post CRUD |
-| `/posts/:id/comments` | GET, POST | Editor comments for post |
-| `/posts/:id/comments/:commentId` | PATCH, DELETE | Update/delete comment |
-| `/posts/:id/comments/:commentId/resolve` | POST | Toggle resolve |
-| `/posts/:id/comments/resolve-all` | POST | Resolve all open comments |
-| `/revisions` | GET | List revisions (paginated) |
-| `/revisions/:id` | GET, DELETE | Single revision |
-| `/revisions/:id/restore` | POST | Restore revision |
-| `/comments` | GET, POST | Admin comment listing |
-| `/comments/:id/approve` | PATCH | Approve comment |
-| `/tags` | GET, POST | List/create tags |
-| `/tags/:id` | PATCH, DELETE | Update/delete tag |
-| `/topics` | GET, POST | List/create topics |
-| `/topics/:id` | GET, PATCH, DELETE | Single topic |
-| `/topics/:id/generate` | POST | Trigger topic generation |
-| `/users` | GET, POST | List/create users |
-| `/users/:id` | GET, PATCH, DELETE | Single user |
-| `/ai/settings` | GET, PATCH | AI configuration |
-| `/ai/generate` | POST | Generate essay (streaming SSE) |
-| `/ai/chat` | POST | Chat streaming (modes: ask, agent, plan, search) |
-| `/chat/history` | GET, POST, DELETE | Chat history persistence + clear |
-| `/settings` | GET, PATCH | Integration settings |
-| `/upload` | POST | Image upload |
-| `/admin/counts` | GET | Dashboard counts |
+|------|---------|-------------|
+| /posts | GET, POST | List/create posts |
+| /posts/:id | GET, PATCH, DELETE | Single post CRUD |
+| /posts/:id/comments | GET, POST | Editor comments |
+| /posts/:id/comments/:id | PATCH, DELETE | Update/delete comment |
+| /posts/:id/comments/:id/resolve | POST | Toggle resolve |
+| /revisions | GET | List revisions |
+| /revisions/:id | GET, DELETE | Single revision |
+| /revisions/:id/restore | POST | Restore revision |
+| /comments | GET, POST | Admin comment listing |
+| /tags | GET, POST | List/create tags |
+| /tags/:id | PATCH, DELETE | Update/delete tag |
+| /topics | GET, POST | List/create topics |
+| /topics/:id | GET, PATCH, DELETE | Single topic |
+| /topics/:id/generate | POST | Trigger generation |
+| /users | GET, POST | List/create users |
+| /users/:id | GET, PATCH, DELETE | Single user |
+| /ai/settings | GET, PATCH | AI configuration |
+| /ai/generate | POST | Generate essay (SSE) |
+| /ai/chat | POST | Chat streaming |
+| /chat/history | GET, POST, DELETE | Chat history |
+| /settings | GET, PATCH | Integration settings |
+| /upload | POST | Image upload |
+| /admin/counts | GET | Dashboard counts |
+</api_routes>
 
-## Commands
-
-### Development
-
+<commands>
+<development>
 | Command | Description |
-|---|----|
-| `npm run build` | Build package (ESM + CJS + types) |
-| `npm run dev` | Watch mode for development |
-| `npm run typecheck` | TypeScript check |
-| `npm run lint` | ESLint check |
+|---------|-------------|
+| npm run build | Build package (ESM + CJS + types) |
+| npm run dev | Watch mode |
+| npm run typecheck | TypeScript check |
+| npm run lint | ESLint check |
+</development>
 
-### CLI
-
+<cli>
 | Command | Description |
-|---|----|
-| `npx autoblogger init` | Set up Autoblogger in a Next.js project |
-| `npx autoblogger init --yes` | Non-interactive setup with defaults |
-| `npx autoblogger init --dry-run` | Preview changes without writing |
-| `npx autoblogger import <path>` | Import markdown/MDX content |
-| `npx autoblogger import <path> --status=published` | Import as published |
+|---------|-------------|
+| npx autoblogger init | Set up in Next.js project |
+| npx autoblogger init --yes | Non-interactive |
+| npx autoblogger init --dry-run | Preview changes |
+| npx autoblogger import &lt;path&gt; | Import markdown/MDX |
+| npx autoblogger import &lt;path&gt; --status=published | Import as published |
+</cli>
+</commands>
 
-## CI/CD
+<ci_cd>
+GitHub Actions: .github/workflows/publish.yml
 
-### GitHub Actions: Auto-publish to npm
+Triggers on push to main:
+1. Checkout + Node.js 20
+2. Install + build
+3. Auto-bump patch version if matches npm
+4. Commit version bump + push
+5. Publish to npm
+6. Skips version bump commits (prevents loops)
 
-Located at `.github/workflows/publish.yml`. Triggers on every push to `main`:
+For minor/major: Run npm version locally, push, workflow publishes without bumping.
+</ci_cd>
 
-1. Checks out code and sets up Node.js 20
-2. Installs dependencies and builds
-3. **Auto-bumps patch version** if current version matches npm
-4. Commits version bump and pushes
-5. Publishes to npm
-6. Skips version bump commits to prevent infinite loops
-
-To release a new version:
-1. Push changes to `main`
-2. GitHub Actions automatically bumps version and publishes to npm
-
-For manual version control (minor/major bumps):
-1. Run `npm version minor` or `npm version major` locally
-2. Commit and push — workflow will publish without bumping
-
-## Build Output
-
+<build_output>
 ```
 dist/
-├── index.js          # CJS main entry
-├── index.mjs         # ESM main entry
-├── index.d.ts        # TypeScript declarations
-├── ui.js             # CJS UI components
-├── ui.mjs            # ESM UI components
-├── ui.d.ts           # UI declarations
-├── cli/
-│   └── index.js      # CLI entry (npx autoblogger)
+├── index.js/mjs/d.ts     # Main entry
+├── ui.js/mjs/d.ts        # UI components
+├── cli/index.js          # CLI entry
 ├── lib/
 │   ├── markdown.js/mjs/d.ts
 │   └── seo.js/mjs/d.ts
 └── styles/
     ├── article.js/mjs
-    └── preset.js     # Tailwind preset (copied)
+    └── preset.js
 ```
+</build_output>
 
-## Development Workflow
-
-1. Make changes in `src/`
-2. Run `npm run build` in autoblogger
-3. Changes are immediately available in linked host apps
-4. Test in host app's dev server
-5. Commit with `d` for dev, `g` for production
-
-### Local Linking
-
-For local development, link autoblogger to host projects:
-
-```bash
-# In autoblogger directory (creates global symlink)
-npm link
-
-# In host project (e.g., sample-blog, blog)
-npm link autoblogger
-```
+<development_workflow>
+1. Make changes in src/
+2. Run npm run build
+3. Changes immediately available in linked host apps
+4. Test in host app dev server
+5. Commit with d for dev, g for production
 
 Linked projects:
-- `/Users/hunter/Local Documents/Code/sample-blog` — Sample blog for testing
-- `/Users/hunter/Local Documents/Code/blog` — Production blog
+- /Users/hunter/Local Documents/Code/sample-blog
+- /Users/hunter/Local Documents/Code/blog
 
-After making changes, run `npm run build` in autoblogger — changes are immediately reflected in linked projects via symlink.
-
-**Note:** Running `npm install` in a linked project may break the link. Re-run `npm link autoblogger` to restore.
+After npm install breaks link: npm link autoblogger
+</development_workflow>

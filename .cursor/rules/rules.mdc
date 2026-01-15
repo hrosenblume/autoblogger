@@ -1,130 +1,212 @@
-# Coding Rules
+<critical>
+SINGLE-LETTER GIT COMMANDS — EXECUTE IMMEDIATELY
 
-> 🚨🚨🚨 **CRITICAL: SINGLE-LETTER GIT COMMANDS** 🚨🚨🚨
-> 
-> When the user types ONLY `g`, `d`, `m`, `p`, or `pf` — **EXECUTE THE GIT WORKFLOW IMMEDIATELY.**
-> 
-> | Command | Action |
-> |---------|--------|
-> | `g` | Build → commit → push to `main` |
-> | `d` | Commit → push to `dev` |
-> | `m` | Merge `dev` → `main` |
-> | `p` | Pull current branch |
-> | `pf` | Force reset to `origin/main` |
-> 
-> **DO NOT** interpret these as casual chat. **DO NOT** respond with "Great!" or similar.
-> **DO** run the git commands as specified in the Git Workflow section below.
+When user types ONLY `g`, `d`, `m`, `p`, or `pf` — THIS IS A COMMAND. EXECUTE NOW.
+DO NOT interpret as chat. DO NOT ask questions. DO NOT say "Great!" or "Sure!".
+RUN THE WORKFLOW IMMEDIATELY.
+</critical>
 
-> ⚠️ **THIS FILE IS COMMITTED TO GIT.** Do not add sensitive data: no emails, URLs, passwords, API keys, or secrets.
+<git_commands priority="highest">
+<command name="g" action="production commit and push">
+ONLY run when user EXPLICITLY types `g`. Pushes to main.
 
-## Code Style
+1. `npm run build` — TypeScript must pass
+2. `git status -sb` — check untracked files
+   NEVER auto-add: .env*, *.save, *.bak, credentials, secrets
+3. `git add -u` — tracked files only
+4. `git diff --staged --stat`
+5. READ modified files for context
+6. READ chat history for intent
+7. Update .cursor/rules/ if significant changes
+8. Commit with HEREDOC format (see below)
+9. `git push origin main`
 
-### TypeScript
+If on dev branch:
+1. `git stash` (if uncommitted)
+2. `git checkout main && git merge dev`
+3. Run steps above
+4. `git checkout dev && git stash pop`
+</command>
+
+<command name="d" action="dev commit and push">
+Commits to dev branch ONLY. NEVER touch main.
+
+1. `git status -sb` — check untracked files
+   NEVER auto-add: .env*, *.save, *.bak, credentials, secrets
+2. `git add -u` — tracked files only
+3. `git diff --staged --stat`
+4. READ modified files for context
+5. READ chat history for intent
+6. Commit with HEREDOC format
+7. `git push origin dev`
+</command>
+
+<command name="m" action="merge dev into main">
+1. `git fetch origin`
+2. `git log --oneline main..dev` — see commits
+3. `git diff main..dev --stat`
+4. READ chat history for context
+5. Update .cursor/rules/ if needed (commit to dev first)
+6. `git checkout main && git merge dev`
+7. `git push origin main`
+8. `git checkout dev`
+</command>
+
+<command name="p" action="pull current branch">
+1. `git stash`
+2. `git pull origin $(git branch --show-current)`
+3. `git stash pop`
+</command>
+
+<command name="pf" action="force reset to origin/main">
+1. `git stash` — changes saved in stash
+2. `git fetch origin main`
+3. `git reset --hard origin/main`
+</command>
+
+<commit_format>
+Always use HEREDOC for commit messages:
+
+```bash
+git commit -m "$(cat &lt;&lt;'EOF'
+type: short summary
+
+- Detail one
+- Detail two
+
+EOF
+)"
+```
+</commit_format>
+
+<package_lock_conflicts>
+Don't manually edit lockfile conflicts. Instead:
+```bash
+git checkout --theirs package-lock.json
+npm install
+```
+</package_lock_conflicts>
+</git_commands>
+
+<warning>
+NEVER push to main automatically.
+Only `g` pushes to main.
+After making fixes, use `d` and WAIT for user to type `g`.
+</warning>
+
+---
+
+<security>
+THIS FILE IS COMMITTED TO GIT.
+Do not add: emails, URLs, passwords, API keys, secrets.
+</security>
+
+<code_style>
+<typescript>
 - Use strict mode
-- Prefer explicit types over `any` (cast to `any` only when necessary for Prisma or Tiptap internals)
+- Prefer explicit types over `any`
 - Export types from `src/types.ts` for public API
 - Internal types stay in their respective files
-- Use `unknown` for Prisma client in config (avoid direct dependency)
+- Use `unknown` for Prisma client in config
+</typescript>
 
-### React Components
+<react>
 - Functional components only
-- All UI components are client-side (`'use client'` added by tsup banner)
-- Use `useCallback` and `useMemo` for performance-critical operations
-- Props interfaces defined inline or in same file
-- Use `cn()` utility from `src/lib/cn.ts` for conditional classes
-- Prefer `useState` + `useEffect` over `useReducer` for simple state
+- All UI components are client-side (`'use client'` added by tsup)
+- Use `useCallback` and `useMemo` for performance
+- Use `cn()` utility for conditional classes
+- Prefer `useState` + `useEffect` over `useReducer`
+</react>
 
-### Styling
-- Use Tailwind CSS exclusively
-- Dark mode: Use `dark:` prefix (relies on host app's theme)
-- Use semantic color tokens: `bg-popover`, `text-muted-foreground`, `border-border`, etc.
-- Skeletons: Use `bg-muted` (adapts via CSS variables), never hardcode `bg-gray-200 dark:bg-gray-800`
-- Mobile-first: Use responsive prefixes (`md:`, `lg:`) for desktop overrides
-- Touch targets: `min-h-[44px] md:min-h-0` for mobile-friendly buttons
+<styling>
+- Tailwind CSS exclusively
+- Dark mode: `dark:` prefix
+- Semantic tokens: `bg-popover`, `text-muted-foreground`, `border-border`
+- Skeletons: `bg-muted` (never hardcode `bg-gray-200 dark:bg-gray-800`)
+- Mobile-first with `md:`, `lg:` for desktop
+- Touch targets: `min-h-[44px] md:min-h-0`
+</styling>
 
-### Dropdown Menus (Consistent Pattern)
-- Container: `bg-popover border border-border rounded-md shadow-lg p-1`
-- Items: `w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default`
-- Destructive: Add `text-destructive` class
-- Separator: `<div className="h-px bg-border my-1" />`
+<dropdowns>
+Container: `bg-popover border border-border rounded-md shadow-lg p-1`
+Items: `w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default`
+Destructive: `text-destructive`
+Separator: `h-px bg-border my-1`
+</dropdowns>
 
-### Toolbar Buttons
-- Use `ToolbarButton` component from `toolbar/ToolbarButton.tsx`
-- Consistent sizing: `px-2.5 py-1.5`
-- Active state: `bg-accent text-accent-foreground` (semantic tokens)
-- Skeleton: Use `SkeletonButton` from `Skeleton.tsx` (uses `bg-muted`)
+<toolbar_buttons>
+- Use `ToolbarButton` from `toolbar/ToolbarButton.tsx`
+- Sizing: `px-2.5 py-1.5`
+- Active: `bg-accent text-accent-foreground`
+- Skeleton: `SkeletonButton` from `Skeleton.tsx`
+</toolbar_buttons>
 
-## Package Architecture
+<skeletons>
+- Import from `../components/Skeleton`
+- Variants: `Skeleton`, `SkeletonText`, `SkeletonButton`, `SkeletonCard`, `SkeletonTableRow`
+- All use `bg-muted` for light/dark support
+- NEVER use inline `bg-muted rounded animate-pulse`
+</skeletons>
+</code_style>
 
-### Layer Separation
+<architecture>
+<layers>
 | Layer | Location | Purpose |
-|----|----|---|
-| CLI | `src/cli/` | Setup wizard, content import |
-| Data | `src/data/` | Prisma queries, CRUD operations |
-| API | `src/api/` | HTTP handlers, request/response |
-| UI | `src/ui/` | React components, hooks, pages |
-| AI | `src/ai/` | LLM providers, prompts, streaming |
-| Auto-Draft | `src/auto-draft/` | RSS fetching, keyword filtering, draft generation |
-| Lib | `src/lib/` | Utilities, shared helpers |
+|-------|----------|---------|
+| CLI | src/cli/ | Setup wizard, content import |
+| Data | src/data/ | Prisma queries, CRUD |
+| API | src/api/ | HTTP handlers |
+| UI | src/ui/ | React components, hooks, pages |
+| AI | src/ai/ | LLM providers, prompts, streaming |
+| Auto-Draft | src/auto-draft/ | RSS, keywords, draft generation |
+| Lib | src/lib/ | Utilities, helpers |
+</layers>
 
-### Export Structure
-- `autoblogger` — Server-side: data layer, API handlers, utilities, auto-draft
-- `autoblogger/ui` — Client-side: React dashboard, ChatProvider, hooks
-- `autoblogger/styles/article` — Article layout utilities
-- `autoblogger/markdown` — Markdown parsing (renderMarkdown, htmlToMarkdown, markdownToHtml)
-- `autoblogger/seo` — SEO utilities (getSeoValues)
+<exports>
+- `autoblogger` — Server: data layer, API, auto-draft
+- `autoblogger/ui` — Client: React dashboard, ChatProvider
+- `autoblogger/styles/article` — Article layout
+- `autoblogger/markdown` — renderMarkdown, htmlToMarkdown
+- `autoblogger/seo` — getSeoValues
+</exports>
 
-### File Conventions
-- Data layer files match entity names: `posts.ts`, `revisions.ts`, `comments.ts`
-- API handlers: one file per resource with all CRUD operations
-- UI pages: `WriterDashboard.tsx`, `EditorPage.tsx`, `SettingsPage.tsx`
-- Hooks: `use*.ts` pattern in `src/ui/hooks/`
-- Toolbar: Split into `FormatButtons`, `BlockButtons`, `MediaButtons`, `HistoryButtons`
+<file_conventions>
+- Data layer: `posts.ts`, `revisions.ts`, `comments.ts`
+- API: one file per resource
+- Pages: `WriterDashboard.tsx`, `EditorPage.tsx`, `SettingsPage.tsx`
+- Hooks: `use*.ts` in `src/ui/hooks/`
+- Toolbar: `FormatButtons`, `BlockButtons`, `MediaButtons`, `HistoryButtons`
+</file_conventions>
+</architecture>
 
-## API Handlers
-
-Pattern for all API handlers:
+<api_handlers>
 ```typescript
 export async function handleResourceAPI(
   req: NextRequest,
   cms: AutobloggerServer,
   session: Session | null,
   path: string,
-  onMutate?: (type: string, data: unknown) => Promise<void>
-): Promise<Response>
+  onMutate?: (type: string, data: unknown) => Promise&lt;void&gt;
+): Promise&lt;Response&gt;
 ```
 
-### Conventions
 - Use `jsonResponse(data, status)` helper
 - Check `cms.config.auth.isAdmin(session)` for protected routes
-- Call `onMutate` after successful mutations for cache invalidation
-- Return proper status codes: 200, 201, 400, 401, 403, 404, 405
-- Parse path with `path.split('/').filter(Boolean)` to extract segments
+- Call `onMutate` after mutations for cache invalidation
+- Status codes: 200, 201, 400, 401, 403, 404, 405
+</api_handlers>
 
-## CLI Development
+<cli_development>
+- `picocolors` for colored output
+- `prompts` for interactive questions
+- `log(type, message)` helper: check, write, skip, warn, error, info, run, backup
+- Support `--dry-run` and `--yes` flags
+- Create backups before modifying files
+- `detectProject()` — Find Next.js, Prisma, Tailwind
+- `checkConflicts()` — Detect Prisma model conflicts
+</cli_development>
 
-### Conventions
-- Use `picocolors` for colored output (lightweight, no dependencies)
-- Use `prompts` for interactive questions
-- Log with `log(type, message)` helper: `check`, `write`, `skip`, `warn`, `error`, `info`, `run`, `backup`
-- Support `--dry-run` flag to preview changes
-- Support `--yes` flag for non-interactive mode
-- Create backups before modifying existing files
-
-### File Operations
-- Use Node.js `fs` and `path` modules directly
-- Check file existence before writing
-- Use `execSync` for running shell commands with `stdio: 'inherit'`
-- Clean up temporary files in `finally` blocks
-
-### Detection Utilities
-- `detectProject()` — Find Next.js version, Prisma schema, Tailwind config
-- `checkConflicts()` — Detect model name conflicts in Prisma schema
-- `countMarkdownFiles()` — Count importable content
-
-## Data Layer
-
-Pattern for data classes:
+<data_layer>
 ```typescript
 export function createResourceData(prisma: any) {
   return {
@@ -138,256 +220,109 @@ export function createResourceData(prisma: any) {
 }
 ```
 
-### Conventions
-- Always include `orderBy` for list queries
-- Support pagination: `skip`, `take` options
+- Always include `orderBy` for lists
+- Support pagination: `skip`, `take`
 - Include related data via Prisma `include`
-- Use `_count` for counting relations
 - Soft delete for posts (`status: 'deleted'`)
+</data_layer>
 
-## UI Components
+<ui_components>
+<dashboard_provider>
+- `navigate(path)` — SPA navigation
+- `goBack()` — Magic back
+- `apiBasePath` — Base URL for API
+- `sharedData` — Preloaded counts, settings, posts
+- `session` — Current user
+- `onEditorStateChange` — Parent app callback
+</dashboard_provider>
 
-### Context
-- `DashboardProvider` wraps all UI and provides:
-  - `navigate(path)` — Internal SPA navigation
-  - `goBack()` — Magic back (history or root)
-  - `apiBasePath` — Base URL for API calls
-  - `sharedData` — Preloaded counts, settings, posts, aiSettings
-  - `session` — Current user info
-  - `onEditorStateChange` — Callback for parent app integration
-  - `onRegisterEditHandler` — For AI agent edit commands
+<chat_provider>
+- `messages` — Chat history
+- `essayContext` — Current essay state
+- `mode` — ask, agent, plan, search
+- `sendMessage(content)` — Send and stream
+- `registerEditHandler` — Agent mode edits
+- `registerExpandPlanHandler` — Plan expansion
+</chat_provider>
 
-- `ChatProvider` wraps DashboardProvider and provides:
-  - `messages` — Chat history
-  - `essayContext` — Current essay state (synced from editor)
-  - `mode` — Current chat mode (ask, agent, plan, search)
-  - `sendMessage(content)` — Send message and stream response
-  - `registerEditHandler` — Register callback for agent mode edits
-  - `registerExpandPlanHandler` — Register callback for plan expansion
+<chat_modes>
+- `ask` — Q&A about content
+- `agent` — Direct editing, outputs `:::edit` JSON blocks
+- `plan` — Outlines in `&lt;plan&gt;` tags
+- `search` — Research mode
+</chat_modes>
 
-### Pages
-- `WriterDashboard` — Post list, AI generation textarea, tabs
-- `EditorPage` — Tiptap editor, toolbar, metadata, comments
-- `SettingsPage` — Admin settings sub-pages (users, ai, tags, etc.)
+<loading_states>
+Use `&lt;Skeleton&gt;` component, match shapes to content.
+Show loading while `sharedDataLoading` is true.
+</loading_states>
+</ui_components>
 
-### Settings Sub-Pages Pattern
-Each settings section follows this pattern:
-1. Header with `text-lg font-semibold` title
-2. Card container: `rounded-lg border bg-card shadow-sm` (for AI settings)
-3. Table for lists: desktop `hidden md:block`, mobile `md:hidden` with cards
-4. Dropdown menus for actions
-
-### Loading States
-- Use `<Skeleton>` component from `../components/Skeleton`
-- Available variants: `Skeleton`, `SkeletonText`, `SkeletonButton`, `SkeletonCard`, `SkeletonTableRow`
-- All use `bg-muted` for automatic light/dark mode support
-- Match skeleton shapes to actual content
-- Show loading state while `sharedDataLoading` is true
-
-### Skeleton Components
-- Import from `../components/Skeleton`
-- Base: `<Skeleton className="h-X w-X" />`
-- Never use inline `bg-muted rounded animate-pulse` divs
-- Use `bg-muted` for automatic light/dark theming (via CSS variables)
-- Never hardcode `bg-gray-200 dark:bg-gray-800`
-
-## Editor System
-
-### Tiptap Configuration
+<editor_system>
+<tiptap>
 - Extensions: StarterKit, Placeholder, Link, Image, CommentMark
-- Use `immediatelyRender: false` to prevent SSR hydration mismatch
-- Convert markdown ↔ HTML with `renderMarkdown()` and `htmlToMarkdown()`
-- Handle selection changes for comment highlighting
+- `immediatelyRender: false` for SSR
+- Convert with `renderMarkdown()` and `htmlToMarkdown()`
+</tiptap>
 
-### Comment Mark Extension
-- Custom Tiptap Mark at `src/lib/comment-mark.ts`
-- Stores `commentId` as attribute
-- Yellow highlight styling
-- Click handler opens comment panel
+<comment_mark>
+- Custom Mark at `src/lib/comment-mark.ts`
+- Stores `commentId` attribute
+- Yellow highlight, click opens panel
+</comment_mark>
 
-### Revision System
-- Fetch revisions on dropdown open
-- Preview shows revision content without saving
-- Restore saves the preview as current content
-- Store original post state during preview for cancel
+<revisions>
+- Fetch on dropdown open
+- Preview without saving
+- Store original for cancel
+</revisions>
+</editor_system>
 
-## Chat System
+<url_extraction>
+- `extractAndFetchUrls(text)` — Detect and fetch URLs
+- Puppeteer for JS-rendered, fetch fallback
+- `buildUrlContext(fetched)` — XML context for prompts
+- Max 3 URLs, truncate to ~4000 chars
+- Auto-detect serverless vs local for Puppeteer
+</url_extraction>
 
-### ChatProvider (`src/ui/hooks/useChat.tsx`)
-Wraps dashboard and provides chat context for all components.
+<do_not>
+- Use inline styles
+- Hardcode URLs or paths
+- Import from host app directly
+- Create new dropdown patterns
+- Use document selectors for modals
+- Forget `'use client'` for hooks
+</do_not>
 
-Props:
-- `apiBasePath` — Base API path (default: `/api/cms`)
-- `chatApiPath` — Custom chat endpoint (default: `${apiBasePath}/ai/chat`)
-- `historyApiPath` — History persistence endpoint (default: `/api/chat/history`)
-
-### Chat Modes
-- `ask` — Default mode, answers questions about content
-- `agent` — Direct editing mode, AI outputs `:::edit` JSON blocks
-- `plan` — Outline mode, generates plans in `<plan>` tags
-- `search` — Research mode for fact-finding
-
-### Chat Context Values
-```typescript
-{
-  messages, essayContext, isStreaming, isOpen, mode,
-  webSearchEnabled, thinkingEnabled, selectedModel,
-  sendMessage, stopStreaming, addMessage, clearMessages,
-  setMode, setWebSearchEnabled, setThinkingEnabled,
-  registerEditHandler, undoEdit, expandPlan
-}
-```
-
-### Agent Mode Edit Parsing
-Edit blocks are parsed from assistant responses:
-```
-:::edit
-{"type": "replace_section", "find": "...", "replace": "..."}
-:::
-```
-
-The `registerEditHandler` callback is called for each edit. EditorPage registers a handler that updates post state.
-
-### Plan Mode
-- Output is cleaned by extracting from `<plan>` tags
-- "Draft Essay" button triggers `expandPlan()` which calls the registered `ExpandPlanHandler`
-- If on editor page, expands in place; otherwise navigates to `/editor?fromPlan=1`
-
-## URL Content Extraction
-
-For AI prompts that reference URLs:
-- Use `extractAndFetchUrls(text)` to detect and fetch URLs from user input
-- URLs are detected with/without protocol (https://, www., bare domains)
-- Content is fetched with Puppeteer (JS-rendered) or simple fetch (fallback)
-- Use `buildUrlContext(fetched)` to create XML-formatted context for prompts
-- Limit to 3 URLs max per request
-- Content is truncated to ~4000 chars to avoid token bloat
-
-### Puppeteer Configuration
-- Auto-detects serverless (Vercel/Lambda) vs local environment
-- Serverless: Uses `@sparticuz/chromium` + `puppeteer-core`
-- Local: Uses regular `puppeteer` with bundled Chrome
-- Block images, stylesheets, fonts to speed up loading
-- 15s timeout for page load, 2s wait for JS rendering
-
-## Don't
-- Don't use inline styles
-- Don't hardcode URLs or paths (use context)
-- Don't import from host app directly
-- Don't create new dropdown patterns (use established classes)
-- Don't use document selectors for modals (use React portals)
-- Don't forget `'use client'` for hooks
-
-## Do
+<do>
 - Keep components focused and reusable
 - Handle loading states with skeletons
-- Support both light and dark themes
+- Support light and dark themes
 - Test on mobile (44px touch targets)
 - Run `npm run build` before committing
-- Use `cn()` for conditional class names
+- Use `cn()` for conditional classes
 - Clean up event listeners in useEffect
-- Use portals for dropdowns that need to escape overflow
+- Use portals for overflow-escaping dropdowns
+</do>
 
-## Host App Setup Checklist
+<host_app_checklist>
+1. CSS Import: `@import 'autoblogger/styles/autoblogger.css';` before Tailwind
+2. Tailwind Content: `'./node_modules/autoblogger/dist/**/*.{js,mjs}'`
+3. ChatMessage Model in Prisma schema
+4. Re-run `npm link autoblogger` after `npm install`
+5. Run `npm run build` after source changes
+</host_app_checklist>
 
-When testing in a host app, ensure:
-
-1. **CSS Import** — `@import 'autoblogger/styles/autoblogger.css';` in globals.css (before Tailwind directives)
-2. **Tailwind Content** — `'./node_modules/autoblogger/dist/**/*.{js,mjs}'` in content array
-3. **ChatMessage Model** — Added to Prisma schema and migrated (for chat history)
-4. **npm link** — Re-run `npm link autoblogger` after `npm install` (breaks symlink)
-5. **Rebuild** — Run `npm run build` in autoblogger after source changes
-
-## Git Workflow
-
-> ⚠️ **CRITICAL: Single-letter commands are git workflow triggers.** When the user types just `g`, `d`, `m`, `p`, or `pf` — that IS a command. Execute immediately. Don't interpret as casual chat.
-
-| Command | Action |
-|---|-----|
-| `g` | Production commit → push to `main` |
-| `d` | Dev commit → push to `dev` |
-| `m` | Merge `dev` → `main` |
-| `p` | Pull current branch |
-| `pf` | Force reset to `origin/main` |
-
-> ⚠️ **NEVER push to `main` automatically.** Only push to main when the user EXPLICITLY types "g". After making changes or fixes, commit to `dev` only and WAIT for the user to type "g" before touching main.
-
-### When user types "d" (dev commit)
-1. `git status -sb` first — review untracked files (`??`), never auto-add `.env*`, `*.save`, `*.bak`
-2. `git add -u` (tracked files only) or selectively add, then `git diff --staged --stat`
-3. Read modified files for context
-4. Review chat history
-5. Commit with descriptive message summarizing changes
-6. Push to `dev` branch
-
-### When user types "g" (production commit)
-**ONLY run this when the user EXPLICITLY types "g".** Never auto-push to main after making fixes.
-
-If on `dev` or another branch:
-1. `git stash` (if uncommitted changes)
-2. `git checkout main`
-3. `git merge dev` (or current branch)
-4. Continue with steps below, then `git checkout dev` to return
-
-Steps:
-1. **Run `npm run build`** — catches TypeScript errors before they fail
-2. `git status -sb` — review untracked files (`??`), never auto-add `.env*`, `*.save`, `*.bak`
-3. `git add -u` (tracked files only) or selectively add, then `git diff --staged --stat`
-4. Read modified files for context
-5. Review chat history
-6. **Update `.cursor/rules/` if significant changes were made:**
-   - `rules.mdc` — New conventions, patterns, do's/don'ts
-   - `context.mdc` — New systems, architecture, file structure
-7. Commit with comprehensive message
-8. `git push origin main`
-9. If started on another branch: `git checkout dev && git stash pop`
-
-### When user types "m" (merge dev → prod)
-1. `git fetch origin && git log --oneline main..dev` to see what's being promoted
-2. Review the diff: `git diff main..dev --stat`
-3. Review chat history for context on what was built/changed
-4. **Update `.cursor/rules/` if significant changes were made**
-5. If docs updated: commit on `dev` first, push to `dev`
-6. Merge dev into main: `git checkout main && git merge dev`
-7. Push to `main`
-8. Return to dev branch: `git checkout dev`
-
-### When user types "p" (pull current branch)
-1. `git stash` — save local changes
-2. `git pull origin $(git branch --show-current)`
-3. `git stash pop` — restore local changes
-
-### When user types "pf" (force reset to main)
-1. `git stash` — save local changes
-2. `git fetch origin main`
-3. `git reset --hard origin/main`
-
-Changes are preserved in stash (`git stash list` to see, `git stash pop` to restore)
-
-## Build & Test
-
+<build_and_test>
 Before committing:
-1. `npm run build` — TypeScript compilation + bundling
-2. Check for type errors in output
-3. Test in linked host apps if making UI changes
+1. `npm run build` — TypeScript + bundling
+2. Check for type errors
+3. Test in linked host apps for UI changes
 
-### Local Linking
-Autoblogger is linked to test projects for development:
-- `/Users/hunter/Local Documents/Code/sample-blog`
-- `/Users/hunter/Local Documents/Code/blog`
+Linked projects:
+- /Users/hunter/Local Documents/Code/sample-blog
+- /Users/hunter/Local Documents/Code/blog
 
-After changes to autoblogger:
-```bash
-# In autoblogger directory
-npm run build
-
-# Changes are immediately reflected in linked projects
-# Run the host app's dev server to test:
-cd /Users/hunter/Local\ Documents/Code/sample-blog
-npm run dev
-```
-
-If `npm install` breaks the link, restore with:
-```bash
-npm link autoblogger
-```
+If npm install breaks link: `npm link autoblogger`
+</build_and_test>

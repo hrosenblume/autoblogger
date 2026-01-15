@@ -141,8 +141,13 @@ export function createPostsData(prisma: any, hooks?: PostHooks) {
     },
 
     async update(id: string, data: UpdatePostInput) {
-      // Extract tagIds before passing to Prisma
-      const { tagIds, ...postData } = data as UpdatePostInput & { tagIds?: string[] }
+      // Extract tagIds and strip relation fields before passing to Prisma
+      const { tagIds, tags, revisions, topic, ...postData } = data as UpdatePostInput & { 
+        tagIds?: string[]
+        tags?: unknown
+        revisions?: unknown
+        topic?: unknown
+      }
       
       // Auto-set publishedAt on first publish
       if (postData.status === 'published') {
