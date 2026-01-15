@@ -19,10 +19,9 @@
       "require": "./dist/ui.js",
       "types": "./dist/ui.d.ts"
     },
-    "./styles/preset": {
-      "require": "./dist/styles/preset.js",
-      "default": "./dist/styles/preset.js"
-    },
+    "./styles/preset": "./dist/styles/preset.js",
+    "./styles/preset.js": "./dist/styles/preset.js",
+    "./dist/styles/preset.js": "./dist/styles/preset.js",
     "./styles/editor.css": "./dist/styles/editor.css",
     "./styles/autoblogger.css": "./dist/styles/autoblogger.css",
     "./styles/standalone.css": "./dist/styles/standalone.css",
