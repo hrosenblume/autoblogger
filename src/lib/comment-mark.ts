@@ -153,7 +153,7 @@ export function applyCommentMarks(
   const textContent = doc.textContent
 
   comments.forEach((comment) => {
-    if (!comment.quotedText || comment.parentId) return // Skip replies
+    if (!comment.quotedText || comment.parentId || comment.resolved) return // Skip replies
 
     const index = textContent.indexOf(comment.quotedText)
     if (index === -1) return // Text not found

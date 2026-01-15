@@ -10,6 +10,7 @@ import { TagsSection } from '../components/TagsSection'
 import { useComments } from '../hooks/useComments'
 import { useChatContextOptional } from '../hooks/useChat'
 import { formatSavedTime, countWords } from '../../lib/format'
+import { Skeleton } from '../components/Skeleton'
 
 interface Tag {
   id: string
@@ -34,11 +35,6 @@ interface Revision {
   subtitle: string | null
   markdown: string
   polyhedraShape?: string | null
-}
-
-// Skeleton component
-function Skeleton({ className }: { className?: string }) {
-  return <div className={`bg-gray-200 dark:bg-gray-800 animate-pulse rounded ${className || ''}`} />
 }
 
 // Content skeleton matching the editor layout
@@ -206,18 +202,14 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       const method = post.id ? 'PATCH' : 'POST'
       const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`
 
-      // Use setPost's callback form to get current post state without adding post to deps
-      let currentPost: typeof post
-      setPost(p => { currentPost = p; return p })
-
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...currentPost!,
-          title: currentPost!.title || 'Untitled',
+          ...post,
+          title: post.title || 'Untitled',
           status: 'published',
-          ...Object.fromEntries(fields.map(f => [f.name, currentPost![f.name]]))
+          ...Object.fromEntries(fields.map(f => [f.name, post[f.name]]))
         }),
       })
 
@@ -228,7 +220,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       setSaving(false)
       setSavingAs(null)
     }
-  }, [post.id, apiBasePath, fields, navigate])
+  }, [post, apiBasePath, fields, navigate])
 
   // Comments hook - handles all comment logic
   const comments = useComments({

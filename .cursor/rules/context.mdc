@@ -33,13 +33,22 @@ import { AutobloggerDashboard } from 'autoblogger/ui'
 // Chat components (for standalone use)
 import { ChatProvider, useChatContext, ChatPanel, ChatButton } from 'autoblogger/ui'
 
+// Keyboard shortcuts
+import { SHORTCUTS, useKeyboard, useDashboardKeyboard, GlobalShortcuts } from 'autoblogger/ui'
+
+// AI model utilities
+import { useAIModels, ModelSelector } from 'autoblogger/ui'
+
 // Utilities
-import { renderMarkdown, htmlToMarkdown, markdownToHtml } from 'autoblogger/markdown'
+import { renderMarkdown, renderMarkdownSanitized, htmlToMarkdown, markdownToHtml, generateSlug, wordCount } from 'autoblogger/markdown'
 import { ARTICLE_CLASSES } from 'autoblogger/styles/article'
 import { getSeoValues } from 'autoblogger/seo'
 
 // Comment utilities (for advanced integrations)
 import { createCommentsClient, CommentMark } from 'autoblogger'
+
+// AI model utilities (server-side)
+import { resolveModel, getModelOptions, modelHasNativeSearch } from 'autoblogger'
 
 // Auto-draft
 import { runAutoDraft, fetchRssFeeds, filterByKeywords } from 'autoblogger'
@@ -76,6 +85,7 @@ autoblogger/
 │   │       ├── backup.ts      # Pre-change backups
 │   │       ├── prisma-merge.ts # Schema conflict detection + merging
 │   │       ├── tailwind-patch.ts # Tailwind config patching (v3 + v4)
+│   │       ├── css-patch.ts   # globals.css autoblogger import patching
 │   │       └── prompts.ts     # Interactive prompts + logging
 │   │
 │   ├── types/             # Consolidated type definitions
@@ -163,7 +173,7 @@ autoblogger/
 │       │   ├── ModelSelector.tsx
 │       │   ├── ControlButton.tsx
 │       │   ├── RevisionHistoryDropdown.tsx
-│       │   ├── Skeleton.tsx         # Reusable skeleton components
+│       │   ├── Skeleton.tsx         # Skeleton, SkeletonText, SkeletonButton, SkeletonCard, SkeletonTableRow
 │       │   ├── Dropdown.tsx         # Reusable dropdown menu
 │       │   ├── Form.tsx             # Form field components
 │       │   ├── SettingsListPage.tsx # Generic admin list page
@@ -308,12 +318,15 @@ model AISettings {
   planTemplate         String?
   expandPlanTemplate   String?
   agentTemplate        String?  // Template for agent mode (direct editing)
+  anthropicKey         String?  // API key stored in DB (optional, env var fallback)
+  openaiKey            String?  // API key stored in DB (optional, env var fallback)
   updatedAt            DateTime @updatedAt
 }
 
 model IntegrationSettings {
   id               String   @id @default("default")
   autoDraftEnabled Boolean  @default(false)
+  postUrlPattern   String   @default("/e/{slug}")  // Pattern for post URLs
   updatedAt        DateTime @updatedAt
 }
 
@@ -414,6 +427,12 @@ const cms = createAutoblogger({
   ai: {
     anthropicKey: process.env.ANTHROPIC_API_KEY,
     openaiKey: process.env.OPENAI_API_KEY,
+  },
+  // Optional: Lifecycle hooks
+  hooks: {
+    beforePublish: async (post) => { /* validate before publishing */ },
+    afterSave: async (post) => { /* trigger revalidation, etc. */ },
+    onAutoDraftPostCreate: (article, essay) => ({ customField: 'value' }),  // Add extra fields to auto-drafted posts
   },
 })
 
@@ -578,10 +597,26 @@ Keyboard shortcut: **Cmd/Ctrl + Shift + A** toggles agent/ask mode.
 ### Chat History Persistence
 
 Chat messages are persisted via `/api/cms/chat/history` API:
-- `GET` — Fetch all messages
+- `GET` — Fetch all messages (last 50, chronological order)
 - `POST` — Save a new message
+- `DELETE` — Clear all messages
 
 History is loaded on mount via `ChatProvider` and messages are saved after each exchange. The `ChatMessage` Prisma model stores role + content + timestamp.
+
+### Keyboard Shortcuts
+
+Defined in `src/ui/shortcuts.ts` and used with `useKeyboard()` hook:
+
+| Shortcut | Action |
+|----------|--------|
+| Cmd+. | Toggle theme (light/dark) |
+| Cmd+/ | Toggle view (essay↔editor, home↔writer) |
+| Cmd+; | Toggle settings |
+| Cmd+K | Open/close chat panel |
+| Cmd+Shift+A | Toggle Ask/Agent mode |
+| N | New article (not in input fields) |
+| Escape | Go back to writer |
+| ←/→ | Navigate posts (not in input fields) |
 
 ## API Routes
 
@@ -608,7 +643,7 @@ History is loaded on mount via `ChatProvider` and messages are saved after each 
 | `/ai/settings` | GET, PATCH | AI configuration |
 | `/ai/generate` | POST | Generate essay (streaming SSE) |
 | `/ai/chat` | POST | Chat streaming (modes: ask, agent, plan, search) |
-| `/chat/history` | GET, POST | Chat history persistence |
+| `/chat/history` | GET, POST, DELETE | Chat history persistence + clear |
 | `/settings` | GET, PATCH | Integration settings |
 | `/upload` | POST | Image upload |
 | `/admin/counts` | GET | Dashboard counts |

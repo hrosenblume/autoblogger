@@ -38,5 +38,5 @@ export function Divider() {
 
 /** Skeleton placeholder for a toolbar button - matches ToolbarButton dimensions */
 export function SkeletonButton() {
-  return <Skeleton className="h-7 w-7 shrink-0 bg-gray-200 dark:bg-gray-800" />
+  return <Skeleton className="h-7 w-7 shrink-0" />
 }

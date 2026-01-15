@@ -38,6 +38,7 @@
 - Use Tailwind CSS exclusively
 - Dark mode: Use `dark:` prefix (relies on host app's theme)
 - Use semantic color tokens: `bg-popover`, `text-muted-foreground`, `border-border`, etc.
+- Skeletons: Use `bg-muted` (adapts via CSS variables), never hardcode `bg-gray-200 dark:bg-gray-800`
 - Mobile-first: Use responsive prefixes (`md:`, `lg:`) for desktop overrides
 - Touch targets: `min-h-[44px] md:min-h-0` for mobile-friendly buttons
 
@@ -50,8 +51,8 @@
 ### Toolbar Buttons
 - Use `ToolbarButton` component from `toolbar/ToolbarButton.tsx`
 - Consistent sizing: `px-2.5 py-1.5`
-- Active state: `bg-gray-100 dark:bg-gray-800`
-- Skeleton: Use `SkeletonButton` for loading states
+- Active state: `bg-accent text-accent-foreground` (semantic tokens)
+- Skeleton: Use `SkeletonButton` from `Skeleton.tsx` (uses `bg-muted`)
 
 ## Package Architecture
 
@@ -177,9 +178,18 @@ Each settings section follows this pattern:
 4. Dropdown menus for actions
 
 ### Loading States
-- Use skeleton animations: `bg-muted rounded animate-pulse`
+- Use `<Skeleton>` component from `../components/Skeleton`
+- Available variants: `Skeleton`, `SkeletonText`, `SkeletonButton`, `SkeletonCard`, `SkeletonTableRow`
+- All use `bg-muted` for automatic light/dark mode support
 - Match skeleton shapes to actual content
 - Show loading state while `sharedDataLoading` is true
+
+### Skeleton Components
+- Import from `../components/Skeleton`
+- Base: `<Skeleton className="h-X w-X" />`
+- Never use inline `bg-muted rounded animate-pulse` divs
+- Use `bg-muted` for automatic light/dark theming (via CSS variables)
+- Never hardcode `bg-gray-200 dark:bg-gray-800`
 
 ## Editor System
 

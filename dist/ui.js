@@ -233,14 +233,27 @@ function DashboardProvider({
 var import_react4 = require("react");
 var import_lucide_react2 = require("lucide-react");
 
+// src/lib/cn.ts
+var import_clsx = require("clsx");
+var import_tailwind_merge = require("tailwind-merge");
+function cn(...inputs) {
+  return (0, import_tailwind_merge.twMerge)((0, import_clsx.clsx)(inputs));
+}
+
+// src/ui/components/Skeleton.tsx
+var import_jsx_runtime2 = require("react/jsx-runtime");
+function Skeleton({ className }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: cn("animate-pulse bg-muted rounded", className) });
+}
+
 // src/ui/components/ControlButton.tsx
 var import_react2 = require("react");
-var import_jsx_runtime2 = require("react/jsx-runtime");
+var import_jsx_runtime3 = require("react/jsx-runtime");
 var ControlButton = (0, import_react2.forwardRef)(
   ({ className = "", active, disabled, children, type = "button", ...props }, ref) => {
     const baseClasses = "inline-flex items-center gap-1 text-sm transition-colors focus:outline-none";
     const stateClasses = disabled ? "text-muted-foreground/30 cursor-not-allowed" : active ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground active:text-foreground md:hover:text-foreground";
-    return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
       "button",
       {
         ref,
@@ -258,7 +271,7 @@ ControlButton.displayName = "ControlButton";
 // src/ui/components/ModelSelector.tsx
 var import_react3 = require("react");
 var import_lucide_react = require("lucide-react");
-var import_jsx_runtime3 = require("react/jsx-runtime");
+var import_jsx_runtime4 = require("react/jsx-runtime");
 function ModelSelector({
   models,
   selectedModel,
@@ -277,12 +290,12 @@ function ModelSelector({
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-  return /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)("div", { ref, className: "relative", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(ControlButton, { onClick: () => setOpen(!open), children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { ref, className: "relative", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(ControlButton, { onClick: () => setOpen(!open), children: [
       displayModel?.name || "Select model",
-      /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_lucide_react.ChevronDown, { className: "w-3.5 h-3.5" })
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react.ChevronDown, { className: "w-3.5 h-3.5" })
     ] }),
-    open && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("div", { className: "absolute bottom-full left-0 mb-1 min-w-[180px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: models.map((model) => /* @__PURE__ */ (0, import_jsx_runtime3.jsxs)(
+    open && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "absolute bottom-full left-0 mb-1 min-w-[180px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: models.map((model) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
       "button",
       {
         onClick: () => {
@@ -291,8 +304,8 @@ function ModelSelector({
         },
         className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between",
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime3.jsx)("span", { children: model.name }),
-          selectedModel === model.id && /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(import_lucide_react.Check, { className: "w-4 h-4" })
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { children: model.name }),
+          selectedModel === model.id && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react.Check, { className: "w-4 h-4" })
         ]
       },
       model.id
@@ -351,7 +364,7 @@ function countWords(text) {
 }
 
 // src/ui/pages/WriterDashboard.tsx
-var import_jsx_runtime4 = require("react/jsx-runtime");
+var import_jsx_runtime5 = require("react/jsx-runtime");
 function WriterDashboard() {
   const { apiBasePath, navigate, sharedData, sharedDataLoading } = useDashboardContext();
   const [posts, setPosts] = (0, import_react4.useState)([]);
@@ -460,33 +473,33 @@ function WriterDashboard() {
     }
   }
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "mt-4 mb-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-6 w-48 bg-muted rounded animate-pulse mb-4" }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-24 w-full bg-muted rounded animate-pulse" })
+    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "mt-4 mb-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-6 w-48 mb-4" }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-24 w-full" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex border-b border-border mb-6 gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-10 w-16 bg-muted rounded animate-pulse" }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-10 w-20 bg-muted rounded animate-pulse" }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-10 w-24 bg-muted rounded animate-pulse" })
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex border-b border-border mb-6 gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-10 w-16" }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-10 w-20" }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-10 w-24" })
       ] }),
-      [1, 2, 3, 4, 5].map((i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-16 bg-muted rounded animate-pulse mb-2" }, i))
+      [1, 2, 3, 4, 5].map((i) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-16 mb-2" }, i))
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8 pb-16", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8 pb-16", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
       "button",
       {
         onClick: () => navigate("/editor"),
         className: "sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg z-50 bg-primary text-primary-foreground flex items-center justify-center",
-        children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.Plus, { className: "w-6 h-6" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Plus, { className: "w-6 h-6" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "mt-4 mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("h2", { className: "text-lg font-semibold mb-4", children: "What's on your mind?" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("form", { onSubmit: handleIdeaSubmit, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "mt-4 mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("h2", { className: "text-lg font-semibold mb-4", children: "What's on your mind?" }),
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("form", { onSubmit: handleIdeaSubmit, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
             "textarea",
             {
               name: "idea",
@@ -501,23 +514,23 @@ function WriterDashboard() {
               }
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
             "button",
             {
               type: "submit",
               className: "absolute bottom-3 right-3 rounded-full w-10 h-10 bg-secondary text-secondary-foreground flex items-center justify-center hover:bg-secondary/80",
-              children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.ArrowUp, { className: "w-5 h-5" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.ArrowUp, { className: "w-5 h-5" })
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex items-center gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "relative", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(ControlButton, { onClick: () => setLengthOpen(!lengthOpen), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "relative", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(ControlButton, { onClick: () => setLengthOpen(!lengthOpen), children: [
               length,
               " words",
-              /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.ChevronDown, { className: "w-3.5 h-3.5" })
+              /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.ChevronDown, { className: "w-3.5 h-3.5" })
             ] }),
-            lengthOpen && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "absolute top-full left-0 mt-1 bg-popover border border-border rounded-md shadow-md z-50", children: LENGTH_OPTIONS.map((len) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+            lengthOpen && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "absolute top-full left-0 mt-1 bg-popover border border-border rounded-md shadow-md z-50", children: LENGTH_OPTIONS.map((len) => /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
               "button",
               {
                 onClick: () => {
@@ -528,31 +541,31 @@ function WriterDashboard() {
                 children: [
                   len,
                   " words",
-                  length === len && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.Check, { className: "w-4 h-4" })
+                  length === len && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Check, { className: "w-4 h-4" })
                 ]
               },
               len
             )) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ControlButton, { onClick: () => setWebEnabled(!webEnabled), active: webEnabled, title: "Search the web (works with all models)", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.Globe, { className: "w-4 h-4" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ControlButton, { onClick: () => setThinkingEnabled(!thinkingEnabled), active: thinkingEnabled, title: "Enable thinking mode", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.Brain, { className: "w-4 h-4" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ModelSelector, { models, selectedModel: modelId, onModelChange: setModelId, currentModel })
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ControlButton, { onClick: () => setWebEnabled(!webEnabled), active: webEnabled, title: "Search the web (works with all models)", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Globe, { className: "w-4 h-4" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ControlButton, { onClick: () => setThinkingEnabled(!thinkingEnabled), active: thinkingEnabled, title: "Enable thinking mode", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Brain, { className: "w-4 h-4" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ModelSelector, { models, selectedModel: modelId, onModelChange: setModelId, currentModel })
         ] })
       ] })
     ] }),
-    autoDraftEnabled && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("section", { className: "mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("button", { onClick: () => setSuggestedOpen(!suggestedOpen), className: "flex items-center gap-2 text-lg font-semibold mb-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.ChevronDown, { className: `h-4 w-4 text-muted-foreground transition-transform ${suggestedOpen ? "" : "-rotate-90"}` }),
+    autoDraftEnabled && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("section", { className: "mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("button", { onClick: () => setSuggestedOpen(!suggestedOpen), className: "flex items-center gap-2 text-lg font-semibold mb-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.ChevronDown, { className: `h-4 w-4 text-muted-foreground transition-transform ${suggestedOpen ? "" : "-rotate-90"}` }),
         "Suggested",
-        suggestedPosts.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center", children: suggestedPosts.length })
+        suggestedPosts.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center", children: suggestedPosts.length })
       ] }),
-      suggestedOpen && (suggestedPosts.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "space-y-2", children: suggestedPosts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex items-center justify-between gap-4 py-3 border-b border-border", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex-1 min-w-0", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("p", { className: "font-medium truncate", children: post.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex items-center gap-3 text-sm text-muted-foreground", children: [
-            post.topic && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "bg-muted px-2 py-0.5 rounded text-xs", children: post.topic.name }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { children: new Date(post.createdAt).toLocaleDateString() }),
-            post.sourceUrl && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+      suggestedOpen && (suggestedPosts.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "space-y-2", children: suggestedPosts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center justify-between gap-4 py-3 border-b border-border", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex-1 min-w-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { className: "font-medium truncate", children: post.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center gap-3 text-sm text-muted-foreground", children: [
+            post.topic && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "bg-muted px-2 py-0.5 rounded text-xs", children: post.topic.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { children: new Date(post.createdAt).toLocaleDateString() }),
+            post.sourceUrl && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
               "a",
               {
                 href: post.sourceUrl,
@@ -561,40 +574,40 @@ function WriterDashboard() {
                 className: "flex items-center gap-1 hover:text-foreground",
                 onClick: (e) => e.stopPropagation(),
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.ExternalLink, { className: "h-3 w-3" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.ExternalLink, { className: "h-3 w-3" }),
                   "Source"
                 ]
               }
             )
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
             "button",
             {
               onClick: () => handleRejectSuggested(post),
               disabled: actionLoading === post.id,
               className: "p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md",
-              children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.X, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.X, { className: "h-4 w-4" })
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
             "button",
             {
               onClick: () => handleAcceptSuggested(post),
               disabled: actionLoading === post.id,
               className: "px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm flex items-center gap-1",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.Check, { className: "h-4 w-4" }),
+                /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Check, { className: "h-4 w-4" }),
                 "Accept"
               ]
             }
           )
         ] })
-      ] }, post.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("p", { className: "text-muted-foreground text-sm", children: [
+      ] }, post.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("p", { className: "text-muted-foreground text-sm", children: [
         "No suggested essays \u2014",
         " ",
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
           "button",
           {
             onClick: () => navigate("/settings/topics"),
@@ -606,15 +619,15 @@ function WriterDashboard() {
         "to generate drafts"
       ] }))
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "relative flex items-center justify-between border-b border-border mb-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: `flex ${searchOpen ? "invisible sm:visible" : ""}`, children: ["all", "drafts", "published"].map((tab) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "relative flex items-center justify-between border-b border-border mb-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: `flex ${searchOpen ? "invisible sm:visible" : ""}`, children: ["all", "drafts", "published"].map((tab) => /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
         "button",
         {
           onClick: () => setActiveTab(tab),
           className: `px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === tab ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`,
           children: [
             tab.charAt(0).toUpperCase() + tab.slice(1),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "text-muted-foreground ml-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("span", { className: "text-muted-foreground ml-1", children: [
               "(",
               tab === "all" ? posts.filter((p) => p.status !== "suggested" && p.status !== "deleted").length : tab === "drafts" ? draftCount : publishedCount,
               ")"
@@ -623,10 +636,10 @@ function WriterDashboard() {
         },
         tab
       )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: `flex items-center gap-2 pb-2 ${searchOpen ? "absolute inset-x-0 sm:relative" : ""}`, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { onClick: () => navigate("/editor"), className: "hidden sm:flex p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.Plus, { className: "w-4 h-4" }) }),
-        searchOpen ? /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex items-center gap-2 flex-1 sm:flex-initial", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: `flex items-center gap-2 pb-2 ${searchOpen ? "absolute inset-x-0 sm:relative" : ""}`, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("button", { onClick: () => navigate("/editor"), className: "hidden sm:flex p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Plus, { className: "w-4 h-4" }) }),
+        searchOpen ? /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center gap-2 flex-1 sm:flex-initial", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
             "input",
             {
               type: "search",
@@ -637,14 +650,14 @@ function WriterDashboard() {
               className: "flex-1 sm:w-48 px-3 py-1.5 text-base bg-background border border-border rounded-md outline-none focus-visible:border-ring"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { onClick: () => {
+          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("button", { onClick: () => {
             setSearchOpen(false);
             setSearchQuery("");
-          }, className: "p-2 text-muted-foreground hover:text-foreground sm:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.X, { className: "w-4 h-4" }) })
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { onClick: () => setSearchOpen(true), className: "p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.Search, { className: "w-4 h-4" }) })
+          }, className: "p-2 text-muted-foreground hover:text-foreground sm:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.X, { className: "w-4 h-4" }) })
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("button", { onClick: () => setSearchOpen(true), className: "p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Search, { className: "w-4 h-4" }) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("section", { children: filteredPosts.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "space-y-0", children: filteredPosts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("section", { children: filteredPosts.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "space-y-0", children: filteredPosts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
       PostItem,
       {
         post,
@@ -655,7 +668,7 @@ function WriterDashboard() {
         showStatus: activeTab === "all"
       },
       post.id
-    )) }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("p", { className: "text-muted-foreground py-8 text-center", children: searchQuery ? "No matching articles" : "No articles yet" }) })
+    )) }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { className: "text-muted-foreground py-8 text-center", children: searchQuery ? "No matching articles" : "No articles yet" }) })
   ] });
 }
 function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStatus }) {
@@ -671,28 +684,28 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
     document.addEventListener("click", handleClick);
     return () => document.removeEventListener("click", handleClick);
   }, [menuOpen]);
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "flex items-center justify-between py-4 border-b border-border group", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("button", { onClick: onNavigate, className: "block text-left w-full", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("h3", { className: "font-medium truncate group-hover:text-muted-foreground", children: post.title || "Untitled" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("p", { className: "text-sm text-muted-foreground mt-1 flex items-center gap-2", children: [
-        showStatus && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `text-xs px-1.5 py-0.5 rounded uppercase font-medium ${post.status === "draft" ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" : "bg-green-500/20 text-green-600 dark:text-green-400"}`, children: post.status }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center justify-between py-4 border-b border-border group", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("button", { onClick: onNavigate, className: "block text-left w-full", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("h3", { className: "font-medium truncate group-hover:text-muted-foreground", children: post.title || "Untitled" }),
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("p", { className: "text-sm text-muted-foreground mt-1 flex items-center gap-2", children: [
+        showStatus && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: `text-xs px-1.5 py-0.5 rounded uppercase font-medium ${post.status === "draft" ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" : "bg-green-500/20 text-green-600 dark:text-green-400"}`, children: post.status }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("span", { children: [
           formatRelativeTime(post.updatedAt),
           post.wordCount ? ` \xB7 ${post.wordCount} words` : ""
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "relative", ref: menuRef, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "relative", ref: menuRef, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
         "button",
         {
           onClick: () => setMenuOpen(!menuOpen),
           className: "p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent",
-          children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react2.MoreVertical, { className: "w-4 h-4" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.MoreVertical, { className: "w-4 h-4" })
         }
       ),
-      menuOpen && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg z-50 min-w-[12rem] md:min-w-[8rem] p-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      menuOpen && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg z-50 min-w-[12rem] md:min-w-[8rem] p-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
           "button",
           {
             onClick: () => {
@@ -703,7 +716,7 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
             children: "Edit"
           }
         ),
-        post.status === "draft" && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        post.status === "draft" && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
           "button",
           {
             onClick: () => {
@@ -714,7 +727,7 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
             children: "Publish"
           }
         ),
-        post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
           "button",
           {
             onClick: () => {
@@ -725,8 +738,8 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
             children: "Unpublish"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "h-px bg-border my-1" }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "h-px bg-border my-1" }),
+        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
           "button",
           {
             onClick: () => {
@@ -747,19 +760,6 @@ var import_react17 = require("react");
 
 // src/ui/components/EditorToolbar.tsx
 var import_lucide_react8 = require("lucide-react");
-
-// src/lib/cn.ts
-var import_clsx = require("clsx");
-var import_tailwind_merge = require("tailwind-merge");
-function cn(...inputs) {
-  return (0, import_tailwind_merge.twMerge)((0, import_clsx.clsx)(inputs));
-}
-
-// src/ui/components/Skeleton.tsx
-var import_jsx_runtime5 = require("react/jsx-runtime");
-function Skeleton({ className }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: cn("animate-pulse bg-muted rounded", className) });
-}
 
 // src/ui/components/toolbar/ToolbarButton.tsx
 var import_jsx_runtime6 = require("react/jsx-runtime");
@@ -787,7 +787,7 @@ function Divider() {
   return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" });
 }
 function SkeletonButton() {
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-7 w-7 shrink-0 bg-gray-200 dark:bg-gray-800" });
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-7 w-7 shrink-0" });
 }
 
 // src/ui/components/toolbar/FormatButtons.tsx
@@ -1322,7 +1322,7 @@ function Dropdown({
           ...align === "right" ? { right: position.right } : { left: position.left }
         },
         className: cn(
-          "autoblogger z-50 min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1 overscroll-contain",
+          "autoblogger z-[80] min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1 overscroll-contain",
           className
         ),
         onWheel: (e) => e.stopPropagation(),
@@ -5780,7 +5780,7 @@ function applyCommentMarks(editor, comments) {
   const { doc } = editor.state;
   const textContent = doc.textContent;
   comments.forEach((comment) => {
-    if (!comment.quotedText || comment.parentId) return;
+    if (!comment.quotedText || comment.parentId || comment.resolved) return;
     const index = textContent.indexOf(comment.quotedText);
     if (index === -1) return;
     let currentPos = 0;
@@ -7158,22 +7158,19 @@ function useChatContextOptional() {
 
 // src/ui/pages/EditorPage.tsx
 var import_jsx_runtime19 = require("react/jsx-runtime");
-function Skeleton2({ className }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: `bg-gray-200 dark:bg-gray-800 animate-pulse rounded ${className || ""}` });
-}
 function ContentSkeleton({ styles }) {
   return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
     /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-2 mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-8 w-4/5" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-5 w-3/5" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-3 w-24" }) })
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-8 w-4/5" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-5 w-3/5" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-3 w-24" }) })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-full" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-full" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-3/4" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-full" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-5/6" })
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-3/4" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-5/6" })
     ] })
   ] });
 }
@@ -7291,19 +7288,14 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     try {
       const method = post.id ? "PATCH" : "POST";
       const url = post.id ? `${apiBasePath}/posts/${post.id}` : `${apiBasePath}/posts`;
-      let currentPost;
-      setPost((p) => {
-        currentPost = p;
-        return p;
-      });
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...currentPost,
-          title: currentPost.title || "Untitled",
+          ...post,
+          title: post.title || "Untitled",
           status: "published",
-          ...Object.fromEntries(fields.map((f) => [f.name, currentPost[f.name]]))
+          ...Object.fromEntries(fields.map((f) => [f.name, post[f.name]]))
         })
       });
       if (res.ok) {
@@ -7313,7 +7305,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       setSaving(false);
       setSavingAs(null);
     }
-  }, [post.id, apiBasePath, fields, navigate]);
+  }, [post, apiBasePath, fields, navigate]);
   const comments = useComments({
     postId: post.id || null,
     editor,
@@ -7920,7 +7912,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     ),
     /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("main", { className: `flex-1 overflow-auto pb-20 overscroll-contain ${!previewingRevision ? "pt-[41px]" : ""}`, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
       /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("header", { className: "space-y-2 mb-8", children: [
-        generating && !post.title ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-8 w-4/5" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        generating && !post.title ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
           AutoResizeTextarea,
           {
             value: post.title,
@@ -7930,7 +7922,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
         ),
-        generating && !post.subtitle ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-5 w-3/5" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        generating && !post.subtitle ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
           AutoResizeTextarea,
           {
             value: post.subtitle,
@@ -7943,11 +7935,11 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-3/4" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton2, { className: "h-4 w-5/6" })
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-3/4" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-5/6" })
       ] }) : showMarkdown ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
         "textarea",
         {
@@ -8148,10 +8140,10 @@ function SettingsPage({ subPath }) {
   if (!subPath || subPath === "/") {
     if (loading) {
       return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "h-7 w-24 bg-muted rounded animate-pulse mb-6" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-7 w-24 mb-6" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: [1, 2, 3, 4, 5, 6].map((i) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "p-4 sm:p-6 border border-border rounded-lg", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "h-4 w-16 bg-muted rounded animate-pulse" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "h-8 w-12 bg-muted rounded animate-pulse mt-2" })
+          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-4 w-16" }),
+          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-8 w-12 mt-2" })
         ] }, i)) })
       ] });
     }
@@ -8260,7 +8252,7 @@ function UsersSettingsContent() {
     if (role === "drafter") return "border border-border text-foreground";
     return "bg-secondary text-secondary-foreground";
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
   return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "space-y-6", children: showForm ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "max-w-md", children: [
     /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex items-center justify-between mb-6", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: editingUser ? "Edit User" : "Add User" }) }),
     formError && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4", children: formError }),
@@ -8654,9 +8646,7 @@ function AISettingsContent() {
     await refetchSharedData();
     setTimeout(() => setSaved(false), 2e3);
   }
-  if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex items-center justify-center py-12", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.Loader2, { className: "h-6 w-6 animate-spin text-muted-foreground" }) });
-  }
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
   return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-6", children: [
     /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
       /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: "AI Settings" }),
@@ -9050,7 +9040,7 @@ function TagsSettingsContent() {
     }
     setSaving(false);
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
   return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
     /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between mb-6 md:mb-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: "Tags" }),
@@ -9290,7 +9280,7 @@ function TopicsSettingsContent() {
       setGenerating(null);
     }
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
   return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-4", children: [
     /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
       /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: "Topics" }),
@@ -9558,7 +9548,7 @@ function PostsSettingsContent() {
       ) })
     ] }) });
   };
-  if (loading && posts.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  if (loading && posts.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
   return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
     /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "shrink-0", children: [
@@ -9785,7 +9775,7 @@ function RevisionsSettingsContent() {
       ) })
     ] }) });
   };
-  if (loading && revisions.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  if (loading && revisions.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
   return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
     /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "shrink-0", children: [
@@ -9887,8 +9877,8 @@ function RevisionDetailContent({ revisionId }) {
   }
   if (loading) {
     return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "h-6 w-32 bg-muted rounded animate-pulse" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "h-64 bg-muted rounded animate-pulse" })
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-6 w-32" }),
+      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-64" })
     ] });
   }
   if (!revision) {
@@ -10052,7 +10042,7 @@ function CommentsSettingsContent() {
       ) })
     ] }) });
   };
-  if (loading && comments.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "animate-pulse h-32 bg-muted rounded" });
+  if (loading && comments.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
   return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
     /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
       /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "shrink-0", children: [

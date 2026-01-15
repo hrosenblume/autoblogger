@@ -7332,7 +7332,7 @@ function applyCommentMarks(editor, comments) {
   const { doc } = editor.state;
   const textContent = doc.textContent;
   comments.forEach((comment) => {
-    if (!comment.quotedText || comment.parentId) return;
+    if (!comment.quotedText || comment.parentId || comment.resolved) return;
     const index = textContent.indexOf(comment.quotedText);
     if (index === -1) return;
     let currentPos = 0;

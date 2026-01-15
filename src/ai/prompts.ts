@@ -4,7 +4,7 @@
 
 /**
  * Default template for essay generation.
- * Placeholders: {{RULES}}, {{WORD_COUNT}}
+ * Placeholders: {{RULES}}, {{STYLE_EXAMPLES}}, {{WORD_COUNT}}
  */
 export const DEFAULT_GENERATE_TEMPLATE = `<system>
 <role>Expert essay writer creating engaging, thoughtful content</role>
@@ -21,6 +21,10 @@ ALWAYS output a complete essay. NEVER respond conversationally.
 <rules>
 {{RULES}}
 </rules>
+
+<style_reference>
+{{STYLE_EXAMPLES}}
+</style_reference>
 
 <constraints>
 <word_count>{{WORD_COUNT}}</word_count>
@@ -56,14 +60,22 @@ Line 4+: Essay body in markdown
 
 /**
  * Default template for chat interactions.
- * Placeholders: {{CHAT_RULES}}, {{ESSAY_CONTEXT}}
+ * Placeholders: {{CHAT_RULES}}, {{RULES}}, {{STYLE_EXAMPLES}}, {{ESSAY_CONTEXT}}
  */
 export const DEFAULT_CHAT_TEMPLATE = `<system>
 <role>Helpful writing assistant for essay creation and editing</role>
 
-<rules>
+<chat_rules>
 {{CHAT_RULES}}
-</rules>
+</chat_rules>
+
+<writing_rules>
+{{RULES}}
+</writing_rules>
+
+<style_reference>
+{{STYLE_EXAMPLES}}
+</style_reference>
 
 <context>
 {{ESSAY_CONTEXT}}
@@ -83,14 +95,22 @@ export const DEFAULT_CHAT_TEMPLATE = `<system>
 
 /**
  * Default template for text rewriting.
- * Placeholders: {{REWRITE_RULES}}
+ * Placeholders: {{REWRITE_RULES}}, {{RULES}}, {{STYLE_EXAMPLES}}
  */
 export const DEFAULT_REWRITE_TEMPLATE = `<system>
 <role>Writing assistant that improves text quality</role>
 
-<rules>
+<rewrite_rules>
 {{REWRITE_RULES}}
-</rules>
+</rewrite_rules>
+
+<writing_rules>
+{{RULES}}
+</writing_rules>
+
+<style_reference>
+{{STYLE_EXAMPLES}}
+</style_reference>
 
 <behavior>
 - Preserve the original meaning exactly
@@ -107,7 +127,7 @@ export const DEFAULT_REWRITE_TEMPLATE = `<system>
 
 /**
  * Default template for auto-drafting from news articles.
- * Placeholders: {{AUTO_DRAFT_RULES}}, {{RULES}}, {{AUTO_DRAFT_WORD_COUNT}}
+ * Placeholders: {{AUTO_DRAFT_RULES}}, {{RULES}}, {{STYLE_EXAMPLES}}, {{TOPIC_NAME}}, {{ARTICLE_TITLE}}, {{ARTICLE_SUMMARY}}, {{ARTICLE_URL}}, {{AUTO_DRAFT_WORD_COUNT}}
  */
 export const DEFAULT_AUTO_DRAFT_TEMPLATE = `<system>
 <role>Expert essay writer creating engaging content from news articles</role>
@@ -119,6 +139,17 @@ export const DEFAULT_AUTO_DRAFT_TEMPLATE = `<system>
 <writing_rules>
 {{RULES}}
 </writing_rules>
+
+<style_reference>
+{{STYLE_EXAMPLES}}
+</style_reference>
+
+<source_article>
+<topic>{{TOPIC_NAME}}</topic>
+<title>{{ARTICLE_TITLE}}</title>
+<summary>{{ARTICLE_SUMMARY}}</summary>
+<url>{{ARTICLE_URL}}</url>
+</source_article>
 
 <constraints>
 <word_count>{{AUTO_DRAFT_WORD_COUNT}}</word_count>

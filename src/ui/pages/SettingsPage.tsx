@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Plus, Pencil, Trash2, Play, X, MoreVertical, MoreHorizontal, Loader2 } from 'lucide-react'
 import { useDashboardContext } from '../context'
+import { Skeleton } from '../components/Skeleton'
 
 interface SettingsLink {
   path: string
@@ -77,12 +78,12 @@ export function SettingsPage({ subPath }: { subPath: string }) {
     if (loading) {
       return (
         <div className="max-w-5xl mx-auto px-6 py-8">
-          <div className="h-7 w-24 bg-muted rounded animate-pulse mb-6" />
+          <Skeleton className="h-7 w-24 mb-6" />
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
             {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} className="p-4 sm:p-6 border border-border rounded-lg">
-                <div className="h-4 w-16 bg-muted rounded animate-pulse" />
-                <div className="h-8 w-12 bg-muted rounded animate-pulse mt-2" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-8 w-12 mt-2" />
               </div>
             ))}
           </div>
@@ -221,7 +222,7 @@ function UsersSettingsContent() {
     return 'bg-secondary text-secondary-foreground'
   }
 
-  if (loading) return <div className="animate-pulse h-32 bg-muted rounded" />
+  if (loading) return <Skeleton className="h-32" />
 
   return (
     <div className="space-y-6">
@@ -647,13 +648,7 @@ function AISettingsContent() {
     setTimeout(() => setSaved(false), 2000)
   }
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
+  if (loading) return <Skeleton className="h-32" />
 
   return (
     <div className="space-y-6">
@@ -1073,7 +1068,7 @@ function TagsSettingsContent() {
     setSaving(false)
   }
 
-  if (loading) return <div className="animate-pulse h-32 bg-muted rounded" />
+  if (loading) return <Skeleton className="h-32" />
 
   return (
     <div>
@@ -1350,7 +1345,7 @@ function TopicsSettingsContent() {
     }
   }
 
-  if (loading) return <div className="animate-pulse h-32 bg-muted rounded" />
+  if (loading) return <Skeleton className="h-32" />
 
   return (
     <div className="space-y-4">
@@ -1635,7 +1630,7 @@ function PostsSettingsContent() {
     )
   }
 
-  if (loading && posts.length === 0) return <div className="animate-pulse h-32 bg-muted rounded" />
+  if (loading && posts.length === 0) return <Skeleton className="h-32" />
 
   return (
     <div>
@@ -1901,7 +1896,7 @@ function RevisionsSettingsContent() {
     )
   }
 
-  if (loading && revisions.length === 0) return <div className="animate-pulse h-32 bg-muted rounded" />
+  if (loading && revisions.length === 0) return <Skeleton className="h-32" />
 
   return (
     <div>
@@ -2048,8 +2043,8 @@ function RevisionDetailContent({ revisionId }: { revisionId: string }) {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-6 w-32 bg-muted rounded animate-pulse" />
-        <div className="h-64 bg-muted rounded animate-pulse" />
+        <Skeleton className="h-6 w-32" />
+        <Skeleton className="h-64" />
       </div>
     )
   }
@@ -2257,7 +2252,7 @@ function CommentsSettingsContent() {
     )
   }
 
-  if (loading && comments.length === 0) return <div className="animate-pulse h-32 bg-muted rounded" />
+  if (loading && comments.length === 0) return <Skeleton className="h-32" />
 
   return (
     <div>

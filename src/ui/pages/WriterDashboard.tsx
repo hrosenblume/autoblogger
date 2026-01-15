@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Globe, Brain, ArrowUp, ChevronDown, Check, X, Plus, Search, MoreVertical, ExternalLink } from 'lucide-react'
 import { useDashboardContext } from '../context'
+import { Skeleton } from '../components/Skeleton'
 import { ControlButton } from '../components/ControlButton'
 import { ModelSelector } from '../components/ModelSelector'
 import { LENGTH_OPTIONS, DEFAULT_MODELS, type AIModelOption } from '../../lib/models'
@@ -155,16 +156,16 @@ export function WriterDashboard() {
     return (
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="mt-4 mb-8">
-          <div className="h-6 w-48 bg-muted rounded animate-pulse mb-4" />
-          <div className="h-24 w-full bg-muted rounded animate-pulse" />
+          <Skeleton className="h-6 w-48 mb-4" />
+          <Skeleton className="h-24 w-full" />
         </div>
         <div className="flex border-b border-border mb-6 gap-4">
-          <div className="h-10 w-16 bg-muted rounded animate-pulse" />
-          <div className="h-10 w-20 bg-muted rounded animate-pulse" />
-          <div className="h-10 w-24 bg-muted rounded animate-pulse" />
+          <Skeleton className="h-10 w-16" />
+          <Skeleton className="h-10 w-20" />
+          <Skeleton className="h-10 w-24" />
         </div>
         {[1,2,3,4,5].map(i => (
-          <div key={i} className="h-16 bg-muted rounded animate-pulse mb-2" />
+          <Skeleton key={i} className="h-16 mb-2" />
         ))}
       </div>
     )
