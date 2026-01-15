@@ -1255,7 +1255,21 @@ function createPostsData(prisma, hooks) {
       return result;
     },
     async update(id, data) {
-      const { tagIds, tags, revisions, topic, ...postData } = data;
+      const {
+        tagIds,
+        tags,
+        revisions,
+        topic,
+        topicId,
+        // Handle separately as relation
+        id: _id,
+        // Don't update the ID
+        createdAt: _createdAt,
+        // Don't update createdAt
+        wordCount: _wordCount,
+        // Computed field, don't save
+        ...postData
+      } = data;
       if (postData.status === "published") {
         const existing = await prisma.post.findUnique({ where: { id } });
         if (existing?.status !== "published") {
@@ -1268,9 +1282,13 @@ function createPostsData(prisma, hooks) {
       if (postData.slug) {
         postData.slug = await generateUniqueSlug(prisma, postData.slug, id);
       }
+      const updatePayload = { ...postData };
+      if (topicId !== void 0) {
+        updatePayload.topic = topicId ? { connect: { id: topicId } } : { disconnect: true };
+      }
       const post = await prisma.post.update({
         where: { id },
-        data: postData
+        data: updatePayload
       });
       if (tagIds !== void 0) {
         await prisma.postTag.deleteMany({ where: { postId: id } });

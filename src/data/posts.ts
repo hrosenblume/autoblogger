@@ -141,12 +141,26 @@ export function createPostsData(prisma: any, hooks?: PostHooks) {
     },
 
     async update(id: string, data: UpdatePostInput) {
-      // Extract tagIds and strip relation fields before passing to Prisma
-      const { tagIds, tags, revisions, topic, ...postData } = data as UpdatePostInput & { 
+      // Extract relation IDs, computed fields, and read-only fields before passing to Prisma
+      const { 
+        tagIds, 
+        tags, 
+        revisions, 
+        topic,
+        topicId,                    // Handle separately as relation
+        id: _id,                    // Don't update the ID
+        createdAt: _createdAt,      // Don't update createdAt
+        wordCount: _wordCount,      // Computed field, don't save
+        ...postData 
+      } = data as UpdatePostInput & { 
         tagIds?: string[]
         tags?: unknown
         revisions?: unknown
         topic?: unknown
+        topicId?: string | null
+        id?: string
+        createdAt?: Date
+        wordCount?: number
       }
       
       // Auto-set publishedAt on first publish
@@ -166,9 +180,17 @@ export function createPostsData(prisma: any, hooks?: PostHooks) {
         postData.slug = await generateUniqueSlug(prisma, postData.slug, id)
       }
 
+      // Build the update payload
+      const updatePayload: any = { ...postData }
+
+      // Handle topic relation properly using connect/disconnect syntax
+      if (topicId !== undefined) {
+        updatePayload.topic = topicId ? { connect: { id: topicId } } : { disconnect: true }
+      }
+
       const post = await prisma.post.update({
         where: { id },
-        data: postData,
+        data: updatePayload,
       })
 
       // Update tag associations if provided
