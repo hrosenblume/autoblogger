@@ -33,24 +33,29 @@ type TabType = 'all' | 'drafts' | 'published'
 
 export function WriterDashboard() {
   const { apiBasePath, navigate, sharedData, sharedDataLoading } = useDashboardContext()
-  const [posts, setPosts] = useState<Post[]>([])
-  const [loading, setLoading] = useState(true)
+  // Initialize from sharedData if available (prevents flash on re-navigation)
+  const [posts, setPosts] = useState<Post[]>(() => (sharedData?.posts as Post[]) || [])
+  const [loading, setLoading] = useState(() => !sharedData && sharedDataLoading)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
   const [activeTab, setActiveTab] = useState<TabType>('all')
-  const [suggestedPosts, setSuggestedPosts] = useState<SuggestedPost[]>([])
-  const [autoDraftEnabled, setAutoDraftEnabled] = useState(false)
+  const [suggestedPosts, setSuggestedPosts] = useState<SuggestedPost[]>(() => (sharedData?.suggestedPosts as SuggestedPost[]) || [])
+  const [autoDraftEnabled, setAutoDraftEnabled] = useState(() => sharedData?.settings.autoDraftEnabled || false)
   const [suggestedOpen, setSuggestedOpen] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   
-  const [models, setModels] = useState<AIModelOption[]>(DEFAULT_MODELS)
-  const [modelId, setModelId] = useState('claude-sonnet')
+  const [models, setModels] = useState<AIModelOption[]>(() => 
+    (sharedData?.aiSettings.availableModels as AIModelOption[])?.length > 0 
+      ? (sharedData?.aiSettings.availableModels as AIModelOption[]) 
+      : DEFAULT_MODELS
+  )
+  const [modelId, setModelId] = useState(() => sharedData?.aiSettings.defaultModel || 'claude-sonnet')
   const [length, setLength] = useState<number>(500)
   const [webEnabled, setWebEnabled] = useState(false)
   const [thinkingEnabled, setThinkingEnabled] = useState(false)
   const [lengthOpen, setLengthOpen] = useState(false)
 
-  // Sync with shared data from context
+  // Sync with shared data from context (updates when data changes)
   useEffect(() => {
     if (sharedData) {
       setPosts(sharedData.posts as Post[])
@@ -416,8 +421,8 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
             {showStatus && (
               <span className={`text-xs px-1.5 py-0.5 rounded uppercase font-medium ${
                 post.status === 'draft' 
-                  ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400'
-                  : 'bg-green-500/20 text-green-600 dark:text-green-400'
+                  ? 'bg-amber-500/20 text-amber-600 ab-dark:text-amber-400'
+                  : 'bg-green-500/20 text-green-600 ab-dark:text-green-400'
               }`}>
                 {post.status}
               </span>

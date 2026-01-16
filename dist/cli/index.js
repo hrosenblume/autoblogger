@@ -930,7 +930,7 @@ Error: Found conflicting model names in your Prisma schema:`));
     console.log(`  - ${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx`);
     console.log(`  - ${project.appRouterPath}/(writer)/layout.tsx`);
     console.log(`  - globals.css (add CSS import)`);
-    console.log(`  - ${project.appRouterPath}/layout.tsx (add suppressHydrationWarning)`);
+    console.log(`  - ${project.appRouterPath}/layout.tsx (add suppressHydrationWarning, GlobalShortcuts)`);
     if (answers.runMigration) {
       console.log("\nWould run:");
       console.log("  - npx prisma migrate dev --name add-autoblogger");
@@ -1014,6 +1014,7 @@ Would import ${count} posts from ${answers.importPath}`);
   const rootLayoutPath = path6.join(cwd, project.appRouterPath, "layout.tsx");
   if (fs6.existsSync(rootLayoutPath)) {
     let layoutContent = fs6.readFileSync(rootLayoutPath, "utf-8");
+    let layoutModified = false;
     if (layoutContent.includes("suppressHydrationWarning")) {
       log("skip", "Root layout already has suppressHydrationWarning");
     } else {
@@ -1023,11 +1024,38 @@ Would import ${count} posts from ${answers.importPath}`);
         const existingAttrs = match[1];
         const newHtmlTag = `<html${existingAttrs} suppressHydrationWarning>`;
         layoutContent = layoutContent.replace(htmlTagRegex, newHtmlTag);
-        fs6.writeFileSync(rootLayoutPath, layoutContent);
+        layoutModified = true;
         log("write", `Updated ${project.appRouterPath}/layout.tsx (added suppressHydrationWarning)`);
       } else {
         log("warn", "Could not find <html> tag in root layout. Please add suppressHydrationWarning manually.");
       }
+    }
+    if (layoutContent.includes("GlobalShortcuts")) {
+      log("skip", "Root layout already has GlobalShortcuts");
+    } else {
+      const importStatement = "import { GlobalShortcuts } from 'autoblogger/ui'\n";
+      const lastImportMatch = layoutContent.match(/^import .+$/gm);
+      if (lastImportMatch) {
+        const lastImport = lastImportMatch[lastImportMatch.length - 1];
+        layoutContent = layoutContent.replace(lastImport, lastImport + "\n" + importStatement.trim());
+      } else {
+        layoutContent = importStatement + layoutContent;
+      }
+      const bodyTagRegex = /<body([^>]*)>/;
+      const bodyMatch = layoutContent.match(bodyTagRegex);
+      if (bodyMatch) {
+        layoutContent = layoutContent.replace(bodyTagRegex, `<body$1>
+        <GlobalShortcuts />`);
+        layoutModified = true;
+        log("write", `Updated ${project.appRouterPath}/layout.tsx (added GlobalShortcuts for Cmd+/ navigation)`);
+      } else {
+        log("warn", "Could not find <body> tag in root layout. Please add GlobalShortcuts manually.");
+        console.log(import_picocolors3.default.gray("  import { GlobalShortcuts } from 'autoblogger/ui'"));
+        console.log(import_picocolors3.default.gray("  // Add <GlobalShortcuts /> inside your layout body"));
+      }
+    }
+    if (layoutModified) {
+      fs6.writeFileSync(rootLayoutPath, layoutContent);
     }
   }
   if (answers.runMigration) {

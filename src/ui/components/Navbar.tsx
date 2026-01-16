@@ -63,7 +63,7 @@ export function Navbar({
           {/* Extra slot from host app */}
           {rightSlot}
 
-          {/* Theme toggle - always shown, uses next-themes internally */}
+          {/* Theme toggle - always shown, uses internal theme context */}
           <ThemeToggle />
 
           {/* User menu */}

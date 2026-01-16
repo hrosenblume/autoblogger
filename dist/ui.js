@@ -42,26 +42,30 @@ __export(ui_exports, {
   CommentThread: () => CommentThread,
   CommentsPanel: () => CommentsPanel,
   ControlButton: () => ControlButton,
+  ExpandableSection: () => ExpandableSection,
   GlobalShortcuts: () => GlobalShortcuts,
   ModelSelector: () => ModelSelector,
   MoonIcon: () => MoonIcon,
   Navbar: () => Navbar,
   SHORTCUTS: () => SHORTCUTS,
+  SeoSection: () => SeoSection,
   SunIcon: () => SunIcon,
   ThemeProvider: () => ThemeProvider,
   ThemeToggle: () => ThemeToggle,
   useAIModels: () => useAIModels,
+  useAutobloggerTheme: () => useAutobloggerTheme,
   useChatContext: () => useChatContext,
   useChatContextOptional: () => useChatContextOptional,
   useComments: () => useComments,
   useDashboardContext: () => useDashboardContext,
   useDashboardKeyboard: () => useDashboardKeyboard,
-  useKeyboard: () => useKeyboard
+  useKeyboard: () => useKeyboard,
+  useTheme: () => useTheme
 });
 module.exports = __toCommonJS(ui_exports);
 
 // src/ui/dashboard.tsx
-var import_react22 = require("react");
+var import_react25 = require("react");
 var import_lucide_react13 = require("lucide-react");
 
 // src/ui/context.tsx
@@ -127,9 +131,13 @@ function DashboardProvider({
       }
     }
     const fullPath = path.startsWith("/") ? basePath + path : basePath + "/" + path;
-    window.history.pushState({}, "", fullPath);
+    if (options?.replace) {
+      window.history.replaceState({}, "", fullPath);
+    } else {
+      window.history.pushState({}, "", fullPath);
+      setHistoryDepth((d) => d + 1);
+    }
     setCurrentPath(path.startsWith("/") ? path : "/" + path);
-    setHistoryDepth((d) => d + 1);
   }, [basePath]);
   const goBack = (0, import_react.useCallback)(() => {
     if (historyDepth > 0) {
@@ -181,6 +189,20 @@ function DashboardProvider({
   (0, import_react.useEffect)(() => {
     fetchSharedData();
   }, [fetchSharedData]);
+  const updateSharedPost = (0, import_react.useCallback)((post) => {
+    setSharedData((prev) => {
+      if (!prev) return prev;
+      const existingIndex = prev.posts.findIndex((p) => p.id === post.id);
+      let updatedPosts;
+      if (existingIndex >= 0) {
+        updatedPosts = [...prev.posts];
+        updatedPosts[existingIndex] = post;
+      } else {
+        updatedPosts = [post, ...prev.posts];
+      }
+      return { ...prev, posts: updatedPosts };
+    });
+  }, []);
   const handleEditorStateChange = (0, import_react.useCallback)((state) => {
     editorStateRef.current = state;
     onEditorStateChange?.(state);
@@ -207,6 +229,7 @@ function DashboardProvider({
     sharedData,
     sharedDataLoading,
     refetchSharedData: fetchSharedData,
+    updateSharedPost,
     onEditorStateChange: handleEditorStateChange,
     onRegisterEditHandler
   }), [
@@ -223,6 +246,7 @@ function DashboardProvider({
     sharedData,
     sharedDataLoading,
     fetchSharedData,
+    updateSharedPost,
     handleEditorStateChange,
     onRegisterEditHandler
   ]);
@@ -252,7 +276,7 @@ var import_jsx_runtime3 = require("react/jsx-runtime");
 var ControlButton = (0, import_react2.forwardRef)(
   ({ className = "", active, disabled, children, type = "button", ...props }, ref) => {
     const baseClasses = "inline-flex items-center gap-1 text-sm transition-colors focus:outline-none";
-    const stateClasses = disabled ? "text-muted-foreground/30 cursor-not-allowed" : active ? "text-blue-500 dark:text-blue-400" : "text-muted-foreground active:text-foreground md:hover:text-foreground";
+    const stateClasses = disabled ? "text-muted-foreground/30 cursor-not-allowed" : active ? "text-blue-500 ab-dark:text-blue-400" : "text-muted-foreground active:text-foreground md:hover:text-foreground";
     return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
       "button",
       {
@@ -367,17 +391,19 @@ function countWords(text) {
 var import_jsx_runtime5 = require("react/jsx-runtime");
 function WriterDashboard() {
   const { apiBasePath, navigate, sharedData, sharedDataLoading } = useDashboardContext();
-  const [posts, setPosts] = (0, import_react4.useState)([]);
-  const [loading, setLoading] = (0, import_react4.useState)(true);
+  const [posts, setPosts] = (0, import_react4.useState)(() => sharedData?.posts || []);
+  const [loading, setLoading] = (0, import_react4.useState)(() => !sharedData && sharedDataLoading);
   const [searchQuery, setSearchQuery] = (0, import_react4.useState)("");
   const [searchOpen, setSearchOpen] = (0, import_react4.useState)(false);
   const [activeTab, setActiveTab] = (0, import_react4.useState)("all");
-  const [suggestedPosts, setSuggestedPosts] = (0, import_react4.useState)([]);
-  const [autoDraftEnabled, setAutoDraftEnabled] = (0, import_react4.useState)(false);
+  const [suggestedPosts, setSuggestedPosts] = (0, import_react4.useState)(() => sharedData?.suggestedPosts || []);
+  const [autoDraftEnabled, setAutoDraftEnabled] = (0, import_react4.useState)(() => sharedData?.settings.autoDraftEnabled || false);
   const [suggestedOpen, setSuggestedOpen] = (0, import_react4.useState)(false);
   const [actionLoading, setActionLoading] = (0, import_react4.useState)(null);
-  const [models, setModels] = (0, import_react4.useState)(DEFAULT_MODELS);
-  const [modelId, setModelId] = (0, import_react4.useState)("claude-sonnet");
+  const [models, setModels] = (0, import_react4.useState)(
+    () => sharedData?.aiSettings.availableModels?.length > 0 ? sharedData?.aiSettings.availableModels : DEFAULT_MODELS
+  );
+  const [modelId, setModelId] = (0, import_react4.useState)(() => sharedData?.aiSettings.defaultModel || "claude-sonnet");
   const [length, setLength] = (0, import_react4.useState)(500);
   const [webEnabled, setWebEnabled] = (0, import_react4.useState)(false);
   const [thinkingEnabled, setThinkingEnabled] = (0, import_react4.useState)(false);
@@ -413,7 +439,7 @@ function WriterDashboard() {
     else if (activeTab === "published") result = result.filter((p) => p.status === "published");
     return result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
   }, [posts, searchQuery, activeTab]);
-  async function handleDelete(id) {
+  async function handleDelete2(id) {
     if (!confirm("Delete this post?")) return;
     await fetch(`${apiBasePath}/posts/${id}`, { method: "DELETE" });
     setPosts(posts.filter((p) => p.id !== id));
@@ -662,7 +688,7 @@ function WriterDashboard() {
       {
         post,
         onNavigate: () => navigate(`/editor/${post.slug}`),
-        onDelete: () => handleDelete(post.id),
+        onDelete: () => handleDelete2(post.id),
         onPublish: () => handlePublish(post.id),
         onUnpublish: () => handleUnpublish(post.id),
         showStatus: activeTab === "all"
@@ -688,7 +714,7 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
     /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("button", { onClick: onNavigate, className: "block text-left w-full", children: [
       /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("h3", { className: "font-medium truncate group-hover:text-muted-foreground", children: post.title || "Untitled" }),
       /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("p", { className: "text-sm text-muted-foreground mt-1 flex items-center gap-2", children: [
-        showStatus && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: `text-xs px-1.5 py-0.5 rounded uppercase font-medium ${post.status === "draft" ? "bg-amber-500/20 text-amber-600 dark:text-amber-400" : "bg-green-500/20 text-green-600 dark:text-green-400"}`, children: post.status }),
+        showStatus && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: `text-xs px-1.5 py-0.5 rounded uppercase font-medium ${post.status === "draft" ? "bg-amber-500/20 text-amber-600 ab-dark:text-amber-400" : "bg-green-500/20 text-green-600 ab-dark:text-green-400"}`, children: post.status }),
         /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("span", { children: [
           formatRelativeTime(post.updatedAt),
           post.wordCount ? ` \xB7 ${post.wordCount} words` : ""
@@ -756,7 +782,8 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
 }
 
 // src/ui/pages/EditorPage.tsx
-var import_react17 = require("react");
+var import_react20 = require("react");
+var import_sonner = require("sonner");
 
 // src/ui/components/EditorToolbar.tsx
 var import_lucide_react8 = require("lucide-react");
@@ -772,7 +799,7 @@ function ToolbarButton({ onClick, active, disabled, children, title }) {
       disabled,
       title,
       className: cn(
-        "px-2.5 py-1.5 text-sm font-medium rounded transition-colors",
+        "px-2.5 py-1.5 text-sm font-medium rounded transition-colors shrink-0",
         "flex items-center justify-center",
         "active:bg-accent md:hover:bg-accent",
         "disabled:opacity-50 disabled:cursor-not-allowed",
@@ -784,7 +811,7 @@ function ToolbarButton({ onClick, active, disabled, children, title }) {
   );
 }
 function Divider() {
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" });
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "w-px h-6 bg-border mx-1" });
 }
 function SkeletonButton() {
   return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-7 w-7 shrink-0" });
@@ -1222,18 +1249,140 @@ function MediaButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCha
 }
 
 // src/ui/components/toolbar/HistoryButtons.tsx
-var import_react9 = require("react");
+var import_react11 = require("react");
 var import_lucide_react7 = require("lucide-react");
 
 // src/ui/components/RevisionHistoryDropdown.tsx
-var import_react8 = require("react");
+var import_react10 = require("react");
 var import_lucide_react6 = require("lucide-react");
 
 // src/ui/components/Dropdown.tsx
-var import_react7 = require("react");
+var import_react9 = require("react");
+
+// src/ui/components/Portal.tsx
+var import_react8 = require("react");
 var import_react_dom = require("react-dom");
+
+// src/ui/hooks/useTheme.tsx
+var import_react7 = require("react");
 var import_jsx_runtime10 = require("react/jsx-runtime");
-var DropdownContext = (0, import_react7.createContext)(null);
+var STORAGE_KEY = "autoblogger-theme";
+var ThemeContext = (0, import_react7.createContext)(null);
+function getSystemTheme() {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+function getStoredTheme() {
+  if (typeof window === "undefined") return "system";
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "light" || stored === "dark" || stored === "system") {
+      return stored;
+    }
+  } catch {
+  }
+  return "system";
+}
+function resolveTheme(theme) {
+  if (theme === "system") {
+    return getSystemTheme();
+  }
+  return theme;
+}
+function AutobloggerThemeProvider({ children, className, onContainerRef }) {
+  const [theme, setThemeState] = (0, import_react7.useState)("system");
+  const [resolvedTheme, setResolvedTheme] = (0, import_react7.useState)("light");
+  const [mounted, setMounted] = (0, import_react7.useState)(false);
+  const [containerEl, setContainerEl] = (0, import_react7.useState)(null);
+  (0, import_react7.useEffect)(() => {
+    const stored = getStoredTheme();
+    setThemeState(stored);
+    setResolvedTheme(resolveTheme(stored));
+    setMounted(true);
+  }, []);
+  (0, import_react7.useEffect)(() => {
+    if (typeof window === "undefined") return;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      if (theme === "system") {
+        setResolvedTheme(getSystemTheme());
+      }
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme]);
+  (0, import_react7.useEffect)(() => {
+    if (!containerEl) return;
+    if (resolvedTheme === "dark") {
+      containerEl.classList.add("dark");
+    } else {
+      containerEl.classList.remove("dark");
+    }
+  }, [resolvedTheme, containerEl]);
+  const setTheme = (0, import_react7.useCallback)((newTheme) => {
+    setThemeState(newTheme);
+    setResolvedTheme(resolveTheme(newTheme));
+    try {
+      localStorage.setItem(STORAGE_KEY, newTheme);
+    } catch {
+    }
+  }, []);
+  const handleContainerRef = (0, import_react7.useCallback)((el) => {
+    setContainerEl(el);
+    onContainerRef?.(el);
+  }, [onContainerRef]);
+  const value = {
+    theme: mounted ? theme : "system",
+    resolvedTheme: mounted ? resolvedTheme : "light",
+    setTheme
+  };
+  const darkClass = mounted && resolvedTheme === "dark" ? "dark" : "";
+  const combinedClassName = ["autoblogger", darkClass, className].filter(Boolean).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(ThemeContext.Provider, { value, children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+    "div",
+    {
+      ref: handleContainerRef,
+      className: combinedClassName,
+      children
+    }
+  ) });
+}
+function useAutobloggerTheme() {
+  const context = (0, import_react7.useContext)(ThemeContext);
+  if (!context) {
+    throw new Error("useAutobloggerTheme must be used within AutobloggerThemeProvider");
+  }
+  return context;
+}
+function useTheme() {
+  return useAutobloggerTheme();
+}
+
+// src/ui/components/Portal.tsx
+var import_jsx_runtime11 = require("react/jsx-runtime");
+function AutobloggerPortal({ children, className, style }) {
+  const { resolvedTheme } = useAutobloggerTheme();
+  const [mounted, setMounted] = (0, import_react8.useState)(false);
+  (0, import_react8.useEffect)(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) return null;
+  return (0, import_react_dom.createPortal)(
+    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+      "div",
+      {
+        className: cn("autoblogger", resolvedTheme === "dark" && "dark", className),
+        style,
+        children
+      }
+    ),
+    document.body
+  );
+}
+
+// src/ui/components/Dropdown.tsx
+var import_jsx_runtime12 = require("react/jsx-runtime");
+var DropdownContext = (0, import_react9.createContext)(null);
 function Dropdown({
   trigger,
   children,
@@ -1243,23 +1392,14 @@ function Dropdown({
   onOpenChange,
   disabled
 }) {
-  const [internalOpen, setInternalOpen] = (0, import_react7.useState)(false);
-  const [position, setPosition] = (0, import_react7.useState)({ top: 0, left: 0, right: 0 });
-  const [mounted, setMounted] = (0, import_react7.useState)(false);
-  const triggerRef = (0, import_react7.useRef)(null);
-  const menuRef = (0, import_react7.useRef)(null);
+  const [internalOpen, setInternalOpen] = (0, import_react9.useState)(false);
+  const [position, setPosition] = (0, import_react9.useState)(null);
+  const [mounted, setMounted] = (0, import_react9.useState)(false);
+  const triggerRef = (0, import_react9.useRef)(null);
+  const menuRef = (0, import_react9.useRef)(null);
   const isControlled = controlledOpen !== void 0;
   const isOpen = isControlled ? controlledOpen : internalOpen;
-  const setOpen = (0, import_react7.useCallback)((value) => {
-    if (!isControlled) {
-      setInternalOpen(value);
-    }
-    onOpenChange?.(value);
-  }, [isControlled, onOpenChange]);
-  (0, import_react7.useEffect)(() => {
-    setMounted(true);
-  }, []);
-  const updatePosition = (0, import_react7.useCallback)(() => {
+  const updatePosition = (0, import_react9.useCallback)(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       setPosition({
@@ -1270,12 +1410,29 @@ function Dropdown({
       });
     }
   }, []);
-  (0, import_react7.useEffect)(() => {
-    if (isOpen) {
+  const setOpen = (0, import_react9.useCallback)((value) => {
+    if (value) {
+      updatePosition();
+    } else {
+      setPosition(null);
+    }
+    if (!isControlled) {
+      setInternalOpen(value);
+    }
+    onOpenChange?.(value);
+  }, [isControlled, onOpenChange, updatePosition]);
+  (0, import_react9.useEffect)(() => {
+    setMounted(true);
+  }, []);
+  (0, import_react9.useEffect)(() => {
+    if (isControlled && controlledOpen && !position) {
       updatePosition();
     }
-  }, [isOpen, updatePosition]);
-  (0, import_react7.useEffect)(() => {
+    if (isControlled && !controlledOpen) {
+      setPosition(null);
+    }
+  }, [isControlled, controlledOpen, position, updatePosition]);
+  (0, import_react9.useEffect)(() => {
     if (!isOpen) return;
     const handleClick = (e) => {
       const target = e.target;
@@ -1286,7 +1443,7 @@ function Dropdown({
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [isOpen, setOpen]);
-  (0, import_react7.useEffect)(() => {
+  (0, import_react9.useEffect)(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -1296,7 +1453,7 @@ function Dropdown({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, setOpen]);
-  (0, import_react7.useEffect)(() => {
+  (0, import_react9.useEffect)(() => {
     if (!isOpen) return;
     const handleUpdate = () => updatePosition();
     window.addEventListener("scroll", handleUpdate, true);
@@ -1310,29 +1467,26 @@ function Dropdown({
     if (disabled) return;
     setOpen(!isOpen);
   };
-  const close = (0, import_react7.useCallback)(() => setOpen(false), [setOpen]);
-  const menu = isOpen && mounted ? (0, import_react_dom.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(DropdownContext.Provider, { value: { close }, children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
-      "div",
-      {
-        ref: menuRef,
-        style: {
-          position: "fixed",
-          top: position.top,
-          ...align === "right" ? { right: position.right } : { left: position.left }
-        },
-        className: cn(
-          "autoblogger z-[80] min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1 overscroll-contain",
-          className
-        ),
-        onWheel: (e) => e.stopPropagation(),
-        children
-      }
-    ) }),
-    document.body
-  ) : null;
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { ref: triggerRef, onClick: handleTriggerClick, children: trigger }),
+  const close = (0, import_react9.useCallback)(() => setOpen(false), [setOpen]);
+  const menu = isOpen && mounted && position ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(AutobloggerPortal, { children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(DropdownContext.Provider, { value: { close }, children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+    "div",
+    {
+      ref: menuRef,
+      style: {
+        position: "fixed",
+        top: position.top,
+        ...align === "right" ? { right: position.right } : { left: position.left }
+      },
+      className: cn(
+        "z-[80] min-w-[160px] bg-popover text-popover-foreground border border-border rounded-md shadow-lg p-1 overscroll-contain",
+        className
+      ),
+      onWheel: (e) => e.stopPropagation(),
+      children
+    }
+  ) }) }) : null;
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { ref: triggerRef, onClick: handleTriggerClick, children: trigger }),
     menu
   ] });
 }
@@ -1343,14 +1497,14 @@ function DropdownItem({
   children,
   className
 }) {
-  const context = (0, import_react7.useContext)(DropdownContext);
+  const context = (0, import_react9.useContext)(DropdownContext);
   const handleClick = () => {
     if (!disabled) {
       onClick?.();
       context?.close();
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
     "button",
     {
       type: "button",
@@ -1369,14 +1523,14 @@ function DropdownItem({
   );
 }
 function DropdownDivider() {
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "h-px bg-border my-1" });
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "h-px bg-border my-1" });
 }
 function DropdownLabel({ children }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "px-3 py-1.5 md:px-2 md:py-1 text-xs font-medium text-muted-foreground", children });
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "px-3 py-1.5 md:px-2 md:py-1 text-xs font-medium text-muted-foreground", children });
 }
 
 // src/ui/components/RevisionHistoryDropdown.tsx
-var import_jsx_runtime11 = require("react/jsx-runtime");
+var import_jsx_runtime13 = require("react/jsx-runtime");
 function RevisionHistoryDropdown({
   revisions,
   loading,
@@ -1386,24 +1540,24 @@ function RevisionHistoryDropdown({
   onOpen,
   onSelect
 }) {
-  const [open, setOpen] = (0, import_react8.useState)(false);
+  const [open, setOpen] = (0, import_react10.useState)(false);
   const handleOpenChange = (isOpen) => {
     if (isOpen && !open) {
       onOpen();
     }
     setOpen(isOpen);
   };
-  const trigger = /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+  const trigger = /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
     "button",
     {
       type: "button",
       disabled: disabled || isPreviewMode || previewLoading,
       title: disabled ? "Save post to enable history" : "Revision history",
-      className: "px-2.5 py-1.5 text-sm font-medium rounded transition-colors flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 dark:text-gray-400",
-      children: previewLoading ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(import_lucide_react6.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(import_lucide_react6.History, { className: "w-4 h-4" })
+      className: "px-2.5 py-1.5 text-sm font-medium rounded transition-colors flex items-center justify-center hover:bg-gray-100 ab-dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 ab-dark:text-gray-400",
+      children: previewLoading ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react6.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react6.History, { className: "w-4 h-4" })
     }
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
     Dropdown,
     {
       trigger,
@@ -1413,11 +1567,11 @@ function RevisionHistoryDropdown({
       align: "right",
       className: "w-64 max-h-80 overflow-y-auto p-0",
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(DropdownLabel, { children: "Revision History" }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "border-t border-border" }),
-        loading ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "flex items-center justify-center py-4", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(import_lucide_react6.Loader2, { className: "h-4 w-4 animate-spin text-gray-500" }) }) : revisions.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "py-4 text-center text-sm text-gray-500", children: "No revisions yet" }) : revisions.map((rev) => /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(DropdownItem, { onClick: () => onSelect(rev.id), children: /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "flex flex-col", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "text-sm truncate", children: rev.title || "Untitled" }),
-          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "text-xs text-gray-500", children: formatRelativeTime(rev.createdAt) })
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(DropdownLabel, { children: "Revision History" }),
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "border-t border-border" }),
+        loading ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "flex items-center justify-center py-4", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react6.Loader2, { className: "h-4 w-4 animate-spin text-gray-500" }) }) : revisions.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "py-4 text-center text-sm text-gray-500", children: "No revisions yet" }) : revisions.map((rev) => /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(DropdownItem, { onClick: () => onSelect(rev.id), children: /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "flex flex-col", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "text-sm truncate", children: rev.title || "Untitled" }),
+          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "text-xs text-gray-500", children: formatRelativeTime(rev.createdAt) })
         ] }) }, rev.id))
       ]
     }
@@ -1425,7 +1579,7 @@ function RevisionHistoryDropdown({
 }
 
 // src/ui/components/toolbar/HistoryButtons.tsx
-var import_jsx_runtime12 = require("react/jsx-runtime");
+var import_jsx_runtime14 = require("react/jsx-runtime");
 function HistoryButtons({
   editor: editorProp,
   textareaRef,
@@ -1437,7 +1591,7 @@ function HistoryButtons({
   loading
 }) {
   const editor = editorProp;
-  const handleUndo = (0, import_react9.useCallback)(() => {
+  const handleUndo = (0, import_react11.useCallback)(() => {
     if (editor) {
       editor.chain().focus().undo().run();
     } else if (textareaRef?.current) {
@@ -1445,7 +1599,7 @@ function HistoryButtons({
       document.execCommand("undo");
     }
   }, [editor, textareaRef]);
-  const handleRedo = (0, import_react9.useCallback)(() => {
+  const handleRedo = (0, import_react11.useCallback)(() => {
     if (editor) {
       editor.chain().focus().redo().run();
     } else if (textareaRef?.current) {
@@ -1454,50 +1608,50 @@ function HistoryButtons({
     }
   }, [editor, textareaRef]);
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(SkeletonButton, {})
+    return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_jsx_runtime14.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(SkeletonButton, {})
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_jsx_runtime14.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
       ToolbarButton,
       {
         onClick: handleUndo,
         disabled: aiGenerating || (editor ? !editor.can().undo() : false),
         title: "Undo (\u2318Z)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(import_lucide_react7.Undo2, { className: "w-4 h-4" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(import_lucide_react7.Undo2, { className: "w-4 h-4" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
       ToolbarButton,
       {
         onClick: handleRedo,
         disabled: aiGenerating || (editor ? !editor.can().redo() : false),
         title: "Redo (\u2318\u21E7Z)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(import_lucide_react7.Redo2, { className: "w-4 h-4" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(import_lucide_react7.Redo2, { className: "w-4 h-4" })
       }
     ),
-    setShowMarkdown && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+    setShowMarkdown && /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_jsx_runtime14.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
         ToolbarButton,
         {
           onClick: () => setShowMarkdown(!showMarkdown),
           active: showMarkdown,
           disabled: aiGenerating,
           title: showMarkdown ? "Switch to rich text editor" : "Switch to markdown mode",
-          children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: "font-mono text-xs", children: "MD" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("span", { className: "font-mono text-xs", children: "MD" })
         }
       )
     ] }),
-    revisions && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+    revisions && /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_jsx_runtime14.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
         RevisionHistoryDropdown,
         {
           revisions: revisions.list,
@@ -1514,7 +1668,7 @@ function HistoryButtons({
 }
 
 // src/ui/components/EditorToolbar.tsx
-var import_jsx_runtime13 = require("react/jsx-runtime");
+var import_jsx_runtime15 = require("react/jsx-runtime");
 function EditorToolbar({
   editor,
   textareaRef,
@@ -1534,21 +1688,21 @@ function EditorToolbar({
   apiBasePath = "/api/cms"
 }) {
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(FormatButtons, { loading: true }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(BlockButtons, { loading: true }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(MediaButtons, { loading: true }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(HistoryButtons, { loading: true }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(SkeletonButton, {})
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(FormatButtons, { loading: true }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(BlockButtons, { loading: true }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(MediaButtons, { loading: true }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(HistoryButtons, { loading: true }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SkeletonButton, {})
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       FormatButtons,
       {
         editor,
@@ -1559,8 +1713,8 @@ function EditorToolbar({
         apiBasePath
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       BlockButtons,
       {
         editor,
@@ -1570,8 +1724,8 @@ function EditorToolbar({
         aiGenerating
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       MediaButtons,
       {
         editor,
@@ -1582,8 +1736,8 @@ function EditorToolbar({
         apiBasePath
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       HistoryButtons,
       {
         editor,
@@ -1595,27 +1749,27 @@ function EditorToolbar({
         aiGenerating
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       ToolbarButton,
       {
         onClick: onAddComment ?? (() => {
         }),
         disabled: aiGenerating || !hasSelection || !onAddComment,
         title: hasSelection ? "New comment (\u2318\u2325M)" : selectionHasComment ? "Text already has a comment" : "Select text to comment",
-        children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react8.MessageSquarePlus, { className: "w-4 h-4" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react8.MessageSquarePlus, { className: "w-4 h-4" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       ToolbarButton,
       {
         onClick: onViewComments ?? (() => {
         }),
         disabled: aiGenerating || !onViewComments,
         title: "View all comments",
-        children: /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("span", { className: "flex items-center gap-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react8.MessageSquare, { className: "w-4 h-4" }),
-          commentsCount !== void 0 && commentsCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "text-xs tabular-nums", children: commentsCount })
+        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "flex items-center gap-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react8.MessageSquare, { className: "w-4 h-4" }),
+          commentsCount !== void 0 && commentsCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "text-xs tabular-nums", children: commentsCount })
         ] })
       }
     )
@@ -1623,35 +1777,9 @@ function EditorToolbar({
 }
 
 // src/ui/components/TiptapEditor.tsx
-var import_react10 = require("react");
-var import_react11 = require("@tiptap/react");
+var import_react12 = require("react");
+var import_react13 = require("@tiptap/react");
 var import_starter_kit = __toESM(require("@tiptap/starter-kit"));
-var import_extension_placeholder = __toESM(require("@tiptap/extension-placeholder"));
-var import_extension_link = __toESM(require("@tiptap/extension-link"));
-var import_extension_image = __toESM(require("@tiptap/extension-image"));
-
-// src/lib/markdown.ts
-var import_marked = require("marked");
-var import_turndown = __toESM(require("turndown"));
-var import_sanitize_html = __toESM(require("sanitize-html"));
-import_marked.marked.setOptions({
-  gfm: true,
-  breaks: false
-});
-function renderMarkdown(markdown) {
-  return import_marked.marked.parse(markdown);
-}
-function markdownToHtml(markdown) {
-  return import_marked.marked.parse(markdown, { gfm: true, breaks: true });
-}
-var turndownService = new import_turndown.default({
-  headingStyle: "atx",
-  codeBlockStyle: "fenced",
-  bulletListMarker: "-"
-});
-function htmlToMarkdown(html) {
-  return turndownService.turndown(html);
-}
 
 // node_modules/@tiptap/core/dist/index.js
 var import_transform = require("@tiptap/pm/transform");
@@ -3233,6 +3361,50 @@ function getChangedRanges(transform) {
   });
   return simplifyChangedRanges(changes);
 }
+function getMarksBetween(from, to, doc) {
+  const marks = [];
+  if (from === to) {
+    doc.resolve(from).marks().forEach((mark) => {
+      const $pos = doc.resolve(from);
+      const range = getMarkRange($pos, mark.type);
+      if (!range) {
+        return;
+      }
+      marks.push({
+        mark,
+        ...range
+      });
+    });
+  } else {
+    doc.nodesBetween(from, to, (node, pos) => {
+      if (!node || (node == null ? void 0 : node.nodeSize) === void 0) {
+        return;
+      }
+      marks.push(
+        ...node.marks.map((mark) => ({
+          from: pos,
+          to: pos + node.nodeSize,
+          mark
+        }))
+      );
+    });
+  }
+  return marks;
+}
+var getNodeAtPosition = (state, typeOrName, pos, maxDepth = 20) => {
+  const $pos = state.doc.resolve(pos);
+  let currentDepth = maxDepth;
+  let node = null;
+  while (currentDepth > 0 && node === null) {
+    const currentNode = $pos.node(currentDepth);
+    if ((currentNode == null ? void 0 : currentNode.type.name) === typeOrName) {
+      node = currentNode;
+    } else {
+      currentDepth -= 1;
+    }
+  }
+  return [node, currentDepth];
+};
 function getSchemaTypeByName(name, schema) {
   return schema.nodes[name] || schema.marks[name] || null;
 }
@@ -3315,6 +3487,31 @@ function isMarkActive(state, typeOrName, attributes = {}) {
   const range = matchedRange > 0 ? matchedRange + excludedRange : matchedRange;
   return range >= selectionRange;
 }
+var isAtEndOfNode = (state, nodeType) => {
+  const { $from, $to, $anchor } = state.selection;
+  if (nodeType) {
+    const parentNode = findParentNode((node) => node.type.name === nodeType)(state.selection);
+    if (!parentNode) {
+      return false;
+    }
+    const $parentPos = state.doc.resolve(parentNode.pos + 1);
+    if ($anchor.pos + 1 === $parentPos.end()) {
+      return true;
+    }
+    return false;
+  }
+  if ($to.parentOffset < $to.parent.nodeSize - 2 || $from.pos !== $to.pos) {
+    return false;
+  }
+  return true;
+};
+var isAtStartOfNode = (state) => {
+  const { $from, $to } = state.selection;
+  if ($from.parentOffset > 0 || $from.pos !== $to.pos) {
+    return false;
+  }
+  return true;
+};
 function isExtensionRulesEnabled(extension, enabled) {
   if (Array.isArray(enabled)) {
     return enabled.some((enabledExtension) => {
@@ -3376,6 +3573,9 @@ function isNodeEmpty(node, {
     return isContentEmpty;
   }
   return false;
+}
+function isNodeSelection(value) {
+  return value instanceof import_state7.NodeSelection;
 }
 function canSetMark(state, tr, newMarkType) {
   var _a;
@@ -3976,6 +4176,14 @@ var wrapInList = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
   const type = getNodeType(typeOrName, state.schema);
   return (0, import_schema_list3.wrapInList)(type, attributes)(state, dispatch);
 };
+var InputRule = class {
+  constructor(config) {
+    var _a;
+    this.find = config.find;
+    this.handler = config.handler;
+    this.undoable = (_a = config.undoable) != null ? _a : true;
+  }
+};
 var inputRuleMatcherHandler = (text, find) => {
   if (isRegExp(find)) {
     return find.exec(text);
@@ -4268,6 +4476,12 @@ var Mark = class _Mark extends Extendable {
 function isNumber(value) {
   return typeof value === "number";
 }
+var PasteRule = class {
+  constructor(config) {
+    this.find = config.find;
+    this.handler = config.handler;
+  }
+};
 var pasteRuleMatcherHandler = (text, find, event) => {
   if (isRegExp(find)) {
     return [...text.matchAll(find)];
@@ -4977,7 +5191,7 @@ var FocusEvents = Extension.create({
 var Keymap = Extension.create({
   name: "keymap",
   addKeyboardShortcuts() {
-    const handleBackspace = () => this.editor.commands.first(({ commands }) => [
+    const handleBackspace2 = () => this.editor.commands.first(({ commands }) => [
       () => commands.undoInputRule(),
       // maybe convert first text block node to default node
       () => commands.command(({ tr }) => {
@@ -4997,7 +5211,7 @@ var Keymap = Extension.create({
       () => commands.joinBackward(),
       () => commands.selectNodeBackward()
     ]);
-    const handleDelete = () => this.editor.commands.first(({ commands }) => [
+    const handleDelete2 = () => this.editor.commands.first(({ commands }) => [
       () => commands.deleteSelection(),
       () => commands.deleteCurrentNode(),
       () => commands.joinForward(),
@@ -5012,11 +5226,11 @@ var Keymap = Extension.create({
     const baseKeymap = {
       Enter: handleEnter,
       "Mod-Enter": () => this.editor.commands.exitCode(),
-      Backspace: handleBackspace,
-      "Mod-Backspace": handleBackspace,
-      "Shift-Backspace": handleBackspace,
-      Delete: handleDelete,
-      "Mod-Delete": handleDelete,
+      Backspace: handleBackspace2,
+      "Mod-Backspace": handleBackspace2,
+      "Shift-Backspace": handleBackspace2,
+      Delete: handleDelete2,
+      "Mod-Delete": handleDelete2,
       "Mod-a": () => this.editor.commands.selectAll()
     };
     const pcKeymap = {
@@ -5024,12 +5238,12 @@ var Keymap = Extension.create({
     };
     const macKeymap = {
       ...baseKeymap,
-      "Ctrl-h": handleBackspace,
-      "Alt-Backspace": handleBackspace,
-      "Ctrl-d": handleDelete,
-      "Ctrl-Alt-Backspace": handleDelete,
-      "Alt-Delete": handleDelete,
-      "Alt-d": handleDelete,
+      "Ctrl-h": handleBackspace2,
+      "Alt-Backspace": handleBackspace2,
+      "Ctrl-d": handleDelete2,
+      "Ctrl-Alt-Backspace": handleDelete2,
+      "Alt-Delete": handleDelete2,
+      "Alt-d": handleDelete2,
       "Ctrl-a": () => this.editor.commands.selectTextblockStart(),
       "Ctrl-e": () => this.editor.commands.selectTextblockEnd()
     };
@@ -5175,6 +5389,139 @@ var TextDirection = Extension.create({
     ];
   }
 });
+function markInputRule(config) {
+  return new InputRule({
+    find: config.find,
+    handler: ({ state, range, match }) => {
+      const attributes = callOrReturn(config.getAttributes, void 0, match);
+      if (attributes === false || attributes === null) {
+        return null;
+      }
+      const { tr } = state;
+      const captureGroup = match[match.length - 1];
+      const fullMatch = match[0];
+      if (captureGroup) {
+        const startSpaces = fullMatch.search(/\S/);
+        const textStart = range.from + fullMatch.indexOf(captureGroup);
+        const textEnd = textStart + captureGroup.length;
+        const excludedMarks = getMarksBetween(range.from, range.to, state.doc).filter((item) => {
+          const excluded = item.mark.type.excluded;
+          return excluded.find((type) => type === config.type && type !== item.mark.type);
+        }).filter((item) => item.to > textStart);
+        if (excludedMarks.length) {
+          return null;
+        }
+        if (textEnd < range.to) {
+          tr.delete(textEnd, range.to);
+        }
+        if (textStart > range.from) {
+          tr.delete(range.from + startSpaces, textStart);
+        }
+        const markEnd = range.from + startSpaces + captureGroup.length;
+        tr.addMark(range.from + startSpaces, markEnd, config.type.create(attributes || {}));
+        tr.removeStoredMark(config.type);
+      }
+    },
+    undoable: config.undoable
+  });
+}
+function nodeInputRule(config) {
+  return new InputRule({
+    find: config.find,
+    handler: ({ state, range, match }) => {
+      const attributes = callOrReturn(config.getAttributes, void 0, match) || {};
+      const { tr } = state;
+      const start = range.from;
+      let end = range.to;
+      const newNode = config.type.create(attributes);
+      if (match[1]) {
+        const offset = match[0].lastIndexOf(match[1]);
+        let matchStart = start + offset;
+        if (matchStart > end) {
+          matchStart = end;
+        } else {
+          end = matchStart + match[1].length;
+        }
+        const lastChar = match[0][match[0].length - 1];
+        tr.insertText(lastChar, start + match[0].length - 1);
+        tr.replaceWith(matchStart, end, newNode);
+      } else if (match[0]) {
+        const insertionStart = config.type.isInline ? start : start - 1;
+        tr.insert(insertionStart, config.type.create(attributes)).delete(tr.mapping.map(start), tr.mapping.map(end));
+      }
+      tr.scrollIntoView();
+    },
+    undoable: config.undoable
+  });
+}
+function textblockTypeInputRule(config) {
+  return new InputRule({
+    find: config.find,
+    handler: ({ state, range, match }) => {
+      const $start = state.doc.resolve(range.from);
+      const attributes = callOrReturn(config.getAttributes, void 0, match) || {};
+      if (!$start.node(-1).canReplaceWith($start.index(-1), $start.indexAfter(-1), config.type)) {
+        return null;
+      }
+      state.tr.delete(range.from, range.to).setBlockType(range.from, range.from, config.type, attributes);
+    },
+    undoable: config.undoable
+  });
+}
+function wrappingInputRule(config) {
+  return new InputRule({
+    find: config.find,
+    handler: ({ state, range, match, chain }) => {
+      const attributes = callOrReturn(config.getAttributes, void 0, match) || {};
+      const tr = state.tr.delete(range.from, range.to);
+      const $start = tr.doc.resolve(range.from);
+      const blockRange = $start.blockRange();
+      const wrapping = blockRange && (0, import_transform10.findWrapping)(blockRange, config.type, attributes);
+      if (!wrapping) {
+        return null;
+      }
+      tr.wrap(blockRange, wrapping);
+      if (config.keepMarks && config.editor) {
+        const { selection, storedMarks } = state;
+        const { splittableMarks } = config.editor.extensionManager;
+        const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
+        if (marks) {
+          const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
+          tr.ensureMarks(filteredMarks);
+        }
+      }
+      if (config.keepAttributes) {
+        const nodeType = config.type.name === "bulletList" || config.type.name === "orderedList" ? "listItem" : "taskList";
+        chain().updateAttributes(nodeType, attributes).run();
+      }
+      const before = tr.doc.resolve(range.from - 1).nodeBefore;
+      if (before && before.type === config.type && (0, import_transform10.canJoin)(tr.doc, range.from - 1) && (!config.joinPredicate || config.joinPredicate(match, before))) {
+        tr.join(range.from - 1);
+      }
+    },
+    undoable: config.undoable
+  });
+}
+function canInsertNode(state, nodeType) {
+  const { selection } = state;
+  const { $from } = selection;
+  if (selection instanceof import_state23.NodeSelection) {
+    const index = $from.index();
+    const parent = $from.parent;
+    return parent.canReplaceWith(index, index + 1, nodeType);
+  }
+  let depth = $from.depth;
+  while (depth >= 0) {
+    const index = $from.index(depth);
+    const parent = $from.node(depth);
+    const match = parent.contentMatchAt(index);
+    if (match.matchType(nodeType)) {
+      return true;
+    }
+    depth -= 1;
+  }
+  return false;
+}
 var markdown_exports = {};
 __export2(markdown_exports, {
   createAtomBlockMarkdownSpec: () => createAtomBlockMarkdownSpec,
@@ -5686,9 +6033,1887 @@ function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
     editor.view.dispatch(tr);
   }
 }
+var Node3 = class _Node extends Extendable {
+  constructor() {
+    super(...arguments);
+    this.type = "node";
+  }
+  /**
+   * Create a new Node instance
+   * @param config - Node configuration object or a function that returns a configuration object
+   */
+  static create(config = {}) {
+    const resolvedConfig = typeof config === "function" ? config() : config;
+    return new _Node(resolvedConfig);
+  }
+  configure(options) {
+    return super.configure(options);
+  }
+  extend(extendedConfig) {
+    const resolvedConfig = typeof extendedConfig === "function" ? extendedConfig() : extendedConfig;
+    return super.extend(resolvedConfig);
+  }
+};
+function markPasteRule(config) {
+  return new PasteRule({
+    find: config.find,
+    handler: ({ state, range, match, pasteEvent }) => {
+      const attributes = callOrReturn(config.getAttributes, void 0, match, pasteEvent);
+      if (attributes === false || attributes === null) {
+        return null;
+      }
+      const { tr } = state;
+      const captureGroup = match[match.length - 1];
+      const fullMatch = match[0];
+      let markEnd = range.to;
+      if (captureGroup) {
+        const startSpaces = fullMatch.search(/\S/);
+        const textStart = range.from + fullMatch.indexOf(captureGroup);
+        const textEnd = textStart + captureGroup.length;
+        const excludedMarks = getMarksBetween(range.from, range.to, state.doc).filter((item) => {
+          const excluded = item.mark.type.excluded;
+          return excluded.find((type) => type === config.type && type !== item.mark.type);
+        }).filter((item) => item.to > textStart);
+        if (excludedMarks.length) {
+          return null;
+        }
+        if (textEnd < range.to) {
+          tr.delete(textEnd, range.to);
+        }
+        if (textStart > range.from) {
+          tr.delete(range.from + startSpaces, textStart);
+        }
+        markEnd = range.from + startSpaces + captureGroup.length;
+        tr.addMark(range.from + startSpaces, markEnd, config.type.create(attributes || {}));
+        tr.removeStoredMark(config.type);
+      }
+    }
+  });
+}
+
+// node_modules/@tiptap/extension-heading/dist/index.js
+var Heading = Node3.create({
+  name: "heading",
+  addOptions() {
+    return {
+      levels: [1, 2, 3, 4, 5, 6],
+      HTMLAttributes: {}
+    };
+  },
+  content: "inline*",
+  group: "block",
+  defining: true,
+  addAttributes() {
+    return {
+      level: {
+        default: 1,
+        rendered: false
+      }
+    };
+  },
+  parseHTML() {
+    return this.options.levels.map((level) => ({
+      tag: `h${level}`,
+      attrs: { level }
+    }));
+  },
+  renderHTML({ node, HTMLAttributes }) {
+    const hasLevel = this.options.levels.includes(node.attrs.level);
+    const level = hasLevel ? node.attrs.level : this.options.levels[0];
+    return [`h${level}`, mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
+  parseMarkdown: (token, helpers) => {
+    return helpers.createNode("heading", { level: token.depth || 1 }, helpers.parseInline(token.tokens || []));
+  },
+  renderMarkdown: (node, h2) => {
+    var _a;
+    const level = ((_a = node.attrs) == null ? void 0 : _a.level) ? parseInt(node.attrs.level, 10) : 1;
+    const headingChars = "#".repeat(level);
+    if (!node.content) {
+      return "";
+    }
+    return `${headingChars} ${h2.renderChildren(node.content)}`;
+  },
+  addCommands() {
+    return {
+      setHeading: (attributes) => ({ commands }) => {
+        if (!this.options.levels.includes(attributes.level)) {
+          return false;
+        }
+        return commands.setNode(this.name, attributes);
+      },
+      toggleHeading: (attributes) => ({ commands }) => {
+        if (!this.options.levels.includes(attributes.level)) {
+          return false;
+        }
+        return commands.toggleNode(this.name, "paragraph", attributes);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return this.options.levels.reduce(
+      (items, level) => ({
+        ...items,
+        ...{
+          [`Mod-Alt-${level}`]: () => this.editor.commands.toggleHeading({ level })
+        }
+      }),
+      {}
+    );
+  },
+  addInputRules() {
+    return this.options.levels.map((level) => {
+      return textblockTypeInputRule({
+        find: new RegExp(`^(#{${Math.min(...this.options.levels)},${level}})\\s$`),
+        type: this.type,
+        getAttributes: {
+          level
+        }
+      });
+    });
+  }
+});
+var index_default = Heading;
+
+// node_modules/@tiptap/extension-paragraph/dist/index.js
+var Paragraph = Node3.create({
+  name: "paragraph",
+  priority: 1e3,
+  addOptions() {
+    return {
+      HTMLAttributes: {}
+    };
+  },
+  group: "block",
+  content: "inline*",
+  parseHTML() {
+    return [{ tag: "p" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["p", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
+  parseMarkdown: (token, helpers) => {
+    const tokens = token.tokens || [];
+    if (tokens.length === 1 && tokens[0].type === "image") {
+      return helpers.parseChildren([tokens[0]]);
+    }
+    return helpers.createNode(
+      "paragraph",
+      void 0,
+      // no attributes for paragraph
+      helpers.parseInline(tokens)
+    );
+  },
+  renderMarkdown: (node, h2) => {
+    if (!node || !Array.isArray(node.content)) {
+      return "";
+    }
+    return h2.renderChildren(node.content);
+  },
+  addCommands() {
+    return {
+      setParagraph: () => ({ commands }) => {
+        return commands.setNode(this.name);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Alt-0": () => this.editor.commands.setParagraph()
+    };
+  }
+});
+var index_default2 = Paragraph;
+
+// node_modules/@tiptap/extension-list/dist/index.js
+var __defProp3 = Object.defineProperty;
+var __export3 = (target, all) => {
+  for (var name in all)
+    __defProp3(target, name, { get: all[name], enumerable: true });
+};
+var ListItemName = "listItem";
+var TextStyleName = "textStyle";
+var bulletListInputRegex = /^\s*([-+*])\s$/;
+var BulletList = Node3.create({
+  name: "bulletList",
+  addOptions() {
+    return {
+      itemTypeName: "listItem",
+      HTMLAttributes: {},
+      keepMarks: false,
+      keepAttributes: false
+    };
+  },
+  group: "block list",
+  content() {
+    return `${this.options.itemTypeName}+`;
+  },
+  parseHTML() {
+    return [{ tag: "ul" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["ul", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
+  markdownTokenName: "list",
+  parseMarkdown: (token, helpers) => {
+    if (token.type !== "list" || token.ordered) {
+      return [];
+    }
+    return {
+      type: "bulletList",
+      content: token.items ? helpers.parseChildren(token.items) : []
+    };
+  },
+  renderMarkdown: (node, h2) => {
+    if (!node.content) {
+      return "";
+    }
+    return h2.renderChildren(node.content, "\n");
+  },
+  markdownOptions: {
+    indentsContent: true
+  },
+  addCommands() {
+    return {
+      toggleBulletList: () => ({ commands, chain }) => {
+        if (this.options.keepAttributes) {
+          return chain().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).updateAttributes(ListItemName, this.editor.getAttributes(TextStyleName)).run();
+        }
+        return commands.toggleList(this.name, this.options.itemTypeName, this.options.keepMarks);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-8": () => this.editor.commands.toggleBulletList()
+    };
+  },
+  addInputRules() {
+    let inputRule = wrappingInputRule({
+      find: bulletListInputRegex,
+      type: this.type
+    });
+    if (this.options.keepMarks || this.options.keepAttributes) {
+      inputRule = wrappingInputRule({
+        find: bulletListInputRegex,
+        type: this.type,
+        keepMarks: this.options.keepMarks,
+        keepAttributes: this.options.keepAttributes,
+        getAttributes: () => {
+          return this.editor.getAttributes(TextStyleName);
+        },
+        editor: this.editor
+      });
+    }
+    return [inputRule];
+  }
+});
+var ListItem = Node3.create({
+  name: "listItem",
+  addOptions() {
+    return {
+      HTMLAttributes: {},
+      bulletListTypeName: "bulletList",
+      orderedListTypeName: "orderedList"
+    };
+  },
+  content: "paragraph block*",
+  defining: true,
+  parseHTML() {
+    return [
+      {
+        tag: "li"
+      }
+    ];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["li", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
+  markdownTokenName: "list_item",
+  parseMarkdown: (token, helpers) => {
+    if (token.type !== "list_item") {
+      return [];
+    }
+    let content = [];
+    if (token.tokens && token.tokens.length > 0) {
+      const hasParagraphTokens = token.tokens.some((t) => t.type === "paragraph");
+      if (hasParagraphTokens) {
+        content = helpers.parseChildren(token.tokens);
+      } else {
+        const firstToken = token.tokens[0];
+        if (firstToken && firstToken.type === "text" && firstToken.tokens && firstToken.tokens.length > 0) {
+          const inlineContent = helpers.parseInline(firstToken.tokens);
+          content = [
+            {
+              type: "paragraph",
+              content: inlineContent
+            }
+          ];
+          if (token.tokens.length > 1) {
+            const remainingTokens = token.tokens.slice(1);
+            const additionalContent = helpers.parseChildren(remainingTokens);
+            content.push(...additionalContent);
+          }
+        } else {
+          content = helpers.parseChildren(token.tokens);
+        }
+      }
+    }
+    if (content.length === 0) {
+      content = [
+        {
+          type: "paragraph",
+          content: []
+        }
+      ];
+    }
+    return {
+      type: "listItem",
+      content
+    };
+  },
+  renderMarkdown: (node, h2, ctx) => {
+    return renderNestedMarkdownContent(
+      node,
+      h2,
+      (context) => {
+        if (context.parentType === "bulletList") {
+          return "- ";
+        }
+        if (context.parentType === "orderedList") {
+          return `${context.index + 1}. `;
+        }
+        return "- ";
+      },
+      ctx
+    );
+  },
+  addKeyboardShortcuts() {
+    return {
+      Enter: () => this.editor.commands.splitListItem(this.name),
+      Tab: () => this.editor.commands.sinkListItem(this.name),
+      "Shift-Tab": () => this.editor.commands.liftListItem(this.name)
+    };
+  }
+});
+var listHelpers_exports = {};
+__export3(listHelpers_exports, {
+  findListItemPos: () => findListItemPos,
+  getNextListDepth: () => getNextListDepth,
+  handleBackspace: () => handleBackspace,
+  handleDelete: () => handleDelete,
+  hasListBefore: () => hasListBefore,
+  hasListItemAfter: () => hasListItemAfter,
+  hasListItemBefore: () => hasListItemBefore,
+  listItemHasSubList: () => listItemHasSubList,
+  nextListIsDeeper: () => nextListIsDeeper,
+  nextListIsHigher: () => nextListIsHigher
+});
+var findListItemPos = (typeOrName, state) => {
+  const { $from } = state.selection;
+  const nodeType = getNodeType(typeOrName, state.schema);
+  let currentNode = null;
+  let currentDepth = $from.depth;
+  let currentPos = $from.pos;
+  let targetDepth = null;
+  while (currentDepth > 0 && targetDepth === null) {
+    currentNode = $from.node(currentDepth);
+    if (currentNode.type === nodeType) {
+      targetDepth = currentDepth;
+    } else {
+      currentDepth -= 1;
+      currentPos -= 1;
+    }
+  }
+  if (targetDepth === null) {
+    return null;
+  }
+  return { $pos: state.doc.resolve(currentPos), depth: targetDepth };
+};
+var getNextListDepth = (typeOrName, state) => {
+  const listItemPos = findListItemPos(typeOrName, state);
+  if (!listItemPos) {
+    return false;
+  }
+  const [, depth] = getNodeAtPosition(state, typeOrName, listItemPos.$pos.pos + 4);
+  return depth;
+};
+var hasListBefore = (editorState, name, parentListTypes) => {
+  const { $anchor } = editorState.selection;
+  const previousNodePos = Math.max(0, $anchor.pos - 2);
+  const previousNode = editorState.doc.resolve(previousNodePos).node();
+  if (!previousNode || !parentListTypes.includes(previousNode.type.name)) {
+    return false;
+  }
+  return true;
+};
+var hasListItemBefore = (typeOrName, state) => {
+  var _a;
+  const { $anchor } = state.selection;
+  const $targetPos = state.doc.resolve($anchor.pos - 2);
+  if ($targetPos.index() === 0) {
+    return false;
+  }
+  if (((_a = $targetPos.nodeBefore) == null ? void 0 : _a.type.name) !== typeOrName) {
+    return false;
+  }
+  return true;
+};
+var listItemHasSubList = (typeOrName, state, node) => {
+  if (!node) {
+    return false;
+  }
+  const nodeType = getNodeType(typeOrName, state.schema);
+  let hasSubList = false;
+  node.descendants((child) => {
+    if (child.type === nodeType) {
+      hasSubList = true;
+    }
+  });
+  return hasSubList;
+};
+var handleBackspace = (editor, name, parentListTypes) => {
+  if (editor.commands.undoInputRule()) {
+    return true;
+  }
+  if (editor.state.selection.from !== editor.state.selection.to) {
+    return false;
+  }
+  if (!isNodeActive(editor.state, name) && hasListBefore(editor.state, name, parentListTypes)) {
+    const { $anchor } = editor.state.selection;
+    const $listPos = editor.state.doc.resolve($anchor.before() - 1);
+    const listDescendants = [];
+    $listPos.node().descendants((node, pos) => {
+      if (node.type.name === name) {
+        listDescendants.push({ node, pos });
+      }
+    });
+    const lastItem = listDescendants.at(-1);
+    if (!lastItem) {
+      return false;
+    }
+    const $lastItemPos = editor.state.doc.resolve($listPos.start() + lastItem.pos + 1);
+    return editor.chain().cut({ from: $anchor.start() - 1, to: $anchor.end() + 1 }, $lastItemPos.end()).joinForward().run();
+  }
+  if (!isNodeActive(editor.state, name)) {
+    return false;
+  }
+  if (!isAtStartOfNode(editor.state)) {
+    return false;
+  }
+  const listItemPos = findListItemPos(name, editor.state);
+  if (!listItemPos) {
+    return false;
+  }
+  const $prev = editor.state.doc.resolve(listItemPos.$pos.pos - 2);
+  const prevNode = $prev.node(listItemPos.depth);
+  const previousListItemHasSubList = listItemHasSubList(name, editor.state, prevNode);
+  if (hasListItemBefore(name, editor.state) && !previousListItemHasSubList) {
+    return editor.commands.joinItemBackward();
+  }
+  return editor.chain().liftListItem(name).run();
+};
+var nextListIsDeeper = (typeOrName, state) => {
+  const listDepth = getNextListDepth(typeOrName, state);
+  const listItemPos = findListItemPos(typeOrName, state);
+  if (!listItemPos || !listDepth) {
+    return false;
+  }
+  if (listDepth > listItemPos.depth) {
+    return true;
+  }
+  return false;
+};
+var nextListIsHigher = (typeOrName, state) => {
+  const listDepth = getNextListDepth(typeOrName, state);
+  const listItemPos = findListItemPos(typeOrName, state);
+  if (!listItemPos || !listDepth) {
+    return false;
+  }
+  if (listDepth < listItemPos.depth) {
+    return true;
+  }
+  return false;
+};
+var handleDelete = (editor, name) => {
+  if (!isNodeActive(editor.state, name)) {
+    return false;
+  }
+  if (!isAtEndOfNode(editor.state, name)) {
+    return false;
+  }
+  const { selection } = editor.state;
+  const { $from, $to } = selection;
+  if (!selection.empty && $from.sameParent($to)) {
+    return false;
+  }
+  if (nextListIsDeeper(name, editor.state)) {
+    return editor.chain().focus(editor.state.selection.from + 4).lift(name).joinBackward().run();
+  }
+  if (nextListIsHigher(name, editor.state)) {
+    return editor.chain().joinForward().joinBackward().run();
+  }
+  return editor.commands.joinItemForward();
+};
+var hasListItemAfter = (typeOrName, state) => {
+  var _a;
+  const { $anchor } = state.selection;
+  const $targetPos = state.doc.resolve($anchor.pos - $anchor.parentOffset - 2);
+  if ($targetPos.index() === $targetPos.parent.childCount - 1) {
+    return false;
+  }
+  if (((_a = $targetPos.nodeAfter) == null ? void 0 : _a.type.name) !== typeOrName) {
+    return false;
+  }
+  return true;
+};
+var ListKeymap = Extension.create({
+  name: "listKeymap",
+  addOptions() {
+    return {
+      listTypes: [
+        {
+          itemName: "listItem",
+          wrapperNames: ["bulletList", "orderedList"]
+        },
+        {
+          itemName: "taskItem",
+          wrapperNames: ["taskList"]
+        }
+      ]
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      Delete: ({ editor }) => {
+        let handled = false;
+        this.options.listTypes.forEach(({ itemName }) => {
+          if (editor.state.schema.nodes[itemName] === void 0) {
+            return;
+          }
+          if (handleDelete(editor, itemName)) {
+            handled = true;
+          }
+        });
+        return handled;
+      },
+      "Mod-Delete": ({ editor }) => {
+        let handled = false;
+        this.options.listTypes.forEach(({ itemName }) => {
+          if (editor.state.schema.nodes[itemName] === void 0) {
+            return;
+          }
+          if (handleDelete(editor, itemName)) {
+            handled = true;
+          }
+        });
+        return handled;
+      },
+      Backspace: ({ editor }) => {
+        let handled = false;
+        this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
+          if (editor.state.schema.nodes[itemName] === void 0) {
+            return;
+          }
+          if (handleBackspace(editor, itemName, wrapperNames)) {
+            handled = true;
+          }
+        });
+        return handled;
+      },
+      "Mod-Backspace": ({ editor }) => {
+        let handled = false;
+        this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
+          if (editor.state.schema.nodes[itemName] === void 0) {
+            return;
+          }
+          if (handleBackspace(editor, itemName, wrapperNames)) {
+            handled = true;
+          }
+        });
+        return handled;
+      }
+    };
+  }
+});
+var ORDERED_LIST_ITEM_REGEX = /^(\s*)(\d+)\.\s+(.*)$/;
+var INDENTED_LINE_REGEX = /^\s/;
+function collectOrderedListItems(lines) {
+  const listItems = [];
+  let currentLineIndex = 0;
+  let consumed = 0;
+  while (currentLineIndex < lines.length) {
+    const line = lines[currentLineIndex];
+    const match = line.match(ORDERED_LIST_ITEM_REGEX);
+    if (!match) {
+      break;
+    }
+    const [, indent, number, content] = match;
+    const indentLevel = indent.length;
+    let itemContent = content;
+    let nextLineIndex = currentLineIndex + 1;
+    const itemLines = [line];
+    while (nextLineIndex < lines.length) {
+      const nextLine = lines[nextLineIndex];
+      const nextMatch = nextLine.match(ORDERED_LIST_ITEM_REGEX);
+      if (nextMatch) {
+        break;
+      }
+      if (nextLine.trim() === "") {
+        itemLines.push(nextLine);
+        itemContent += "\n";
+        nextLineIndex += 1;
+      } else if (nextLine.match(INDENTED_LINE_REGEX)) {
+        itemLines.push(nextLine);
+        itemContent += `
+${nextLine.slice(indentLevel + 2)}`;
+        nextLineIndex += 1;
+      } else {
+        break;
+      }
+    }
+    listItems.push({
+      indent: indentLevel,
+      number: parseInt(number, 10),
+      content: itemContent.trim(),
+      raw: itemLines.join("\n")
+    });
+    consumed = nextLineIndex;
+    currentLineIndex = nextLineIndex;
+  }
+  return [listItems, consumed];
+}
+function buildNestedStructure(items, baseIndent, lexer) {
+  var _a;
+  const result = [];
+  let currentIndex = 0;
+  while (currentIndex < items.length) {
+    const item = items[currentIndex];
+    if (item.indent === baseIndent) {
+      const contentLines = item.content.split("\n");
+      const mainText = ((_a = contentLines[0]) == null ? void 0 : _a.trim()) || "";
+      const tokens = [];
+      if (mainText) {
+        tokens.push({
+          type: "paragraph",
+          raw: mainText,
+          tokens: lexer.inlineTokens(mainText)
+        });
+      }
+      const additionalContent = contentLines.slice(1).join("\n").trim();
+      if (additionalContent) {
+        const blockTokens = lexer.blockTokens(additionalContent);
+        tokens.push(...blockTokens);
+      }
+      let lookAheadIndex = currentIndex + 1;
+      const nestedItems = [];
+      while (lookAheadIndex < items.length && items[lookAheadIndex].indent > baseIndent) {
+        nestedItems.push(items[lookAheadIndex]);
+        lookAheadIndex += 1;
+      }
+      if (nestedItems.length > 0) {
+        const nextIndent = Math.min(...nestedItems.map((nestedItem) => nestedItem.indent));
+        const nestedListItems = buildNestedStructure(nestedItems, nextIndent, lexer);
+        tokens.push({
+          type: "list",
+          ordered: true,
+          start: nestedItems[0].number,
+          items: nestedListItems,
+          raw: nestedItems.map((nestedItem) => nestedItem.raw).join("\n")
+        });
+      }
+      result.push({
+        type: "list_item",
+        raw: item.raw,
+        tokens
+      });
+      currentIndex = lookAheadIndex;
+    } else {
+      currentIndex += 1;
+    }
+  }
+  return result;
+}
+function parseListItems(items, helpers) {
+  return items.map((item) => {
+    if (item.type !== "list_item") {
+      return helpers.parseChildren([item])[0];
+    }
+    const content = [];
+    if (item.tokens && item.tokens.length > 0) {
+      item.tokens.forEach((itemToken) => {
+        if (itemToken.type === "paragraph" || itemToken.type === "list" || itemToken.type === "blockquote" || itemToken.type === "code") {
+          content.push(...helpers.parseChildren([itemToken]));
+        } else if (itemToken.type === "text" && itemToken.tokens) {
+          const inlineContent = helpers.parseChildren([itemToken]);
+          content.push({
+            type: "paragraph",
+            content: inlineContent
+          });
+        } else {
+          const parsed = helpers.parseChildren([itemToken]);
+          if (parsed.length > 0) {
+            content.push(...parsed);
+          }
+        }
+      });
+    }
+    return {
+      type: "listItem",
+      content
+    };
+  });
+}
+var ListItemName2 = "listItem";
+var TextStyleName2 = "textStyle";
+var orderedListInputRegex = /^(\d+)\.\s$/;
+var OrderedList = Node3.create({
+  name: "orderedList",
+  addOptions() {
+    return {
+      itemTypeName: "listItem",
+      HTMLAttributes: {},
+      keepMarks: false,
+      keepAttributes: false
+    };
+  },
+  group: "block list",
+  content() {
+    return `${this.options.itemTypeName}+`;
+  },
+  addAttributes() {
+    return {
+      start: {
+        default: 1,
+        parseHTML: (element) => {
+          return element.hasAttribute("start") ? parseInt(element.getAttribute("start") || "", 10) : 1;
+        }
+      },
+      type: {
+        default: null,
+        parseHTML: (element) => element.getAttribute("type")
+      }
+    };
+  },
+  parseHTML() {
+    return [
+      {
+        tag: "ol"
+      }
+    ];
+  },
+  renderHTML({ HTMLAttributes }) {
+    const { start, ...attributesWithoutStart } = HTMLAttributes;
+    return start === 1 ? ["ol", mergeAttributes(this.options.HTMLAttributes, attributesWithoutStart), 0] : ["ol", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
+  markdownTokenName: "list",
+  parseMarkdown: (token, helpers) => {
+    if (token.type !== "list" || !token.ordered) {
+      return [];
+    }
+    const startValue = token.start || 1;
+    const content = token.items ? parseListItems(token.items, helpers) : [];
+    if (startValue !== 1) {
+      return {
+        type: "orderedList",
+        attrs: { start: startValue },
+        content
+      };
+    }
+    return {
+      type: "orderedList",
+      content
+    };
+  },
+  renderMarkdown: (node, h2) => {
+    if (!node.content) {
+      return "";
+    }
+    return h2.renderChildren(node.content, "\n");
+  },
+  markdownTokenizer: {
+    name: "orderedList",
+    level: "block",
+    start: (src) => {
+      const match = src.match(/^(\s*)(\d+)\.\s+/);
+      const index = match == null ? void 0 : match.index;
+      return index !== void 0 ? index : -1;
+    },
+    tokenize: (src, _tokens, lexer) => {
+      var _a;
+      const lines = src.split("\n");
+      const [listItems, consumed] = collectOrderedListItems(lines);
+      if (listItems.length === 0) {
+        return void 0;
+      }
+      const items = buildNestedStructure(listItems, 0, lexer);
+      if (items.length === 0) {
+        return void 0;
+      }
+      const startValue = ((_a = listItems[0]) == null ? void 0 : _a.number) || 1;
+      return {
+        type: "list",
+        ordered: true,
+        start: startValue,
+        items,
+        raw: lines.slice(0, consumed).join("\n")
+      };
+    }
+  },
+  markdownOptions: {
+    indentsContent: true
+  },
+  addCommands() {
+    return {
+      toggleOrderedList: () => ({ commands, chain }) => {
+        if (this.options.keepAttributes) {
+          return chain().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).updateAttributes(ListItemName2, this.editor.getAttributes(TextStyleName2)).run();
+        }
+        return commands.toggleList(this.name, this.options.itemTypeName, this.options.keepMarks);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-7": () => this.editor.commands.toggleOrderedList()
+    };
+  },
+  addInputRules() {
+    let inputRule = wrappingInputRule({
+      find: orderedListInputRegex,
+      type: this.type,
+      getAttributes: (match) => ({ start: +match[1] }),
+      joinPredicate: (match, node) => node.childCount + node.attrs.start === +match[1]
+    });
+    if (this.options.keepMarks || this.options.keepAttributes) {
+      inputRule = wrappingInputRule({
+        find: orderedListInputRegex,
+        type: this.type,
+        keepMarks: this.options.keepMarks,
+        keepAttributes: this.options.keepAttributes,
+        getAttributes: (match) => ({ start: +match[1], ...this.editor.getAttributes(TextStyleName2) }),
+        joinPredicate: (match, node) => node.childCount + node.attrs.start === +match[1],
+        editor: this.editor
+      });
+    }
+    return [inputRule];
+  }
+});
+var inputRegex = /^\s*(\[([( |x])?\])\s$/;
+var TaskItem = Node3.create({
+  name: "taskItem",
+  addOptions() {
+    return {
+      nested: false,
+      HTMLAttributes: {},
+      taskListTypeName: "taskList",
+      a11y: void 0
+    };
+  },
+  content() {
+    return this.options.nested ? "paragraph block*" : "paragraph+";
+  },
+  defining: true,
+  addAttributes() {
+    return {
+      checked: {
+        default: false,
+        keepOnSplit: false,
+        parseHTML: (element) => {
+          const dataChecked = element.getAttribute("data-checked");
+          return dataChecked === "" || dataChecked === "true";
+        },
+        renderHTML: (attributes) => ({
+          "data-checked": attributes.checked
+        })
+      }
+    };
+  },
+  parseHTML() {
+    return [
+      {
+        tag: `li[data-type="${this.name}"]`,
+        priority: 51
+      }
+    ];
+  },
+  renderHTML({ node, HTMLAttributes }) {
+    return [
+      "li",
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+        "data-type": this.name
+      }),
+      [
+        "label",
+        [
+          "input",
+          {
+            type: "checkbox",
+            checked: node.attrs.checked ? "checked" : null
+          }
+        ],
+        ["span"]
+      ],
+      ["div", 0]
+    ];
+  },
+  parseMarkdown: (token, h2) => {
+    const content = [];
+    if (token.tokens && token.tokens.length > 0) {
+      content.push(h2.createNode("paragraph", {}, h2.parseInline(token.tokens)));
+    } else if (token.text) {
+      content.push(h2.createNode("paragraph", {}, [h2.createNode("text", { text: token.text })]));
+    } else {
+      content.push(h2.createNode("paragraph", {}, []));
+    }
+    if (token.nestedTokens && token.nestedTokens.length > 0) {
+      const nestedContent = h2.parseChildren(token.nestedTokens);
+      content.push(...nestedContent);
+    }
+    return h2.createNode("taskItem", { checked: token.checked || false }, content);
+  },
+  renderMarkdown: (node, h2) => {
+    var _a;
+    const checkedChar = ((_a = node.attrs) == null ? void 0 : _a.checked) ? "x" : " ";
+    const prefix = `- [${checkedChar}] `;
+    return renderNestedMarkdownContent(node, h2, prefix);
+  },
+  addKeyboardShortcuts() {
+    const shortcuts = {
+      Enter: () => this.editor.commands.splitListItem(this.name),
+      "Shift-Tab": () => this.editor.commands.liftListItem(this.name)
+    };
+    if (!this.options.nested) {
+      return shortcuts;
+    }
+    return {
+      ...shortcuts,
+      Tab: () => this.editor.commands.sinkListItem(this.name)
+    };
+  },
+  addNodeView() {
+    return ({ node, HTMLAttributes, getPos, editor }) => {
+      const listItem = document.createElement("li");
+      const checkboxWrapper = document.createElement("label");
+      const checkboxStyler = document.createElement("span");
+      const checkbox = document.createElement("input");
+      const content = document.createElement("div");
+      const updateA11Y = (currentNode) => {
+        var _a, _b;
+        checkbox.ariaLabel = ((_b = (_a = this.options.a11y) == null ? void 0 : _a.checkboxLabel) == null ? void 0 : _b.call(_a, currentNode, checkbox.checked)) || `Task item checkbox for ${currentNode.textContent || "empty task item"}`;
+      };
+      updateA11Y(node);
+      checkboxWrapper.contentEditable = "false";
+      checkbox.type = "checkbox";
+      checkbox.addEventListener("mousedown", (event) => event.preventDefault());
+      checkbox.addEventListener("change", (event) => {
+        if (!editor.isEditable && !this.options.onReadOnlyChecked) {
+          checkbox.checked = !checkbox.checked;
+          return;
+        }
+        const { checked } = event.target;
+        if (editor.isEditable && typeof getPos === "function") {
+          editor.chain().focus(void 0, { scrollIntoView: false }).command(({ tr }) => {
+            const position = getPos();
+            if (typeof position !== "number") {
+              return false;
+            }
+            const currentNode = tr.doc.nodeAt(position);
+            tr.setNodeMarkup(position, void 0, {
+              ...currentNode == null ? void 0 : currentNode.attrs,
+              checked
+            });
+            return true;
+          }).run();
+        }
+        if (!editor.isEditable && this.options.onReadOnlyChecked) {
+          if (!this.options.onReadOnlyChecked(node, checked)) {
+            checkbox.checked = !checkbox.checked;
+          }
+        }
+      });
+      Object.entries(this.options.HTMLAttributes).forEach(([key, value]) => {
+        listItem.setAttribute(key, value);
+      });
+      listItem.dataset.checked = node.attrs.checked;
+      checkbox.checked = node.attrs.checked;
+      checkboxWrapper.append(checkbox, checkboxStyler);
+      listItem.append(checkboxWrapper, content);
+      Object.entries(HTMLAttributes).forEach(([key, value]) => {
+        listItem.setAttribute(key, value);
+      });
+      let prevRenderedAttributeKeys = new Set(Object.keys(HTMLAttributes));
+      return {
+        dom: listItem,
+        contentDOM: content,
+        update: (updatedNode) => {
+          if (updatedNode.type !== this.type) {
+            return false;
+          }
+          listItem.dataset.checked = updatedNode.attrs.checked;
+          checkbox.checked = updatedNode.attrs.checked;
+          updateA11Y(updatedNode);
+          const extensionAttributes = editor.extensionManager.attributes;
+          const newHTMLAttributes = getRenderedAttributes(updatedNode, extensionAttributes);
+          const newKeys = new Set(Object.keys(newHTMLAttributes));
+          const staticAttrs = this.options.HTMLAttributes;
+          prevRenderedAttributeKeys.forEach((key) => {
+            if (!newKeys.has(key)) {
+              if (key in staticAttrs) {
+                listItem.setAttribute(key, staticAttrs[key]);
+              } else {
+                listItem.removeAttribute(key);
+              }
+            }
+          });
+          Object.entries(newHTMLAttributes).forEach(([key, value]) => {
+            if (value === null || value === void 0) {
+              if (key in staticAttrs) {
+                listItem.setAttribute(key, staticAttrs[key]);
+              } else {
+                listItem.removeAttribute(key);
+              }
+            } else {
+              listItem.setAttribute(key, value);
+            }
+          });
+          prevRenderedAttributeKeys = newKeys;
+          return true;
+        }
+      };
+    };
+  },
+  addInputRules() {
+    return [
+      wrappingInputRule({
+        find: inputRegex,
+        type: this.type,
+        getAttributes: (match) => ({
+          checked: match[match.length - 1] === "x"
+        })
+      })
+    ];
+  }
+});
+var TaskList = Node3.create({
+  name: "taskList",
+  addOptions() {
+    return {
+      itemTypeName: "taskItem",
+      HTMLAttributes: {}
+    };
+  },
+  group: "block list",
+  content() {
+    return `${this.options.itemTypeName}+`;
+  },
+  parseHTML() {
+    return [
+      {
+        tag: `ul[data-type="${this.name}"]`,
+        priority: 51
+      }
+    ];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["ul", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { "data-type": this.name }), 0];
+  },
+  parseMarkdown: (token, h2) => {
+    return h2.createNode("taskList", {}, h2.parseChildren(token.items || []));
+  },
+  renderMarkdown: (node, h2) => {
+    if (!node.content) {
+      return "";
+    }
+    return h2.renderChildren(node.content, "\n");
+  },
+  markdownTokenizer: {
+    name: "taskList",
+    level: "block",
+    start(src) {
+      var _a;
+      const index = (_a = src.match(/^\s*[-+*]\s+\[([ xX])\]\s+/)) == null ? void 0 : _a.index;
+      return index !== void 0 ? index : -1;
+    },
+    tokenize(src, tokens, lexer) {
+      const parseTaskListContent = (content) => {
+        const nestedResult = parseIndentedBlocks(
+          content,
+          {
+            itemPattern: /^(\s*)([-+*])\s+\[([ xX])\]\s+(.*)$/,
+            extractItemData: (match) => ({
+              indentLevel: match[1].length,
+              mainContent: match[4],
+              checked: match[3].toLowerCase() === "x"
+            }),
+            createToken: (data, nestedTokens) => ({
+              type: "taskItem",
+              raw: "",
+              mainContent: data.mainContent,
+              indentLevel: data.indentLevel,
+              checked: data.checked,
+              text: data.mainContent,
+              tokens: lexer.inlineTokens(data.mainContent),
+              nestedTokens
+            }),
+            // Allow recursive nesting
+            customNestedParser: parseTaskListContent
+          },
+          lexer
+        );
+        if (nestedResult) {
+          return [
+            {
+              type: "taskList",
+              raw: nestedResult.raw,
+              items: nestedResult.items
+            }
+          ];
+        }
+        return lexer.blockTokens(content);
+      };
+      const result = parseIndentedBlocks(
+        src,
+        {
+          itemPattern: /^(\s*)([-+*])\s+\[([ xX])\]\s+(.*)$/,
+          extractItemData: (match) => ({
+            indentLevel: match[1].length,
+            mainContent: match[4],
+            checked: match[3].toLowerCase() === "x"
+          }),
+          createToken: (data, nestedTokens) => ({
+            type: "taskItem",
+            raw: "",
+            mainContent: data.mainContent,
+            indentLevel: data.indentLevel,
+            checked: data.checked,
+            text: data.mainContent,
+            tokens: lexer.inlineTokens(data.mainContent),
+            nestedTokens
+          }),
+          // Use the recursive parser for nested content
+          customNestedParser: parseTaskListContent
+        },
+        lexer
+      );
+      if (!result) {
+        return void 0;
+      }
+      return {
+        type: "taskList",
+        raw: result.raw,
+        items: result.items
+      };
+    }
+  },
+  markdownOptions: {
+    indentsContent: true
+  },
+  addCommands() {
+    return {
+      toggleTaskList: () => ({ commands }) => {
+        return commands.toggleList(this.name, this.options.itemTypeName);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-9": () => this.editor.commands.toggleTaskList()
+    };
+  }
+});
+var ListKit = Extension.create({
+  name: "listKit",
+  addExtensions() {
+    const extensions = [];
+    if (this.options.bulletList !== false) {
+      extensions.push(BulletList.configure(this.options.bulletList));
+    }
+    if (this.options.listItem !== false) {
+      extensions.push(ListItem.configure(this.options.listItem));
+    }
+    if (this.options.listKeymap !== false) {
+      extensions.push(ListKeymap.configure(this.options.listKeymap));
+    }
+    if (this.options.orderedList !== false) {
+      extensions.push(OrderedList.configure(this.options.orderedList));
+    }
+    if (this.options.taskItem !== false) {
+      extensions.push(TaskItem.configure(this.options.taskItem));
+    }
+    if (this.options.taskList !== false) {
+      extensions.push(TaskList.configure(this.options.taskList));
+    }
+    return extensions;
+  }
+});
+
+// node_modules/@tiptap/extension-bullet-list/dist/index.js
+var index_default3 = BulletList;
+
+// node_modules/@tiptap/extension-ordered-list/dist/index.js
+var index_default4 = OrderedList;
+
+// node_modules/@tiptap/extension-list-item/dist/index.js
+var index_default5 = ListItem;
+
+// node_modules/@tiptap/extension-code/dist/index.js
+var inputRegex2 = /(^|[^`])`([^`]+)`(?!`)$/;
+var pasteRegex = /(^|[^`])`([^`]+)`(?!`)/g;
+var Code = Mark.create({
+  name: "code",
+  addOptions() {
+    return {
+      HTMLAttributes: {}
+    };
+  },
+  excludes: "_",
+  code: true,
+  exitable: true,
+  parseHTML() {
+    return [{ tag: "code" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["code", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+  },
+  markdownTokenName: "codespan",
+  parseMarkdown: (token, helpers) => {
+    return helpers.applyMark("code", [{ type: "text", text: token.text || "" }]);
+  },
+  renderMarkdown: (node, h2) => {
+    if (!node.content) {
+      return "";
+    }
+    return `\`${h2.renderChildren(node.content)}\``;
+  },
+  addCommands() {
+    return {
+      setCode: () => ({ commands }) => {
+        return commands.setMark(this.name);
+      },
+      toggleCode: () => ({ commands }) => {
+        return commands.toggleMark(this.name);
+      },
+      unsetCode: () => ({ commands }) => {
+        return commands.unsetMark(this.name);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      "Mod-e": () => this.editor.commands.toggleCode()
+    };
+  },
+  addInputRules() {
+    return [
+      markInputRule({
+        find: inputRegex2,
+        type: this.type
+      })
+    ];
+  },
+  addPasteRules() {
+    return [
+      markPasteRule({
+        find: pasteRegex,
+        type: this.type
+      })
+    ];
+  }
+});
+var index_default6 = Code;
+
+// node_modules/@tiptap/extension-code-block/dist/index.js
+var import_state25 = require("@tiptap/pm/state");
+var DEFAULT_TAB_SIZE = 4;
+var backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
+var tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
+var CodeBlock = Node3.create({
+  name: "codeBlock",
+  addOptions() {
+    return {
+      languageClassPrefix: "language-",
+      exitOnTripleEnter: true,
+      exitOnArrowDown: true,
+      defaultLanguage: null,
+      enableTabIndentation: false,
+      tabSize: DEFAULT_TAB_SIZE,
+      HTMLAttributes: {}
+    };
+  },
+  content: "text*",
+  marks: "",
+  group: "block",
+  code: true,
+  defining: true,
+  addAttributes() {
+    return {
+      language: {
+        default: this.options.defaultLanguage,
+        parseHTML: (element) => {
+          var _a;
+          const { languageClassPrefix } = this.options;
+          if (!languageClassPrefix) {
+            return null;
+          }
+          const classNames = [...((_a = element.firstElementChild) == null ? void 0 : _a.classList) || []];
+          const languages = classNames.filter((className) => className.startsWith(languageClassPrefix)).map((className) => className.replace(languageClassPrefix, ""));
+          const language = languages[0];
+          if (!language) {
+            return null;
+          }
+          return language;
+        },
+        rendered: false
+      }
+    };
+  },
+  parseHTML() {
+    return [
+      {
+        tag: "pre",
+        preserveWhitespace: "full"
+      }
+    ];
+  },
+  renderHTML({ node, HTMLAttributes }) {
+    return [
+      "pre",
+      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+      [
+        "code",
+        {
+          class: node.attrs.language ? this.options.languageClassPrefix + node.attrs.language : null
+        },
+        0
+      ]
+    ];
+  },
+  markdownTokenName: "code",
+  parseMarkdown: (token, helpers) => {
+    var _a;
+    if (((_a = token.raw) == null ? void 0 : _a.startsWith("```")) === false && token.codeBlockStyle !== "indented") {
+      return [];
+    }
+    return helpers.createNode(
+      "codeBlock",
+      { language: token.lang || null },
+      token.text ? [helpers.createTextNode(token.text)] : []
+    );
+  },
+  renderMarkdown: (node, h2) => {
+    var _a;
+    let output = "";
+    const language = ((_a = node.attrs) == null ? void 0 : _a.language) || "";
+    if (!node.content) {
+      output = `\`\`\`${language}
+
+\`\`\``;
+    } else {
+      const lines = [`\`\`\`${language}`, h2.renderChildren(node.content), "```"];
+      output = lines.join("\n");
+    }
+    return output;
+  },
+  addCommands() {
+    return {
+      setCodeBlock: (attributes) => ({ commands }) => {
+        return commands.setNode(this.name, attributes);
+      },
+      toggleCodeBlock: (attributes) => ({ commands }) => {
+        return commands.toggleNode(this.name, "paragraph", attributes);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Alt-c": () => this.editor.commands.toggleCodeBlock(),
+      // remove code block when at start of document or code block is empty
+      Backspace: () => {
+        const { empty, $anchor } = this.editor.state.selection;
+        const isAtStart = $anchor.pos === 1;
+        if (!empty || $anchor.parent.type.name !== this.name) {
+          return false;
+        }
+        if (isAtStart || !$anchor.parent.textContent.length) {
+          return this.editor.commands.clearNodes();
+        }
+        return false;
+      },
+      // handle tab indentation
+      Tab: ({ editor }) => {
+        var _a;
+        if (!this.options.enableTabIndentation) {
+          return false;
+        }
+        const tabSize = (_a = this.options.tabSize) != null ? _a : DEFAULT_TAB_SIZE;
+        const { state } = editor;
+        const { selection } = state;
+        const { $from, empty } = selection;
+        if ($from.parent.type !== this.type) {
+          return false;
+        }
+        const indent = " ".repeat(tabSize);
+        if (empty) {
+          return editor.commands.insertContent(indent);
+        }
+        return editor.commands.command(({ tr }) => {
+          const { from, to } = selection;
+          const text = state.doc.textBetween(from, to, "\n", "\n");
+          const lines = text.split("\n");
+          const indentedText = lines.map((line) => indent + line).join("\n");
+          tr.replaceWith(from, to, state.schema.text(indentedText));
+          return true;
+        });
+      },
+      // handle shift+tab reverse indentation
+      "Shift-Tab": ({ editor }) => {
+        var _a;
+        if (!this.options.enableTabIndentation) {
+          return false;
+        }
+        const tabSize = (_a = this.options.tabSize) != null ? _a : DEFAULT_TAB_SIZE;
+        const { state } = editor;
+        const { selection } = state;
+        const { $from, empty } = selection;
+        if ($from.parent.type !== this.type) {
+          return false;
+        }
+        if (empty) {
+          return editor.commands.command(({ tr }) => {
+            var _a2;
+            const { pos } = $from;
+            const codeBlockStart = $from.start();
+            const codeBlockEnd = $from.end();
+            const allText = state.doc.textBetween(codeBlockStart, codeBlockEnd, "\n", "\n");
+            const lines = allText.split("\n");
+            let currentLineIndex = 0;
+            let charCount = 0;
+            const relativeCursorPos = pos - codeBlockStart;
+            for (let i = 0; i < lines.length; i += 1) {
+              if (charCount + lines[i].length >= relativeCursorPos) {
+                currentLineIndex = i;
+                break;
+              }
+              charCount += lines[i].length + 1;
+            }
+            const currentLine = lines[currentLineIndex];
+            const leadingSpaces = ((_a2 = currentLine.match(/^ */)) == null ? void 0 : _a2[0]) || "";
+            const spacesToRemove = Math.min(leadingSpaces.length, tabSize);
+            if (spacesToRemove === 0) {
+              return true;
+            }
+            let lineStartPos = codeBlockStart;
+            for (let i = 0; i < currentLineIndex; i += 1) {
+              lineStartPos += lines[i].length + 1;
+            }
+            tr.delete(lineStartPos, lineStartPos + spacesToRemove);
+            const cursorPosInLine = pos - lineStartPos;
+            if (cursorPosInLine <= spacesToRemove) {
+              tr.setSelection(import_state25.TextSelection.create(tr.doc, lineStartPos));
+            }
+            return true;
+          });
+        }
+        return editor.commands.command(({ tr }) => {
+          const { from, to } = selection;
+          const text = state.doc.textBetween(from, to, "\n", "\n");
+          const lines = text.split("\n");
+          const reverseIndentText = lines.map((line) => {
+            var _a2;
+            const leadingSpaces = ((_a2 = line.match(/^ */)) == null ? void 0 : _a2[0]) || "";
+            const spacesToRemove = Math.min(leadingSpaces.length, tabSize);
+            return line.slice(spacesToRemove);
+          }).join("\n");
+          tr.replaceWith(from, to, state.schema.text(reverseIndentText));
+          return true;
+        });
+      },
+      // exit node on triple enter
+      Enter: ({ editor }) => {
+        if (!this.options.exitOnTripleEnter) {
+          return false;
+        }
+        const { state } = editor;
+        const { selection } = state;
+        const { $from, empty } = selection;
+        if (!empty || $from.parent.type !== this.type) {
+          return false;
+        }
+        const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2;
+        const endsWithDoubleNewline = $from.parent.textContent.endsWith("\n\n");
+        if (!isAtEnd || !endsWithDoubleNewline) {
+          return false;
+        }
+        return editor.chain().command(({ tr }) => {
+          tr.delete($from.pos - 2, $from.pos);
+          return true;
+        }).exitCode().run();
+      },
+      // exit node on arrow down
+      ArrowDown: ({ editor }) => {
+        if (!this.options.exitOnArrowDown) {
+          return false;
+        }
+        const { state } = editor;
+        const { selection, doc } = state;
+        const { $from, empty } = selection;
+        if (!empty || $from.parent.type !== this.type) {
+          return false;
+        }
+        const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2;
+        if (!isAtEnd) {
+          return false;
+        }
+        const after = $from.after();
+        if (after === void 0) {
+          return false;
+        }
+        const nodeAfter = doc.nodeAt(after);
+        if (nodeAfter) {
+          return editor.commands.command(({ tr }) => {
+            tr.setSelection(import_state25.Selection.near(doc.resolve(after)));
+            return true;
+          });
+        }
+        return editor.commands.exitCode();
+      }
+    };
+  },
+  addInputRules() {
+    return [
+      textblockTypeInputRule({
+        find: backtickInputRegex,
+        type: this.type,
+        getAttributes: (match) => ({
+          language: match[1]
+        })
+      }),
+      textblockTypeInputRule({
+        find: tildeInputRegex,
+        type: this.type,
+        getAttributes: (match) => ({
+          language: match[1]
+        })
+      })
+    ];
+  },
+  addProseMirrorPlugins() {
+    return [
+      // this plugin creates a code block for pasted content from VS Code
+      // we can also detect the copied code language
+      new import_state25.Plugin({
+        key: new import_state25.PluginKey("codeBlockVSCodeHandler"),
+        props: {
+          handlePaste: (view, event) => {
+            if (!event.clipboardData) {
+              return false;
+            }
+            if (this.editor.isActive(this.type.name)) {
+              return false;
+            }
+            const text = event.clipboardData.getData("text/plain");
+            const vscode = event.clipboardData.getData("vscode-editor-data");
+            const vscodeData = vscode ? JSON.parse(vscode) : void 0;
+            const language = vscodeData == null ? void 0 : vscodeData.mode;
+            if (!text || !language) {
+              return false;
+            }
+            const { tr, schema } = view.state;
+            const textNode = schema.text(text.replace(/\r\n?/g, "\n"));
+            tr.replaceSelectionWith(this.type.create({ language }, textNode));
+            if (tr.selection.$from.parent.type !== this.type) {
+              tr.setSelection(import_state25.TextSelection.near(tr.doc.resolve(Math.max(0, tr.selection.from - 2))));
+            }
+            tr.setMeta("paste", true);
+            view.dispatch(tr);
+            return true;
+          }
+        }
+      })
+    ];
+  }
+});
+var index_default7 = CodeBlock;
+
+// node_modules/@tiptap/core/dist/jsx-runtime/jsx-runtime.js
+var h = (tag, attributes) => {
+  if (tag === "slot") {
+    return 0;
+  }
+  if (tag instanceof Function) {
+    return tag(attributes);
+  }
+  const { children, ...rest } = attributes != null ? attributes : {};
+  if (tag === "svg") {
+    throw new Error("SVG elements are not supported in the JSX syntax, use the array syntax instead");
+  }
+  return [tag, rest, children];
+};
+
+// node_modules/@tiptap/extension-blockquote/dist/index.js
+var inputRegex3 = /^\s*>\s$/;
+var Blockquote = Node3.create({
+  name: "blockquote",
+  addOptions() {
+    return {
+      HTMLAttributes: {}
+    };
+  },
+  content: "block+",
+  group: "block",
+  defining: true,
+  parseHTML() {
+    return [{ tag: "blockquote" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return /* @__PURE__ */ h("blockquote", { ...mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), children: /* @__PURE__ */ h("slot", {}) });
+  },
+  parseMarkdown: (token, helpers) => {
+    return helpers.createNode("blockquote", void 0, helpers.parseChildren(token.tokens || []));
+  },
+  renderMarkdown: (node, h2) => {
+    if (!node.content) {
+      return "";
+    }
+    const prefix = ">";
+    const result = [];
+    node.content.forEach((child) => {
+      const childContent = h2.renderChildren([child]);
+      const lines = childContent.split("\n");
+      const linesWithPrefix = lines.map((line) => {
+        if (line.trim() === "") {
+          return prefix;
+        }
+        return `${prefix} ${line}`;
+      });
+      result.push(linesWithPrefix.join("\n"));
+    });
+    return result.join(`
+${prefix}
+`);
+  },
+  addCommands() {
+    return {
+      setBlockquote: () => ({ commands }) => {
+        return commands.wrapIn(this.name);
+      },
+      toggleBlockquote: () => ({ commands }) => {
+        return commands.toggleWrap(this.name);
+      },
+      unsetBlockquote: () => ({ commands }) => {
+        return commands.lift(this.name);
+      }
+    };
+  },
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-b": () => this.editor.commands.toggleBlockquote()
+    };
+  },
+  addInputRules() {
+    return [
+      wrappingInputRule({
+        find: inputRegex3,
+        type: this.type
+      })
+    ];
+  }
+});
+var index_default8 = Blockquote;
+
+// node_modules/@tiptap/extension-horizontal-rule/dist/index.js
+var import_state26 = require("@tiptap/pm/state");
+var HorizontalRule = Node3.create({
+  name: "horizontalRule",
+  addOptions() {
+    return {
+      HTMLAttributes: {},
+      nextNodeType: "paragraph"
+    };
+  },
+  group: "block",
+  parseHTML() {
+    return [{ tag: "hr" }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["hr", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)];
+  },
+  markdownTokenName: "hr",
+  parseMarkdown: (token, helpers) => {
+    return helpers.createNode("horizontalRule");
+  },
+  renderMarkdown: () => {
+    return "---";
+  },
+  addCommands() {
+    return {
+      setHorizontalRule: () => ({ chain, state }) => {
+        if (!canInsertNode(state, state.schema.nodes[this.name])) {
+          return false;
+        }
+        const { selection } = state;
+        const { $to: $originTo } = selection;
+        const currentChain = chain();
+        if (isNodeSelection(selection)) {
+          currentChain.insertContentAt($originTo.pos, {
+            type: this.name
+          });
+        } else {
+          currentChain.insertContent({ type: this.name });
+        }
+        return currentChain.command(({ state: chainState, tr, dispatch }) => {
+          if (dispatch) {
+            const { $to } = tr.selection;
+            const posAfter = $to.end();
+            if ($to.nodeAfter) {
+              if ($to.nodeAfter.isTextblock) {
+                tr.setSelection(import_state26.TextSelection.create(tr.doc, $to.pos + 1));
+              } else if ($to.nodeAfter.isBlock) {
+                tr.setSelection(import_state26.NodeSelection.create(tr.doc, $to.pos));
+              } else {
+                tr.setSelection(import_state26.TextSelection.create(tr.doc, $to.pos));
+              }
+            } else {
+              const nodeType = chainState.schema.nodes[this.options.nextNodeType] || $to.parent.type.contentMatch.defaultType;
+              const node = nodeType == null ? void 0 : nodeType.create();
+              if (node) {
+                tr.insert(posAfter, node);
+                tr.setSelection(import_state26.TextSelection.create(tr.doc, posAfter + 1));
+              }
+            }
+            tr.scrollIntoView();
+          }
+          return true;
+        }).run();
+      }
+    };
+  },
+  addInputRules() {
+    return [
+      nodeInputRule({
+        find: /^(?:---|—-|___\s|\*\*\*\s)$/,
+        type: this.type
+      })
+    ];
+  }
+});
+var index_default9 = HorizontalRule;
+
+// src/ui/components/TiptapEditor.tsx
+var import_extension_placeholder = __toESM(require("@tiptap/extension-placeholder"));
+var import_extension_link = __toESM(require("@tiptap/extension-link"));
+var import_extension_image = __toESM(require("@tiptap/extension-image"));
+
+// src/lib/markdown.ts
+var import_marked = require("marked");
+var import_turndown = __toESM(require("turndown"));
+var import_sanitize_html = __toESM(require("sanitize-html"));
+import_marked.marked.setOptions({
+  gfm: true,
+  breaks: false
+});
+function renderMarkdown(markdown) {
+  return import_marked.marked.parse(markdown);
+}
+function createStyledRenderer() {
+  const renderer = new import_marked.Renderer();
+  renderer.heading = function(text, level) {
+    const classes = {
+      1: "text-[22px] leading-tight font-bold mb-4",
+      2: "text-lg leading-snug font-bold mt-6 mb-3",
+      3: "text-base leading-snug font-bold mt-4 mb-2",
+      4: "text-sm leading-snug font-semibold mt-3 mb-1",
+      5: "text-sm leading-snug font-semibold mt-2 mb-1",
+      6: "text-sm leading-snug font-medium mt-2 mb-1"
+    };
+    return `<h${level} class="${classes[level] || ""}">${text}</h${level}>
+`;
+  };
+  renderer.paragraph = function(text) {
+    return `<p class="mb-3 leading-relaxed">${text}</p>
+`;
+  };
+  renderer.list = function(body, ordered) {
+    const tag = ordered ? "ol" : "ul";
+    const listClass = ordered ? "list-decimal" : "list-disc";
+    return `<${tag} class="${listClass} pl-5 mb-3 space-y-1">${body}</${tag}>
+`;
+  };
+  renderer.listitem = function(text) {
+    return `<li>${text}</li>
+`;
+  };
+  renderer.code = function(code, language) {
+    const escaped = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return `<pre class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg overflow-x-auto mb-3 text-sm font-mono"><code class="language-${language || ""}">${escaped}</code></pre>
+`;
+  };
+  renderer.codespan = function(text) {
+    return `<code class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono">${text}</code>`;
+  };
+  renderer.blockquote = function(quote) {
+    return `<blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic text-gray-600 dark:text-gray-400 my-3">${quote}</blockquote>
+`;
+  };
+  renderer.hr = function() {
+    return `<hr class="my-6 border-t border-gray-200 dark:border-gray-700" />
+`;
+  };
+  renderer.link = function(href, _title, text) {
+    return `<a href="${href}" class="text-blue-600 dark:text-blue-400 underline">${text}</a>`;
+  };
+  renderer.image = function(href, _title, text) {
+    return `<img src="${href}" alt="${text}" class="rounded-lg max-w-full my-3" />`;
+  };
+  renderer.strong = function(text) {
+    return `<strong class="font-semibold">${text}</strong>`;
+  };
+  renderer.em = function(text) {
+    return `<em class="italic">${text}</em>`;
+  };
+  renderer.table = function(header, body) {
+    return `<table class="w-full border-collapse mb-3"><thead>${header}</thead><tbody>${body}</tbody></table>
+`;
+  };
+  renderer.tablerow = function(content) {
+    return `<tr>${content}</tr>
+`;
+  };
+  renderer.tablecell = function(content, flags) {
+    const tag = flags.header ? "th" : "td";
+    const headerClass = flags.header ? " font-semibold bg-gray-50 dark:bg-gray-800" : "";
+    const alignClass = flags.align ? ` text-${flags.align}` : " text-left";
+    return `<${tag} class="border border-gray-200 dark:border-gray-700 px-3 py-2${alignClass}${headerClass}">${content}</${tag}>`;
+  };
+  return renderer;
+}
+var styledRenderer = createStyledRenderer();
+function markdownToStyledHtml(markdown) {
+  return import_marked.marked.parse(markdown, {
+    gfm: true,
+    breaks: true,
+    renderer: styledRenderer
+  });
+}
+var turndownService = new import_turndown.default({
+  headingStyle: "atx",
+  codeBlockStyle: "fenced",
+  bulletListMarker: "-"
+});
+turndownService.addRule("strikethrough", {
+  filter: (node) => {
+    const tagName = node.nodeName.toLowerCase();
+    return tagName === "del" || tagName === "s" || tagName === "strike";
+  },
+  replacement: (content) => `~~${content}~~`
+});
+function htmlToMarkdown(html) {
+  return turndownService.turndown(html);
+}
 
 // src/lib/comment-mark.ts
-var import_state25 = require("@tiptap/pm/state");
+var import_state27 = require("@tiptap/pm/state");
 var CommentMark = Mark.create({
   name: "comment",
   addOptions() {
@@ -5742,8 +7967,8 @@ var CommentMark = Mark.create({
   addProseMirrorPlugins() {
     const { onCommentClick } = this.options;
     return [
-      new import_state25.Plugin({
-        key: new import_state25.PluginKey("commentClick"),
+      new import_state27.Plugin({
+        key: new import_state27.PluginKey("commentClick"),
         props: {
           handleClick(view, pos) {
             if (!onCommentClick) return false;
@@ -5833,8 +8058,39 @@ function scrollToComment(editor, commentId) {
 }
 
 // src/ui/components/TiptapEditor.tsx
-var import_jsx_runtime14 = require("react/jsx-runtime");
+var import_jsx_runtime17 = require("react/jsx-runtime");
+var PLACEHOLDER_STYLE_ID = "tiptap-placeholder-css";
+function injectPlaceholderStyles() {
+  if (typeof document === "undefined") return;
+  if (document.getElementById(PLACEHOLDER_STYLE_ID)) return;
+  const style = document.createElement("style");
+  style.id = PLACEHOLDER_STYLE_ID;
+  style.textContent = `
+    .ProseMirror p.is-editor-empty:first-child::before {
+      content: attr(data-placeholder);
+      color: #9ca3af;
+      pointer-events: none;
+      float: left;
+      height: 0;
+    }
+    .dark .ProseMirror p.is-editor-empty:first-child::before {
+      color: #6b7280;
+    }
+  `;
+  document.head.appendChild(style);
+}
 var DEFAULT_PROSE_CLASSES = "prose";
+var StyledHeading = index_default.extend({
+  renderHTML({ node, HTMLAttributes }) {
+    const level = node.attrs.level;
+    const classes = {
+      1: "text-[22px] leading-tight font-bold mb-6",
+      2: "text-lg leading-snug font-bold mt-8 mb-4",
+      3: "text-base leading-snug font-bold mt-6 mb-3"
+    };
+    return [`h${level}`, { ...HTMLAttributes, class: classes[level] || "" }, 0];
+  }
+});
 function TiptapEditor({
   content,
   onChange,
@@ -5845,32 +8101,78 @@ function TiptapEditor({
   onCommentClick,
   proseClasses = DEFAULT_PROSE_CLASSES
 }) {
-  const initialHtml = (0, import_react10.useMemo)(() => content ? renderMarkdown(content) : "", [content]);
-  const extensions = (0, import_react10.useMemo)(() => [
+  (0, import_react12.useEffect)(() => {
+    injectPlaceholderStyles();
+  }, []);
+  const initialHtml = (0, import_react12.useMemo)(() => content ? renderMarkdown(content) : "", [content]);
+  const extensions = (0, import_react12.useMemo)(() => [
     import_starter_kit.default.configure({
-      heading: {
-        levels: [1, 2, 3]
-      }
+      // Disable extensions we're replacing with styled versions
+      heading: false,
+      paragraph: false,
+      bulletList: false,
+      orderedList: false,
+      listItem: false,
+      code: false,
+      codeBlock: false,
+      blockquote: false,
+      horizontalRule: false
     }),
+    // Styled heading with per-level classes
+    StyledHeading.configure({ levels: [1, 2, 3] }),
+    // Paragraph
+    index_default2.configure({
+      HTMLAttributes: { class: "mb-4 leading-relaxed" }
+    }),
+    // Lists
+    index_default3.configure({
+      HTMLAttributes: { class: "list-disc pl-6 mb-4" }
+    }),
+    index_default4.configure({
+      HTMLAttributes: { class: "list-decimal pl-6 mb-4" }
+    }),
+    index_default5.configure({
+      HTMLAttributes: { class: "mb-2" }
+    }),
+    // Inline code
+    index_default6.configure({
+      HTMLAttributes: { class: "bg-gray-100 ab-dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono" }
+    }),
+    // Code block
+    index_default7.configure({
+      HTMLAttributes: { class: "bg-gray-100 ab-dark:bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4 text-sm font-mono" }
+    }),
+    // Blockquote
+    index_default8.configure({
+      HTMLAttributes: { class: "border-l-4 border-gray-300 ab-dark:border-gray-600 pl-4 italic text-gray-600 ab-dark:text-gray-400 my-4" }
+    }),
+    // Horizontal rule
+    index_default9.configure({
+      HTMLAttributes: { class: "my-8 border-t border-gray-200 ab-dark:border-gray-700" }
+    }),
+    // Placeholder
     import_extension_placeholder.default.configure({
       placeholder
     }),
+    // Link (already styled)
     import_extension_link.default.configure({
       openOnClick: false,
       HTMLAttributes: {
-        class: "text-blue-600 dark:text-blue-400 underline"
+        class: "text-blue-600 ab-dark:text-blue-400 underline"
       }
     }),
+    // Image (already styled)
     import_extension_image.default.configure({
       HTMLAttributes: {
-        class: "rounded-lg max-w-full"
+        class: "rounded-lg max-w-full my-4"
       }
     }),
+    // Comments
     CommentMark.configure({
       onCommentClick
     })
   ], [placeholder, onCommentClick]);
-  const editor = (0, import_react11.useEditor)({
+  const editor = (0, import_react13.useEditor)({
     immediatelyRender: false,
     // Prevent SSR hydration mismatch
     extensions,
@@ -5909,7 +8211,7 @@ function TiptapEditor({
       }
     }
   });
-  (0, import_react10.useEffect)(() => {
+  (0, import_react12.useEffect)(() => {
     if (editor) {
       if (onEditorReady) {
         onEditorReady(editor);
@@ -5919,7 +8221,7 @@ function TiptapEditor({
       }
     }
   }, [editor, onEditorReady, autoFocus]);
-  (0, import_react10.useEffect)(() => {
+  (0, import_react12.useEffect)(() => {
     if (editor && content !== void 0) {
       const currentMarkdown = htmlToMarkdown(editor.getHTML());
       if (currentMarkdown !== content) {
@@ -5928,16 +8230,15 @@ function TiptapEditor({
       }
     }
   }, [editor, content]);
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(import_react11.EditorContent, { editor });
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_react13.EditorContent, { editor });
 }
 
 // src/ui/components/CommentsPanel.tsx
-var import_react13 = require("react");
-var import_react_dom2 = require("react-dom");
+var import_react15 = require("react");
 var import_lucide_react10 = require("lucide-react");
 
 // src/ui/components/CommentThread.tsx
-var import_react12 = require("react");
+var import_react14 = require("react");
 var import_lucide_react9 = require("lucide-react");
 
 // src/lib/comments.ts
@@ -6016,7 +8317,7 @@ function createCommentsClient(apiBasePath = "/api/cms") {
 }
 
 // src/ui/components/CommentThread.tsx
-var import_jsx_runtime15 = require("react/jsx-runtime");
+var import_jsx_runtime18 = require("react/jsx-runtime");
 function formatRelativeTime2(dateStr) {
   const date = new Date(dateStr);
   const now = /* @__PURE__ */ new Date();
@@ -6041,11 +8342,11 @@ function CommentThread({
   onResolve,
   onClick
 }) {
-  const [isReplying, setIsReplying] = (0, import_react12.useState)(false);
-  const [isEditing, setIsEditing] = (0, import_react12.useState)(false);
-  const [replyContent, setReplyContent] = (0, import_react12.useState)("");
-  const [editContent, setEditContent] = (0, import_react12.useState)(comment.content);
-  const [loading, setLoading] = (0, import_react12.useState)(false);
+  const [isReplying, setIsReplying] = (0, import_react14.useState)(false);
+  const [isEditing, setIsEditing] = (0, import_react14.useState)(false);
+  const [replyContent, setReplyContent] = (0, import_react14.useState)("");
+  const [editContent, setEditContent] = (0, import_react14.useState)(comment.content);
+  const [loading, setLoading] = (0, import_react14.useState)(false);
   const canEdit = canEditComment(comment, currentUserEmail);
   const canDelete = canDeleteComment(comment, currentUserEmail, isAdmin);
   const isOwn = comment.user.email === currentUserEmail;
@@ -6070,7 +8371,7 @@ function CommentThread({
       setLoading(false);
     }
   };
-  const handleDelete = async () => {
+  const handleDelete2 = async () => {
     if (!confirm("Delete this comment?")) return;
     setLoading(true);
     try {
@@ -6079,7 +8380,7 @@ function CommentThread({
       setLoading(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
     "div",
     {
       role: "button",
@@ -6093,45 +8394,45 @@ function CommentThread({
       },
       className: cn(
         "rounded-lg border p-3 transition-colors cursor-pointer",
-        isActive ? "border-yellow-400 bg-yellow-50/50 dark:border-yellow-600 dark:bg-yellow-900/20" : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900",
+        isActive ? "border-yellow-400 bg-yellow-50/50 ab-dark:border-yellow-600 ab-dark:bg-yellow-900/20" : "border-gray-200 ab-dark:border-gray-700 bg-white ab-dark:bg-gray-900",
         comment.resolved && "opacity-60"
       ),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "flex items-start justify-between gap-2 mb-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "flex items-center gap-2 text-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "font-medium", children: isOwn ? "You" : comment.user.name || comment.user.email.split("@")[0] }),
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "text-gray-500 dark:text-gray-400", children: formatRelativeTime2(comment.createdAt) }),
-            comment.resolved && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react9.Check, { className: "w-3 h-3" }),
+        /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-start justify-between gap-2 mb-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-2 text-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "font-medium", children: isOwn ? "You" : comment.user.name || comment.user.email.split("@")[0] }),
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "text-gray-500 ab-dark:text-gray-400", children: formatRelativeTime2(comment.createdAt) }),
+            comment.resolved && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "inline-flex items-center gap-1 text-xs text-green-600 ab-dark:text-green-400", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Check, { className: "w-3 h-3" }),
               "Resolved"
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
             Dropdown,
             {
-              trigger: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+              trigger: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
                 "button",
                 {
                   type: "button",
-                  className: "w-6 h-6 rounded hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react9.MoreHorizontal, { className: "w-4 h-4" })
+                  className: "w-6 h-6 rounded hover:bg-gray-100 ab-dark:hover:bg-gray-800 flex items-center justify-center text-gray-500",
+                  children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.MoreHorizontal, { className: "w-4 h-4" })
                 }
               ),
               align: "right",
               className: "min-w-[140px]",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(DropdownItem, { onClick: onResolve, children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "flex items-center gap-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react9.Check, { className: "w-4 h-4" }),
+                /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DropdownItem, { onClick: onResolve, children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "flex items-center gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Check, { className: "w-4 h-4" }),
                   comment.resolved ? "Unresolve" : "Resolve"
                 ] }) }),
-                canEdit && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(DropdownItem, { onClick: () => setIsEditing(true), children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "flex items-center gap-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react9.Pencil, { className: "w-4 h-4" }),
+                canEdit && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DropdownItem, { onClick: () => setIsEditing(true), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "flex items-center gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Pencil, { className: "w-4 h-4" }),
                   "Edit"
                 ] }) }),
-                canDelete && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(DropdownDivider, {}),
-                  /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(DropdownItem, { onClick: handleDelete, destructive: true, children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "flex items-center gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react9.Trash2, { className: "w-4 h-4" }),
+                canDelete && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DropdownDivider, {}),
+                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DropdownItem, { onClick: handleDelete2, destructive: true, children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Trash2, { className: "w-4 h-4" }),
                     "Delete"
                   ] }) })
                 ] })
@@ -6139,13 +8440,13 @@ function CommentThread({
             }
           ) })
         ] }),
-        comment.quotedText && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "mb-2 px-2 py-1 bg-yellow-100/50 dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 dark:text-gray-400 line-clamp-2", children: [
+        comment.quotedText && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "mb-2 px-2 py-1 bg-yellow-100/50 ab-dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 ab-dark:text-gray-400 line-clamp-2", children: [
           '"',
           comment.quotedText,
           '"'
         ] }),
-        isEditing ? /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+        isEditing ? /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
             "textarea",
             {
               value: editContent,
@@ -6167,11 +8468,11 @@ function CommentThread({
                 }
               },
               onClick: (e) => e.stopPropagation(),
-              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 ab-dark:border-gray-600 rounded-md bg-white ab-dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "flex gap-2 justify-end", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex gap-2 justify-end", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
               "button",
               {
                 type: "button",
@@ -6181,11 +8482,11 @@ function CommentThread({
                   setEditContent(comment.content);
                 },
                 disabled: loading,
-                className: "px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50",
+                className: "px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 ab-dark:hover:bg-gray-800 disabled:opacity-50",
                 children: "Cancel"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
               "button",
               {
                 type: "button",
@@ -6199,8 +8500,8 @@ function CommentThread({
               }
             )
           ] })
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "text-sm whitespace-pre-wrap", children: comment.content }),
-        comment.replies && comment.replies.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "mt-3 pl-3 border-l-2 border-gray-200 dark:border-gray-700 space-y-3", children: comment.replies.map((reply) => /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-sm whitespace-pre-wrap", children: comment.content }),
+        comment.replies && comment.replies.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "mt-3 pl-3 border-l-2 border-gray-200 ab-dark:border-gray-700 space-y-3", children: comment.replies.map((reply) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
           ReplyItem,
           {
             reply,
@@ -6208,8 +8509,8 @@ function CommentThread({
           },
           reply.id
         )) }),
-        !isEditing && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "mt-3", children: isReplying ? /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+        !isEditing && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "mt-3", children: isReplying ? /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
             "textarea",
             {
               value: replyContent,
@@ -6231,12 +8532,12 @@ function CommentThread({
                 }
               },
               placeholder: "Write a reply...",
-              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
+              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 ab-dark:border-gray-600 rounded-md bg-white ab-dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
               onClick: (e) => e.stopPropagation()
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "flex gap-2 justify-end", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex gap-2 justify-end", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
               "button",
               {
                 type: "button",
@@ -6246,11 +8547,11 @@ function CommentThread({
                   setReplyContent("");
                 },
                 disabled: loading,
-                className: "px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-50",
+                className: "px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 ab-dark:hover:bg-gray-800 disabled:opacity-50",
                 children: "Cancel"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
               "button",
               {
                 type: "button",
@@ -6264,7 +8565,7 @@ function CommentThread({
               }
             )
           ] })
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
           "button",
           {
             type: "button",
@@ -6272,9 +8573,9 @@ function CommentThread({
               e.stopPropagation();
               setIsReplying(true);
             },
-            className: "inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors",
+            className: "inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 ab-dark:hover:text-white transition-colors",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react9.Reply, { className: "w-3.5 h-3.5" }),
+              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Reply, { className: "w-3.5 h-3.5" }),
               "Reply"
             ]
           }
@@ -6288,17 +8589,17 @@ function ReplyItem({
   currentUserEmail
 }) {
   const isOwn = reply.user.email === currentUserEmail;
-  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "text-sm", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "flex items-center gap-2 mb-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "font-medium", children: isOwn ? "You" : reply.user.name || reply.user.email.split("@")[0] }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "text-gray-500 dark:text-gray-400 text-xs", children: formatRelativeTime2(reply.createdAt) })
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-sm", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-2 mb-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "font-medium", children: isOwn ? "You" : reply.user.name || reply.user.email.split("@")[0] }),
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "text-gray-500 ab-dark:text-gray-400 text-xs", children: formatRelativeTime2(reply.createdAt) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "whitespace-pre-wrap text-gray-600 dark:text-gray-400", children: reply.content })
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "whitespace-pre-wrap text-gray-600 ab-dark:text-gray-400", children: reply.content })
   ] });
 }
 
 // src/ui/components/CommentsPanel.tsx
-var import_jsx_runtime16 = require("react/jsx-runtime");
+var import_jsx_runtime19 = require("react/jsx-runtime");
 function CommentsPanel({
   comments,
   currentUserEmail,
@@ -6315,20 +8616,20 @@ function CommentsPanel({
   onClose,
   onClearSelection
 }) {
-  const [newComment, setNewComment] = (0, import_react13.useState)("");
-  const [isAnimating, setIsAnimating] = (0, import_react13.useState)(false);
-  const [isVisible, setIsVisible] = (0, import_react13.useState)(false);
-  const [mounted, setMounted] = (0, import_react13.useState)(false);
-  const [creating, setCreating] = (0, import_react13.useState)(false);
-  const [showResolved, setShowResolved] = (0, import_react13.useState)(false);
-  const textareaRef = (0, import_react13.useRef)(null);
-  const commentsEndRef = (0, import_react13.useRef)(null);
+  const [newComment, setNewComment] = (0, import_react15.useState)("");
+  const [isAnimating, setIsAnimating] = (0, import_react15.useState)(false);
+  const [isVisible, setIsVisible] = (0, import_react15.useState)(false);
+  const [mounted, setMounted] = (0, import_react15.useState)(false);
+  const [creating, setCreating] = (0, import_react15.useState)(false);
+  const [showResolved, setShowResolved] = (0, import_react15.useState)(false);
+  const textareaRef = (0, import_react15.useRef)(null);
+  const commentsEndRef = (0, import_react15.useRef)(null);
   const openComments = comments.filter((c) => !c.resolved);
   const resolvedComments = comments.filter((c) => c.resolved);
-  (0, import_react13.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     setMounted(true);
   }, []);
-  (0, import_react13.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     if (isOpen) {
       setIsVisible(true);
       document.body.style.overflow = "hidden";
@@ -6354,19 +8655,19 @@ function CommentsPanel({
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
-  (0, import_react13.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     if (selectedText && isOpen) {
       textareaRef.current?.focus();
     }
   }, [selectedText, isOpen]);
-  (0, import_react13.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
   }, [newComment]);
-  const handleCreateComment = (0, import_react13.useCallback)(async () => {
+  const handleCreateComment = (0, import_react15.useCallback)(async () => {
     if (!newComment.trim() || !selectedText) return;
     setCreating(true);
     try {
@@ -6394,104 +8695,133 @@ function CommentsPanel({
     }
   };
   if (!isVisible || !mounted) return null;
-  return (0, import_react_dom2.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(import_jsx_runtime16.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-        "div",
-        {
-          className: cn(
-            "fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200",
-            isAnimating ? "opacity-100" : "opacity-0"
-          ),
-          onClick: onClose
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)(
-        "div",
-        {
-          role: "dialog",
-          "aria-modal": "true",
-          "aria-label": "Comments",
-          className: cn(
-            "autoblogger fixed z-[70] flex flex-col bg-white dark:bg-gray-900 shadow-xl transition-transform duration-200 ease-out overflow-hidden",
-            "inset-x-0 top-0 h-[100dvh]",
-            "md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-gray-200 md:dark:border-gray-700",
-            isAnimating ? "translate-x-0" : "translate-x-full"
-          ),
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex-shrink-0 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-center gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react10.MessageSquare, { className: "w-4 h-4 text-gray-500" }),
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("h2", { className: "font-medium", children: "Comments" }),
-                openComments.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("span", { className: "text-xs text-gray-500", children: [
-                  "(",
-                  openComments.length,
-                  ")"
-                ] })
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(AutobloggerPortal, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      "div",
+      {
+        className: cn(
+          "fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200",
+          isAnimating ? "opacity-100" : "opacity-0"
+        ),
+        onClick: onClose
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+      "div",
+      {
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": "Comments",
+        className: cn(
+          "fixed z-[70] flex flex-col bg-background text-foreground shadow-xl transition-transform duration-200 ease-out overflow-hidden",
+          "inset-x-0 top-0 h-[100dvh]",
+          "md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border",
+          isAnimating ? "translate-x-0" : "translate-x-full"
+        ),
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-shrink-0 border-b border-gray-200 ab-dark:border-gray-700 px-4 py-3 flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.MessageSquare, { className: "w-4 h-4 text-gray-500" }),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h2", { className: "font-medium", children: "Comments" }),
+              openComments.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { className: "text-xs text-gray-500", children: [
+                "(",
+                openComments.length,
+                ")"
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+              "button",
+              {
+                type: "button",
+                onClick: onClose,
+                className: "w-8 h-8 rounded-md hover:bg-gray-100 ab-dark:hover:bg-gray-800 flex items-center justify-center text-gray-500",
+                "aria-label": "Close comments",
+                children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.X, { className: "w-4 h-4" })
+              }
+            )
+          ] }),
+          selectedText && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-shrink-0 border-b border-gray-200 ab-dark:border-gray-700 px-4 py-5 bg-gray-50/50 ab-dark:bg-gray-800/30", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-1 px-2 py-1 bg-yellow-100/50 ab-dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 ab-dark:text-gray-400 line-clamp-2", children: [
+                '"',
+                selectedText,
+                '"'
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
                 "button",
                 {
                   type: "button",
-                  onClick: onClose,
-                  className: "w-8 h-8 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center text-gray-500",
-                  "aria-label": "Close comments",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react10.X, { className: "w-4 h-4" })
+                  onClick: () => {
+                    onClearSelection();
+                    setNewComment("");
+                  },
+                  disabled: creating,
+                  className: "ml-2 text-xs text-gray-500 hover:text-gray-900 ab-dark:hover:text-white disabled:opacity-50",
+                  children: "Cancel"
                 }
               )
             ] }),
-            selectedText && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex-shrink-0 border-b border-gray-200 dark:border-gray-700 px-4 py-5 bg-gray-50/50 dark:bg-gray-800/30", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex-1 px-2 py-1 bg-yellow-100/50 dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 dark:text-gray-400 line-clamp-2", children: [
-                  '"',
-                  selectedText,
-                  '"'
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: () => {
-                      onClearSelection();
-                      setNewComment("");
-                    },
-                    disabled: creating,
-                    className: "ml-2 text-xs text-gray-500 hover:text-gray-900 dark:hover:text-white disabled:opacity-50",
-                    children: "Cancel"
-                  }
-                )
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "flex items-end gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-                  "textarea",
-                  {
-                    ref: textareaRef,
-                    value: newComment,
-                    onChange: (e) => setNewComment(e.target.value),
-                    onKeyDown: handleKeyDown,
-                    placeholder: "Add a comment...",
-                    className: "flex-1 min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
-                    rows: 2,
-                    enterKeyHint: "send"
-                  }
-                ),
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: handleCreateComment,
-                    disabled: creating || !newComment.trim(),
-                    className: "w-10 h-10 flex-shrink-0 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-700",
-                    children: creating ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react10.Loader2, { className: "h-5 w-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react10.ArrowUp, { className: "h-5 w-5" })
-                  }
-                )
-              ] })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: cn("flex-1 overflow-y-auto", selectedText && "hidden"), children: comments.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "text-center max-w-xs px-6", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react10.MessageSquare, { className: "w-8 h-8 mx-auto mb-2 text-gray-400" }),
-              /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("p", { className: "text-gray-500 text-sm", children: "No comments yet. Select text and click the comment button to add one." })
-            ] }) }) : /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "p-4 space-y-3", children: [
-              openComments.map((comment) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-end gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                "textarea",
+                {
+                  ref: textareaRef,
+                  value: newComment,
+                  onChange: (e) => setNewComment(e.target.value),
+                  onKeyDown: handleKeyDown,
+                  placeholder: "Add a comment...",
+                  className: "flex-1 min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 ab-dark:border-gray-600 rounded-md bg-white ab-dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
+                  rows: 2,
+                  enterKeyHint: "send"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleCreateComment,
+                  disabled: creating || !newComment.trim(),
+                  className: "w-10 h-10 flex-shrink-0 rounded-full bg-gray-100 ab-dark:bg-gray-800 border border-gray-200 ab-dark:border-gray-700 flex items-center justify-center disabled:opacity-50 hover:bg-gray-200 ab-dark:hover:bg-gray-700",
+                  children: creating ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.Loader2, { className: "h-5 w-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.ArrowUp, { className: "h-5 w-5" })
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: cn("flex-1 overflow-y-auto", selectedText && "hidden"), children: comments.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "text-center max-w-xs px-6", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.MessageSquare, { className: "w-8 h-8 mx-auto mb-2 text-gray-400" }),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "text-gray-500 text-sm", children: "No comments yet. Select text and click the comment button to add one." })
+          ] }) }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "p-4 space-y-3", children: [
+            openComments.map((comment) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+              CommentThread,
+              {
+                comment,
+                currentUserEmail,
+                isAdmin,
+                isActive: activeCommentId === comment.id,
+                onReply: (content) => onReply(comment.id, content),
+                onEdit: (content) => onEdit(comment.id, content),
+                onDelete: () => onDelete(comment.id),
+                onResolve: () => onResolve(comment.id),
+                onClick: () => onCommentClick(comment.id)
+              },
+              comment.id
+            )),
+            resolvedComments.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "pt-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => setShowResolved(!showResolved),
+                  className: "w-full text-left text-sm text-gray-500 hover:text-gray-900 ab-dark:hover:text-white transition-colors py-2",
+                  children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { className: "inline-flex items-center gap-1", children: [
+                    showResolved ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.ChevronDown, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.ChevronRight, { className: "w-4 h-4" }),
+                    "Resolved (",
+                    resolvedComments.length,
+                    ")"
+                  ] })
+                }
+              ),
+              showResolved && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "space-y-3 mt-2", children: resolvedComments.map((comment) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
                 CommentThread,
                 {
                   comment,
@@ -6505,63 +8835,83 @@ function CommentsPanel({
                   onClick: () => onCommentClick(comment.id)
                 },
                 comment.id
-              )),
-              resolvedComments.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "pt-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: () => setShowResolved(!showResolved),
-                    className: "w-full text-left text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors py-2",
-                    children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("span", { className: "inline-flex items-center gap-1", children: [
-                      showResolved ? /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react10.ChevronDown, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react10.ChevronRight, { className: "w-4 h-4" }),
-                      "Resolved (",
-                      resolvedComments.length,
-                      ")"
-                    ] })
-                  }
-                ),
-                showResolved && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "space-y-3 mt-2", children: resolvedComments.map((comment) => /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
-                  CommentThread,
-                  {
-                    comment,
-                    currentUserEmail,
-                    isAdmin,
-                    isActive: activeCommentId === comment.id,
-                    onReply: (content) => onReply(comment.id, content),
-                    onEdit: (content) => onEdit(comment.id, content),
-                    onDelete: () => onDelete(comment.id),
-                    onResolve: () => onResolve(comment.id),
-                    onClick: () => onCommentClick(comment.id)
-                  },
-                  comment.id
-                )) })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { ref: commentsEndRef })
-            ] }) })
-          ]
-        }
-      )
-    ] }),
-    document.body
-  );
+              )) })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { ref: commentsEndRef })
+          ] }) })
+        ]
+      }
+    )
+  ] });
 }
 
 // src/ui/components/TagsSection.tsx
-var import_react14 = require("react");
-var import_jsx_runtime17 = require("react/jsx-runtime");
+var import_react17 = require("react");
+
+// src/ui/components/ExpandableSection.tsx
+var import_react16 = require("react");
+var import_jsx_runtime20 = require("react/jsx-runtime");
+function ExpandableSection({
+  title,
+  summary,
+  defaultExpanded = false,
+  expanded: controlledExpanded,
+  onExpandedChange,
+  children,
+  className = ""
+}) {
+  const [internalExpanded, setInternalExpanded] = (0, import_react16.useState)(defaultExpanded);
+  const isControlled = controlledExpanded !== void 0;
+  const isExpanded = isControlled ? controlledExpanded : internalExpanded;
+  const handleToggle = () => {
+    const newValue = !isExpanded;
+    if (!isControlled) {
+      setInternalExpanded(newValue);
+    }
+    onExpandedChange?.(newValue);
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+      "button",
+      {
+        type: "button",
+        onClick: handleToggle,
+        className: "flex items-center justify-between gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full",
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: title }),
+            summary && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-xs text-muted-foreground/70", children: summary })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            "svg",
+            {
+              className: `h-4 w-4 shrink-0 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`,
+              fill: "none",
+              viewBox: "0 0 24 24",
+              stroke: "currentColor",
+              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 9l-7 7-7-7" })
+            }
+          )
+        ]
+      }
+    ),
+    isExpanded && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-4 space-y-3", children })
+  ] });
+}
+
+// src/ui/components/TagsSection.tsx
+var import_jsx_runtime21 = require("react/jsx-runtime");
 function TagsSection({
   tags,
   onTagsChange,
   apiBasePath,
   disabled = false
 }) {
-  const [isExpanded, setIsExpanded] = (0, import_react14.useState)(false);
-  const [availableTags, setAvailableTags] = (0, import_react14.useState)([]);
-  const [loading, setLoading] = (0, import_react14.useState)(false);
-  const [dropdownOpen, setDropdownOpen] = (0, import_react14.useState)(false);
-  const dropdownRef = (0, import_react14.useRef)(null);
-  (0, import_react14.useEffect)(() => {
+  const [isExpanded, setIsExpanded] = (0, import_react17.useState)(false);
+  const [availableTags, setAvailableTags] = (0, import_react17.useState)([]);
+  const [loading, setLoading] = (0, import_react17.useState)(false);
+  const [dropdownOpen, setDropdownOpen] = (0, import_react17.useState)(false);
+  (0, import_react17.useEffect)(() => {
     if (isExpanded && availableTags.length === 0) {
       setLoading(true);
       fetch(`${apiBasePath}/tags`).then((res) => res.ok ? res.json() : Promise.reject()).then((data) => {
@@ -6570,16 +8920,6 @@ function TagsSection({
       }).catch(() => setLoading(false));
     }
   }, [isExpanded, availableTags.length, apiBasePath]);
-  (0, import_react14.useEffect)(() => {
-    if (!dropdownOpen) return;
-    function handleClick(e) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setDropdownOpen(false);
-      }
-    }
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, [dropdownOpen]);
   const handleAddTag = (tagId) => {
     const tagToAdd = availableTags.find((t) => t.id === tagId);
     if (tagToAdd && !tags.some((t) => t.id === tagId)) {
@@ -6594,102 +8934,84 @@ function TagsSection({
     (at) => !tags.some((t) => t.id === at.id)
   );
   const tagSummary = tags.length === 0 ? "no tags" : tags.length === 1 ? "1 tag" : `${tags.length} tags`;
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "border-t border-gray-200 dark:border-gray-800 pt-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
-      "button",
-      {
-        type: "button",
-        onClick: () => setIsExpanded(!isExpanded),
-        className: "flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors w-full",
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-            "svg",
-            {
-              className: `h-4 w-4 transition-transform ${isExpanded ? "rotate-90" : ""}`,
-              fill: "none",
-              viewBox: "0 0 24 24",
-              stroke: "currentColor",
-              children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M9 5l7 7-7 7" })
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { children: "Tags" }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "ml-auto text-xs text-gray-400", children: tagSummary })
-        ]
-      }
-    ),
-    isExpanded && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "mt-4 space-y-3 pl-6", children: [
-      tags.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "flex flex-wrap gap-2", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
-        "span",
-        {
-          className: "inline-flex items-center gap-1 px-2 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm",
-          children: [
-            tag.name,
-            !disabled && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-              "button",
-              {
-                type: "button",
-                onClick: () => handleRemoveTag(tag.id),
-                className: "hover:text-red-500 transition-colors",
-                children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("svg", { className: "h-3 w-3", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M6 18L18 6M6 6l12 12" }) })
-              }
-            )
-          ]
-        },
-        tag.id
-      )) }),
-      !disabled && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_jsx_runtime17.Fragment, { children: loading ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-sm text-gray-500", children: "Loading tags..." }) : unselectedTags.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "relative max-w-[200px]", ref: dropdownRef, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
-          "button",
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+    ExpandableSection,
+    {
+      title: "Tags",
+      summary: tagSummary,
+      expanded: isExpanded,
+      onExpandedChange: setIsExpanded,
+      children: [
+        tags.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex flex-wrap gap-2", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+          "span",
           {
-            type: "button",
-            onClick: () => setDropdownOpen(!dropdownOpen),
-            className: "w-full h-8 px-3 text-sm text-left border border-gray-200 dark:border-gray-700 rounded-md bg-transparent flex items-center justify-between",
+            className: "inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-muted-foreground text-sm",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-gray-500", children: "Add tag..." }),
-              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("svg", { className: "h-4 w-4 text-gray-400", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 9l-7 7-7-7" }) })
+              tag.name,
+              !disabled && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => handleRemoveTag(tag.id),
+                  className: "hover:text-red-500 transition-colors",
+                  children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: "h-3 w-3", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M6 18L18 6M6 6l12 12" }) })
+                }
+              )
             ]
-          }
-        ),
-        dropdownOpen && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-          "div",
+          },
+          tag.id
+        )) }),
+        !disabled && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_jsx_runtime21.Fragment, { children: loading ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-sm text-muted-foreground", children: "Loading tags..." }) : unselectedTags.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "max-w-[200px]", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+          Dropdown,
           {
-            className: "absolute z-50 top-full left-0 mt-1 w-full bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-auto overscroll-contain p-1",
-            onWheel: (e) => e.stopPropagation(),
-            children: unselectedTags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+            open: dropdownOpen,
+            onOpenChange: setDropdownOpen,
+            align: "left",
+            className: "max-h-48 overflow-auto",
+            trigger: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
               "button",
               {
                 type: "button",
+                className: "w-full h-8 px-3 text-sm text-left border border-border rounded-md bg-transparent flex items-center justify-between",
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-muted-foreground", children: "Add tag..." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: "h-4 w-4 text-muted-foreground", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 9l-7 7-7-7" }) })
+                ]
+              }
+            ),
+            children: unselectedTags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+              DropdownItem,
+              {
                 onClick: () => handleAddTag(tag.id),
-                className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
                 children: tag.name
               },
               tag.id
             ))
           }
-        )
-      ] }) : availableTags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-sm text-gray-500", children: "No tags available. Create tags in Settings." }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-sm text-gray-500", children: "All tags added" }) })
-    ] })
-  ] });
+        ) }) : availableTags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-sm text-muted-foreground", children: "No tags available. Create tags in Settings." }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-sm text-muted-foreground", children: "All tags added" }) })
+      ]
+    }
+  );
 }
 
 // src/ui/hooks/useComments.ts
-var import_react15 = require("react");
+var import_react18 = require("react");
 function useComments({
   postId: initialPostId,
   editor,
   apiBasePath = "/api/cms",
   onSave
 }) {
-  const [postId, setPostId] = (0, import_react15.useState)(initialPostId);
-  const [comments, setComments] = (0, import_react15.useState)([]);
-  const [loading, setLoading] = (0, import_react15.useState)(false);
-  const [activeCommentId, setActiveCommentId] = (0, import_react15.useState)(null);
-  const [selectedText, setSelectedText] = (0, import_react15.useState)(null);
+  const [postId, setPostId] = (0, import_react18.useState)(initialPostId);
+  const [comments, setComments] = (0, import_react18.useState)([]);
+  const [loading, setLoading] = (0, import_react18.useState)(false);
+  const [activeCommentId, setActiveCommentId] = (0, import_react18.useState)(null);
+  const [selectedText, setSelectedText] = (0, import_react18.useState)(null);
   const client = createCommentsClient(apiBasePath);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react18.useEffect)(() => {
     setPostId(initialPostId);
   }, [initialPostId]);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react18.useEffect)(() => {
     if (!postId) {
       setComments([]);
       return;
@@ -6702,7 +9024,7 @@ function useComments({
       }
     }).catch(console.error).finally(() => setLoading(false));
   }, [postId, editor]);
-  const createComment = (0, import_react15.useCallback)(async (content) => {
+  const createComment = (0, import_react18.useCallback)(async (content) => {
     if (!selectedText) return;
     let effectivePostId = postId;
     if (!effectivePostId && onSave) {
@@ -6725,7 +9047,7 @@ function useComments({
     setComments((prev) => [{ ...comment, replies: [] }, ...prev]);
     setSelectedText(null);
   }, [postId, selectedText, editor, onSave, client]);
-  const replyToComment = (0, import_react15.useCallback)(async (parentId, content) => {
+  const replyToComment = (0, import_react18.useCallback)(async (parentId, content) => {
     if (!postId) return;
     const reply = await client.createComment(postId, {
       quotedText: "",
@@ -6738,7 +9060,7 @@ function useComments({
       )
     );
   }, [postId, client]);
-  const editComment = (0, import_react15.useCallback)(async (commentId, content) => {
+  const editComment = (0, import_react18.useCallback)(async (commentId, content) => {
     if (!postId) return;
     const updated = await client.updateComment(postId, commentId, content);
     setComments(
@@ -6758,7 +9080,7 @@ function useComments({
       })
     );
   }, [postId, client]);
-  const removeComment = (0, import_react15.useCallback)(async (commentId) => {
+  const removeComment = (0, import_react18.useCallback)(async (commentId) => {
     if (!postId) return;
     await client.deleteComment(postId, commentId);
     if (editor) {
@@ -6775,7 +9097,7 @@ function useComments({
       }));
     });
   }, [postId, editor, client]);
-  const resolveComment = (0, import_react15.useCallback)(async (commentId) => {
+  const resolveComment = (0, import_react18.useCallback)(async (commentId) => {
     if (!postId) return;
     const updated = await client.toggleResolve(postId, commentId);
     if (editor) {
@@ -6790,7 +9112,7 @@ function useComments({
       (prev) => prev.map((c) => c.id === commentId ? { ...c, resolved: updated.resolved } : c)
     );
   }, [postId, editor, comments, selectedText, client]);
-  const resolveAllComments = (0, import_react15.useCallback)(async () => {
+  const resolveAllComments = (0, import_react18.useCallback)(async () => {
     if (!postId) return;
     await client.resolveAllComments(postId);
     if (editor) {
@@ -6802,7 +9124,7 @@ function useComments({
       (prev) => prev.map((c) => ({ ...c, resolved: true }))
     );
   }, [postId, editor, comments, client]);
-  const scrollToCommentMark = (0, import_react15.useCallback)((commentId) => {
+  const scrollToCommentMark = (0, import_react18.useCallback)((commentId) => {
     if (editor) {
       scrollToComment(editor, commentId);
     }
@@ -6829,9 +9151,9 @@ function useComments({
 }
 
 // src/ui/hooks/useChat.tsx
-var import_react16 = require("react");
-var import_jsx_runtime18 = require("react/jsx-runtime");
-var ChatContext = (0, import_react16.createContext)(null);
+var import_react19 = require("react");
+var import_jsx_runtime22 = require("react/jsx-runtime");
+var ChatContext = (0, import_react19.createContext)(null);
 function parseEditBlocks(content) {
   const editRegex = /:::edit\s*([\s\S]*?)\s*:::/g;
   const edits = [];
@@ -6879,37 +9201,37 @@ function ChatProvider({
   chatApiPath,
   historyApiPath = "/api/chat/history"
 }) {
-  const [messages, setMessages] = (0, import_react16.useState)([]);
-  const [essayContext, setEssayContext] = (0, import_react16.useState)(null);
-  const [isStreaming, setIsStreaming] = (0, import_react16.useState)(false);
-  const [isOpen, setIsOpen] = (0, import_react16.useState)(false);
-  const [mode, setMode] = (0, import_react16.useState)("ask");
-  const [webSearchEnabled, setWebSearchEnabled] = (0, import_react16.useState)(false);
-  const [thinkingEnabled, setThinkingEnabled] = (0, import_react16.useState)(false);
-  const [selectedModel, setSelectedModel] = (0, import_react16.useState)("claude-sonnet");
-  const editHandlerRef = (0, import_react16.useRef)(null);
-  const expandPlanHandlerRef = (0, import_react16.useRef)(null);
-  const historyLoadedRef = (0, import_react16.useRef)(false);
-  const abortControllerRef = (0, import_react16.useRef)(null);
-  const essayContextRef = (0, import_react16.useRef)(null);
-  (0, import_react16.useEffect)(() => {
+  const [messages, setMessages] = (0, import_react19.useState)([]);
+  const [essayContext, setEssayContext] = (0, import_react19.useState)(null);
+  const [isStreaming, setIsStreaming] = (0, import_react19.useState)(false);
+  const [isOpen, setIsOpen] = (0, import_react19.useState)(false);
+  const [mode, setMode] = (0, import_react19.useState)("ask");
+  const [webSearchEnabled, setWebSearchEnabled] = (0, import_react19.useState)(false);
+  const [thinkingEnabled, setThinkingEnabled] = (0, import_react19.useState)(false);
+  const [selectedModel, setSelectedModel] = (0, import_react19.useState)("claude-sonnet");
+  const editHandlerRef = (0, import_react19.useRef)(null);
+  const expandPlanHandlerRef = (0, import_react19.useRef)(null);
+  const historyLoadedRef = (0, import_react19.useRef)(false);
+  const abortControllerRef = (0, import_react19.useRef)(null);
+  const essayContextRef = (0, import_react19.useRef)(null);
+  (0, import_react19.useEffect)(() => {
     essayContextRef.current = essayContext;
   }, [essayContext]);
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
-  const registerEditHandler = (0, import_react16.useCallback)((handler) => {
+  const registerEditHandler = (0, import_react19.useCallback)((handler) => {
     editHandlerRef.current = handler;
   }, []);
-  const registerExpandPlanHandler = (0, import_react16.useCallback)((handler) => {
+  const registerExpandPlanHandler = (0, import_react19.useCallback)((handler) => {
     expandPlanHandlerRef.current = handler;
   }, []);
-  const stopStreaming = (0, import_react16.useCallback)(() => {
+  const stopStreaming = (0, import_react19.useCallback)(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
     setIsStreaming(false);
   }, []);
-  (0, import_react16.useEffect)(() => {
+  (0, import_react19.useEffect)(() => {
     if (historyLoadedRef.current) return;
     historyLoadedRef.current = true;
     fetch(historyApiPath).then((res) => res.ok ? res.json() : []).then((data) => {
@@ -6919,7 +9241,7 @@ function ChatProvider({
     }).catch(() => {
     });
   }, [historyApiPath]);
-  const saveMessage = (0, import_react16.useCallback)((role, content) => {
+  const saveMessage = (0, import_react19.useCallback)((role, content) => {
     fetch(historyApiPath, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -6927,7 +9249,7 @@ function ChatProvider({
     }).catch(() => {
     });
   }, [historyApiPath]);
-  const sendMessage = (0, import_react16.useCallback)(async (content) => {
+  const sendMessage = (0, import_react19.useCallback)(async (content) => {
     if (!content.trim() || isStreaming) return;
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
@@ -7066,15 +9388,15 @@ function ChatProvider({
       setIsStreaming(false);
     }
   }, [messages, isStreaming, essayContext, mode, webSearchEnabled, thinkingEnabled, selectedModel, saveMessage, resolvedChatApiPath]);
-  const clearMessages = (0, import_react16.useCallback)(() => {
+  const clearMessages = (0, import_react19.useCallback)(() => {
     setMessages([]);
   }, []);
-  const addMessage = (0, import_react16.useCallback)((role, content) => {
+  const addMessage = (0, import_react19.useCallback)((role, content) => {
     const message = { role, content };
     setMessages((prev) => [...prev, message]);
     saveMessage(role, content);
   }, [saveMessage]);
-  const undoEdit = (0, import_react16.useCallback)((messageIndex) => {
+  const undoEdit = (0, import_react19.useCallback)((messageIndex) => {
     const message = messages[messageIndex];
     if (!message?.previousState || !editHandlerRef.current) return;
     const success = editHandlerRef.current({
@@ -7095,14 +9417,14 @@ function ChatProvider({
       });
     }
   }, [messages]);
-  const expandPlan = (0, import_react16.useCallback)((wordCount = 800) => {
+  const expandPlan = (0, import_react19.useCallback)((wordCount = 800) => {
     if (!expandPlanHandlerRef.current) return;
     const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastAssistantMessage?.content) return;
     expandPlanHandlerRef.current(lastAssistantMessage.content, wordCount);
     setIsOpen(false);
   }, [messages]);
-  const value = (0, import_react16.useMemo)(() => ({
+  const value = (0, import_react19.useMemo)(() => ({
     messages,
     essayContext,
     isStreaming,
@@ -7143,34 +9465,34 @@ function ChatProvider({
     registerExpandPlanHandler,
     expandPlan
   ]);
-  return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(ChatContext.Provider, { value, children });
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(ChatContext.Provider, { value, children });
 }
 function useChatContext() {
-  const context = (0, import_react16.useContext)(ChatContext);
+  const context = (0, import_react19.useContext)(ChatContext);
   if (!context) {
     throw new Error("useChatContext must be used within a ChatProvider");
   }
   return context;
 }
 function useChatContextOptional() {
-  return (0, import_react16.useContext)(ChatContext);
+  return (0, import_react19.useContext)(ChatContext);
 }
 
 // src/ui/pages/EditorPage.tsx
-var import_jsx_runtime19 = require("react/jsx-runtime");
+var import_jsx_runtime23 = require("react/jsx-runtime");
 function ContentSkeleton({ styles }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-2 mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-8 w-4/5" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-5 w-3/5" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-3 w-24" }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-2 mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-8 w-4/5" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-5 w-3/5" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-3 w-24" }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-3/4" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-5/6" })
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-3/4" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-5/6" })
     ] })
   ] });
 }
@@ -7181,14 +9503,14 @@ function AutoResizeTextarea({
   disabled,
   className
 }) {
-  const ref = (0, import_react17.useRef)(null);
-  (0, import_react17.useEffect)(() => {
+  const ref = (0, import_react20.useRef)(null);
+  (0, import_react20.useEffect)(() => {
     if (ref.current) {
       ref.current.style.height = "auto";
       ref.current.style.height = `${ref.current.scrollHeight}px`;
     }
   }, [value]);
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
     "textarea",
     {
       ref,
@@ -7205,14 +9527,14 @@ function AutoResizeTextarea({
   );
 }
 function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
-  const { apiBasePath, styles, fields, navigate, basePath, onRegisterEditHandler, sharedData } = useDashboardContext();
+  const { apiBasePath, styles, fields, navigate, basePath, onRegisterEditHandler, sharedData, updateSharedPost } = useDashboardContext();
   const postUrlPattern = sharedData?.settings?.postUrlPattern ?? "/e/{slug}";
   const urlPrefix = postUrlPattern.split("{slug}")[0];
   const chatContext = useChatContextOptional();
   const chatAddMessage = chatContext?.addMessage;
   const chatSelectedModel = chatContext?.selectedModel;
   const onEditorStateChange = onEditorStateChangeProp;
-  const [post, setPost] = (0, import_react17.useState)({
+  const [post, setPost] = (0, import_react20.useState)({
     title: "",
     subtitle: "",
     slug: "",
@@ -7220,27 +9542,46 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     status: "draft",
     tags: []
   });
-  const [loading, setLoading] = (0, import_react17.useState)(!!slug);
-  const [saving, setSaving] = (0, import_react17.useState)(false);
-  const [savingAs, setSavingAs] = (0, import_react17.useState)(null);
-  const [lastSaved, setLastSaved] = (0, import_react17.useState)(null);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = (0, import_react17.useState)(false);
-  const [generating, setGenerating] = (0, import_react17.useState)(false);
-  const abortControllerRef = (0, import_react17.useRef)(null);
-  const savedContent = (0, import_react17.useRef)("");
-  const textareaRef = (0, import_react17.useRef)(null);
-  const hasTriggeredGeneration = (0, import_react17.useRef)(false);
-  const [showMarkdown, setShowMarkdown] = (0, import_react17.useState)(false);
-  const [editor, setEditor] = (0, import_react17.useState)(null);
-  const [revisions, setRevisions] = (0, import_react17.useState)([]);
-  const [revisionsLoading, setRevisionsLoading] = (0, import_react17.useState)(false);
-  const [previewingRevision, setPreviewingRevision] = (0, import_react17.useState)(null);
-  const [originalPost, setOriginalPost] = (0, import_react17.useState)(null);
-  const [commentsOpen, setCommentsOpen] = (0, import_react17.useState)(false);
+  const [loading, setLoading] = (0, import_react20.useState)(!!slug);
+  const [saving, setSaving] = (0, import_react20.useState)(false);
+  const [savingAs, setSavingAs] = (0, import_react20.useState)(null);
+  const [lastSaved, setLastSaved] = (0, import_react20.useState)(null);
+  const [generating, setGenerating] = (0, import_react20.useState)(false);
+  const abortControllerRef = (0, import_react20.useRef)(null);
+  const savedContent = (0, import_react20.useRef)("");
+  const textareaRef = (0, import_react20.useRef)(null);
+  const hasTriggeredGeneration = (0, import_react20.useRef)(false);
+  const [showMarkdown, setShowMarkdown] = (0, import_react20.useState)(false);
+  const [editor, setEditor] = (0, import_react20.useState)(null);
+  (0, import_react20.useEffect)(() => {
+    if (showMarkdown && textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      const minHeight = Math.max(400, window.innerHeight - 300);
+      textareaRef.current.style.height = `${Math.max(minHeight, textareaRef.current.scrollHeight)}px`;
+    }
+  }, [showMarkdown, post.markdown]);
+  const [revisions, setRevisions] = (0, import_react20.useState)([]);
+  const [revisionsLoading, setRevisionsLoading] = (0, import_react20.useState)(false);
+  const [previewingRevision, setPreviewingRevision] = (0, import_react20.useState)(null);
+  const [originalPost, setOriginalPost] = (0, import_react20.useState)(null);
+  const stableStringify = (0, import_react20.useCallback)((obj) => JSON.stringify(obj, Object.keys(obj).sort()), []);
+  const hasUnsavedChanges = (0, import_react20.useMemo)(() => {
+    if (previewingRevision) return false;
+    const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = post;
+    const current = stableStringify(contentFields);
+    if (savedContent.current === "") {
+      return current !== "{}";
+    }
+    return current !== savedContent.current;
+  }, [post, previewingRevision, stableStringify]);
+  const [commentsOpen, setCommentsOpen] = (0, import_react20.useState)(false);
   const { session } = useDashboardContext();
   const currentUserEmail = session?.user?.email || "";
   const isAdmin = session?.user?.role === "admin";
-  const savePost = (0, import_react17.useCallback)(async (silent = false) => {
+  const savePost = (0, import_react20.useCallback)(async (silent = false) => {
+    if (!silent && post.status === "published") {
+      if (!confirm("Update the published post?")) return;
+    }
     if (!silent) {
       setSaving(true);
       setSavingAs("draft");
@@ -7264,15 +9605,20 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       const data = await res.json();
       if (data.data) {
         setPost((prev) => ({ ...prev, ...data.data }));
-        savedContent.current = JSON.stringify({ title: data.data.title, subtitle: data.data.subtitle, markdown: data.data.markdown });
+        const mergedPost = { ...post, ...data.data };
+        const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = mergedPost;
+        savedContent.current = stableStringify(contentFields);
         setLastSaved(/* @__PURE__ */ new Date());
-        setHasUnsavedChanges(false);
+        updateSharedPost(data.data);
         if (!post.id && data.data.slug) {
-          navigate(`/editor/${data.data.slug}`, { skipConfirmation: true });
+          navigate(`/editor/${data.data.slug}`, { skipConfirmation: true, replace: true });
         }
       }
     } catch (err) {
       console.error("Save failed:", err);
+      if (!silent) {
+        import_sonner.toast.error("Failed to save post");
+      }
       throw err;
     } finally {
       if (!silent) {
@@ -7280,8 +9626,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         setSavingAs(null);
       }
     }
-  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate]);
-  const handlePublish = (0, import_react17.useCallback)(async () => {
+  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate, updateSharedPost]);
+  const handlePublish = (0, import_react20.useCallback)(async () => {
     if (!confirm("Publish this essay?")) return;
     setSaving(true);
     setSavingAs("published");
@@ -7299,13 +9645,23 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         })
       });
       if (res.ok) {
+        const data = await res.json();
+        if (data.data) {
+          updateSharedPost(data.data);
+        }
+        import_sonner.toast.success("Post published successfully!");
         navigate("/", { skipConfirmation: true });
+      } else {
+        import_sonner.toast.error("Failed to publish post");
       }
+    } catch (err) {
+      console.error("Publish failed:", err);
+      import_sonner.toast.error("Failed to publish post");
     } finally {
       setSaving(false);
       setSavingAs(null);
     }
-  }, [post, apiBasePath, fields, navigate]);
+  }, [post, apiBasePath, fields, navigate, updateSharedPost]);
   const comments = useComments({
     postId: post.id || null,
     editor,
@@ -7315,8 +9671,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       return post.id || null;
     }
   });
-  const [urlParams, setUrlParams] = (0, import_react17.useState)({});
-  (0, import_react17.useEffect)(() => {
+  const [urlParams, setUrlParams] = (0, import_react20.useState)({});
+  (0, import_react20.useEffect)(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       setUrlParams({
@@ -7330,7 +9686,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       });
     }
   }, []);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     if (urlParams.comment && !comments.loading && comments.list.length > 0) {
       setCommentsOpen(true);
       comments.setActiveId(urlParams.comment);
@@ -7339,13 +9695,14 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       }, 100);
     }
   }, [urlParams.comment, comments.loading, comments.list.length]);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     if (slug) {
       fetch(`${apiBasePath}/posts`).then((r) => r.json()).then((d) => {
         const found = d.data?.find((p) => p.slug === slug);
         if (found) {
           setPost(found);
-          savedContent.current = JSON.stringify({ title: found.title, subtitle: found.subtitle, markdown: found.markdown });
+          const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = found;
+          savedContent.current = stableStringify(contentFields);
           if (found.updatedAt) {
             setLastSaved(new Date(found.updatedAt));
           }
@@ -7354,27 +9711,19 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       }).catch(() => setLoading(false));
     }
   }, [slug, apiBasePath]);
-  (0, import_react17.useEffect)(() => {
-    const current = JSON.stringify({ title: post.title, subtitle: post.subtitle, markdown: post.markdown });
-    if (savedContent.current === "") {
-      setHasUnsavedChanges(!!(post.title || post.subtitle || post.markdown));
-    } else {
-      setHasUnsavedChanges(current !== savedContent.current);
-    }
-  }, [post.title, post.subtitle, post.markdown]);
-  const savePostRef = (0, import_react17.useRef)(savePost);
-  const handlePublishRef = (0, import_react17.useRef)(handlePublish);
-  const onEditorStateChangeRef = (0, import_react17.useRef)(onEditorStateChange);
-  (0, import_react17.useEffect)(() => {
+  const savePostRef = (0, import_react20.useRef)(savePost);
+  const handlePublishRef = (0, import_react20.useRef)(handlePublish);
+  const onEditorStateChangeRef = (0, import_react20.useRef)(onEditorStateChange);
+  (0, import_react20.useEffect)(() => {
     savePostRef.current = savePost;
   }, [savePost]);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     handlePublishRef.current = handlePublish;
   }, [handlePublish]);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     onEditorStateChangeRef.current = onEditorStateChange;
   }, [onEditorStateChange]);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     if (!onEditorStateChangeRef.current) return;
     const confirmLeave = () => {
       if (hasUnsavedChanges) {
@@ -7405,7 +9754,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       onEditorStateChangeRef.current?.(null);
     };
   }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown]);
-  const handleEdit = (0, import_react17.useCallback)((edit) => {
+  const handleEdit = (0, import_react20.useCallback)((edit) => {
     if (edit.type === "replace_all") {
       setPost((prev) => ({
         ...prev,
@@ -7466,7 +9815,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     }
     return false;
   }, []);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     if (!onRegisterEditHandler) return;
     onRegisterEditHandler(handleEdit);
     return () => {
@@ -7474,14 +9823,14 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     };
   }, [handleEdit, onRegisterEditHandler]);
   const registerEditHandler = chatContext?.registerEditHandler;
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     if (!registerEditHandler) return;
     registerEditHandler(handleEdit);
     return () => {
       registerEditHandler(null);
     };
   }, [handleEdit, registerEditHandler]);
-  const expandPlanToEssay = (0, import_react17.useCallback)(async (plan, wordCount = 800) => {
+  const expandPlanToEssay = (0, import_react20.useCallback)(async (plan, wordCount = 800) => {
     if (generating) return;
     if (post.title || post.subtitle || post.markdown) {
       if (!confirm("This will replace your current content with a new essay. Continue?")) {
@@ -7596,15 +9945,15 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       abortControllerRef.current = null;
     }
   }, [generating, post.title, post.subtitle, post.markdown, apiBasePath, chatAddMessage, chatSelectedModel]);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     if (!chatContext?.registerExpandPlanHandler) return;
     chatContext.registerExpandPlanHandler(expandPlanToEssay);
     return () => {
       chatContext.registerExpandPlanHandler(null);
     };
   }, [chatContext, expandPlanToEssay]);
-  const hasTriggeredPlanExpansion = (0, import_react17.useRef)(false);
-  (0, import_react17.useEffect)(() => {
+  const hasTriggeredPlanExpansion = (0, import_react20.useRef)(false);
+  (0, import_react20.useEffect)(() => {
     if (urlParams.fromPlan && !slug && !loading && !hasTriggeredPlanExpansion.current) {
       hasTriggeredPlanExpansion.current = true;
       const pendingPlan = sessionStorage.getItem("pendingPlan");
@@ -7617,12 +9966,12 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       }
     }
   }, [urlParams.fromPlan, slug, loading, basePath, expandPlanToEssay]);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     if (!post.id || post.status === "published" || !hasUnsavedChanges || previewingRevision) return;
     const timeout = setTimeout(() => savePostRef.current(true), 3e3);
     return () => clearTimeout(timeout);
   }, [post.id, post.status, post.title, post.subtitle, post.markdown, hasUnsavedChanges, previewingRevision]);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     const handler = (e) => {
       if (hasUnsavedChanges) {
         e.preventDefault();
@@ -7632,8 +9981,15 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [hasUnsavedChanges]);
-  (0, import_react17.useEffect)(() => {
+  (0, import_react20.useEffect)(() => {
     const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        if (!saving && !generating && !previewingRevision && hasUnsavedChanges) {
+          savePostRef.current();
+        }
+        return;
+      }
       if (e.key === "Escape") {
         if (previewingRevision) {
           cancelRevisionPreview();
@@ -7653,8 +10009,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     };
     window.addEventListener("keydown", handler, true);
     return () => window.removeEventListener("keydown", handler, true);
-  }, [hasUnsavedChanges, generating, navigate, previewingRevision]);
-  (0, import_react17.useEffect)(() => {
+  }, [hasUnsavedChanges, saving, generating, navigate, previewingRevision]);
+  (0, import_react20.useEffect)(() => {
     if (urlParams.idea && !slug && !loading && !hasTriggeredGeneration.current) {
       if (post.title || post.subtitle || post.markdown) {
         if (!confirm("This will replace your current content. Continue?")) {
@@ -7790,7 +10146,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       runGenerate();
     }
   }, [urlParams, slug, loading, apiBasePath, basePath, chatAddMessage]);
-  const fetchRevisions = (0, import_react17.useCallback)(async () => {
+  const fetchRevisions = (0, import_react20.useCallback)(async () => {
     if (!post.id) return;
     setRevisionsLoading(true);
     try {
@@ -7803,7 +10159,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       setRevisionsLoading(false);
     }
   }, [post.id, apiBasePath]);
-  const previewRevision = (0, import_react17.useCallback)(async (revisionId) => {
+  const previewRevision = (0, import_react20.useCallback)(async (revisionId) => {
     const revision = revisions.find((r) => r.id === revisionId);
     if (!revision) return;
     if (!originalPost) {
@@ -7817,14 +10173,14 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       markdown: revision.markdown
     }));
   }, [revisions, post, originalPost]);
-  const cancelRevisionPreview = (0, import_react17.useCallback)(() => {
+  const cancelRevisionPreview = (0, import_react20.useCallback)(() => {
     if (originalPost) {
       setPost(originalPost);
       setOriginalPost(null);
     }
     setPreviewingRevision(null);
   }, [originalPost]);
-  const restoreRevision = (0, import_react17.useCallback)(async () => {
+  const restoreRevision = (0, import_react20.useCallback)(async () => {
     if (!previewingRevision) return;
     setOriginalPost(null);
     setPreviewingRevision(null);
@@ -7832,18 +10188,28 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   }, [previewingRevision, savePost]);
   const handleUnpublish = async () => {
     if (!confirm("Unpublish this essay?")) return;
-    await fetch(`${apiBasePath}/posts/${post.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "draft" })
-    });
-    setPost((prev) => ({ ...prev, status: "draft" }));
+    try {
+      const res = await fetch(`${apiBasePath}/posts/${post.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "draft" })
+      });
+      if (res.ok) {
+        setPost((prev) => ({ ...prev, status: "draft" }));
+        import_sonner.toast.success("Post unpublished");
+      } else {
+        import_sonner.toast.error("Failed to unpublish post");
+      }
+    } catch (err) {
+      console.error("Unpublish failed:", err);
+      import_sonner.toast.error("Failed to unpublish post");
+    }
   };
   const words = countWords(post.markdown);
   const isPublished = post.status === "published";
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex flex-col h-full", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col h-full", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
         EditorToolbar,
         {
           textareaRef,
@@ -7853,25 +10219,25 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           loading: true
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("main", { className: "flex-1 overflow-auto pb-20 pt-[41px]", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(ContentSkeleton, { styles }) })
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("main", { className: "flex-1 overflow-auto pb-20 pt-[41px]", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(ContentSkeleton, { styles }) })
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex flex-col h-full", children: [
-    previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "bg-amber-100 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { className: "text-sm text-amber-800 dark:text-amber-200", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col h-full", children: [
+    previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-amber-100 ab-dark:bg-amber-900/30 border-b border-amber-200 ab-dark:border-amber-800 px-4 py-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "text-sm text-amber-800 ab-dark:text-amber-200", children: [
         "Previewing revision from ",
         new Date(previewingRevision.createdAt).toLocaleString()
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
           "button",
           {
             onClick: cancelRevisionPreview,
-            className: "px-3 py-1 text-sm border border-amber-300 dark:border-amber-700 rounded hover:bg-amber-200 dark:hover:bg-amber-800",
+            className: "px-3 py-1 text-sm border border-amber-300 ab-dark:border-amber-700 rounded hover:bg-amber-200 ab-dark:hover:bg-amber-800",
             children: "Cancel"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
           "button",
           {
             onClick: restoreRevision,
@@ -7881,7 +10247,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         )
       ] })
     ] }),
-    !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+    !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
       EditorToolbar,
       {
         editor: showMarkdown ? null : editor,
@@ -7910,37 +10276,37 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         onViewComments: () => setCommentsOpen(true)
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("main", { className: `flex-1 overflow-auto pb-20 overscroll-contain ${!previewingRevision ? "pt-[41px]" : ""}`, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("header", { className: "space-y-2 mb-8", children: [
-        generating && !post.title ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("main", { className: `flex-1 overflow-auto pb-20 overscroll-contain ${!previewingRevision ? "pt-[41px]" : ""}`, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("header", { className: "space-y-2 mb-8", children: [
+        generating && !post.title ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
           AutoResizeTextarea,
           {
             value: post.title,
             onChange: (val) => setPost((prev) => ({ ...prev, title: val })),
             placeholder: "Title",
             disabled: generating || !!previewingRevision,
-            className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+            className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
         ),
-        generating && !post.subtitle ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        generating && !post.subtitle ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
           AutoResizeTextarea,
           {
             value: post.subtitle,
             onChange: (val) => setPost((prev) => ({ ...prev, subtitle: val })),
             placeholder: "Subtitle",
             disabled: generating || !!previewingRevision,
-            className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+            className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "space-y-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-3/4" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Skeleton, { className: "h-4 w-5/6" })
-      ] }) : showMarkdown ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-3/4" }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-5/6" })
+      ] }) : showMarkdown ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
         "textarea",
         {
           ref: textareaRef,
@@ -7948,9 +10314,9 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           onChange: (e) => setPost((prev) => ({ ...prev, markdown: e.target.value })),
           placeholder: "Start writing...",
           disabled: generating || !!previewingRevision,
-          className: `${styles.prose} w-full min-h-[400px] bg-transparent border-none outline-none resize-none placeholder-gray-400 leading-relaxed font-mono text-sm ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+          className: `${styles.prose} w-full bg-transparent border-none outline-none resize-none overflow-hidden placeholder-muted-foreground leading-relaxed font-mono text-sm ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
         }
-      ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      ) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
         TiptapEditor,
         {
           content: post.markdown,
@@ -7976,21 +10342,21 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           }
         }
       ) }),
-      !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "mt-12 pt-8 border-t border-border space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-gray-500 w-14", children: "URL" }),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-gray-400", children: urlPrefix }),
-          isPublished ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { className: "flex items-center gap-1.5 text-gray-600 dark:text-gray-400", children: [
+      !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-12 pt-8 border-t border-border space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground w-14", children: "URL" }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground/70", children: urlPrefix }),
+          isPublished ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "flex items-center gap-1.5 text-gray-600 ab-dark:text-muted-foreground/70", children: [
             post.slug,
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("svg", { className: "w-3 h-3 text-gray-400", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("svg", { className: "w-3 h-3 text-muted-foreground/70", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
             "input",
             {
               type: "text",
               value: post.slug,
               onChange: (e) => setPost((prev) => ({ ...prev, slug: e.target.value })),
               placeholder: "post-slug",
-              className: "flex-1 bg-transparent border-none outline-none placeholder-gray-400 text-gray-600 dark:text-gray-400"
+              className: "flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-gray-600 ab-dark:text-muted-foreground/70"
             }
           )
         ] }) }),
@@ -7999,7 +10365,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             setPost((prev) => ({ ...prev, [name]: value }));
           };
           if (!field.label) {
-            return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
               field.component,
               {
                 value: post[field.name],
@@ -8007,13 +10373,12 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
                 onFieldChange: handleFieldChange,
                 post,
                 disabled: saving || generating
-              },
-              field.name
-            );
+              }
+            ) }, field.name);
           }
-          return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex items-center justify-between text-sm gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center gap-2 flex-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-gray-500 w-14 flex-shrink-0", children: field.label }),
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex items-center justify-between text-sm gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2 flex-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground w-14 flex-shrink-0", children: field.label }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
               field.component,
               {
                 value: post[field.name],
@@ -8025,7 +10390,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             ) })
           ] }) }, field.name);
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
           TagsSection,
           {
             tags: post.tags || [],
@@ -8034,49 +10399,49 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             disabled: saving || generating
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center justify-between text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-gray-500 w-14", children: "Status" }),
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: isPublished ? "text-green-600 dark:text-green-400" : "text-gray-500", children: isPublished ? "Published" : "Draft" })
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center justify-between text-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground", children: "Status" }),
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: isPublished ? "text-xs text-green-700/80 ab-dark:text-green-500/80" : "text-xs text-muted-foreground/70", children: isPublished ? "Published" : "Draft" })
           ] }),
-          isPublished ? hasUnsavedChanges ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+          isPublished ? hasUnsavedChanges ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
             "button",
             {
-              onClick: handlePublish,
+              onClick: () => savePost(),
               disabled: saving || generating,
               className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
               children: [
-                savingAs === "published" && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                savingAs && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
                 ] }),
                 "Update"
               ]
             }
-          ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          ) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
             "button",
             {
               onClick: handleUnpublish,
-              className: "px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-red-500 transition-colors",
+              className: "px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-red-600 hover:border-red-300 hover:bg-red-50 ab-dark:hover:border-red-800 ab-dark:hover:bg-red-900/20 transition-colors",
               children: "Unpublish"
             }
-          ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+          ) : /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
             "button",
             {
               onClick: handlePublish,
               disabled: saving || generating,
               className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
               children: [
-                savingAs === "published" && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                savingAs === "published" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
                 ] }),
                 "Publish"
               ]
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "text-sm text-gray-500 pt-2 border-t border-border", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "text-sm text-muted-foreground pt-2 border-t border-border", children: [
           words.toLocaleString(),
           " words \xB7 ~",
           Math.ceil(words / 200),
@@ -8084,18 +10449,21 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "flex items-center justify-end text-sm text-gray-500", children: generating ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "hover:text-gray-900 dark:hover:text-white transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex items-center justify-end text-sm text-muted-foreground", children: generating ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { className: "hover:text-foreground transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
       "button",
       {
         onClick: cancelRevisionPreview,
-        className: "hover:text-gray-900 dark:hover:text-white transition-colors",
+        className: "hover:text-foreground transition-colors",
         children: "Press Esc to cancel"
       }
-    ) : lastSaved ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { children: [
+    ) : isPublished && post.publishedAt ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { children: [
+      "Published ",
+      formatSavedTime(new Date(post.publishedAt))
+    ] }) : lastSaved ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { children: [
       "Saved ",
       formatSavedTime(lastSaved)
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { children: "Not saved yet" }) }) }),
-    currentUserEmail && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "Not saved yet" }) }) }),
+    currentUserEmail && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
       CommentsPanel,
       {
         comments: comments.list,
@@ -8118,9 +10486,9 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
 }
 
 // src/ui/pages/SettingsPage.tsx
-var import_react18 = require("react");
+var import_react21 = require("react");
 var import_lucide_react11 = require("lucide-react");
-var import_jsx_runtime20 = require("react/jsx-runtime");
+var import_jsx_runtime24 = require("react/jsx-runtime");
 function SettingsPage({ subPath }) {
   const { navigate, sharedData, sharedDataLoading } = useDashboardContext();
   const counts = sharedData?.counts || {};
@@ -8139,24 +10507,24 @@ function SettingsPage({ subPath }) {
   const settingsLinks = autoDraftEnabled ? allSettingsLinks : allSettingsLinks.filter((link) => link.path !== "/settings/topics");
   if (!subPath || subPath === "/") {
     if (loading) {
-      return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-7 w-24 mb-6" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: [1, 2, 3, 4, 5, 6].map((i) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "p-4 sm:p-6 border border-border rounded-lg", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-4 w-16" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-8 w-12 mt-2" })
+      return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-7 w-24 mb-6" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: [1, 2, 3, 4, 5, 6].map((i) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-4 sm:p-6 border border-border rounded-lg", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-16" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-8 w-12 mt-2" })
         ] }, i)) })
       ] });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold pb-4 mb-6 border-b border-border", children: "Settings" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: settingsLinks.map((item) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold pb-4 mb-6 border-b border-border", children: "Settings" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: settingsLinks.map((item) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: () => navigate(item.path),
           className: "p-4 sm:p-6 border border-border rounded-lg text-left hover:bg-accent transition-colors",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: item.label }),
-            item.countKey ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-2xl font-bold mt-1", children: counts[item.countKey] ?? 0 }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground mt-1", children: "Configure \u2192" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: item.label }),
+            item.countKey ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-2xl font-bold mt-1", children: counts[item.countKey] ?? 0 }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground mt-1", children: "Configure \u2192" })
           ]
         },
         item.path
@@ -8165,31 +10533,31 @@ function SettingsPage({ subPath }) {
   }
   const pageName = subPath.slice(1);
   const revisionDetailMatch = pageName.match(/^revisions\/(.+)$/);
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
-    pageName === "general" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(GeneralSettingsContent, {}),
-    pageName === "users" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(UsersSettingsContent, {}),
-    pageName === "ai" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(AISettingsContent, {}),
-    pageName === "tags" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(TagsSettingsContent, {}),
-    pageName === "topics" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(TopicsSettingsContent, {}),
-    pageName === "posts" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(PostsSettingsContent, {}),
-    pageName === "revisions" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(RevisionsSettingsContent, {}),
-    revisionDetailMatch && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(RevisionDetailContent, { revisionId: revisionDetailMatch[1] }),
-    pageName === "comments" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(CommentsSettingsContent, {})
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
+    pageName === "general" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(GeneralSettingsContent, {}),
+    pageName === "users" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(UsersSettingsContent, {}),
+    pageName === "ai" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(AISettingsContent, {}),
+    pageName === "tags" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(TagsSettingsContent, {}),
+    pageName === "topics" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(TopicsSettingsContent, {}),
+    pageName === "posts" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PostsSettingsContent, {}),
+    pageName === "revisions" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(RevisionsSettingsContent, {}),
+    revisionDetailMatch && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(RevisionDetailContent, { revisionId: revisionDetailMatch[1] }),
+    pageName === "comments" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(CommentsSettingsContent, {})
   ] });
 }
 function UsersSettingsContent() {
   const { apiBasePath } = useDashboardContext();
-  const [users, setUsers] = (0, import_react18.useState)([]);
-  const [loading, setLoading] = (0, import_react18.useState)(true);
-  const [showForm, setShowForm] = (0, import_react18.useState)(false);
-  const [editingUser, setEditingUser] = (0, import_react18.useState)(null);
-  const [formEmail, setFormEmail] = (0, import_react18.useState)("");
-  const [formName, setFormName] = (0, import_react18.useState)("");
-  const [formRole, setFormRole] = (0, import_react18.useState)("writer");
-  const [formError, setFormError] = (0, import_react18.useState)("");
-  const [saving, setSaving] = (0, import_react18.useState)(false);
-  const [menuOpen, setMenuOpen] = (0, import_react18.useState)(null);
-  (0, import_react18.useEffect)(() => {
+  const [users, setUsers] = (0, import_react21.useState)([]);
+  const [loading, setLoading] = (0, import_react21.useState)(true);
+  const [showForm, setShowForm] = (0, import_react21.useState)(false);
+  const [editingUser, setEditingUser] = (0, import_react21.useState)(null);
+  const [formEmail, setFormEmail] = (0, import_react21.useState)("");
+  const [formName, setFormName] = (0, import_react21.useState)("");
+  const [formRole, setFormRole] = (0, import_react21.useState)("writer");
+  const [formError, setFormError] = (0, import_react21.useState)("");
+  const [saving, setSaving] = (0, import_react21.useState)(false);
+  const [menuOpen, setMenuOpen] = (0, import_react21.useState)(null);
+  (0, import_react21.useEffect)(() => {
     fetch(`${apiBasePath}/users`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
       setUsers(res.data || []);
       setLoading(false);
@@ -8252,14 +10620,14 @@ function UsersSettingsContent() {
     if (role === "drafter") return "border border-border text-foreground";
     return "bg-secondary text-secondary-foreground";
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "space-y-6", children: showForm ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "max-w-md", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex items-center justify-between mb-6", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: editingUser ? "Edit User" : "Add User" }) }),
-    formError && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4", children: formError }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium", children: "Email *" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "space-y-6", children: showForm ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "max-w-md", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-between mb-6", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: editingUser ? "Edit User" : "Add User" }) }),
+    formError && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4", children: formError }),
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium", children: "Email *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "input",
           {
             type: "email",
@@ -8272,9 +10640,9 @@ function UsersSettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium", children: "Name" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium", children: "Name" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "input",
           {
             type: "text",
@@ -8286,9 +10654,9 @@ function UsersSettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { htmlFor: "role", className: "block text-sm font-medium", children: "Role" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "role", className: "block text-sm font-medium", children: "Role" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
           "select",
           {
             id: "role",
@@ -8296,51 +10664,51 @@ function UsersSettingsContent() {
             onChange: (e) => setFormRole(e.target.value),
             className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "drafter", children: "Drafter" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "writer", children: "Writer" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "admin", children: "Admin" })
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "drafter", children: "Drafter" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "writer", children: "Writer" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "admin", children: "Admin" })
             ]
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex gap-4 pt-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { type: "submit", disabled: saving, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50", children: saving ? editingUser ? "Saving..." : "Creating..." : editingUser ? "Save Changes" : "Create User" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { type: "button", onClick: () => {
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex gap-4 pt-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "submit", disabled: saving, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50", children: saving ? editingUser ? "Saving..." : "Creating..." : editingUser ? "Save Changes" : "Create User" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "button", onClick: () => {
           setShowForm(false);
           resetForm();
         }, className: "px-4 py-2 text-muted-foreground hover:text-foreground", children: "Cancel" })
       ] })
     ] })
-  ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: "Users" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: openNewForm, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm", children: "Add User" })
+  ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "Users" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: openNewForm, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm", children: "Add User" })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "hidden md:block rounded-md border border-border", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("table", { className: "w-full", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("thead", { className: "bg-muted/50", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Email" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Name" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Role" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "px-4 py-3 text-right text-sm font-medium text-muted-foreground", children: "Actions" })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "hidden md:block rounded-md border border-border", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "bg-muted/50", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Email" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Name" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Role" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-right text-sm font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("tbody", { className: "divide-y divide-border", children: users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "px-4 py-3 text-sm max-w-[250px] truncate", children: user.email }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "px-4 py-3 text-sm text-muted-foreground max-w-[150px] truncate", children: user.name || "\u2014" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "px-4 py-3 text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "px-4 py-3 text-sm text-muted-foreground", children: new Date(user.createdAt).toLocaleDateString() }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "px-4 py-3 text-right", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative inline-block", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "divide-y divide-border", children: users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-sm max-w-[250px] truncate", children: user.email }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-sm text-muted-foreground max-w-[150px] truncate", children: user.name || "\u2014" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-sm text-muted-foreground", children: new Date(user.createdAt).toLocaleDateString() }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => setMenuOpen(menuOpen === user.id ? null : user.id),
                 className: "p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-accent",
-                children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+                children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
               }
             ),
-            menuOpen === user.id && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            menuOpen === user.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
                 "button",
                 {
                   onClick: () => {
@@ -8351,8 +10719,8 @@ function UsersSettingsContent() {
                   children: "Edit"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "h-px bg-border my-1" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "h-px bg-border my-1" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
                 "button",
                 {
                   onClick: () => handleDeleteUser(user.id, user.email),
@@ -8364,32 +10732,32 @@ function UsersSettingsContent() {
           ] }) })
         ] }, user.id)) })
       ] }),
-      users.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
+      users.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "md:hidden divide-y divide-border rounded-md border border-border bg-background", children: [
-      users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "font-medium truncate", children: user.email }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "md:hidden divide-y divide-border rounded-md border border-border bg-background", children: [
+      users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium truncate", children: user.email }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
             user.name || "No name",
             " \xB7 Created ",
             new Date(user.createdAt).toLocaleDateString()
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "button",
             {
               onClick: () => setMenuOpen(menuOpen === user.id ? null : user.id),
               className: "p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-accent",
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
             }
           ),
-          menuOpen === user.id && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          menuOpen === user.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => {
@@ -8400,8 +10768,8 @@ function UsersSettingsContent() {
                 children: "Edit"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "h-px bg-border my-1" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "h-px bg-border my-1" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => handleDeleteUser(user.id, user.email),
@@ -8412,7 +10780,7 @@ function UsersSettingsContent() {
           ] })
         ] })
       ] }, user.id)),
-      users.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
+      users.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
     ] })
   ] }) });
 }
@@ -8425,34 +10793,34 @@ function CollapsibleTemplate({
   placeholders,
   disabled
 }) {
-  const [open, setOpen] = (0, import_react18.useState)(false);
+  const [open, setOpen] = (0, import_react21.useState)(false);
   const isCustom = value !== null;
   const displayValue = value ?? defaultValue;
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-2", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mt-2", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
       "button",
       {
         type: "button",
         onClick: () => setOpen(!open),
         className: "flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground",
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronDown, { className: `h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}` }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronDown, { className: `h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}` }),
           isCustom ? `Edit prompt template (customized)` : `Edit prompt template`
         ]
       }
     ),
-    open && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "mt-2 space-y-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-xs text-muted-foreground", children: [
+    open && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mt-2 space-y-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-xs text-muted-foreground", children: [
           "Placeholders: ",
           placeholders
         ] }),
-        isCustom && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("button", { type: "button", onClick: onReset, className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.RotateCcw, { className: "h-3 w-3" }),
+        isCustom && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("button", { type: "button", onClick: onReset, className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.RotateCcw, { className: "h-3 w-3" }),
           " Reset to default"
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
         "textarea",
         {
           value: displayValue,
@@ -8467,9 +10835,9 @@ function CollapsibleTemplate({
 }
 function GeneralSettingsContent() {
   const { apiBasePath, sharedData, refetchSharedData } = useDashboardContext();
-  const [postUrlPattern, setPostUrlPattern] = (0, import_react18.useState)(sharedData?.settings?.postUrlPattern ?? "/e/{slug}");
-  const [saving, setSaving] = (0, import_react18.useState)(false);
-  const [saved, setSaved] = (0, import_react18.useState)(false);
+  const [postUrlPattern, setPostUrlPattern] = (0, import_react21.useState)(sharedData?.settings?.postUrlPattern ?? "/e/{slug}");
+  const [saving, setSaving] = (0, import_react21.useState)(false);
+  const [saved, setSaved] = (0, import_react21.useState)(false);
   async function handleSave() {
     setSaving(true);
     setSaved(false);
@@ -8483,19 +10851,19 @@ function GeneralSettingsContent() {
     await refetchSharedData();
     setTimeout(() => setSaved(false), 2e3);
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: "General Settings" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure site-wide settings." })
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "General Settings" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure site-wide settings." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "p-6 space-y-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "text-base font-medium", children: "Post URLs" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure the URL pattern for published posts." })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-6 space-y-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-base font-medium", children: "Post URLs" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure the URL pattern for published posts." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { htmlFor: "postUrlPattern", className: "text-sm font-medium leading-none", children: "URL Pattern" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "postUrlPattern", className: "text-sm font-medium leading-none", children: "URL Pattern" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "input",
           {
             id: "postUrlPattern",
@@ -8506,68 +10874,68 @@ function GeneralSettingsContent() {
             className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground", children: [
           "Use ",
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "{slug}" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "{slug}" }),
           " as a placeholder for the post slug. Example: ",
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: [
             "/blog/",
             "{slug}"
           ] })
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: handleSave,
           disabled: saving,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
           children: [
-            saving && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
+            saving && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
             saving ? "Saving..." : "Save"
           ]
         }
       ),
-      saved && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-sm text-green-600 dark:text-green-400", children: "Saved!" })
+      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-green-600 ab-dark:text-green-400", children: "Saved!" })
     ] })
   ] });
 }
 function AISettingsContent() {
   const { apiBasePath, navigate, refetchSharedData } = useDashboardContext();
-  const [rules, setRules] = (0, import_react18.useState)("");
-  const [chatRules, setChatRules] = (0, import_react18.useState)("");
-  const [rewriteRules, setRewriteRules] = (0, import_react18.useState)("");
-  const [autoDraftRules, setAutoDraftRules] = (0, import_react18.useState)("");
-  const [planRules, setPlanRules] = (0, import_react18.useState)("");
-  const [autoDraftWordCount, setAutoDraftWordCount] = (0, import_react18.useState)(800);
-  const [autoDraftEnabled, setAutoDraftEnabled] = (0, import_react18.useState)(false);
-  const [defaultModel, setDefaultModel] = (0, import_react18.useState)("claude-sonnet");
-  const [models, setModels] = (0, import_react18.useState)([]);
-  const [generateTemplate, setGenerateTemplate] = (0, import_react18.useState)(null);
-  const [chatTemplate, setChatTemplate] = (0, import_react18.useState)(null);
-  const [rewriteTemplate, setRewriteTemplate] = (0, import_react18.useState)(null);
-  const [autoDraftTemplate, setAutoDraftTemplate] = (0, import_react18.useState)(null);
-  const [planTemplate, setPlanTemplate] = (0, import_react18.useState)(null);
-  const [expandPlanTemplate, setExpandPlanTemplate] = (0, import_react18.useState)(null);
-  const [agentTemplate, setAgentTemplate] = (0, import_react18.useState)(null);
-  const [defaultGenerateTemplate, setDefaultGenerateTemplate] = (0, import_react18.useState)("");
-  const [defaultChatTemplate, setDefaultChatTemplate] = (0, import_react18.useState)("");
-  const [defaultRewriteTemplate, setDefaultRewriteTemplate] = (0, import_react18.useState)("");
-  const [defaultAutoDraftTemplate, setDefaultAutoDraftTemplate] = (0, import_react18.useState)("");
-  const [defaultPlanRules, setDefaultPlanRules] = (0, import_react18.useState)("");
-  const [defaultPlanTemplate, setDefaultPlanTemplate] = (0, import_react18.useState)("");
-  const [defaultExpandPlanTemplate, setDefaultExpandPlanTemplate] = (0, import_react18.useState)("");
-  const [defaultAgentTemplate, setDefaultAgentTemplate] = (0, import_react18.useState)("");
-  const [anthropicKey, setAnthropicKey] = (0, import_react18.useState)("");
-  const [openaiKey, setOpenaiKey] = (0, import_react18.useState)("");
-  const [hasAnthropicEnvKey, setHasAnthropicEnvKey] = (0, import_react18.useState)(false);
-  const [hasOpenaiEnvKey, setHasOpenaiEnvKey] = (0, import_react18.useState)(false);
-  const [loading, setLoading] = (0, import_react18.useState)(true);
-  const [saving, setSaving] = (0, import_react18.useState)(false);
-  const [saved, setSaved] = (0, import_react18.useState)(false);
-  (0, import_react18.useEffect)(() => {
+  const [rules, setRules] = (0, import_react21.useState)("");
+  const [chatRules, setChatRules] = (0, import_react21.useState)("");
+  const [rewriteRules, setRewriteRules] = (0, import_react21.useState)("");
+  const [autoDraftRules, setAutoDraftRules] = (0, import_react21.useState)("");
+  const [planRules, setPlanRules] = (0, import_react21.useState)("");
+  const [autoDraftWordCount, setAutoDraftWordCount] = (0, import_react21.useState)(800);
+  const [autoDraftEnabled, setAutoDraftEnabled] = (0, import_react21.useState)(false);
+  const [defaultModel, setDefaultModel] = (0, import_react21.useState)("claude-sonnet");
+  const [models, setModels] = (0, import_react21.useState)([]);
+  const [generateTemplate, setGenerateTemplate] = (0, import_react21.useState)(null);
+  const [chatTemplate, setChatTemplate] = (0, import_react21.useState)(null);
+  const [rewriteTemplate, setRewriteTemplate] = (0, import_react21.useState)(null);
+  const [autoDraftTemplate, setAutoDraftTemplate] = (0, import_react21.useState)(null);
+  const [planTemplate, setPlanTemplate] = (0, import_react21.useState)(null);
+  const [expandPlanTemplate, setExpandPlanTemplate] = (0, import_react21.useState)(null);
+  const [agentTemplate, setAgentTemplate] = (0, import_react21.useState)(null);
+  const [defaultGenerateTemplate, setDefaultGenerateTemplate] = (0, import_react21.useState)("");
+  const [defaultChatTemplate, setDefaultChatTemplate] = (0, import_react21.useState)("");
+  const [defaultRewriteTemplate, setDefaultRewriteTemplate] = (0, import_react21.useState)("");
+  const [defaultAutoDraftTemplate, setDefaultAutoDraftTemplate] = (0, import_react21.useState)("");
+  const [defaultPlanRules, setDefaultPlanRules] = (0, import_react21.useState)("");
+  const [defaultPlanTemplate, setDefaultPlanTemplate] = (0, import_react21.useState)("");
+  const [defaultExpandPlanTemplate, setDefaultExpandPlanTemplate] = (0, import_react21.useState)("");
+  const [defaultAgentTemplate, setDefaultAgentTemplate] = (0, import_react21.useState)("");
+  const [anthropicKey, setAnthropicKey] = (0, import_react21.useState)("");
+  const [openaiKey, setOpenaiKey] = (0, import_react21.useState)("");
+  const [hasAnthropicEnvKey, setHasAnthropicEnvKey] = (0, import_react21.useState)(false);
+  const [hasOpenaiEnvKey, setHasOpenaiEnvKey] = (0, import_react21.useState)(false);
+  const [loading, setLoading] = (0, import_react21.useState)(true);
+  const [saving, setSaving] = (0, import_react21.useState)(false);
+  const [saved, setSaved] = (0, import_react21.useState)(false);
+  (0, import_react21.useEffect)(() => {
     Promise.all([
       fetch(`${apiBasePath}/ai/settings`).then((res) => res.ok ? res.json() : Promise.reject()),
       fetch(`${apiBasePath}/settings`).then((res) => res.ok ? res.json() : Promise.reject())
@@ -8646,24 +11014,24 @@ function AISettingsContent() {
     await refetchSharedData();
     setTimeout(() => setSaved(false), 2e3);
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: "AI Settings" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure your AI writing assistant." })
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "AI Settings" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure your AI writing assistant." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "text-base font-medium", children: "Models" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "API keys and model configuration." })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-base font-medium", children: "Models" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "API keys and model configuration." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "grid gap-4 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { htmlFor: "anthropicKey", className: "text-sm font-medium leading-none", children: "Anthropic API Key" }),
-          hasAnthropicEnvKey && !anthropicKey ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "ml-2 text-xs text-green-600 dark:text-green-400", children: "(from environment)" })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "grid gap-4 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "anthropicKey", className: "text-sm font-medium leading-none", children: "Anthropic API Key" }),
+          hasAnthropicEnvKey && !anthropicKey ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs text-green-600 ab-dark:text-green-400", children: "(from environment)" })
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
             {
               id: "anthropicKey",
@@ -8675,14 +11043,14 @@ function AISettingsContent() {
               disabled: saving
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-xs text-muted-foreground", children: hasAnthropicEnvKey && !anthropicKey ? "Using ANTHROPIC_API_KEY from environment. Enter a value above to override." : "Required for Claude models (Sonnet, Opus)" })
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-xs text-muted-foreground", children: hasAnthropicEnvKey && !anthropicKey ? "Using ANTHROPIC_API_KEY from environment. Enter a value above to override." : "Required for Claude models (Sonnet, Opus)" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { htmlFor: "openaiKey", className: "text-sm font-medium leading-none", children: "OpenAI API Key" }),
-          hasOpenaiEnvKey && !openaiKey ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "ml-2 text-xs text-green-600 dark:text-green-400", children: "(from environment)" })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "openaiKey", className: "text-sm font-medium leading-none", children: "OpenAI API Key" }),
+          hasOpenaiEnvKey && !openaiKey ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs text-green-600 ab-dark:text-green-400", children: "(from environment)" })
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
             {
               id: "openaiKey",
@@ -8694,38 +11062,38 @@ function AISettingsContent() {
               disabled: saving
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-xs text-muted-foreground", children: hasOpenaiEnvKey && !openaiKey ? "Using OPENAI_API_KEY from environment. Enter a value above to override." : "Required for GPT models" })
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-xs text-muted-foreground", children: hasOpenaiEnvKey && !openaiKey ? "Using OPENAI_API_KEY from environment. Enter a value above to override." : "Required for GPT models" })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none shrink-0", children: "Default Model" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative max-w-sm flex-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none shrink-0", children: "Default Model" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative max-w-sm flex-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "select",
             {
               value: defaultModel,
               onChange: (e) => setDefaultModel(e.target.value),
               className: "h-10 w-full appearance-none rounded-md border border-input bg-background pl-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer",
-              children: models.map((model) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("option", { value: model.id, children: [
+              children: models.map((model) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("option", { value: model.id, children: [
                 model.name,
                 " \u2014 ",
                 model.description
               ] }, model.id))
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronDown, { className: "absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" })
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronDown, { className: "absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" })
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "text-base font-medium", children: "Prompts" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules and templates for AI-generated content." })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-base font-medium", children: "Prompts" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules and templates for AI-generated content." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none", children: "Essay Writing Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Style and format rules for generated essays. Applied when generating or rewriting content." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Essay Writing Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Style and format rules for generated essays. Applied when generating or rewriting content." }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "textarea",
           {
             value: rules,
@@ -8740,7 +11108,7 @@ function AISettingsContent() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           CollapsibleTemplate,
           {
             label: "Generate",
@@ -8753,10 +11121,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none", children: "Chat Behavior Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "How the assistant should behave during brainstorming conversations. Controls personality and interaction style." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Chat Behavior Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "How the assistant should behave during brainstorming conversations. Controls personality and interaction style." }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "textarea",
           {
             value: chatRules,
@@ -8769,7 +11137,7 @@ function AISettingsContent() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           CollapsibleTemplate,
           {
             label: "Chat",
@@ -8782,10 +11150,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none", children: "Rewrite Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for cleaning up selected text with the rewrite tool." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Rewrite Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for cleaning up selected text with the rewrite tool." }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "textarea",
           {
             value: rewriteRules,
@@ -8798,7 +11166,7 @@ function AISettingsContent() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           CollapsibleTemplate,
           {
             label: "Rewrite",
@@ -8811,10 +11179,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for generating essays from news articles via RSS feeds. Controls how topics are transformed into original essays." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for generating essays from news articles via RSS feeds. Controls how topics are transformed into original essays." }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "textarea",
           {
             value: autoDraftRules,
@@ -8827,9 +11195,9 @@ function AISettingsContent() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex items-center gap-4 pt-2", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm whitespace-nowrap", children: "Target word count:" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center gap-4 pt-2", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm whitespace-nowrap", children: "Target word count:" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
             {
               type: "number",
@@ -8842,7 +11210,7 @@ function AISettingsContent() {
             }
           )
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           CollapsibleTemplate,
           {
             label: "Auto-Draft",
@@ -8855,22 +11223,22 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none", children: "Plan Format Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for essay plan structure and format. Controls how outlines are organized in Plan mode." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex items-center justify-end", children: planRules && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Plan Format Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for essay plan structure and format. Controls how outlines are organized in Plan mode." }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-end", children: planRules && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
           "button",
           {
             type: "button",
             onClick: () => setPlanRules(""),
             className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-7 px-2 hover:bg-accent hover:text-accent-foreground",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.RotateCcw, { className: "h-3 w-3 mr-1" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.RotateCcw, { className: "h-3 w-3 mr-1" }),
               "Reset to default"
             ]
           }
         ) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "textarea",
           {
             value: planRules || defaultPlanRules,
@@ -8880,10 +11248,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none", children: "Plan Mode Template" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Prompt template for Plan mode in chat. Controls the full system prompt." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Plan Mode Template" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Prompt template for Plan mode in chat. Controls the full system prompt." }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           CollapsibleTemplate,
           {
             label: "Plan",
@@ -8896,10 +11264,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none", children: "Expand Plan Template" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Prompt template for expanding a plan outline into a full essay draft." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Expand Plan Template" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Prompt template for expanding a plan outline into a full essay draft." }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           CollapsibleTemplate,
           {
             label: "Expand Plan",
@@ -8912,10 +11280,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none", children: "Agent Mode Template" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Instructions for Agent mode in chat. Controls how the AI makes direct edits to essays." }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Agent Mode Template" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Instructions for Agent mode in chat. Controls how the AI makes direct edits to essays." }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           CollapsibleTemplate,
           {
             label: "Agent",
@@ -8929,17 +11297,17 @@ function AISettingsContent() {
         )
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "text-base font-medium", children: "Features" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Enable or disable AI features." })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-base font-medium", children: "Features" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Enable or disable AI features." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-0.5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Enable RSS topic subscriptions and automatic draft generation." })
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-0.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Enable RSS topic subscriptions and automatic draft generation." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "button",
           {
             type: "button",
@@ -8947,7 +11315,7 @@ function AISettingsContent() {
             "aria-checked": autoDraftEnabled,
             onClick: () => setAutoDraftEnabled(!autoDraftEnabled),
             className: `relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${autoDraftEnabled ? "bg-primary" : "bg-input"}`,
-            children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "span",
               {
                 className: `pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${autoDraftEnabled ? "translate-x-5" : "translate-x-0"}`
@@ -8957,34 +11325,34 @@ function AISettingsContent() {
         )
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: handleSave,
           disabled: saving,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
           children: [
-            saving && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
+            saving && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
             saving ? "Saving..." : "Save"
           ]
         }
       ),
-      saved && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-sm text-green-600 dark:text-green-400", children: "Saved!" })
+      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-green-600 ab-dark:text-green-400", children: "Saved!" })
     ] })
   ] });
 }
 function TagsSettingsContent() {
   const { apiBasePath } = useDashboardContext();
-  const [tags, setTags] = (0, import_react18.useState)([]);
-  const [loading, setLoading] = (0, import_react18.useState)(true);
-  const [dialogOpen, setDialogOpen] = (0, import_react18.useState)(false);
-  const [editingTag, setEditingTag] = (0, import_react18.useState)(null);
-  const [tagName, setTagName] = (0, import_react18.useState)("");
-  const [saving, setSaving] = (0, import_react18.useState)(false);
-  const [error, setError] = (0, import_react18.useState)("");
-  const [menuOpen, setMenuOpen] = (0, import_react18.useState)(null);
-  (0, import_react18.useEffect)(() => {
+  const [tags, setTags] = (0, import_react21.useState)([]);
+  const [loading, setLoading] = (0, import_react21.useState)(true);
+  const [dialogOpen, setDialogOpen] = (0, import_react21.useState)(false);
+  const [editingTag, setEditingTag] = (0, import_react21.useState)(null);
+  const [tagName, setTagName] = (0, import_react21.useState)("");
+  const [saving, setSaving] = (0, import_react21.useState)(false);
+  const [error, setError] = (0, import_react21.useState)("");
+  const [menuOpen, setMenuOpen] = (0, import_react21.useState)(null);
+  (0, import_react21.useEffect)(() => {
     fetchTags();
   }, [apiBasePath]);
   async function fetchTags() {
@@ -9008,7 +11376,7 @@ function TagsSettingsContent() {
     setDialogOpen(true);
     setMenuOpen(null);
   }
-  async function handleDelete(tag) {
+  async function handleDelete2(tag) {
     if (!confirm(`Delete tag "${tag.name}"? This will remove it from all posts.`)) return;
     const res = await fetch(`${apiBasePath}/tags/${tag.id}`, { method: "DELETE" });
     if (res.ok) {
@@ -9040,11 +11408,11 @@ function TagsSettingsContent() {
     }
     setSaving(false);
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between mb-6 md:mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: "Tags" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between mb-6 md:mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "Tags" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
         "button",
         {
           onClick: openCreateDialog,
@@ -9053,29 +11421,29 @@ function TagsSettingsContent() {
         }
       )
     ] }),
-    tags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No tags yet. Create one to get started." }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Name" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Posts" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    tags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No tags yet. Create one to get started." }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Name" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Posts" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "block truncate max-w-[250px]", children: tag.name }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: tag._count?.posts ?? 0 }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative inline-block", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "block truncate max-w-[250px]", children: tag.name }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: tag._count?.posts ?? 0 }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => setMenuOpen(menuOpen === tag.id ? null : tag.id),
                 className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-                children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+                children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
               }
             ),
-            menuOpen === tag.id && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            menuOpen === tag.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
                 "button",
                 {
                   onClick: () => openEditDialog(tag),
@@ -9083,11 +11451,11 @@ function TagsSettingsContent() {
                   children: "Edit"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
                 "button",
                 {
-                  onClick: () => handleDelete(tag),
+                  onClick: () => handleDelete2(tag),
                   className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left text-destructive hover:bg-accent",
                   children: "Delete"
                 }
@@ -9096,26 +11464,26 @@ function TagsSettingsContent() {
           ] }) })
         ] }, tag.id)) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "font-medium truncate block", children: tag.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium truncate block", children: tag.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
             tag._count?.posts ?? 0,
             " posts \xB7 Created ",
             tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014"
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "button",
             {
               onClick: () => setMenuOpen(menuOpen === tag.id ? null : tag.id),
               className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
             }
           ),
-          menuOpen === tag.id && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          menuOpen === tag.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => openEditDialog(tag),
@@ -9123,11 +11491,11 @@ function TagsSettingsContent() {
                 children: "Edit"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
-                onClick: () => handleDelete(tag),
+                onClick: () => handleDelete2(tag),
                 className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left text-destructive hover:bg-accent",
                 children: "Delete"
               }
@@ -9136,20 +11504,20 @@ function TagsSettingsContent() {
         ] })
       ] }, tag.id)) })
     ] }),
-    dialogOpen && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "fixed inset-0 z-50 flex items-center justify-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    dialogOpen && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "fixed inset-0 z-50 flex items-center justify-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
         "div",
         {
           className: "fixed inset-0 bg-black/80",
           onClick: () => setDialogOpen(false)
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative z-50 w-full max-w-sm bg-background border border-border rounded-lg shadow-lg", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex flex-col space-y-1.5 p-6", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "text-lg font-semibold leading-none tracking-tight", children: editingTag ? "Edit Tag" : "Create Tag" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("form", { onSubmit: handleSubmit, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "px-6 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { htmlFor: "tagName", className: "text-sm font-medium leading-none", children: "Name" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative z-50 w-full max-w-sm bg-background border border-border rounded-lg shadow-lg", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex flex-col space-y-1.5 p-6", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-lg font-semibold leading-none tracking-tight", children: editingTag ? "Edit Tag" : "Create Tag" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("form", { onSubmit: handleSubmit, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "px-6 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "tagName", className: "text-sm font-medium leading-none", children: "Name" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "input",
               {
                 id: "tagName",
@@ -9161,10 +11529,10 @@ function TagsSettingsContent() {
                 className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               }
             ),
-            error && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-destructive", children: error })
+            error && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-destructive", children: error })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-end gap-2 p-6 pt-0", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-end gap-2 p-6 pt-0", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 type: "button",
@@ -9174,7 +11542,7 @@ function TagsSettingsContent() {
                 children: "Cancel"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 type: "submit",
@@ -9191,19 +11559,19 @@ function TagsSettingsContent() {
 }
 function TopicsSettingsContent() {
   const { apiBasePath } = useDashboardContext();
-  const [topics, setTopics] = (0, import_react18.useState)([]);
-  const [loading, setLoading] = (0, import_react18.useState)(true);
-  const [showForm, setShowForm] = (0, import_react18.useState)(false);
-  const [editingTopic, setEditingTopic] = (0, import_react18.useState)(null);
-  const [generating, setGenerating] = (0, import_react18.useState)(null);
-  const [formName, setFormName] = (0, import_react18.useState)("");
-  const [formKeywords, setFormKeywords] = (0, import_react18.useState)("");
-  const [formFeeds, setFormFeeds] = (0, import_react18.useState)("");
-  const [formFrequency, setFormFrequency] = (0, import_react18.useState)("daily");
-  const [formMaxPerPeriod, setFormMaxPerPeriod] = (0, import_react18.useState)(3);
-  const [formEssayFocus, setFormEssayFocus] = (0, import_react18.useState)("");
-  const [formIsActive, setFormIsActive] = (0, import_react18.useState)(true);
-  (0, import_react18.useEffect)(() => {
+  const [topics, setTopics] = (0, import_react21.useState)([]);
+  const [loading, setLoading] = (0, import_react21.useState)(true);
+  const [showForm, setShowForm] = (0, import_react21.useState)(false);
+  const [editingTopic, setEditingTopic] = (0, import_react21.useState)(null);
+  const [generating, setGenerating] = (0, import_react21.useState)(null);
+  const [formName, setFormName] = (0, import_react21.useState)("");
+  const [formKeywords, setFormKeywords] = (0, import_react21.useState)("");
+  const [formFeeds, setFormFeeds] = (0, import_react21.useState)("");
+  const [formFrequency, setFormFrequency] = (0, import_react21.useState)("daily");
+  const [formMaxPerPeriod, setFormMaxPerPeriod] = (0, import_react21.useState)(3);
+  const [formEssayFocus, setFormEssayFocus] = (0, import_react21.useState)("");
+  const [formIsActive, setFormIsActive] = (0, import_react21.useState)(true);
+  (0, import_react21.useEffect)(() => {
     fetchTopics();
   }, [apiBasePath]);
   async function fetchTopics() {
@@ -9264,7 +11632,7 @@ function TopicsSettingsContent() {
       fetchTopics();
     }
   }
-  async function handleDelete(id) {
+  async function handleDelete2(id) {
     if (!confirm("Delete this topic? This will also delete associated news items.")) return;
     const res = await fetch(`${apiBasePath}/topics/${id}`, { method: "DELETE" });
     if (res.ok) setTopics(topics.filter((t) => t.id !== id));
@@ -9280,29 +11648,29 @@ function TopicsSettingsContent() {
       setGenerating(null);
     }
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: "Topics" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("button", { onClick: openNewForm, className: "flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.Plus, { className: "h-4 w-4" }),
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-4", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "Topics" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("button", { onClick: openNewForm, className: "flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Plus, { className: "h-4 w-4" }),
         " New Topic"
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-muted-foreground text-sm -mt-2", children: "RSS topic subscriptions for auto-generating draft posts." }),
-    showForm && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "border border-border rounded-lg p-4 space-y-4 bg-muted/30", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "font-medium", children: editingTopic ? "Edit Topic" : "New Topic" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => {
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-muted-foreground text-sm -mt-2", children: "RSS topic subscriptions for auto-generating draft posts." }),
+    showForm && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "border border-border rounded-lg p-4 space-y-4 bg-muted/30", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "font-medium", children: editingTopic ? "Edit Topic" : "New Topic" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: () => {
           setShowForm(false);
           resetForm();
           setEditingTopic(null);
-        }, className: "text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.X, { className: "h-4 w-4" }) })
+        }, className: "text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.X, { className: "h-4 w-4" }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Name" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Name" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
             {
               type: "text",
@@ -9314,9 +11682,9 @@ function TopicsSettingsContent() {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Keywords (comma-separated)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Keywords (comma-separated)" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
             {
               type: "text",
@@ -9327,9 +11695,9 @@ function TopicsSettingsContent() {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "block text-sm font-medium mb-1", children: "RSS Feed URLs (one per line)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "RSS Feed URLs (one per line)" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "textarea",
             {
               value: formFeeds,
@@ -9340,27 +11708,27 @@ function TopicsSettingsContent() {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "grid grid-cols-2 gap-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Frequency" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "grid grid-cols-2 gap-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Frequency" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
               "select",
               {
                 value: formFrequency,
                 onChange: (e) => setFormFrequency(e.target.value),
                 className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "daily", children: "Daily" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "weekly", children: "Weekly" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "hourly", children: "Hourly" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("option", { value: "manual", children: "Manual" })
+                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "daily", children: "Daily" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "weekly", children: "Weekly" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "hourly", children: "Hourly" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "manual", children: "Manual" })
                 ]
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Max per period" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Max per period" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "input",
               {
                 type: "number",
@@ -9373,9 +11741,9 @@ function TopicsSettingsContent() {
             )
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Essay Focus (optional)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Essay Focus (optional)" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "textarea",
             {
               value: formEssayFocus,
@@ -9386,8 +11754,8 @@ function TopicsSettingsContent() {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
             {
               type: "checkbox",
@@ -9396,11 +11764,11 @@ function TopicsSettingsContent() {
               onChange: (e) => setFormIsActive(e.target.checked)
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { htmlFor: "isActive", className: "text-sm", children: "Active" })
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "isActive", className: "text-sm", children: "Active" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { type: "submit", className: "px-4 py-2 bg-primary text-primary-foreground rounded-md", children: editingTopic ? "Update" : "Create" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { type: "button", onClick: () => {
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "submit", className: "px-4 py-2 bg-primary text-primary-foreground rounded-md", children: editingTopic ? "Update" : "Create" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "button", onClick: () => {
             setShowForm(false);
             resetForm();
             setEditingTopic(null);
@@ -9408,21 +11776,21 @@ function TopicsSettingsContent() {
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "border border-border rounded-lg divide-y divide-border", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "border border-border rounded-lg divide-y divide-border", children: [
       topics.map((topic) => {
         const keywords = JSON.parse(topic.keywords);
         const feeds = JSON.parse(topic.rssFeeds);
-        return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-start justify-between", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "font-medium", children: topic.name }),
-              !topic.isActive && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-xs bg-muted px-1.5 py-0.5 rounded", children: "Paused" })
+        return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-start justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "font-medium", children: topic.name }),
+              !topic.isActive && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-xs bg-muted px-1.5 py-0.5 rounded", children: "Paused" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
               keywords.slice(0, 3).join(", "),
               keywords.length > 3 && ` +${keywords.length - 3}`
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-xs text-muted-foreground mt-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-xs text-muted-foreground mt-1", children: [
               feeds.length,
               " feed",
               feeds.length !== 1 ? "s" : "",
@@ -9434,23 +11802,23 @@ function TopicsSettingsContent() {
               topic.lastRunAt && ` \xB7 Last run: ${new Date(topic.lastRunAt).toLocaleDateString()}`
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => handleGenerate(topic.id),
                 disabled: generating !== null,
                 className: "p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-50",
                 title: "Generate now",
-                children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.Play, { className: `h-4 w-4 ${generating === topic.id ? "animate-pulse" : ""}` })
+                children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Play, { className: `h-4 w-4 ${generating === topic.id ? "animate-pulse" : ""}` })
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => openEditForm(topic), className: "p-1.5 text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.Pencil, { className: "h-4 w-4" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => handleDelete(topic.id), className: "p-1.5 text-red-500 hover:text-red-600", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.Trash2, { className: "h-4 w-4" }) })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: () => openEditForm(topic), className: "p-1.5 text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Pencil, { className: "h-4 w-4" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: () => handleDelete2(topic.id), className: "p-1.5 text-red-500 hover:text-red-600", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Trash2, { className: "h-4 w-4" }) })
           ] })
         ] }) }, topic.id);
       }),
-      topics.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "p-4 text-muted-foreground text-center", children: "No topics configured" })
+      topics.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "p-4 text-muted-foreground text-center", children: "No topics configured" })
     ] })
   ] });
 }
@@ -9459,13 +11827,13 @@ function PostsSettingsContent() {
   const { apiBasePath, navigate, sharedData } = useDashboardContext();
   const postUrlPattern = sharedData?.settings?.postUrlPattern ?? "/e/{slug}";
   const getPostUrl = (slug) => postUrlPattern.replace("{slug}", slug);
-  const [posts, setPosts] = (0, import_react18.useState)([]);
-  const [totalCount, setTotalCount] = (0, import_react18.useState)(0);
-  const [loading, setLoading] = (0, import_react18.useState)(true);
-  const [currentPage, setCurrentPage] = (0, import_react18.useState)(1);
-  const [totalPages, setTotalPages] = (0, import_react18.useState)(1);
-  const [menuOpen, setMenuOpen] = (0, import_react18.useState)(null);
-  (0, import_react18.useEffect)(() => {
+  const [posts, setPosts] = (0, import_react21.useState)([]);
+  const [totalCount, setTotalCount] = (0, import_react21.useState)(0);
+  const [loading, setLoading] = (0, import_react21.useState)(true);
+  const [currentPage, setCurrentPage] = (0, import_react21.useState)(1);
+  const [totalPages, setTotalPages] = (0, import_react21.useState)(1);
+  const [menuOpen, setMenuOpen] = (0, import_react21.useState)(null);
+  (0, import_react21.useEffect)(() => {
     setLoading(true);
     fetch(`${apiBasePath}/posts?all=1&page=${currentPage}&limit=${POSTS_PER_PAGE}&includeRevisionCount=1`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
       setPosts(res.data || []);
@@ -9474,7 +11842,7 @@ function PostsSettingsContent() {
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [apiBasePath, currentPage]);
-  async function handleDelete(post) {
+  async function handleDelete2(post) {
     if (!confirm(`Delete "${post.title || "Untitled"}"? This will also delete all revisions.`)) return;
     const res = await fetch(`${apiBasePath}/posts/${post.id}`, { method: "DELETE" });
     if (res.ok) {
@@ -9508,8 +11876,8 @@ function PostsSettingsContent() {
       return pages;
     };
     const spacingClass = position === "bottom" ? "mt-4" : "";
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
@@ -9517,13 +11885,13 @@ function PostsSettingsContent() {
           "aria-label": "Go to previous page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "hidden sm:block", children: "Previous" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Previous" })
           ]
         }
       ) }),
       getPageNumbers().map(
-        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "button",
           {
             onClick: () => setCurrentPage(page),
@@ -9533,7 +11901,7 @@ function PostsSettingsContent() {
           }
         ) }, page)
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
@@ -9541,27 +11909,27 @@ function PostsSettingsContent() {
           "aria-label": "Go to next page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "hidden sm:block", children: "Next" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronRight, { className: "h-4 w-4" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronRight, { className: "h-4 w-4" })
           ]
         }
       ) })
     ] }) });
   };
-  if (loading && posts.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "shrink-0", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h1", { className: "text-lg font-bold", children: "Posts" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
+  if (loading && posts.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h1", { className: "text-lg font-bold", children: "Posts" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
           totalCount,
           " total post",
           totalCount !== 1 ? "s" : ""
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(PaginationControls, { position: "top" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "top" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "button",
           {
             onClick: () => navigate("/editor"),
@@ -9571,33 +11939,33 @@ function PostsSettingsContent() {
         )
       ] })
     ] }),
-    posts.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No posts yet." }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Title" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Slug" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Revisions" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Updated" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    posts.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No posts yet." }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Title" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Slug" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Revisions" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Updated" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: posts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "block truncate max-w-[200px]", children: post.title || "Untitled" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "block truncate max-w-[250px] text-muted-foreground font-mono", children: post.slug }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(post.status)}`, children: post.status }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: post._count?.revisions ?? 0 }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(post.updatedAt).toLocaleDateString() }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative inline-block", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: posts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "block truncate max-w-[200px]", children: post.title || "Untitled" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "block truncate max-w-[250px] text-muted-foreground font-mono", children: post.slug }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(post.status)}`, children: post.status }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: post._count?.revisions ?? 0 }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(post.updatedAt).toLocaleDateString() }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => setMenuOpen(menuOpen === post.id ? null : post.id),
                 className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-                children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+                children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
               }
             ),
-            menuOpen === post.id && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            menuOpen === post.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
                 "button",
                 {
                   onClick: () => {
@@ -9608,7 +11976,7 @@ function PostsSettingsContent() {
                   children: "Edit"
                 }
               ),
-              post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
                 "a",
                 {
                   href: getPostUrl(post.slug),
@@ -9619,11 +11987,11 @@ function PostsSettingsContent() {
                   children: "View"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
                 "button",
                 {
-                  onClick: () => handleDelete(post),
+                  onClick: () => handleDelete2(post),
                   className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left text-destructive hover:bg-accent",
                   children: "Delete"
                 }
@@ -9632,13 +12000,13 @@ function PostsSettingsContent() {
           ] }) })
         ] }, post.id)) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: posts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "font-medium truncate", children: post.title || "Untitled" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(post.status)}`, children: post.status })
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: posts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium truncate", children: post.title || "Untitled" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(post.status)}`, children: post.status })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
             post.slug,
             " \xB7 ",
             post._count?.revisions ?? 0,
@@ -9646,17 +12014,17 @@ function PostsSettingsContent() {
             new Date(post.updatedAt).toLocaleDateString()
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "button",
             {
               onClick: () => setMenuOpen(menuOpen === post.id ? null : post.id),
               className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
             }
           ),
-          menuOpen === post.id && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          menuOpen === post.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => {
@@ -9667,7 +12035,7 @@ function PostsSettingsContent() {
                 children: "Edit"
               }
             ),
-            post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "a",
               {
                 href: getPostUrl(post.slug),
@@ -9678,11 +12046,11 @@ function PostsSettingsContent() {
                 children: "View"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
-                onClick: () => handleDelete(post),
+                onClick: () => handleDelete2(post),
                 className: "relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none w-full text-left text-destructive hover:bg-accent",
                 children: "Delete"
               }
@@ -9691,18 +12059,18 @@ function PostsSettingsContent() {
         ] })
       ] }, post.id)) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(PaginationControls, { position: "bottom" })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "bottom" })
   ] });
 }
 var REVISIONS_PER_PAGE = 25;
 function RevisionsSettingsContent() {
   const { apiBasePath, navigate } = useDashboardContext();
-  const [revisions, setRevisions] = (0, import_react18.useState)([]);
-  const [totalCount, setTotalCount] = (0, import_react18.useState)(0);
-  const [loading, setLoading] = (0, import_react18.useState)(true);
-  const [currentPage, setCurrentPage] = (0, import_react18.useState)(1);
-  const [totalPages, setTotalPages] = (0, import_react18.useState)(1);
-  (0, import_react18.useEffect)(() => {
+  const [revisions, setRevisions] = (0, import_react21.useState)([]);
+  const [totalCount, setTotalCount] = (0, import_react21.useState)(0);
+  const [loading, setLoading] = (0, import_react21.useState)(true);
+  const [currentPage, setCurrentPage] = (0, import_react21.useState)(1);
+  const [totalPages, setTotalPages] = (0, import_react21.useState)(1);
+  (0, import_react21.useEffect)(() => {
     setLoading(true);
     fetch(`${apiBasePath}/revisions?page=${currentPage}&limit=${REVISIONS_PER_PAGE}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
       setRevisions(res.data || []);
@@ -9735,8 +12103,8 @@ function RevisionsSettingsContent() {
       return pages;
     };
     const spacingClass = position === "bottom" ? "mt-4" : "";
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
@@ -9744,13 +12112,13 @@ function RevisionsSettingsContent() {
           "aria-label": "Go to previous page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "hidden sm:block", children: "Previous" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Previous" })
           ]
         }
       ) }),
       getPageNumbers().map(
-        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "button",
           {
             onClick: () => setCurrentPage(page),
@@ -9760,7 +12128,7 @@ function RevisionsSettingsContent() {
           }
         ) }, page)
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
@@ -9768,39 +12136,39 @@ function RevisionsSettingsContent() {
           "aria-label": "Go to next page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "hidden sm:block", children: "Next" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronRight, { className: "h-4 w-4" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronRight, { className: "h-4 w-4" })
           ]
         }
       ) })
     ] }) });
   };
-  if (loading && revisions.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "shrink-0", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h1", { className: "text-lg font-bold", children: "Revisions" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
+  if (loading && revisions.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h1", { className: "text-lg font-bold", children: "Revisions" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
           totalCount,
           " total revision",
           totalCount !== 1 ? "s" : ""
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(PaginationControls, { position: "top" })
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "top" })
     ] }),
-    revisions.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No revisions yet." }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Post" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Content Preview" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    revisions.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No revisions yet." }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Post" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Content Preview" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: revisions.map((revision) => {
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: revisions.map((revision) => {
           const isCurrent = revision.post.markdown === revision.markdown;
-          return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { className: "border-b", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => navigate(`/editor/${revision.post.slug}`),
@@ -9808,13 +12176,13 @@ function RevisionsSettingsContent() {
                 children: revision.post.title || "Untitled"
               }
             ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
               revision.markdown.slice(0, 80),
               revision.markdown.length > 80 ? "..." : ""
             ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(revision.createdAt).toLocaleString() }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(revision.createdAt).toLocaleString() }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => navigate(`/settings/revisions/${revision.id}`),
@@ -9825,22 +12193,22 @@ function RevisionsSettingsContent() {
           ] }, revision.id);
         }) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: revisions.map((revision) => {
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: revisions.map((revision) => {
         const isCurrent = revision.post.markdown === revision.markdown;
-        return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "font-medium truncate", children: revision.post.title || "Untitled" }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" })
+        return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium truncate", children: revision.post.title || "Untitled" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
               revision.markdown.slice(0, 40),
               revision.markdown.length > 40 ? "..." : "",
               " \xB7 ",
               new Date(revision.createdAt).toLocaleDateString()
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "button",
             {
               onClick: () => navigate(`/settings/revisions/${revision.id}`),
@@ -9851,15 +12219,15 @@ function RevisionsSettingsContent() {
         ] }, revision.id);
       }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(PaginationControls, { position: "bottom" })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "bottom" })
   ] });
 }
 function RevisionDetailContent({ revisionId }) {
   const { apiBasePath, navigate } = useDashboardContext();
-  const [revision, setRevision] = (0, import_react18.useState)(null);
-  const [loading, setLoading] = (0, import_react18.useState)(true);
-  const [restoring, setRestoring] = (0, import_react18.useState)(false);
-  (0, import_react18.useEffect)(() => {
+  const [revision, setRevision] = (0, import_react21.useState)(null);
+  const [loading, setLoading] = (0, import_react21.useState)(true);
+  const [restoring, setRestoring] = (0, import_react21.useState)(false);
+  (0, import_react21.useEffect)(() => {
     fetch(`${apiBasePath}/revisions/${revisionId}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
       setRevision(res.data);
       setLoading(false);
@@ -9876,61 +12244,61 @@ function RevisionDetailContent({ revisionId }) {
     setRestoring(false);
   }
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-6 w-32" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-64" })
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-6 w-32" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-64" })
     ] });
   }
   if (!revision) {
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: () => navigate("/settings/revisions"),
           className: "text-sm text-muted-foreground hover:text-foreground flex items-center gap-1",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
             " Back to Revisions"
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-muted-foreground", children: "Revision not found." })
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-muted-foreground", children: "Revision not found." })
     ] });
   }
   const isCurrent = revision.post.markdown === revision.markdown;
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
           "button",
           {
             onClick: () => navigate("/settings/revisions"),
             className: "text-sm text-muted-foreground hover:text-foreground flex items-center gap-1",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
               " Back to Revisions"
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { className: "text-lg font-semibold", children: "Revision Detail" })
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "Revision Detail" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex items-center gap-2", children: isCurrent ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground", children: "current" }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center gap-2", children: isCurrent ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground", children: "current" }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: handleRestore,
           disabled: restoring,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.RotateCcw, { className: "h-4 w-4 mr-2" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.RotateCcw, { className: "h-4 w-4 mr-2" }),
             restoring ? "Restoring..." : "Restore This Revision"
           ]
         }
       ) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "rounded-lg border bg-card p-4 space-y-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-sm text-muted-foreground", children: "Post" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "rounded-lg border bg-card p-4 space-y-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-muted-foreground", children: "Post" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "button",
           {
             onClick: () => navigate(`/editor/${revision.post.slug}`),
@@ -9939,30 +12307,30 @@ function RevisionDetailContent({ revisionId }) {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-sm text-muted-foreground", children: "Title at revision" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-sm", children: revision.title || "\u2014" })
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-muted-foreground", children: "Title at revision" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm", children: revision.title || "\u2014" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-sm text-muted-foreground", children: "Created" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-sm", children: new Date(revision.createdAt).toLocaleString() })
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-muted-foreground", children: "Created" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm", children: new Date(revision.createdAt).toLocaleString() })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "space-y-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h3", { className: "text-sm font-medium", children: "Content" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "rounded-lg border bg-muted/30 p-4 max-h-96 overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("pre", { className: "text-sm whitespace-pre-wrap font-mono", children: revision.markdown }) })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-sm font-medium", children: "Content" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-muted/30 p-4 max-h-96 overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("pre", { className: "text-sm whitespace-pre-wrap font-mono", children: revision.markdown }) })
     ] })
   ] });
 }
 var COMMENTS_PER_PAGE = 25;
 function CommentsSettingsContent() {
   const { apiBasePath, navigate, basePath } = useDashboardContext();
-  const [comments, setComments] = (0, import_react18.useState)([]);
-  const [totalCount, setTotalCount] = (0, import_react18.useState)(0);
-  const [loading, setLoading] = (0, import_react18.useState)(true);
-  const [currentPage, setCurrentPage] = (0, import_react18.useState)(1);
-  const [totalPages, setTotalPages] = (0, import_react18.useState)(1);
-  (0, import_react18.useEffect)(() => {
+  const [comments, setComments] = (0, import_react21.useState)([]);
+  const [totalCount, setTotalCount] = (0, import_react21.useState)(0);
+  const [loading, setLoading] = (0, import_react21.useState)(true);
+  const [currentPage, setCurrentPage] = (0, import_react21.useState)(1);
+  const [totalPages, setTotalPages] = (0, import_react21.useState)(1);
+  (0, import_react21.useEffect)(() => {
     setLoading(true);
     fetch(`${apiBasePath}/comments?page=${currentPage}&limit=${COMMENTS_PER_PAGE}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
       setComments(res.data || []);
@@ -10002,8 +12370,8 @@ function CommentsSettingsContent() {
       return pages;
     };
     const spacingClass = position === "bottom" ? "mt-4" : "";
-    return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
@@ -10011,13 +12379,13 @@ function CommentsSettingsContent() {
           "aria-label": "Go to previous page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "hidden sm:block", children: "Previous" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Previous" })
           ]
         }
       ) }),
       getPageNumbers().map(
-        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "button",
           {
             onClick: () => setCurrentPage(page),
@@ -10027,7 +12395,7 @@ function CommentsSettingsContent() {
           }
         ) }, page)
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
@@ -10035,42 +12403,42 @@ function CommentsSettingsContent() {
           "aria-label": "Go to next page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "hidden sm:block", children: "Next" }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_lucide_react11.ChevronRight, { className: "h-4 w-4" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronRight, { className: "h-4 w-4" })
           ]
         }
       ) })
     ] }) });
   };
-  if (loading && comments.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "shrink-0", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h1", { className: "text-lg font-bold", children: "Comments" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
+  if (loading && comments.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h1", { className: "text-lg font-bold", children: "Comments" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
           totalCount,
           " total comment",
           totalCount !== 1 ? "s" : ""
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(PaginationControls, { position: "top" })
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "top" })
     ] }),
-    comments.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No comments yet." }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[200px]", children: "Post" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Author" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[300px]", children: "Comment" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    comments.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No comments yet." }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[200px]", children: "Post" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Author" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[300px]", children: "Comment" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: comments.map((comment) => {
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: comments.map((comment) => {
           const status = getStatusBadge(comment);
           const isReply = comment.parentId !== null;
           const commentIdToOpen = comment.parentId || comment.id;
-          return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("tr", { className: "border-b", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => navigate(`/editor/${comment.post.slug}`),
@@ -10078,15 +12446,15 @@ function CommentsSettingsContent() {
                 children: comment.post.title || "Untitled"
               }
             ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: comment.user.name || comment.user.email }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
-              isReply && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-xs mr-1", children: "\u21B3" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: comment.user.name || comment.user.email }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
+              isReply && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-xs mr-1", children: "\u21B3" }),
               comment.content.slice(0, 60),
               comment.content.length > 60 ? "..." : ""
             ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(comment.createdAt).toLocaleString() }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${status.classes}`, children: status.label }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(comment.createdAt).toLocaleString() }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${status.classes}`, children: status.label }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "button",
               {
                 onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
@@ -10097,27 +12465,27 @@ function CommentsSettingsContent() {
           ] }, comment.id);
         }) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: comments.map((comment) => {
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: comments.map((comment) => {
         const status = getStatusBadge(comment);
         const isReply = comment.parentId !== null;
         const commentIdToOpen = comment.parentId || comment.id;
-        return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "font-medium truncate", children: [
-                isReply && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-xs mr-1", children: "\u21B3" }),
+        return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "font-medium truncate", children: [
+                isReply && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-xs mr-1", children: "\u21B3" }),
                 comment.content.slice(0, 40),
                 comment.content.length > 40 ? "..." : ""
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${status.classes}`, children: status.label })
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${status.classes}`, children: status.label })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
               comment.user.name || comment.user.email,
               " \xB7 ",
               new Date(comment.createdAt).toLocaleDateString()
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "button",
             {
               onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
@@ -10128,31 +12496,30 @@ function CommentsSettingsContent() {
         ] }, comment.id);
       }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(PaginationControls, { position: "bottom" })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "bottom" })
   ] });
 }
 
 // src/ui/components/ThemeToggle.tsx
-var import_react19 = require("react");
-var import_next_themes = require("next-themes");
+var import_react22 = require("react");
 
 // src/ui/components/Icons.tsx
-var import_jsx_runtime21 = require("react/jsx-runtime");
-var ChatIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" }) });
-var SunIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" }) });
-var MoonIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" }) });
-var ChevronLeftIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) });
+var import_jsx_runtime25 = require("react/jsx-runtime");
+var ChatIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" }) });
+var SunIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" }) });
+var MoonIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" }) });
+var ChevronLeftIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) });
 
 // src/ui/components/ThemeToggle.tsx
-var import_jsx_runtime22 = require("react/jsx-runtime");
+var import_jsx_runtime26 = require("react/jsx-runtime");
 function ThemeToggle({ className }) {
-  const { theme, setTheme } = (0, import_next_themes.useTheme)();
-  const [mounted, setMounted] = (0, import_react19.useState)(false);
-  (0, import_react19.useEffect)(() => setMounted(true), []);
+  const { resolvedTheme, setTheme } = useAutobloggerTheme();
+  const [mounted, setMounted] = (0, import_react22.useState)(false);
+  (0, import_react22.useEffect)(() => setMounted(true), []);
   const handleToggle = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
     "button",
     {
       type: "button",
@@ -10165,13 +12532,13 @@ function ThemeToggle({ className }) {
         className
       ),
       "aria-label": "Toggle dark mode",
-      children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "w-4 h-4 transition-transform duration-200 active:scale-90", children: !mounted ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "w-4 h-4" }) : theme === "dark" ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(SunIcon, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(MoonIcon, { className: "w-4 h-4" }) })
+      children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-4 h-4 transition-transform duration-200 active:scale-90", children: !mounted ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-4 h-4" }) : resolvedTheme === "dark" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(SunIcon, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(MoonIcon, { className: "w-4 h-4" }) })
     }
   );
 }
 
 // src/ui/components/Navbar.tsx
-var import_jsx_runtime23 = require("react/jsx-runtime");
+var import_jsx_runtime27 = require("react/jsx-runtime");
 function Navbar({
   onSignOut,
   rightSlot
@@ -10183,57 +12550,57 @@ function Navbar({
     e.currentTarget.blur();
     goBack();
   };
-  const avatarTrigger = /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+  const avatarTrigger = /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
     "button",
     {
       type: "button",
       className: "relative w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground active:ring-2 md:hover:ring-2 active:ring-ring md:hover:ring-ring transition-shadow",
       children: [
         session?.user?.email?.charAt(0).toUpperCase() || "?",
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
       ]
     }
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("header", { className: "sticky top-0 z-50 border-b border-border bg-background overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
-    isRoot ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("header", { className: "sticky top-0 z-50 border-b border-border bg-background overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
+    isRoot ? /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
       "Writer",
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
       "button",
       {
         type: "button",
         onClick: handleBack,
         className: "h-9 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-sm font-medium rounded-md active:bg-accent md:hover:bg-accent active:text-accent-foreground md:hover:text-accent-foreground touch-manipulation",
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(ChevronLeftIcon, {}),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "hidden sm:inline", children: "Back" })
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ChevronLeftIcon, {}),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "hidden sm:inline", children: "Back" })
         ]
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-2", children: [
       rightSlot,
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(ThemeToggle, {}),
-      session && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(Dropdown, { trigger: avatarTrigger, align: "right", className: "min-w-[180px]", children: [
-        session.user?.role === "admin" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(import_jsx_runtime23.Fragment, { children: [
-          !isSettings ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownDivider, {})
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ThemeToggle, {}),
+      session && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(Dropdown, { trigger: avatarTrigger, align: "right", className: "min-w-[180px]", children: [
+        session.user?.role === "admin" && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
+          !isSettings ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownDivider, {})
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownItem, { onClick: () => {
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownItem, { onClick: () => {
           window.location.href = "/";
         }, children: "Back to site" }),
-        onSignOut && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(DropdownItem, { onClick: onSignOut, children: "Logout" })
+        onSignOut && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownItem, { onClick: onSignOut, children: "Logout" })
       ] })
     ] })
   ] }) });
 }
 
 // src/ui/components/ChatButton.tsx
-var import_jsx_runtime24 = require("react/jsx-runtime");
+var import_jsx_runtime28 = require("react/jsx-runtime");
 function ChatButton() {
   const chatContext = useChatContextOptional();
   if (!chatContext) return null;
   const { setIsOpen, isOpen } = chatContext;
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
     "button",
     {
       type: "button",
@@ -10241,16 +12608,15 @@ function ChatButton() {
       className: `w-9 h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent flex items-center justify-center transition-colors ${isOpen ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`,
       "aria-label": "Toggle chat",
       title: "Chat (\u2318\u21E7A)",
-      children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ChatIcon, {})
+      children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(ChatIcon, {})
     }
   );
 }
 
 // src/ui/components/ChatPanel.tsx
-var import_react20 = require("react");
-var import_react_dom3 = require("react-dom");
+var import_react23 = require("react");
 var import_lucide_react12 = require("lucide-react");
-var import_jsx_runtime25 = require("react/jsx-runtime");
+var import_jsx_runtime29 = require("react/jsx-runtime");
 var DEFAULT_PROSE_CLASSES2 = "prose";
 function stripPlanTags(content) {
   return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
@@ -10279,32 +12645,33 @@ function ChatPanel({
     setSelectedModel,
     expandPlan
   } = useChatContext();
-  const dashboardContext = (0, import_react20.useContext)(DashboardContext);
+  const dashboardContext = (0, import_react23.useContext)(DashboardContext);
   const onNavigate = onNavigateProp ?? dashboardContext?.navigate;
   const isOnEditor = isOnEditorProp ?? !!essayContext;
-  const [input, setInput] = (0, import_react20.useState)("");
-  const [isAnimating, setIsAnimating] = (0, import_react20.useState)(false);
-  const [isVisible, setIsVisible] = (0, import_react20.useState)(false);
-  const [mounted, setMounted] = (0, import_react20.useState)(false);
-  const [copiedIndex, setCopiedIndex] = (0, import_react20.useState)(null);
-  const [modeMenuOpen, setModeMenuOpen] = (0, import_react20.useState)(false);
-  const modeMenuRef = (0, import_react20.useRef)(null);
-  const messagesEndRef = (0, import_react20.useRef)(null);
-  const messagesContainerRef = (0, import_react20.useRef)(null);
-  const textareaRef = (0, import_react20.useRef)(null);
-  const prevMessageCountRef = (0, import_react20.useRef)(0);
-  const savedScrollPositionRef = (0, import_react20.useRef)(null);
-  const lastUserMessageRef = (0, import_react20.useRef)(null);
+  const [input, setInput] = (0, import_react23.useState)("");
+  const [isAnimating, setIsAnimating] = (0, import_react23.useState)(open);
+  const [isVisible, setIsVisible] = (0, import_react23.useState)(open);
+  const [mounted, setMounted] = (0, import_react23.useState)(typeof window !== "undefined");
+  const [copiedIndex, setCopiedIndex] = (0, import_react23.useState)(null);
+  const [modeMenuOpen, setModeMenuOpen] = (0, import_react23.useState)(false);
+  const modeMenuRef = (0, import_react23.useRef)(null);
+  const messagesEndRef = (0, import_react23.useRef)(null);
+  const messagesContainerRef = (0, import_react23.useRef)(null);
+  const textareaRef = (0, import_react23.useRef)(null);
+  const prevMessageCountRef = (0, import_react23.useRef)(0);
+  const savedScrollPositionRef = (0, import_react23.useRef)(null);
+  const hasOpenedBeforeRef = (0, import_react23.useRef)(false);
+  const lastUserMessageRef = (0, import_react23.useRef)(null);
   const contextModels = dashboardContext?.sharedData?.aiSettings?.availableModels;
   const models = contextModels && contextModels.length > 0 ? contextModels : DEFAULT_MODELS;
   const currentModel = models.find((m) => m.id === selectedModel);
-  const onClose = (0, import_react20.useCallback)(() => setIsOpen(false), [setIsOpen]);
-  const copyToClipboard = (0, import_react20.useCallback)(async (text, index) => {
+  const onClose = (0, import_react23.useCallback)(() => setIsOpen(false), [setIsOpen]);
+  const copyToClipboard = (0, import_react23.useCallback)(async (text, index) => {
     await navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2e3);
   }, []);
-  const handleDraftEssay = (0, import_react20.useCallback)(() => {
+  const handleDraftEssay = (0, import_react23.useCallback)(() => {
     const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
     if (!lastAssistantMessage?.content) return;
     if (isOnEditor) {
@@ -10320,7 +12687,7 @@ function ChatPanel({
       window.location.href = "/writer/editor?fromPlan=1";
     }
   }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate]);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     function handleClick(e) {
       if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
         setModeMenuOpen(false);
@@ -10329,10 +12696,10 @@ function ChatPanel({
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-  (0, import_react20.useEffect)(() => {
-    setMounted(true);
-  }, []);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
+    if (!mounted) setMounted(true);
+  }, [mounted]);
+  (0, import_react23.useEffect)(() => {
     if (open) {
       setIsVisible(true);
       document.body.style.overflow = "hidden";
@@ -10353,37 +12720,43 @@ function ChatPanel({
       return () => clearTimeout(timer);
     }
   }, [open]);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     if (isVisible && open && !isAnimating) {
       requestAnimationFrame(() => {
         setIsAnimating(true);
       });
     }
   }, [isVisible, open, isAnimating]);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     if (!open && messagesContainerRef.current) {
       savedScrollPositionRef.current = messagesContainerRef.current.scrollTop;
     }
   }, [open]);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     if (!open || !isVisible) return;
+    if (!hasOpenedBeforeRef.current) {
+      hasOpenedBeforeRef.current = true;
+      return;
+    }
     const container = messagesContainerRef.current;
-    if (!container) return;
+    if (container && savedScrollPositionRef.current !== null) {
+      setTimeout(() => {
+        container.scrollTop = savedScrollPositionRef.current;
+      }, 50);
+    }
+  }, [open, isVisible]);
+  (0, import_react23.useEffect)(() => {
+    if (!open || !isVisible) return;
     const prevCount = prevMessageCountRef.current;
     const currentCount = messages.length;
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (currentCount > prevCount) {
-          const behavior = prevCount === 0 ? "instant" : "smooth";
-          messagesEndRef.current?.scrollIntoView({ behavior });
-        } else if (savedScrollPositionRef.current !== null) {
-          container.scrollTop = savedScrollPositionRef.current;
-        }
-        prevMessageCountRef.current = currentCount;
-      });
-    });
+    if (currentCount > prevCount && prevCount > 0) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 50);
+    }
+    prevMessageCountRef.current = currentCount;
   }, [messages.length, open, isVisible]);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     if (!isStreaming) return;
     const container = messagesContainerRef.current;
     const userMessage = lastUserMessageRef.current;
@@ -10395,14 +12768,14 @@ function ChatPanel({
       container.scrollTop += Math.min(distanceFromTop * 0.3, 30);
     }
   }, [messages, isStreaming]);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
       textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
     }
   }, [input]);
-  const sendMessage = (0, import_react20.useCallback)(async () => {
+  const sendMessage = (0, import_react23.useCallback)(async () => {
     if (!input.trim() || isStreaming) return;
     const content = input.trim();
     setInput("");
@@ -10418,7 +12791,7 @@ function ChatPanel({
       onClose();
     }
   };
-  (0, import_react20.useEffect)(() => {
+  (0, import_react23.useEffect)(() => {
     const handleGlobalKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
         e.preventDefault();
@@ -10437,277 +12810,263 @@ function ChatPanel({
     return () => document.removeEventListener("keydown", handleGlobalKeyDown);
   }, [open, setIsOpen, setMode, essayContext, mode]);
   if (!isVisible || !mounted) return null;
-  return (0, import_react_dom3.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-        "div",
-        {
-          className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
-          onClick: onClose
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-        "div",
-        {
-          role: "dialog",
-          "aria-modal": "true",
-          "aria-label": "Chat",
-          className: `autoblogger fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center gap-2", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { className: "font-medium", children: "Chat" }),
-                essayContext && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[140px]", children: essayContext.title || "Untitled" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                "button",
-                {
-                  onClick: onClose,
-                  className: "w-8 h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
-                  "aria-label": "Close chat",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.X, { className: "w-4 h-4" })
-                }
-              )
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(AutobloggerPortal, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+      "div",
+      {
+        className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
+        onClick: onClose
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+      "div",
+      {
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": "Chat",
+        className: `fixed z-[70] flex flex-col bg-background text-foreground shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "font-medium", children: "Chat" }),
+              essayContext && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground truncate max-w-[140px]", children: essayContext.title || "Untitled" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto", children: messages.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "px-4 py-4 space-y-4", children: [
-              messages.map((message, index) => {
-                const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
-                return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                  "div",
-                  {
-                    ref: isLastUserMessage ? lastUserMessageRef : void 0,
-                    className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
-                    children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-                      "div",
-                      {
-                        className: `max-w-[85%] rounded-2xl px-3 py-2 text-sm relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
-                        children: [
-                          message.role === "assistant" ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                            "div",
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+              "button",
+              {
+                onClick: onClose,
+                className: "w-8 h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
+                "aria-label": "Close chat",
+                children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.X, { className: "w-4 h-4" })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto flex flex-col-reverse", children: messages.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "px-4 py-4 space-y-4", children: [
+            messages.map((message, index) => {
+              const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
+              return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                "div",
+                {
+                  ref: isLastUserMessage ? lastUserMessageRef : void 0,
+                  className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
+                  children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+                    "div",
+                    {
+                      className: `max-w-[85%] rounded-2xl px-3 py-2 text-sm relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
+                      children: [
+                        message.role === "assistant" ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                          "div",
+                          {
+                            className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
+                            dangerouslySetInnerHTML: { __html: markdownToStyledHtml(stripPlanTags(message.content)) }
+                          }
+                        ) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
+                        isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
+                        message.role === "assistant" && !isStreaming && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                            "button",
                             {
-                              className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
-                              dangerouslySetInnerHTML: { __html: markdownToHtml(stripPlanTags(message.content)) }
+                              onClick: () => copyToClipboard(message.content, index),
+                              className: "text-muted-foreground hover:text-foreground p-1 rounded",
+                              "aria-label": "Copy message",
+                              children: copiedIndex === index ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Check, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Copy, { className: "w-3.5 h-3.5" })
                             }
-                          ) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
-                          isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
-                          message.role === "assistant" && !isStreaming && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                              "button",
-                              {
-                                onClick: () => copyToClipboard(message.content, index),
-                                className: "text-muted-foreground hover:text-foreground p-1 rounded",
-                                "aria-label": "Copy message",
-                                children: copiedIndex === index ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Check, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Copy, { className: "w-3.5 h-3.5" })
-                              }
-                            ),
-                            message.appliedEdits && message.previousState && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                              "button",
-                              {
-                                onClick: () => undoEdit(index),
-                                className: "text-muted-foreground hover:text-foreground p-1 rounded",
-                                "aria-label": "Undo edit",
-                                children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Undo2, { className: "w-3.5 h-3.5" })
-                              }
-                            ),
-                            message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                              "button",
-                              {
-                                onClick: handleDraftEssay,
-                                className: "text-xs text-muted-foreground hover:text-foreground px-1 rounded",
-                                children: "Draft Essay"
-                              }
-                            )
-                          ] })
+                          ),
+                          message.appliedEdits && message.previousState && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                            "button",
+                            {
+                              onClick: () => undoEdit(index),
+                              className: "text-muted-foreground hover:text-foreground p-1 rounded",
+                              "aria-label": "Undo edit",
+                              children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Undo2, { className: "w-3.5 h-3.5" })
+                            }
+                          ),
+                          message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                            "button",
+                            {
+                              onClick: handleDraftEssay,
+                              className: "text-xs text-muted-foreground hover:text-foreground px-1 rounded",
+                              children: "Draft Essay"
+                            }
+                          )
+                        ] })
+                      ]
+                    }
+                  )
+                },
+                index
+              );
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { ref: messagesEndRef })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+            "form",
+            {
+              onSubmit: (e) => {
+                e.preventDefault();
+                sendMessage();
+              },
+              className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mb-2 flex items-center gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { ref: modeMenuRef, className: "relative", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: () => setModeMenuOpen(!modeMenuOpen),
+                        title: "Switch mode (\u2318\u21E7A)",
+                        className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${mode === "ask" ? "bg-green-100 text-green-700 ab-dark:bg-green-900/30 ab-dark:text-green-400" : mode === "agent" ? "bg-muted text-muted-foreground" : "bg-amber-100 text-amber-700 ab-dark:bg-amber-900/30 ab-dark:text-amber-400"}`,
+                        children: [
+                          mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.MessageSquare, { className: "w-3 h-3" }),
+                          mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Pencil, { className: "w-3 h-3" }),
+                          mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.List, { className: "w-3 h-3" }),
+                          mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
+                          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.ChevronDown, { className: "w-2.5 h-2.5 opacity-60" })
                         ]
                       }
-                    )
-                  },
-                  index
-                );
-              }),
-              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { ref: messagesEndRef })
-            ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-              "form",
-              {
-                onSubmit: (e) => {
-                  e.preventDefault();
-                  sendMessage();
-                },
-                className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "mb-2 flex items-center gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { ref: modeMenuRef, className: "relative", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
+                    ),
+                    modeMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
                         "button",
                         {
                           type: "button",
-                          onClick: () => setModeMenuOpen(!modeMenuOpen),
-                          title: "Switch mode (\u2318\u21E7A)",
-                          className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${mode === "ask" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : mode === "agent" ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400" : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"}`,
+                          onClick: () => {
+                            setMode("agent");
+                            setModeMenuOpen(false);
+                            textareaRef.current?.focus();
+                          },
+                          disabled: !essayContext,
+                          className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
                           children: [
-                            mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.MessageSquare, { className: "w-3 h-3" }),
-                            mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Pencil, { className: "w-3 h-3" }),
-                            mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.List, { className: "w-3 h-3" }),
-                            mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
-                            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.ChevronDown, { className: "w-2.5 h-2.5 opacity-60" })
+                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Pencil, { className: "w-4 h-4" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "flex-1", children: "Agent" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
+                            mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
                           ]
                         }
                       ),
-                      modeMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => {
-                              setMode("agent");
-                              setModeMenuOpen(false);
-                              textareaRef.current?.focus();
-                            },
-                            disabled: !essayContext,
-                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Pencil, { className: "w-4 h-4" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "flex-1", children: "Agent" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
-                              mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
-                            ]
-                          }
-                        ),
-                        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => {
-                              setMode("plan");
-                              setModeMenuOpen(false);
-                              textareaRef.current?.focus();
-                            },
-                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.List, { className: "w-4 h-4" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "flex-1", children: "Plan" }),
-                              mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
-                            ]
-                          }
-                        ),
-                        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
-                          "button",
-                          {
-                            type: "button",
-                            onClick: () => {
-                              setMode("ask");
-                              setModeMenuOpen(false);
-                              textareaRef.current?.focus();
-                            },
-                            className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
-                            children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.MessageSquare, { className: "w-4 h-4" }),
-                              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "flex-1", children: "Ask" }),
-                              mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
-                            ]
-                          }
-                        )
-                      ] })
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                      ControlButton,
-                      {
-                        onClick: () => {
-                          setWebSearchEnabled(!webSearchEnabled);
-                          textareaRef.current?.focus();
-                        },
-                        active: webSearchEnabled,
-                        title: webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)",
-                        tabIndex: -1,
-                        children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Globe, { className: "w-4 h-4" })
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                      ControlButton,
-                      {
-                        onClick: () => {
-                          setThinkingEnabled(!thinkingEnabled);
-                          textareaRef.current?.focus();
-                        },
-                        active: thinkingEnabled,
-                        title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
-                        tabIndex: -1,
-                        children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Brain, { className: "w-4 h-4" })
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                      ModelSelector,
-                      {
-                        models,
-                        selectedModel,
-                        onModelChange: (id) => {
-                          setSelectedModel(id);
-                          textareaRef.current?.focus();
-                        },
-                        currentModel
-                      }
-                    )
+                      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => {
+                            setMode("plan");
+                            setModeMenuOpen(false);
+                            textareaRef.current?.focus();
+                          },
+                          className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.List, { className: "w-4 h-4" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "flex-1", children: "Plan" }),
+                            mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => {
+                            setMode("ask");
+                            setModeMenuOpen(false);
+                            textareaRef.current?.focus();
+                          },
+                          className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.MessageSquare, { className: "w-4 h-4" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "flex-1", children: "Ask" }),
+                            mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
+                          ]
+                        }
+                      )
+                    ] })
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-end gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                      "textarea",
-                      {
-                        ref: textareaRef,
-                        value: input,
-                        onChange: (e) => setInput(e.target.value),
-                        onKeyDown: handleKeyDown,
-                        placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
-                        className: "flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none",
-                        rows: 1,
-                        autoFocus: true
-                      }
-                    ),
-                    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
-                      "button",
-                      {
-                        type: isStreaming ? "button" : "submit",
-                        onClick: isStreaming ? stopStreaming : void 0,
-                        disabled: !isStreaming && !input.trim(),
-                        className: "rounded-full w-10 h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
-                        children: isStreaming ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.Square, { className: "h-4 w-4 fill-current" }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react12.ArrowUp, { className: "h-5 w-5" })
-                      }
-                    )
-                  ] })
-                ]
-              }
-            )
-          ]
-        }
-      )
-    ] }),
-    document.body
-  );
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                    ControlButton,
+                    {
+                      onClick: () => {
+                        setWebSearchEnabled(!webSearchEnabled);
+                        textareaRef.current?.focus();
+                      },
+                      active: webSearchEnabled,
+                      title: webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)",
+                      tabIndex: -1,
+                      children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Globe, { className: "w-4 h-4" })
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                    ControlButton,
+                    {
+                      onClick: () => {
+                        setThinkingEnabled(!thinkingEnabled);
+                        textareaRef.current?.focus();
+                      },
+                      active: thinkingEnabled,
+                      title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
+                      tabIndex: -1,
+                      children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Brain, { className: "w-4 h-4" })
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                    ModelSelector,
+                    {
+                      models,
+                      selectedModel,
+                      onModelChange: (id) => {
+                        setSelectedModel(id);
+                        textareaRef.current?.focus();
+                      },
+                      currentModel
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex items-end gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                    "textarea",
+                    {
+                      ref: textareaRef,
+                      value: input,
+                      onChange: (e) => setInput(e.target.value),
+                      onKeyDown: handleKeyDown,
+                      placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
+                      className: "flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none",
+                      rows: 1,
+                      autoFocus: true
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                    "button",
+                    {
+                      type: isStreaming ? "button" : "submit",
+                      onClick: isStreaming ? stopStreaming : void 0,
+                      disabled: !isStreaming && !input.trim(),
+                      className: "rounded-full w-10 h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
+                      children: isStreaming ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Square, { className: "h-4 w-4 fill-current" }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.ArrowUp, { className: "h-5 w-5" })
+                    }
+                  )
+                ] })
+              ]
+            }
+          )
+        ]
+      }
+    )
+  ] });
 }
 
 // src/ui/components/ThemeProvider.tsx
-var import_next_themes2 = require("next-themes");
-var import_jsx_runtime26 = require("react/jsx-runtime");
-function ThemeProvider({ children, ...props }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-    import_next_themes2.ThemeProvider,
-    {
-      attribute: "class",
-      defaultTheme: "system",
-      enableSystem: true,
-      disableTransitionOnChange: true,
-      ...props,
-      children
-    }
-  );
+var import_jsx_runtime30 = require("react/jsx-runtime");
+function ThemeProvider({ children, className }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(AutobloggerThemeProvider, { className, children });
 }
 
 // src/ui/hooks/useKeyboard.ts
-var import_react21 = require("react");
+var import_react24 = require("react");
 function useKeyboard(shortcuts, enabled = true) {
-  const shortcutsRef = (0, import_react21.useRef)(shortcuts);
+  const shortcutsRef = (0, import_react24.useRef)(shortcuts);
   shortcutsRef.current = shortcuts;
-  (0, import_react21.useEffect)(() => {
+  (0, import_react24.useEffect)(() => {
     if (!enabled) return;
     function handleKeyDown(event) {
       const target = event.target;
@@ -10766,8 +13125,31 @@ function useDashboardKeyboard(options) {
   useKeyboard(shortcuts, true);
 }
 
+// src/ui/components/Toaster.tsx
+var import_sonner2 = require("sonner");
+var import_jsx_runtime31 = require("react/jsx-runtime");
+function Toaster({ ...props }) {
+  const { resolvedTheme } = useAutobloggerTheme();
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+    import_sonner2.Toaster,
+    {
+      theme: resolvedTheme,
+      className: "toaster group",
+      toastOptions: {
+        classNames: {
+          toast: "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+          description: "group-[.toast]:text-muted-foreground",
+          actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+          cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground"
+        }
+      },
+      ...props
+    }
+  );
+}
+
 // src/ui/dashboard.tsx
-var import_jsx_runtime27 = require("react/jsx-runtime");
+var import_jsx_runtime32 = require("react/jsx-runtime");
 function AutobloggerDashboard({
   basePath = "/writer",
   apiBasePath = "/api/cms",
@@ -10781,19 +13163,17 @@ function AutobloggerDashboard({
   navbarRightSlot,
   chatApiPath,
   historyApiPath,
-  proseClasses,
-  skipThemeProvider = false
+  proseClasses
 }) {
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
   const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`;
-  const ThemeWrapper = skipThemeProvider ? ({ children }) => /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_jsx_runtime27.Fragment, { children }) : ThemeProvider;
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ThemeWrapper, { children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(ThemeProvider, { className: "h-dvh bg-background text-foreground flex flex-col overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
     ChatProvider,
     {
       apiBasePath,
       chatApiPath: resolvedChatApiPath,
       historyApiPath: resolvedHistoryApiPath,
-      children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+      children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
         DashboardLayout,
         {
           basePath,
@@ -10814,7 +13194,7 @@ function DashboardLayout({
   proseClasses
 }) {
   const { currentPath, navigate, onEditorStateChange } = useDashboardContext();
-  const [editorState, setEditorState] = (0, import_react22.useState)(null);
+  const [editorState, setEditorState] = (0, import_react25.useState)(null);
   const chatContext = useChatContextOptional();
   const editorSlug = currentPath.startsWith("/editor/") ? currentPath.replace("/editor/", "") : currentPath === "/editor" ? void 0 : void 0;
   const isEditorPage = currentPath.startsWith("/editor");
@@ -10823,7 +13203,7 @@ function DashboardLayout({
     onEditorStateChange?.(state);
   };
   const setEssayContext = chatContext?.setEssayContext;
-  (0, import_react22.useEffect)(() => {
+  (0, import_react25.useEffect)(() => {
     if (!setEssayContext) return;
     if (isEditorPage && editorState?.content) {
       setEssayContext({
@@ -10849,8 +13229,8 @@ function DashboardLayout({
       if (currentPath !== "/" && currentPath !== "") navigate("/");
     }
   });
-  const rightSlotWithButtons = /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
-    isEditorPage && editorState && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+  const rightSlotWithButtons = /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
+    isEditorPage && editorState && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
       "button",
       {
         type: "button",
@@ -10859,48 +13239,49 @@ function DashboardLayout({
         className: "w-9 h-9 rounded-md border border-border hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
         "aria-label": "Save",
         title: editorState.hasUnsavedChanges ? "Save changes (\u2318S)" : "No unsaved changes",
-        children: editorState.savingAs ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react13.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react13.Save, { className: "h-4 w-4" })
+        children: editorState.savingAs ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react13.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react13.Save, { className: "h-4 w-4" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ChatButton, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(ChatButton, {}),
     navbarRightSlot
   ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "autoblogger h-dvh bg-background text-foreground flex flex-col overscroll-none", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
       Navbar,
       {
         onSignOut,
         rightSlot: rightSlotWithButtons
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("main", { className: "flex-1 overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ChatPanel, { proseClasses })
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("main", { className: "flex-1 overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(ChatPanel, { proseClasses }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Toaster, {})
   ] });
 }
 function DashboardRouter({ path, onEditorStateChange }) {
   const pathWithoutQuery = path.split("?")[0];
-  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(WriterDashboard, {});
+  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(WriterDashboard, {});
   if (pathWithoutQuery.startsWith("/editor")) {
     const slug = pathWithoutQuery.replace("/editor/", "").replace("/editor", "");
-    return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(EditorPage, { slug: slug || void 0, onEditorStateChange }, path);
+    return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(EditorPage, { slug: slug || void 0, onEditorStateChange }, slug || "new");
   }
-  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("p", { className: "text-muted-foreground", children: [
+  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: "text-muted-foreground", children: [
     "Page not found: ",
     path
   ] }) });
 }
 
 // src/ui/hooks/useAIModels.ts
-var import_react23 = require("react");
+var import_react26 = require("react");
 function useAIModels(options) {
-  const [models, setModels] = (0, import_react23.useState)([]);
-  const [internalSelectedModel, setInternalSelectedModel] = (0, import_react23.useState)("");
-  const [isLoading, setIsLoading] = (0, import_react23.useState)(true);
+  const [models, setModels] = (0, import_react26.useState)([]);
+  const [internalSelectedModel, setInternalSelectedModel] = (0, import_react26.useState)("");
+  const [isLoading, setIsLoading] = (0, import_react26.useState)(true);
   const selectedModel = options?.externalSelectedModel ?? internalSelectedModel;
   const setSelectedModel = options?.externalSetSelectedModel ?? setInternalSelectedModel;
   const apiPath = options?.apiPath ?? "/api/cms/ai/settings";
-  (0, import_react23.useEffect)(() => {
+  (0, import_react26.useEffect)(() => {
     fetch(apiPath).then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
@@ -10954,6 +13335,101 @@ function GlobalShortcuts({ writerPath = "/writer" } = {}) {
   ]);
   return null;
 }
+
+// src/ui/components/SeoSection.tsx
+var import_react27 = require("react");
+var import_jsx_runtime33 = require("react/jsx-runtime");
+function SeoSection({
+  post,
+  onFieldChange,
+  disabled = false
+}) {
+  const [isExpanded, setIsExpanded] = (0, import_react27.useState)(false);
+  const handleChange = (field, value) => {
+    onFieldChange(field, value === "" ? null : value);
+  };
+  const getSummary = () => {
+    const hasTitle = !!post.seoTitle;
+    const hasDesc = !!post.seoDescription;
+    const hasKeywords = !!post.seoKeywords;
+    const isNoIndex = post.noIndex;
+    if (!hasTitle && !hasDesc && !hasKeywords && !isNoIndex) {
+      return "default";
+    }
+    const parts = [];
+    if (hasTitle) parts.push("title");
+    if (hasDesc) parts.push("description");
+    if (hasKeywords) parts.push("keywords");
+    if (isNoIndex) parts.push("noindex");
+    return parts.join(", ");
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
+    ExpandableSection,
+    {
+      title: "SEO Settings",
+      summary: getSummary(),
+      expanded: isExpanded,
+      onExpandedChange: setIsExpanded,
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("label", { className: "text-xs text-muted-foreground", children: "Title" }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+            "input",
+            {
+              type: "text",
+              value: post.seoTitle || "",
+              onChange: (e) => handleChange("seoTitle", e.target.value),
+              placeholder: post.title || "Page title for search engines",
+              disabled,
+              className: "w-full h-8 px-3 text-sm border border-border rounded-md bg-transparent placeholder-muted-foreground/50 disabled:opacity-50"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("label", { className: "text-xs text-muted-foreground", children: "Description" }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+            "textarea",
+            {
+              value: post.seoDescription || "",
+              onChange: (e) => handleChange("seoDescription", e.target.value),
+              placeholder: post.subtitle || "Brief description for search results",
+              disabled,
+              rows: 2,
+              className: "w-full px-3 py-2 text-sm border border-border rounded-md bg-transparent placeholder-muted-foreground/50 resize-none disabled:opacity-50"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("label", { className: "text-xs text-muted-foreground", children: "Keywords" }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+            "input",
+            {
+              type: "text",
+              value: post.seoKeywords || "",
+              onChange: (e) => handleChange("seoKeywords", e.target.value),
+              placeholder: "keyword1, keyword2, keyword3",
+              disabled,
+              className: "w-full h-8 px-3 text-sm border border-border rounded-md bg-transparent placeholder-muted-foreground/50 disabled:opacity-50"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("label", { className: "flex items-center gap-2 cursor-pointer", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+            "input",
+            {
+              type: "checkbox",
+              checked: post.noIndex || false,
+              onChange: (e) => handleChange("noIndex", e.target.checked),
+              disabled,
+              className: "h-4 w-4 rounded border-border"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "text-sm text-muted-foreground", children: "Hide from search engines (noindex)" })
+        ] })
+      ]
+    }
+  );
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AutobloggerDashboard,
@@ -10966,20 +13442,24 @@ function GlobalShortcuts({ writerPath = "/writer" } = {}) {
   CommentThread,
   CommentsPanel,
   ControlButton,
+  ExpandableSection,
   GlobalShortcuts,
   ModelSelector,
   MoonIcon,
   Navbar,
   SHORTCUTS,
+  SeoSection,
   SunIcon,
   ThemeProvider,
   ThemeToggle,
   useAIModels,
+  useAutobloggerTheme,
   useChatContext,
   useChatContextOptional,
   useComments,
   useDashboardContext,
   useDashboardKeyboard,
-  useKeyboard
+  useKeyboard,
+  useTheme
 });
 //# sourceMappingURL=ui.js.map

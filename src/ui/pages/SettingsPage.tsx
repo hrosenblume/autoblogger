@@ -530,7 +530,7 @@ function GeneralSettingsContent() {
           {saving ? 'Saving...' : 'Save'}
         </button>
         {saved && (
-          <span className="text-sm text-green-600 dark:text-green-400">
+          <span className="text-sm text-green-600 ab-dark:text-green-400">
             Saved!
           </span>
         )}
@@ -672,7 +672,7 @@ function AISettingsContent() {
               {hasAnthropicEnvKey && !anthropicKey ? (
                 <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
                   <span className="text-muted-foreground">••••••••</span>
-                  <span className="ml-2 text-xs text-green-600 dark:text-green-400">(from environment)</span>
+                  <span className="ml-2 text-xs text-green-600 ab-dark:text-green-400">(from environment)</span>
                 </div>
               ) : (
                 <input
@@ -696,7 +696,7 @@ function AISettingsContent() {
               {hasOpenaiEnvKey && !openaiKey ? (
                 <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
                   <span className="text-muted-foreground">••••••••</span>
-                  <span className="ml-2 text-xs text-green-600 dark:text-green-400">(from environment)</span>
+                  <span className="ml-2 text-xs text-green-600 ab-dark:text-green-400">(from environment)</span>
                 </div>
               ) : (
                 <input
@@ -979,7 +979,7 @@ function AISettingsContent() {
           {saving ? 'Saving...' : 'Save'}
         </button>
         {saved && (
-          <span className="text-sm text-green-600 dark:text-green-400">
+          <span className="text-sm text-green-600 ab-dark:text-green-400">
             Saved!
           </span>
         )}

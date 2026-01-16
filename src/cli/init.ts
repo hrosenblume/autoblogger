@@ -103,7 +103,7 @@ export async function init(options: InitOptions = {}) {
     console.log(`  - ${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx`)
     console.log(`  - ${project.appRouterPath}/(writer)/layout.tsx`)
     console.log(`  - globals.css (add CSS import)`)
-    console.log(`  - ${project.appRouterPath}/layout.tsx (add suppressHydrationWarning)`)
+    console.log(`  - ${project.appRouterPath}/layout.tsx (add suppressHydrationWarning, GlobalShortcuts)`)
     
     if (answers.runMigration) {
       console.log('\nWould run:')
@@ -204,10 +204,12 @@ export async function init(options: InitOptions = {}) {
     console.log(pc.gray("  @import 'autoblogger/styles/standalone.css';"))
   }
 
-  // Step 7b: Patch root layout for suppressHydrationWarning (fixes next-themes hydration)
+  // Step 7b: Patch root layout for suppressHydrationWarning (prevents hydration warnings from theme switching)
   const rootLayoutPath = path.join(cwd, project.appRouterPath!, 'layout.tsx')
   if (fs.existsSync(rootLayoutPath)) {
     let layoutContent = fs.readFileSync(rootLayoutPath, 'utf-8')
+    let layoutModified = false
+    
     if (layoutContent.includes('suppressHydrationWarning')) {
       log('skip', 'Root layout already has suppressHydrationWarning')
     } else {
@@ -218,11 +220,46 @@ export async function init(options: InitOptions = {}) {
         const existingAttrs = match[1]
         const newHtmlTag = `<html${existingAttrs} suppressHydrationWarning>`
         layoutContent = layoutContent.replace(htmlTagRegex, newHtmlTag)
-        fs.writeFileSync(rootLayoutPath, layoutContent)
+        layoutModified = true
         log('write', `Updated ${project.appRouterPath}/layout.tsx (added suppressHydrationWarning)`)
       } else {
         log('warn', 'Could not find <html> tag in root layout. Please add suppressHydrationWarning manually.')
       }
+    }
+    
+    // Step 7c: Add GlobalShortcuts for Cmd+/ navigation to /writer from anywhere
+    if (layoutContent.includes('GlobalShortcuts')) {
+      log('skip', 'Root layout already has GlobalShortcuts')
+    } else {
+      // Add import at the top of the file
+      const importStatement = "import { GlobalShortcuts } from 'autoblogger/ui'\n"
+      
+      // Find the best place to insert the import (after existing imports)
+      const lastImportMatch = layoutContent.match(/^import .+$/gm)
+      if (lastImportMatch) {
+        const lastImport = lastImportMatch[lastImportMatch.length - 1]
+        layoutContent = layoutContent.replace(lastImport, lastImport + '\n' + importStatement.trim())
+      } else {
+        // No imports found, add at the top
+        layoutContent = importStatement + layoutContent
+      }
+      
+      // Add <GlobalShortcuts /> inside the body, right after the opening <body> tag
+      const bodyTagRegex = /<body([^>]*)>/
+      const bodyMatch = layoutContent.match(bodyTagRegex)
+      if (bodyMatch) {
+        layoutContent = layoutContent.replace(bodyTagRegex, `<body$1>\n        <GlobalShortcuts />`)
+        layoutModified = true
+        log('write', `Updated ${project.appRouterPath}/layout.tsx (added GlobalShortcuts for Cmd+/ navigation)`)
+      } else {
+        log('warn', 'Could not find <body> tag in root layout. Please add GlobalShortcuts manually.')
+        console.log(pc.gray("  import { GlobalShortcuts } from 'autoblogger/ui'"))
+        console.log(pc.gray("  // Add <GlobalShortcuts /> inside your layout body"))
+      }
+    }
+    
+    if (layoutModified) {
+      fs.writeFileSync(rootLayoutPath, layoutContent)
     }
   }
 

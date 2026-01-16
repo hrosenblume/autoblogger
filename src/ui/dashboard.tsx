@@ -14,6 +14,7 @@ import { ThemeProvider } from './components/ThemeProvider'
 import { ChatProvider } from './hooks/useChat'
 import { useDashboardKeyboard } from './hooks/useKeyboard'
 import { useChatContextOptional } from './hooks/useChat'
+import { Toaster } from './components/Toaster'
 
 interface AutobloggerDashboardProps {
   basePath?: string
@@ -31,9 +32,6 @@ interface AutobloggerDashboardProps {
   chatApiPath?: string
   historyApiPath?: string
   proseClasses?: string
-  // Theme props
-  /** Skip internal ThemeProvider when host app already provides one (e.g., next-themes) */
-  skipThemeProvider?: boolean
 }
 
 export function AutobloggerDashboard({
@@ -50,17 +48,15 @@ export function AutobloggerDashboard({
   chatApiPath,
   historyApiPath,
   proseClasses,
-  skipThemeProvider = false,
 }: AutobloggerDashboardProps) {
   // Resolve default paths
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`
   const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`
 
-  // Wrapper component - either ThemeProvider or Fragment
-  const ThemeWrapper = skipThemeProvider ? ({ children }: { children: React.ReactNode }) => <>{children}</> : ThemeProvider
-
+  // ThemeProvider is always used - it's self-contained and manages its own .dark class
+  // The ThemeProvider wraps content with .autoblogger container that gets .dark class when needed
   return (
-    <ThemeWrapper>
+    <ThemeProvider className="h-dvh bg-background text-foreground flex flex-col overscroll-none">
       <ChatProvider 
         apiBasePath={apiBasePath}
         chatApiPath={resolvedChatApiPath}
@@ -76,7 +72,7 @@ export function AutobloggerDashboard({
           />
         </DashboardProvider>
       </ChatProvider>
-    </ThemeWrapper>
+    </ThemeProvider>
   )
 }
 
@@ -173,7 +169,7 @@ function DashboardLayout({
   )
 
   return (
-    <div className="autoblogger h-dvh bg-background text-foreground flex flex-col overscroll-none">
+    <>
       <Navbar
         onSignOut={onSignOut}
         rightSlot={rightSlotWithButtons}
@@ -183,7 +179,9 @@ function DashboardLayout({
       </main>
       {/* Chat Panel - built-in */}
       <ChatPanel proseClasses={proseClasses} />
-    </div>
+      {/* Toast notifications */}
+      <Toaster />
+    </>
   )
 }
 
@@ -194,8 +192,9 @@ function DashboardRouter({ path, onEditorStateChange }: { path: string; onEditor
   if (pathWithoutQuery === '/' || pathWithoutQuery === '') return <WriterDashboard />
   if (pathWithoutQuery.startsWith('/editor')) {
     const slug = pathWithoutQuery.replace('/editor/', '').replace('/editor', '')
-    // Use path as key to force remount when navigating to same editor with different query params
-    return <EditorPage key={path} slug={slug || undefined} onEditorStateChange={onEditorStateChange} />
+    // Use slug as key to remount only when editing a different post
+    // Query params (like ?idea=...) will trigger the editor's internal effects instead of a full remount
+    return <EditorPage key={slug || 'new'} slug={slug || undefined} onEditorStateChange={onEditorStateChange} />
   }
   if (pathWithoutQuery.startsWith('/settings')) return <SettingsPage subPath={pathWithoutQuery.replace('/settings', '')} />
   return <div className="max-w-4xl mx-auto px-6 py-8"><p className="text-muted-foreground">Page not found: {path}</p></div>

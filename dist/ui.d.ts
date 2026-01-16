@@ -1,10 +1,9 @@
 import * as react_jsx_runtime from 'react/jsx-runtime';
 import * as react from 'react';
 import { ComponentType, ReactNode } from 'react';
-import { ThemeProviderProps } from 'next-themes';
 import { Editor } from '@tiptap/react';
 
-interface Post {
+interface Post$1 {
     id: string;
     title: string;
     subtitle?: string | null;
@@ -37,7 +36,7 @@ interface CustomFieldProps<T = unknown> {
     value: T;
     onChange: (value: T) => void;
     onFieldChange: (name: string, value: unknown) => void;
-    post: Post;
+    post: Post$1;
     disabled?: boolean;
 }
 interface CustomFieldConfig {
@@ -112,6 +111,10 @@ interface DashboardContextValue {
     sharedData: SharedData | null;
     sharedDataLoading: boolean;
     refetchSharedData: () => Promise<void>;
+    updateSharedPost: (post: {
+        id: string;
+        [key: string]: unknown;
+    }) => void;
     onEditorStateChange?: (state: EditorState | null) => void;
     onRegisterEditHandler?: (handler: EditHandler$1 | null) => void;
 }
@@ -131,10 +134,8 @@ interface AutobloggerDashboardProps {
     chatApiPath?: string;
     historyApiPath?: string;
     proseClasses?: string;
-    /** Skip internal ThemeProvider when host app already provides one (e.g., next-themes) */
-    skipThemeProvider?: boolean;
 }
-declare function AutobloggerDashboard({ basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, onToggleView, onSignOut, navbarRightSlot, chatApiPath, historyApiPath, proseClasses, skipThemeProvider, }: AutobloggerDashboardProps): react_jsx_runtime.JSX.Element;
+declare function AutobloggerDashboard({ basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, onToggleView, onSignOut, navbarRightSlot, chatApiPath, historyApiPath, proseClasses, }: AutobloggerDashboardProps): react_jsx_runtime.JSX.Element;
 
 interface NavbarProps {
     onSignOut?: () => void;
@@ -147,7 +148,21 @@ interface ThemeToggleProps {
 }
 declare function ThemeToggle({ className }: ThemeToggleProps): react_jsx_runtime.JSX.Element;
 
-declare function ThemeProvider({ children, ...props }: ThemeProviderProps): react_jsx_runtime.JSX.Element;
+interface ThemeProviderProps {
+    children: ReactNode;
+    className?: string;
+}
+declare function ThemeProvider({ children, className }: ThemeProviderProps): react_jsx_runtime.JSX.Element;
+
+type Theme = 'light' | 'dark' | 'system';
+type ResolvedTheme = 'light' | 'dark';
+interface ThemeContextValue {
+    theme: Theme;
+    resolvedTheme: ResolvedTheme;
+    setTheme: (theme: Theme) => void;
+}
+declare function useAutobloggerTheme(): ThemeContextValue;
+declare function useTheme(): ThemeContextValue;
 
 interface IconProps {
     className?: string;
@@ -202,7 +217,7 @@ interface CommentsPanelProps {
     onClose: () => void;
     onClearSelection: () => void;
 }
-declare function CommentsPanel({ comments, currentUserEmail, isAdmin, selectedText, onCreateComment, onReply, onEdit, onDelete, onResolve, onCommentClick, activeCommentId, isOpen, onClose, onClearSelection, }: CommentsPanelProps): react.ReactPortal | null;
+declare function CommentsPanel({ comments, currentUserEmail, isAdmin, selectedText, onCreateComment, onReply, onEdit, onDelete, onResolve, onCommentClick, activeCommentId, isOpen, onClose, onClearSelection, }: CommentsPanelProps): react_jsx_runtime.JSX.Element | null;
 
 interface CommentThreadProps {
     comment: CommentWithUser;
@@ -317,7 +332,7 @@ interface ChatPanelProps {
     /** Whether currently on an editor page (controls Draft Essay behavior) */
     isOnEditor?: boolean;
 }
-declare function ChatPanel({ proseClasses, onNavigate: onNavigateProp, isOnEditor: isOnEditorProp, }: ChatPanelProps): react.ReactPortal | null;
+declare function ChatPanel({ proseClasses, onNavigate: onNavigateProp, isOnEditor: isOnEditorProp, }: ChatPanelProps): react_jsx_runtime.JSX.Element | null;
 
 declare function ChatButton(): react_jsx_runtime.JSX.Element | null;
 
@@ -442,4 +457,37 @@ interface GlobalShortcutsProps {
  */
 declare function GlobalShortcuts({ writerPath }?: GlobalShortcutsProps): null;
 
-export { type AIModelOption, AutobloggerDashboard, type AutobloggerDashboardProps, ChatButton, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, ChatIcon, type Message as ChatMessage, type ChatMode, ChatPanel, ChatProvider, ChevronLeftIcon, CommentThread, CommentsPanel, type CommentsState, ControlButton, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, GlobalShortcuts, ModelSelector, MoonIcon, Navbar, type NavbarProps, SHORTCUTS, type Session, type SessionUser, type StylesConfig, SunIcon, ThemeProvider, ThemeToggle, useAIModels, useChatContext, useChatContextOptional, useComments, useDashboardContext, useDashboardKeyboard, useKeyboard };
+interface ExpandableSectionProps {
+    /** Section title displayed in the header */
+    title: string;
+    /** Optional summary text displayed on the right side of the header */
+    summary?: string;
+    /** Whether the section is expanded by default */
+    defaultExpanded?: boolean;
+    /** Controlled expanded state (makes component controlled) */
+    expanded?: boolean;
+    /** Callback when expanded state changes */
+    onExpandedChange?: (expanded: boolean) => void;
+    /** Content to render when expanded */
+    children: ReactNode;
+    /** Additional className for the container */
+    className?: string;
+}
+declare function ExpandableSection({ title, summary, defaultExpanded, expanded: controlledExpanded, onExpandedChange, children, className, }: ExpandableSectionProps): react_jsx_runtime.JSX.Element;
+
+interface Post {
+    title?: string;
+    subtitle?: string;
+    seoTitle?: string | null;
+    seoDescription?: string | null;
+    seoKeywords?: string | null;
+    noIndex?: boolean;
+}
+interface SeoSectionProps {
+    post: Post;
+    onFieldChange: (name: string, value: unknown) => void;
+    disabled?: boolean;
+}
+declare function SeoSection({ post, onFieldChange, disabled, }: SeoSectionProps): react_jsx_runtime.JSX.Element;
+
+export { type AIModelOption, AutobloggerDashboard, type AutobloggerDashboardProps, ChatButton, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, ChatIcon, type Message as ChatMessage, type ChatMode, ChatPanel, ChatProvider, ChevronLeftIcon, CommentThread, CommentsPanel, type CommentsState, ControlButton, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, ExpandableSection, GlobalShortcuts, ModelSelector, MoonIcon, Navbar, type NavbarProps, SHORTCUTS, SeoSection, type Session, type SessionUser, type StylesConfig, SunIcon, ThemeProvider, ThemeToggle, useAIModels, useAutobloggerTheme, useChatContext, useChatContextOptional, useComments, useDashboardContext, useDashboardKeyboard, useKeyboard, useTheme };

@@ -76,6 +76,7 @@ export interface DashboardContextValue {
   sharedData: SharedData | null
   sharedDataLoading: boolean
   refetchSharedData: () => Promise<void>
+  updateSharedPost: (post: { id: string; [key: string]: unknown }) => void
   // Editor state callback (for parent app integration)
   onEditorStateChange?: (state: EditorState | null) => void
   // Edit handler registration (for AI agent mode)
@@ -157,7 +158,7 @@ export function DashboardProvider({
     }
   }, [basePath, currentPath])
 
-  const navigate = useCallback((path: string, options?: { skipConfirmation?: boolean }) => {
+  const navigate = useCallback((path: string, options?: { skipConfirmation?: boolean; replace?: boolean }) => {
     // Check for unsaved changes before navigating (unless explicitly skipped, e.g. after save)
     if (!options?.skipConfirmation && editorStateRef.current?.hasUnsavedChanges) {
       if (!editorStateRef.current.confirmLeave()) {
@@ -165,10 +166,15 @@ export function DashboardProvider({
       }
     }
     const fullPath = path.startsWith('/') ? basePath + path : basePath + '/' + path
-    window.history.pushState({}, '', fullPath)
+    if (options?.replace) {
+      // Replace current history entry (used after saving new posts)
+      window.history.replaceState({}, '', fullPath)
+    } else {
+      window.history.pushState({}, '', fullPath)
+      // Only increment history depth on push, not replace
+      setHistoryDepth(d => d + 1)
+    }
     setCurrentPath(path.startsWith('/') ? path : '/' + path)
-    // Increment history depth on navigation
-    setHistoryDepth(d => d + 1)
   }, [basePath])
 
   const goBack = useCallback(() => {
@@ -233,6 +239,24 @@ export function DashboardProvider({
     fetchSharedData()
   }, [fetchSharedData])
 
+  // Update a single post in shared data (add or update)
+  const updateSharedPost = useCallback((post: { id: string; [key: string]: unknown }) => {
+    setSharedData(prev => {
+      if (!prev) return prev
+      const existingIndex = prev.posts.findIndex((p: any) => p.id === post.id)
+      let updatedPosts: unknown[]
+      if (existingIndex >= 0) {
+        // Update existing post
+        updatedPosts = [...prev.posts]
+        updatedPosts[existingIndex] = post
+      } else {
+        // Add new post at the beginning
+        updatedPosts = [post, ...prev.posts]
+      }
+      return { ...prev, posts: updatedPosts }
+    })
+  }, [])
+
   // Wrap onEditorStateChange to track editor state for navigation warnings
   const handleEditorStateChange = useCallback((state: EditorState | null) => {
     editorStateRef.current = state
@@ -263,6 +287,7 @@ export function DashboardProvider({
     sharedData,
     sharedDataLoading,
     refetchSharedData: fetchSharedData,
+    updateSharedPost,
     onEditorStateChange: handleEditorStateChange,
     onRegisterEditHandler,
   }), [
@@ -279,6 +304,7 @@ export function DashboardProvider({
     sharedData,
     sharedDataLoading,
     fetchSharedData,
+    updateSharedPost,
     handleEditorStateChange,
     onRegisterEditHandler,
   ])

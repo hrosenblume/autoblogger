@@ -8,9 +8,10 @@ export type { AutobloggerDashboardProps } from './dashboard'
 export { Navbar } from './components/Navbar'
 export type { NavbarProps } from './components/Navbar'
 
-// Theme toggle and provider
+// Theme toggle, provider, and hook
 export { ThemeToggle } from './components/ThemeToggle'
 export { ThemeProvider } from './components/ThemeProvider'
+export { useAutobloggerTheme, useTheme } from './hooks/useTheme'
 
 // Icons
 export { ChatIcon, SunIcon, MoonIcon, ChevronLeftIcon } from './components/Icons'
@@ -56,3 +57,10 @@ export { SHORTCUTS } from './shortcuts'
 
 // Global shortcuts for use outside dashboard
 export { GlobalShortcuts } from './components/GlobalShortcuts'
+
+// Expandable section component (for consistent collapsible UI)
+export { ExpandableSection } from './components/ExpandableSection'
+
+// SEO section component (for consistent SEO fields UI)
+export { SeoSection } from './components/SeoSection'
+

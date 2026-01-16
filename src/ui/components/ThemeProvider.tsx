@@ -1,18 +1,17 @@
 'use client'
 
-import { ThemeProvider as NextThemesProvider } from 'next-themes'
-import type { ThemeProviderProps } from 'next-themes'
+import { type ReactNode } from 'react'
+import { AutobloggerThemeProvider } from '../hooks/useTheme'
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+interface ThemeProviderProps {
+  children: ReactNode
+  className?: string
+}
+
+export function ThemeProvider({ children, className }: ThemeProviderProps) {
   return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-      {...props}
-    >
+    <AutobloggerThemeProvider className={className}>
       {children}
-    </NextThemesProvider>
+    </AutobloggerThemeProvider>
   )
 }

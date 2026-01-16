@@ -1,13 +1,13 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, useContext } from 'react'
-import { createPortal } from 'react-dom'
+import { AutobloggerPortal } from './Portal'
 import { Loader2, X, Copy, Check, ArrowUp, Pencil, Undo2, ChevronDown, MessageSquare, Globe, Brain, Square, List } from 'lucide-react'
 import { useChatContext, type ChatMode } from '../hooks/useChat'
 import { DEFAULT_MODELS, type AIModelOption } from '../../lib/models'
 import { ControlButton } from './ControlButton'
 import { ModelSelector } from './ModelSelector'
-import { markdownToHtml } from '../../lib/markdown'
+import { markdownToStyledHtml } from '../../lib/markdown'
 import { DashboardContext } from '../context'
 
 /** Default prose classes for chat messages (styling handled by autoblogger.css) */
@@ -64,9 +64,10 @@ export function ChatPanel({
   const isOnEditor = isOnEditorProp ?? !!essayContext
   
   const [input, setInput] = useState('')
-  const [isAnimating, setIsAnimating] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  // Initialize animation state from context to prevent flash on remount
+  const [isAnimating, setIsAnimating] = useState(open)
+  const [isVisible, setIsVisible] = useState(open)
+  const [mounted, setMounted] = useState(typeof window !== 'undefined')
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [modeMenuOpen, setModeMenuOpen] = useState(false)
   const modeMenuRef = useRef<HTMLDivElement>(null)
@@ -75,6 +76,7 @@ export function ChatPanel({
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const prevMessageCountRef = useRef(0)
   const savedScrollPositionRef = useRef<number | null>(null)
+  const hasOpenedBeforeRef = useRef(false)
   const lastUserMessageRef = useRef<HTMLDivElement>(null)
   
   
@@ -125,10 +127,10 @@ export function ChatPanel({
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
   
-  // Client-side only for portal
+  // Client-side only for portal - ensure mounted after hydration
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    if (!mounted) setMounted(true)
+  }, [mounted])
 
   // Handle open/close - just set visibility
   useEffect(() => {
@@ -173,30 +175,39 @@ export function ChatPanel({
     }
   }, [open])
 
-  // Restore scroll position or scroll to bottom for new messages
+  // Restore scroll position on re-open (flex-col-reverse handles first open naturally)
   useEffect(() => {
     if (!open || !isVisible) return
+    if (!hasOpenedBeforeRef.current) {
+      // First open - CSS flex-col-reverse handles this, just mark as opened
+      hasOpenedBeforeRef.current = true
+      return
+    }
     
+    // Re-open: restore saved scroll position
     const container = messagesContainerRef.current
-    if (!container) return
+    if (container && savedScrollPositionRef.current !== null) {
+      setTimeout(() => {
+        container.scrollTop = savedScrollPositionRef.current!
+      }, 50)
+    }
+  }, [open, isVisible])
+  
+  // Handle new messages while open
+  useEffect(() => {
+    if (!open || !isVisible) return
     
     const prevCount = prevMessageCountRef.current
     const currentCount = messages.length
     
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (currentCount > prevCount) {
-          // Scroll when new messages added (user sends message)
-          const behavior = prevCount === 0 ? 'instant' : 'smooth'
-          messagesEndRef.current?.scrollIntoView({ behavior })
-        } else if (savedScrollPositionRef.current !== null) {
-          // Re-opening panel - restore scroll position
-          container.scrollTop = savedScrollPositionRef.current
-        }
-        
-        prevMessageCountRef.current = currentCount
-      })
-    })
+    if (currentCount > prevCount && prevCount > 0) {
+      // New message added while panel is open - smooth scroll to bottom
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+      }, 50)
+    }
+    
+    prevMessageCountRef.current = currentCount
   }, [messages.length, open, isVisible])
 
   // During streaming, scroll until user's message reaches top of container
@@ -272,8 +283,8 @@ export function ChatPanel({
 
   if (!isVisible || !mounted) return null
   
-  return createPortal(
-    <>
+  return (
+    <AutobloggerPortal>
       {/* Backdrop */}
       <div 
         className={`fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? 'opacity-100' : 'opacity-0'}`}
@@ -285,14 +296,14 @@ export function ChatPanel({
         role="dialog"
         aria-modal="true"
         aria-label="Chat"
-        className={`autoblogger fixed z-[70] flex flex-col bg-background shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed z-[70] flex flex-col bg-background text-foreground shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? 'translate-x-0' : 'translate-x-full'}`}
       >
         {/* Header */}
         <div className="flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <h2 className="font-medium">Chat</h2>
             {essayContext && (
-              <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 truncate max-w-[140px]">
+              <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground truncate max-w-[140px]">
                 {essayContext.title || 'Untitled'}
               </span>
             )}
@@ -306,8 +317,8 @@ export function ChatPanel({
           </button>
         </div>
 
-        {/* Messages */}
-        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto">
+        {/* Messages - flex-col-reverse makes scroll naturally start at bottom */}
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto flex flex-col-reverse">
           {messages.length === 0 ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center max-w-xs px-6">
@@ -340,7 +351,7 @@ export function ChatPanel({
                     {message.role === 'assistant' ? (
                       <div 
                         className={`${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`}
-                        dangerouslySetInnerHTML={{ __html: markdownToHtml(stripPlanTags(message.content)) }}
+                        dangerouslySetInnerHTML={{ __html: markdownToStyledHtml(stripPlanTags(message.content)) }}
                       />
                     ) : (
                       <div className="whitespace-pre-wrap break-words">
@@ -408,10 +419,10 @@ export function ChatPanel({
                 title="Switch mode (⌘⇧A)"
                 className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${
                   mode === 'ask' 
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                    ? 'bg-green-100 text-green-700 ab-dark:bg-green-900/30 ab-dark:text-green-400' 
                     : mode === 'agent' 
-                      ? 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                      : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                      ? 'bg-muted text-muted-foreground'
+                      : 'bg-amber-100 text-amber-700 ab-dark:bg-amber-900/30 ab-dark:text-amber-400'
                 }`}
               >
                 {mode === 'ask' && <MessageSquare className="w-3 h-3" />}
@@ -517,7 +528,6 @@ export function ChatPanel({
           </div>
         </form>
       </div>
-    </>,
-    document.body
+    </AutobloggerPortal>
   )
 }

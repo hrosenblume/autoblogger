@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useTheme } from 'next-themes'
+import { useAutobloggerTheme } from '../hooks/useTheme'
 import { SunIcon, MoonIcon } from './Icons'
 import { cn } from '../../lib/cn'
 
@@ -10,13 +10,13 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
-  const { theme, setTheme } = useTheme()
+  const { resolvedTheme, setTheme } = useAutobloggerTheme()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => setMounted(true), [])
 
   const handleToggle = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark')
+    setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
   }
 
   return (
@@ -35,7 +35,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       <div className="w-4 h-4 transition-transform duration-200 active:scale-90">
         {!mounted ? (
           <div className="w-4 h-4" />
-        ) : theme === 'dark' ? (
+        ) : resolvedTheme === 'dark' ? (
           <SunIcon className="w-4 h-4" />
         ) : (
           <MoonIcon className="w-4 h-4" />

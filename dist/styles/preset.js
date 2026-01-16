@@ -1,5 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // Custom dark mode variant that only triggers on .autoblogger.dark
+  // This isolates autoblogger's theme from the host app's theme
+  plugins: [
+    function({ addVariant }) {
+      addVariant('ab-dark', '.autoblogger.dark &')
+    }
+  ],
   theme: {
     extend: {
       fontSize: {

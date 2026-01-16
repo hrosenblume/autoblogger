@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import type { Editor } from '@tiptap/react'
+import { toast } from 'sonner'
 import { useDashboardContext, type EditCommand } from '../context'
 import { EditorToolbar } from '../components/EditorToolbar'
 import { TiptapEditor, type SelectionState } from '../components/TiptapEditor'
@@ -102,7 +103,7 @@ interface EditorPageProps {
 }
 
 export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }: EditorPageProps) {
-  const { apiBasePath, styles, fields, navigate, basePath, onRegisterEditHandler, sharedData } = useDashboardContext()
+  const { apiBasePath, styles, fields, navigate, basePath, onRegisterEditHandler, sharedData, updateSharedPost } = useDashboardContext()
   const postUrlPattern = sharedData?.settings?.postUrlPattern ?? '/e/{slug}'
   // Extract prefix from pattern (everything before {slug})
   const urlPrefix = postUrlPattern.split('{slug}')[0]
@@ -124,7 +125,6 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   const [saving, setSaving] = useState(false)
   const [savingAs, setSavingAs] = useState<'draft' | 'published' | null>(null)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [generating, setGenerating] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
   const savedContent = useRef<string>('')
@@ -135,11 +135,41 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   const [showMarkdown, setShowMarkdown] = useState(false)
   const [editor, setEditor] = useState<Editor | null>(null)
 
+  // Auto-resize markdown textarea to fit content
+  useEffect(() => {
+    if (showMarkdown && textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      // Use at least the viewport height minus header/footer space
+      const minHeight = Math.max(400, window.innerHeight - 300)
+      textareaRef.current.style.height = `${Math.max(minHeight, textareaRef.current.scrollHeight)}px`
+    }
+  }, [showMarkdown, post.markdown])
+
   // Revision state
   const [revisions, setRevisions] = useState<Revision[]>([])
   const [revisionsLoading, setRevisionsLoading] = useState(false)
   const [previewingRevision, setPreviewingRevision] = useState<Revision | null>(null)
   const [originalPost, setOriginalPost] = useState<Post | null>(null)
+
+  // Helper to stringify with sorted keys (JSON.stringify is key-order sensitive)
+  const stableStringify = useCallback((obj: Record<string, unknown>) => 
+    JSON.stringify(obj, Object.keys(obj).sort()), [])
+  
+  // Compute hasUnsavedChanges directly instead of using state + effect (avoids timing issues)
+  const hasUnsavedChanges = useMemo(() => {
+    // While previewing a revision, no unsaved changes
+    if (previewingRevision) return false
+    
+    const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = post
+    const current = stableStringify(contentFields)
+    
+    // For new posts (savedContent is empty), any content is unsaved
+    if (savedContent.current === '') {
+      return current !== "{}"
+    }
+    // For existing posts, compare against saved content
+    return current !== savedContent.current
+  }, [post, previewingRevision, stableStringify])
 
   // Comments state
   const [commentsOpen, setCommentsOpen] = useState(false)
@@ -151,6 +181,11 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
 
   // Define savePost and handlePublish early (before hooks that depend on them)
   const savePost = useCallback(async (silent = false) => {
+    // Confirm before updating published posts (unless silent auto-save)
+    if (!silent && post.status === 'published') {
+      if (!confirm('Update the published post?')) return
+    }
+    
     if (!silent) {
       setSaving(true)
       setSavingAs('draft')
@@ -175,16 +210,26 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       
       const data = await res.json()
       if (data.data) {
+        // Merge API response into existing post
         setPost(prev => ({ ...prev, ...data.data }))
-        savedContent.current = JSON.stringify({ title: data.data.title, subtitle: data.data.subtitle, markdown: data.data.markdown })
+        // Track all content fields for unsaved changes detection (merge current post with API response)
+        const mergedPost = { ...post, ...data.data }
+        const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = mergedPost
+        savedContent.current = stableStringify(contentFields)
         setLastSaved(new Date())
-        setHasUnsavedChanges(false)
+        // hasUnsavedChanges is now computed via useMemo, no need to set it
+        // Update shared data so dashboard shows the new/updated post
+        updateSharedPost(data.data)
         if (!post.id && data.data.slug) {
-          navigate(`/editor/${data.data.slug}`, { skipConfirmation: true })
+          // Replace history so back button goes to dashboard, not blank editor
+          navigate(`/editor/${data.data.slug}`, { skipConfirmation: true, replace: true })
         }
       }
     } catch (err) {
       console.error('Save failed:', err)
+      if (!silent) {
+        toast.error('Failed to save post')
+      }
       throw err
     } finally {
       if (!silent) {
@@ -192,7 +237,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
         setSavingAs(null)
       }
     }
-  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate])
+  }, [post.id, post.title, post.subtitle, post.slug, post.markdown, post.status, post.tags, apiBasePath, fields, navigate, updateSharedPost])
 
   const handlePublish = useCallback(async () => {
     if (!confirm('Publish this essay?')) return
@@ -214,13 +259,23 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       })
 
       if (res.ok) {
+        const data = await res.json()
+        if (data.data) {
+          updateSharedPost(data.data)
+        }
+        toast.success('Post published successfully!')
         navigate('/', { skipConfirmation: true })
+      } else {
+        toast.error('Failed to publish post')
       }
+    } catch (err) {
+      console.error('Publish failed:', err)
+      toast.error('Failed to publish post')
     } finally {
       setSaving(false)
       setSavingAs(null)
     }
-  }, [post, apiBasePath, fields, navigate])
+  }, [post, apiBasePath, fields, navigate, updateSharedPost])
 
   // Comments hook - handles all comment logic
   const comments = useComments({
@@ -283,7 +338,9 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
           const found = d.data?.find((p: Post) => p.slug === slug)
           if (found) {
             setPost(found)
-            savedContent.current = JSON.stringify({ title: found.title, subtitle: found.subtitle, markdown: found.markdown })
+            // Track all content fields for unsaved changes detection (excludes metadata like id, dates, status)
+            const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = found
+            savedContent.current = stableStringify(contentFields)
             // Initialize lastSaved from post's updatedAt so it shows "Saved X ago" not "Not saved yet"
             if (found.updatedAt) {
               setLastSaved(new Date(found.updatedAt))
@@ -295,17 +352,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     }
   }, [slug, apiBasePath])
 
-  // Track unsaved changes
-  useEffect(() => {
-    const current = JSON.stringify({ title: post.title, subtitle: post.subtitle, markdown: post.markdown })
-    // For new posts (savedContent is empty), any content is unsaved
-    // For existing posts, compare against saved content
-    if (savedContent.current === '') {
-      setHasUnsavedChanges(!!(post.title || post.subtitle || post.markdown))
-    } else {
-      setHasUnsavedChanges(current !== savedContent.current)
-    }
-  }, [post.title, post.subtitle, post.markdown])
+  // hasUnsavedChanges is now computed via useMemo (see above), no effect needed
 
   // Report editor state to parent app (for navbar save button etc.)
   // Use refs for callbacks to avoid triggering effect re-runs
@@ -635,6 +682,15 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      // Cmd+S / Ctrl+S to save
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault()
+        if (!saving && !generating && !previewingRevision && hasUnsavedChanges) {
+          savePostRef.current()
+        }
+        return
+      }
+      
       if (e.key === 'Escape') {
         if (previewingRevision) {
           cancelRevisionPreview()
@@ -655,7 +711,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     }
     window.addEventListener('keydown', handler, true) // Use capture to run before dashboard handler
     return () => window.removeEventListener('keydown', handler, true)
-  }, [hasUnsavedChanges, generating, navigate, previewingRevision])
+  }, [hasUnsavedChanges, saving, generating, navigate, previewingRevision])
 
   // Auto-generate from idea param
   useEffect(() => {
@@ -886,12 +942,22 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
 
   const handleUnpublish = async () => {
     if (!confirm('Unpublish this essay?')) return
-    await fetch(`${apiBasePath}/posts/${post.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'draft' }),
-    })
-    setPost(prev => ({ ...prev, status: 'draft' }))
+    try {
+      const res = await fetch(`${apiBasePath}/posts/${post.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'draft' }),
+      })
+      if (res.ok) {
+        setPost(prev => ({ ...prev, status: 'draft' }))
+        toast.success('Post unpublished')
+      } else {
+        toast.error('Failed to unpublish post')
+      }
+    } catch (err) {
+      console.error('Unpublish failed:', err)
+      toast.error('Failed to unpublish post')
+    }
   }
 
   const words = countWords(post.markdown)
@@ -918,14 +984,14 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     <div className="flex flex-col h-full">
       {/* Revision Preview Banner */}
       {previewingRevision && (
-        <div className="bg-amber-100 dark:bg-amber-900/30 border-b border-amber-200 dark:border-amber-800 px-4 py-2 flex items-center justify-between">
-          <span className="text-sm text-amber-800 dark:text-amber-200">
+        <div className="bg-amber-100 ab-dark:bg-amber-900/30 border-b border-amber-200 ab-dark:border-amber-800 px-4 py-2 flex items-center justify-between">
+          <span className="text-sm text-amber-800 ab-dark:text-amber-200">
             Previewing revision from {new Date(previewingRevision.createdAt).toLocaleString()}
           </span>
           <div className="flex items-center gap-2">
             <button
               onClick={cancelRevisionPreview}
-              className="px-3 py-1 text-sm border border-amber-300 dark:border-amber-700 rounded hover:bg-amber-200 dark:hover:bg-amber-800"
+              className="px-3 py-1 text-sm border border-amber-300 ab-dark:border-amber-700 rounded hover:bg-amber-200 ab-dark:hover:bg-amber-800"
             >
               Cancel
             </button>
@@ -982,7 +1048,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 onChange={(val) => setPost(prev => ({ ...prev, title: val }))}
                 placeholder="Title"
                 disabled={generating || !!previewingRevision}
-                className={`${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 dark:placeholder-gray-700 ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             )}
             {generating && !post.subtitle ? (
@@ -993,7 +1059,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 onChange={(val) => setPost(prev => ({ ...prev, subtitle: val }))}
                 placeholder="Subtitle"
                 disabled={generating || !!previewingRevision}
-                className={`${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 dark:placeholder-gray-700 ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             )}
             <div className="!mt-4">
@@ -1020,7 +1086,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 onChange={e => setPost(prev => ({ ...prev, markdown: e.target.value }))}
                 placeholder="Start writing..."
                 disabled={generating || !!previewingRevision}
-                className={`${styles.prose} w-full min-h-[400px] bg-transparent border-none outline-none resize-none placeholder-gray-400 leading-relaxed font-mono text-sm ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`${styles.prose} w-full bg-transparent border-none outline-none resize-none overflow-hidden placeholder-muted-foreground leading-relaxed font-mono text-sm ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             ) : (
               <TiptapEditor
@@ -1055,12 +1121,12 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               {/* URL */}
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-500 w-14">URL</span>
-                  <span className="text-gray-400">{urlPrefix}</span>
+                  <span className="text-muted-foreground w-14">URL</span>
+                  <span className="text-muted-foreground/70">{urlPrefix}</span>
                   {isPublished ? (
-                    <span className="flex items-center gap-1.5 text-gray-600 dark:text-gray-400">
+                    <span className="flex items-center gap-1.5 text-gray-600 ab-dark:text-muted-foreground/70">
                       {post.slug}
-                      <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="w-3 h-3 text-muted-foreground/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
                     </span>
@@ -1070,7 +1136,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                       value={post.slug}
                       onChange={(e) => setPost(prev => ({ ...prev, slug: e.target.value }))}
                       placeholder="post-slug"
-                      className="flex-1 bg-transparent border-none outline-none placeholder-gray-400 text-gray-600 dark:text-gray-400"
+                      className="flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-gray-600 ab-dark:text-muted-foreground/70"
                     />
                   )}
                 </div>
@@ -1085,14 +1151,15 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 // If no label, render component full-width (for section-style fields like SEO)
                 if (!field.label) {
                   return (
-                    <field.component
-                      key={field.name}
-                      value={post[field.name] as any}
-                      onChange={(val: unknown) => setPost(prev => ({ ...prev, [field.name]: val }))}
-                      onFieldChange={handleFieldChange}
-                      post={post as any}
-                      disabled={saving || generating}
-                    />
+                    <div key={field.name} className="text-sm">
+                      <field.component
+                        value={post[field.name] as any}
+                        onChange={(val: unknown) => setPost(prev => ({ ...prev, [field.name]: val }))}
+                        onFieldChange={handleFieldChange}
+                        post={post as any}
+                        disabled={saving || generating}
+                      />
+                    </div>
                   )
                 }
                 
@@ -1100,7 +1167,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 return (
                   <div key={field.name} className="flex items-center justify-between text-sm gap-2">
                     <div className="flex items-center gap-2 flex-1">
-                      <span className="text-gray-500 w-14 flex-shrink-0">{field.label}</span>
+                      <span className="text-muted-foreground w-14 flex-shrink-0">{field.label}</span>
                       <div className="flex-1">
                         <field.component
                           value={post[field.name] as any}
@@ -1126,8 +1193,8 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               {/* Status */}
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
-                  <span className="text-gray-500 w-14">Status</span>
-                  <span className={isPublished ? "text-green-600 dark:text-green-400" : "text-gray-500"}>
+                  <span className="text-muted-foreground">Status</span>
+                  <span className={isPublished ? "text-xs text-green-700/80 ab-dark:text-green-500/80" : "text-xs text-muted-foreground/70"}>
                     {isPublished ? 'Published' : 'Draft'}
                   </span>
                 </div>
@@ -1136,11 +1203,11 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 {isPublished ? (
                   hasUnsavedChanges ? (
                     <button
-                      onClick={handlePublish}
+                      onClick={() => savePost()}
                       disabled={saving || generating}
                       className="px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1"
                     >
-                      {savingAs === 'published' && (
+                      {savingAs && (
                         <svg className="w-3 h-3 animate-spin" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
@@ -1151,7 +1218,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                   ) : (
                     <button
                       onClick={handleUnpublish}
-                      className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-red-500 transition-colors"
+                      className="px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-red-600 hover:border-red-300 hover:bg-red-50 ab-dark:hover:border-red-800 ab-dark:hover:bg-red-900/20 transition-colors"
                     >
                       Unpublish
                     </button>
@@ -1174,7 +1241,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               </div>
 
               {/* Word count */}
-              <div className="text-sm text-gray-500 pt-2 border-t border-border">
+              <div className="text-sm text-muted-foreground pt-2 border-t border-border">
                 {words.toLocaleString()} words · ~{Math.ceil(words / 200)} min read
               </div>
             </div>
@@ -1184,18 +1251,20 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
 
       {/* Footer */}
       <footer className="fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none">
-        <div className="flex items-center justify-end text-sm text-gray-500">
+        <div className="flex items-center justify-end text-sm text-muted-foreground">
           {generating ? (
-            <button className="hover:text-gray-900 dark:hover:text-white transition-colors">
+            <button className="hover:text-foreground transition-colors">
               Press Esc to stop generating
             </button>
           ) : previewingRevision ? (
             <button 
               onClick={cancelRevisionPreview}
-              className="hover:text-gray-900 dark:hover:text-white transition-colors"
+              className="hover:text-foreground transition-colors"
             >
               Press Esc to cancel
             </button>
+          ) : isPublished && post.publishedAt ? (
+            <span>Published {formatSavedTime(new Date(post.publishedAt as string))}</span>
           ) : lastSaved ? (
             <span>Saved {formatSavedTime(lastSaved)}</span>
           ) : (

@@ -10,6 +10,11 @@ declare function renderMarkdown(markdown: string): string;
  */
 declare function markdownToHtml(markdown: string): string;
 /**
+ * Convert markdown to HTML with inline Tailwind classes.
+ * Use this for rendering in contexts where autoblogger.css isn't loaded.
+ */
+declare function markdownToStyledHtml(markdown: string): string;
+/**
  * Parse markdown to tokens (AST)
  */
 declare function parseMarkdown(markdown: string): marked.TokensList;
@@ -31,4 +36,4 @@ declare function generateSlug(title: string): string;
  */
 declare function renderMarkdownSanitized(markdown: string): string;
 
-export { generateSlug, htmlToMarkdown, markdownToHtml, parseMarkdown, renderMarkdown, renderMarkdownSanitized, wordCount };
+export { generateSlug, htmlToMarkdown, markdownToHtml, markdownToStyledHtml, parseMarkdown, renderMarkdown, renderMarkdownSanitized, wordCount };

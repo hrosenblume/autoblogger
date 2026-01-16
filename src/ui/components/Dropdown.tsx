@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback, createContext, useContext } from 'react'
-import { createPortal } from 'react-dom'
+import { AutobloggerPortal } from './Portal'
 import { cn } from '../../lib/cn'
 
 // ============================================
@@ -41,7 +41,7 @@ export function Dropdown({
   disabled,
 }: DropdownProps) {
   const [internalOpen, setInternalOpen] = useState(false)
-  const [position, setPosition] = useState({ top: 0, left: 0, right: 0 })
+  const [position, setPosition] = useState<{ top: number; left: number; right: number } | null>(null)
   const [mounted, setMounted] = useState(false)
   
   const triggerRef = useRef<HTMLDivElement>(null)
@@ -51,19 +51,7 @@ export function Dropdown({
   const isControlled = controlledOpen !== undefined
   const isOpen = isControlled ? controlledOpen : internalOpen
   
-  const setOpen = useCallback((value: boolean) => {
-    if (!isControlled) {
-      setInternalOpen(value)
-    }
-    onOpenChange?.(value)
-  }, [isControlled, onOpenChange])
-
-  // Mount check for portal
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Calculate position when opening
+  // Calculate position synchronously
   const updatePosition = useCallback(() => {
     if (triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect()
@@ -74,13 +62,35 @@ export function Dropdown({
       })
     }
   }, [])
+  
+  const setOpen = useCallback((value: boolean) => {
+    if (value) {
+      // Calculate position synchronously BEFORE opening to prevent flicker
+      updatePosition()
+    } else {
+      // Reset position when closing so next open recalculates
+      setPosition(null)
+    }
+    if (!isControlled) {
+      setInternalOpen(value)
+    }
+    onOpenChange?.(value)
+  }, [isControlled, onOpenChange, updatePosition])
 
-  // Update position on open
+  // Mount check for portal
   useEffect(() => {
-    if (isOpen) {
+    setMounted(true)
+  }, [])
+
+  // For controlled mode, calculate position when externally opened
+  useEffect(() => {
+    if (isControlled && controlledOpen && !position) {
       updatePosition()
     }
-  }, [isOpen, updatePosition])
+    if (isControlled && !controlledOpen) {
+      setPosition(null)
+    }
+  }, [isControlled, controlledOpen, position, updatePosition])
 
   // Close on click outside
   useEffect(() => {
@@ -134,28 +144,30 @@ export function Dropdown({
 
   const close = useCallback(() => setOpen(false), [setOpen])
 
-  const menu = isOpen && mounted ? createPortal(
-    <DropdownContext.Provider value={{ close }}>
-      <div
-        ref={menuRef}
-        style={{
-          position: 'fixed',
-          top: position.top,
-          ...(align === 'right' 
-            ? { right: position.right } 
-            : { left: position.left }
-          ),
-        }}
-        className={cn(
-          'autoblogger z-[80] min-w-[160px] bg-popover border border-border rounded-md shadow-lg p-1 overscroll-contain',
-          className
-        )}
-        onWheel={(e) => e.stopPropagation()}
-      >
-        {children}
-      </div>
-    </DropdownContext.Provider>,
-    document.body
+  // Only render menu when open, mounted, AND position is calculated
+  const menu = isOpen && mounted && position ? (
+    <AutobloggerPortal>
+      <DropdownContext.Provider value={{ close }}>
+        <div
+          ref={menuRef}
+          style={{
+            position: 'fixed',
+            top: position.top,
+            ...(align === 'right' 
+              ? { right: position.right } 
+              : { left: position.left }
+            ),
+          }}
+          className={cn(
+            'z-[80] min-w-[160px] bg-popover text-popover-foreground border border-border rounded-md shadow-lg p-1 overscroll-contain',
+            className
+          )}
+          onWheel={(e) => e.stopPropagation()}
+        >
+          {children}
+        </div>
+      </DropdownContext.Provider>
+    </AutobloggerPortal>
   ) : null
 
   return (

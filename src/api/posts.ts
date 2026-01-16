@@ -83,6 +83,33 @@ export async function handlePostsAPI(
       return jsonResponse({ error: 'Not authorized to publish' }, 403)
     }
     
+    // Create a revision of the current state BEFORE updating (if content is changing)
+    const contentChanging = body.title !== undefined || body.subtitle !== undefined || body.markdown !== undefined
+    if (contentChanging) {
+      const existingPost = await cms.posts.findById(postId)
+      if (existingPost && existingPost.markdown) {
+        // Check if content is actually different from most recent revision
+        // to avoid creating duplicate revisions on frequent auto-saves
+        const recentRevisions = await cms.revisions.findByPost(postId)
+        const lastRevision = recentRevisions[0]
+        
+        const contentIsDifferent = !lastRevision || 
+          lastRevision.markdown !== existingPost.markdown ||
+          lastRevision.title !== existingPost.title ||
+          lastRevision.subtitle !== existingPost.subtitle
+        
+        if (contentIsDifferent) {
+          await cms.revisions.create(postId, {
+            title: existingPost.title,
+            subtitle: existingPost.subtitle,
+            markdown: existingPost.markdown,
+          })
+          // Prune old revisions (keep last 50)
+          await cms.revisions.pruneOldest(postId, 50)
+        }
+      }
+    }
+    
     const post = await cms.posts.update(postId, body)
     if (onMutate) await onMutate('post', post)
     return jsonResponse({ data: post })
