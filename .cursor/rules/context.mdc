@@ -44,8 +44,14 @@ import { SHORTCUTS, useKeyboard, useDashboardKeyboard, GlobalShortcuts } from 'a
 // AI model utilities
 import { useAIModels, ModelSelector } from 'autoblogger/ui'
 
+// Theme (self-contained, no next-themes dependency)
+import { useAutobloggerTheme, useTheme } from 'autoblogger/ui'
+
+// Reusable UI components
+import { ExpandableSection, SeoSection } from 'autoblogger/ui'
+
 // Utilities
-import { renderMarkdown, renderMarkdownSanitized, htmlToMarkdown, markdownToHtml, generateSlug, wordCount } from 'autoblogger/markdown'
+import { renderMarkdown, renderMarkdownSanitized, htmlToMarkdown, markdownToHtml, markdownToStyledHtml, generateSlug, wordCount } from 'autoblogger/markdown'
 import { ARTICLE_CLASSES } from 'autoblogger/styles/article'
 import { getSeoValues } from 'autoblogger/seo'
 
@@ -140,7 +146,7 @@ autoblogger/
 │   ├── lib/               # Utilities
 │   │   ├── cn.ts          # clsx + tailwind-merge
 │   │   ├── format.ts      # formatDate, formatRelativeTime, countWords, truncate
-│   │   ├── markdown.ts    # renderMarkdown, parseMarkdown, htmlToMarkdown, markdownToHtml
+│   │   ├── markdown.ts    # renderMarkdown, parseMarkdown, htmlToMarkdown, markdownToHtml, markdownToStyledHtml
 │   │   ├── markdown-helpers.ts # Cursor-based text manipulation for markdown mode
 │   │   ├── seo.ts         # getSeoValues (title, description fallbacks)
 │   │   ├── comments.ts    # createCommentsClient, permission helpers
@@ -182,10 +188,14 @@ autoblogger/
 │       │   ├── Dropdown.tsx         # Reusable dropdown menu
 │       │   ├── Form.tsx             # Form field components
 │       │   ├── SettingsListPage.tsx # Generic admin list page
-│       │   ├── ThemeProvider.tsx    # next-themes provider wrapper
+│       │   ├── ThemeProvider.tsx    # Dashboard theme wrapper
 │       │   ├── ThemeToggle.tsx      # Light/dark mode toggle
 │       │   ├── GlobalShortcuts.tsx  # Global keyboard shortcuts
 │       │   ├── Icons.tsx            # Custom icon components
+│       │   ├── ExpandableSection.tsx # Collapsible section component
+│       │   ├── SeoSection.tsx       # SEO fields as custom field
+│       │   ├── Portal.tsx           # Theme-aware portal for dropdowns
+│       │   ├── Toaster.tsx          # Theme-aware toast notifications
 │       │   └── toolbar/
 │       │       ├── index.ts
 │       │       ├── ToolbarButton.tsx
@@ -198,7 +208,8 @@ autoblogger/
 │           ├── useComments.ts    # Comment state + CRUD
 │           ├── useChat.tsx       # ChatProvider + useChatContext + modes
 │           ├── useAIModels.ts    # AI model fetching hook
-│           └── useKeyboard.ts    # Keyboard shortcuts
+│           ├── useKeyboard.ts    # Keyboard shortcuts
+│           └── useTheme.tsx      # Self-contained theme (no next-themes)
 │
 ├── prisma/
 │   └── schema.prisma      # Reference schema for host apps
