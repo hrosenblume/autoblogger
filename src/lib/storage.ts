@@ -1,11 +1,12 @@
 /**
  * Built-in storage module for autoblogger.
- * Auto-detects cloud storage (S3-compatible) or falls back to local filesystem.
+ * Auto-detects cloud storage or falls back to local filesystem.
  * 
- * Supported providers:
- * - DigitalOcean Spaces (set SPACES_KEY, SPACES_SECRET)
+ * Supported providers (auto-detected from env vars):
+ * - Vercel Blob (set BLOB_READ_WRITE_TOKEN) - best for Vercel deployments
+ * - DigitalOcean Spaces (set SPACES_KEY, SPACES_SECRET) - best for DO deployments
  * - AWS S3 (set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET)
- * - Local filesystem (no config needed, saves to public/uploads)
+ * - Local filesystem (no config needed, saves to public/uploads) - for development
  */
 
 import { writeFile, mkdir } from 'fs/promises'
@@ -18,6 +19,10 @@ export interface UploadResult {
 }
 
 export interface StorageConfig {
+  // Vercel Blob storage
+  vercelBlob?: {
+    token: string
+  }
   // S3-compatible storage (DigitalOcean Spaces, AWS S3, etc.)
   s3?: {
     accessKeyId: string
@@ -54,6 +59,31 @@ async function getS3Client(config: NonNullable<StorageConfig['s3']>) {
     })()
   }
   return s3ClientPromise
+}
+
+/**
+ * Upload to Vercel Blob storage
+ */
+async function uploadToVercelBlob(
+  buffer: Buffer,
+  filename: string,
+  contentType: string,
+  config: NonNullable<StorageConfig['vercelBlob']>
+): Promise<UploadResult> {
+  // Dynamic import to avoid requiring @vercel/blob if not using it
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { put } = await (Function('return import("@vercel/blob")')() as Promise<any>)
+  
+  const ext = filename.split('.').pop()?.toLowerCase() || 'jpg'
+  const key = `uploads/${randomUUID()}.${ext}`
+
+  const blob = await put(key, buffer, {
+    access: 'public',
+    contentType,
+    token: config.token,
+  })
+
+  return { url: blob.url, key }
 }
 
 /**
@@ -109,10 +139,20 @@ async function uploadToLocal(
 }
 
 /**
- * Detect storage configuration from environment variables
+ * Detect storage configuration from environment variables.
+ * Priority: Vercel Blob > DigitalOcean Spaces > AWS S3 > Local
  */
 export function detectStorageConfig(): StorageConfig {
-  // DigitalOcean Spaces
+  // Vercel Blob (best for Vercel deployments)
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return {
+      vercelBlob: {
+        token: process.env.BLOB_READ_WRITE_TOKEN,
+      },
+    }
+  }
+
+  // DigitalOcean Spaces (best for DO deployments)
   if (process.env.SPACES_KEY && process.env.SPACES_SECRET) {
     return {
       s3: {
@@ -139,7 +179,7 @@ export function detectStorageConfig(): StorageConfig {
     }
   }
 
-  // Default to local storage
+  // Default to local storage (for development)
   return { local: {} }
 }
 
@@ -154,6 +194,10 @@ export async function uploadFile(
 ): Promise<UploadResult> {
   const resolvedConfig = config || detectStorageConfig()
 
+  if (resolvedConfig.vercelBlob) {
+    return uploadToVercelBlob(buffer, filename, contentType, resolvedConfig.vercelBlob)
+  }
+
   if (resolvedConfig.s3) {
     return uploadToS3(buffer, filename, contentType, resolvedConfig.s3)
   }
@@ -165,15 +209,21 @@ export async function uploadFile(
  * Create a storage upload handler for autoblogger config.
  * Auto-detects cloud storage from env vars, falls back to local.
  * 
+ * Supported providers (checked in order):
+ * - Vercel Blob: BLOB_READ_WRITE_TOKEN
+ * - DigitalOcean Spaces: SPACES_KEY, SPACES_SECRET, SPACES_BUCKET
+ * - AWS S3: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET
+ * - Local: No env vars needed (uses public/uploads)
+ * 
  * Usage:
  * ```ts
- * import { createStorageHandler } from 'autoblogger'
+ * // Automatic - just works! No config needed.
+ * const cms = createAutoblogger({ prisma, auth })
  * 
+ * // Or with explicit config:
+ * import { createStorageHandler } from 'autoblogger'
  * const cms = createAutoblogger({
- *   // ... other config
- *   storage: {
- *     upload: createStorageHandler()
- *   }
+ *   storage: { upload: createStorageHandler() }
  * })
  * ```
  */
