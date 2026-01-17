@@ -39,7 +39,7 @@ export function RevisionHistoryDropdown({
       type="button"
       disabled={disabled || isPreviewMode || previewLoading}
       title={disabled ? 'Save post to enable history' : 'Revision history'}
-      className="px-2.5 py-1.5 text-sm font-medium rounded transition-colors flex items-center justify-center hover:bg-gray-100 ab-dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 ab-dark:text-gray-400"
+      className="px-3 py-2 md:px-2.5 md:py-1.5 text-base md:text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 active:bg-accent md:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-muted-foreground"
     >
       {previewLoading ? (
         <Loader2 className="h-4 w-4 animate-spin" />

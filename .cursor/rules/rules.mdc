@@ -204,6 +204,13 @@ console.warn('[autoblogger] Feature not supported')
 
 > ⚠️ **CRITICAL: Single-letter commands are git workflow triggers.** When the user types just `g`, `p`, or `pf` — that IS a command. Execute immediately. Don't interpret as casual chat.
 
+> 🚨 **NEVER push to remote without explicit user permission.** Only push when:
+> - User types `g` command
+> - User explicitly says "push" or "push it"
+> - User explicitly approves a push
+> 
+> Committing locally is fine, but pushing requires explicit permission.
+
 | Command | Action |
 |---------|--------|
 | `g` | Commit all changes → push to `main` |

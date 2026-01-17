@@ -105,7 +105,8 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
         <SkeletonButton />
         <SkeletonButton />
         <Divider />
-        {/* Bold, Italic, Strikethrough */}
+        {/* Bold, Italic, Underline, Strikethrough */}
+        <SkeletonButton />
         <SkeletonButton />
         <SkeletonButton />
         <SkeletonButton />
@@ -164,10 +165,18 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
         <span className="italic">I</span>
       </ToolbarButton>
       <ToolbarButton
+        onClick={() => editor ? editor.chain().focus().toggleUnderline?.().run() : null}
+        active={editor?.isActive('underline')}
+        disabled={aiGenerating || !!isMarkdownMode}
+        title="Underline (⌘U)"
+      >
+        <span className="underline">U</span>
+      </ToolbarButton>
+      <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleStrike().run() : wrapSelection('~~', '~~')}
         active={editor?.isActive('strike')}
         disabled={aiGenerating}
-        title="Strikethrough"
+        title="Strikethrough (⌘⇧X)"
       >
         <span className="line-through">S</span>
       </ToolbarButton>

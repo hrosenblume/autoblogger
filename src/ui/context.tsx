@@ -94,8 +94,8 @@ export function useDashboardContext() {
 
 const DEFAULT_STYLES: Required<StylesConfig> = {
   container: 'max-w-[680px] mx-auto px-6',
-  title: 'text-2xl font-bold',
-  subtitle: 'text-lg text-muted-foreground',
+  title: 'text-[22px] md:text-2xl font-bold leading-tight',
+  subtitle: 'text-base md:text-lg text-muted-foreground leading-snug',
   byline: 'text-sm text-muted-foreground',
   prose: 'prose',
 }

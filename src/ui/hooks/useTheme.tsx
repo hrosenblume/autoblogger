@@ -77,7 +77,7 @@ export function AutobloggerThemeProvider({ children, className, onContainerRef }
     return () => mediaQuery.removeEventListener('change', handleChange)
   }, [theme])
 
-  // Apply .dark class to container element (for ab-dark: variant)
+  // Apply .dark class to container element (for theme CSS variables)
   useEffect(() => {
     if (!containerEl) return
     

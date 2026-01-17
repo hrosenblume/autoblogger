@@ -423,8 +423,8 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
             {showStatus && (
               <span className={`text-xs px-1.5 py-0.5 rounded uppercase font-medium ${
                 post.status === 'draft' 
-                  ? 'bg-amber-500/20 text-amber-600 ab-dark:text-amber-400'
-                  : 'bg-green-500/20 text-green-600 ab-dark:text-green-400'
+                  ? 'bg-ab-warning/20 text-ab-warning'
+                  : 'bg-ab-success/20 text-ab-success'
               }`}>
                 {post.status}
               </span>

@@ -3684,9 +3684,12 @@ STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bulle
 - Create curiosity or make a bold claim
 </subtitle_guidelines>`;
     DEFAULT_AGENT_TEMPLATE = `<agent_mode>
-You are in AGENT MODE - you can directly edit the essay. Wrap edits in :::edit and ::: tags with a JSON object.
+CRITICAL: You are in AGENT MODE. You MUST make edits to the essay using edit commands.
 
-EDIT COMMANDS (use valid JSON):
+DO NOT respond conversationally. DO NOT just describe what you would do. DO NOT ask clarifying questions.
+You MUST output :::edit blocks to make the requested changes.
+
+EDIT COMMANDS (wrap each in :::edit and ::: tags with valid JSON):
 
 1. Replace specific text:
 :::edit
@@ -3710,11 +3713,11 @@ EDIT COMMANDS (use valid JSON):
 :::
 
 RULES:
+- ALWAYS output at least one :::edit block - this is REQUIRED in agent mode
 - Use EXACT text matches for "find" - copy precisely from the essay
-- One edit block per change
-- You can include multiple edit blocks in one response
-- Add brief explanation before/after edit blocks
-- Edits are applied automatically - the user will see the changes
+- One edit block per change, but you can include multiple edit blocks
+- Keep explanatory text minimal - focus on the edits
+- Edits are applied automatically when you output the :::edit blocks
 </agent_mode>`;
     DEFAULT_EXPAND_PLAN_TEMPLATE = `<system>
 <role>Writing assistant that expands essay outlines into full drafts</role>
@@ -4697,6 +4700,8 @@ __export(src_exports, {
   createCommentsClient: () => createCommentsClient,
   createCrudData: () => createCrudData,
   createDestinationDispatcher: () => createDestinationDispatcher,
+  createStorageHandler: () => createStorageHandler,
+  detectStorageConfig: () => detectStorageConfig,
   fetchRssFeeds: () => fetchRssFeeds,
   filterByKeywords: () => filterByKeywords,
   formatDate: () => formatDate,
@@ -4716,6 +4721,7 @@ __export(src_exports, {
   runAutoDraft: () => runAutoDraft,
   scrollToComment: () => scrollToComment,
   truncate: () => truncate,
+  uploadFile: () => uploadFile,
   validateSchema: () => validateSchema,
   wordCount: () => wordCount
 });
@@ -6177,6 +6183,15 @@ async function handleTopicsAPI(req, cms, session, path, onMutate) {
     if (!topic) return jsonResponse2({ error: "Topic not found" }, 404);
     return jsonResponse2({ data: topic });
   }
+  if (method === "POST" && path === "/topics/generate") {
+    const results = await cms.autoDraft.run(void 0, true);
+    return jsonResponse2({
+      data: {
+        success: true,
+        results
+      }
+    });
+  }
   if (method === "POST" && !topicId) {
     const body = await req.json();
     const topic = await cms.topics.create(body);
@@ -6184,11 +6199,11 @@ async function handleTopicsAPI(req, cms, session, path, onMutate) {
     return jsonResponse2({ data: topic }, 201);
   }
   if (method === "POST" && topicId && subPath === "generate") {
-    await cms.topics.markRun(topicId);
+    const results = await cms.autoDraft.run(topicId, true);
     return jsonResponse2({
       data: {
         success: true,
-        message: "Generation triggered. Implement generation logic in your application."
+        results
       }
     });
   }
@@ -7074,6 +7089,116 @@ function createDestinationDispatcher(config) {
   };
 }
 
+// src/lib/storage.ts
+var import_promises = require("fs/promises");
+var import_path = require("path");
+var import_crypto = require("crypto");
+var s3ClientPromise = null;
+async function getS3Client(config) {
+  if (!s3ClientPromise) {
+    s3ClientPromise = (async () => {
+      const { S3Client } = await Function('return import("@aws-sdk/client-s3")')();
+      return new S3Client({
+        region: config.region || "us-east-1",
+        endpoint: config.endpoint,
+        credentials: {
+          accessKeyId: config.accessKeyId,
+          secretAccessKey: config.secretAccessKey
+        }
+      });
+    })();
+  }
+  return s3ClientPromise;
+}
+async function uploadToVercelBlob(buffer, filename, contentType, config) {
+  const { put } = await Function('return import("@vercel/blob")')();
+  const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
+  const key = `uploads/${(0, import_crypto.randomUUID)()}.${ext}`;
+  const blob = await put(key, buffer, {
+    access: "public",
+    contentType,
+    token: config.token
+  });
+  return { url: blob.url, key };
+}
+async function uploadToS3(buffer, filename, contentType, config) {
+  const { PutObjectCommand } = await Function('return import("@aws-sdk/client-s3")')();
+  const client = await getS3Client(config);
+  const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
+  const key = `uploads/${(0, import_crypto.randomUUID)()}.${ext}`;
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: contentType,
+      ACL: "public-read"
+    })
+  );
+  const cdnEndpoint = config.cdnEndpoint || config.endpoint || `https://${config.bucket}.s3.${config.region || "us-east-1"}.amazonaws.com`;
+  const url = cdnEndpoint.endsWith("/") ? `${cdnEndpoint}${key}` : `${cdnEndpoint}/${key}`;
+  return { url, key };
+}
+async function uploadToLocal(buffer, filename, config) {
+  const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
+  const key = `${(0, import_crypto.randomUUID)()}.${ext}`;
+  const uploadDir = config?.uploadDir || (0, import_path.join)(process.cwd(), "public", "uploads");
+  const urlPrefix = config?.urlPrefix || "/uploads";
+  await (0, import_promises.mkdir)(uploadDir, { recursive: true });
+  await (0, import_promises.writeFile)((0, import_path.join)(uploadDir, key), buffer);
+  return { url: `${urlPrefix}/${key}`, key };
+}
+function detectStorageConfig() {
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    return {
+      vercelBlob: {
+        token: process.env.BLOB_READ_WRITE_TOKEN
+      }
+    };
+  }
+  if (process.env.SPACES_KEY && process.env.SPACES_SECRET) {
+    return {
+      s3: {
+        accessKeyId: process.env.SPACES_KEY,
+        secretAccessKey: process.env.SPACES_SECRET,
+        bucket: process.env.SPACES_BUCKET || "uploads",
+        region: process.env.SPACES_REGION || "sfo3",
+        endpoint: process.env.SPACES_ENDPOINT || `https://${process.env.SPACES_REGION || "sfo3"}.digitaloceanspaces.com`,
+        cdnEndpoint: process.env.SPACES_CDN_ENDPOINT
+      }
+    };
+  }
+  if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_S3_BUCKET) {
+    return {
+      s3: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        bucket: process.env.AWS_S3_BUCKET,
+        region: process.env.AWS_REGION || "us-east-1",
+        cdnEndpoint: process.env.AWS_S3_CDN_ENDPOINT
+      }
+    };
+  }
+  return { local: {} };
+}
+async function uploadFile(buffer, filename, contentType, config) {
+  const resolvedConfig = config || detectStorageConfig();
+  if (resolvedConfig.vercelBlob) {
+    return uploadToVercelBlob(buffer, filename, contentType, resolvedConfig.vercelBlob);
+  }
+  if (resolvedConfig.s3) {
+    return uploadToS3(buffer, filename, contentType, resolvedConfig.s3);
+  }
+  return uploadToLocal(buffer, filename, resolvedConfig.local);
+}
+function createStorageHandler(config) {
+  return async (file) => {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const result = await uploadFile(buffer, file.name, file.type, config);
+    return { url: result.url };
+  };
+}
+
 // src/types/config.ts
 var DEFAULT_STYLES = {
   container: "max-w-ab-content mx-auto px-ab-content-padding",
@@ -7090,6 +7215,9 @@ function createAutoblogger(config) {
     ...DEFAULT_STYLES,
     ...config.styles
   };
+  const storage = config.storage || {
+    upload: createStorageHandler()
+  };
   const dispatcher = createDestinationDispatcher({
     destinations: config.destinations,
     webhooks: config.webhooks,
@@ -7100,6 +7228,7 @@ function createAutoblogger(config) {
   const baseServer = {
     config: {
       ...config,
+      storage,
       styles: mergedStyles
     },
     posts: createPostsData(prisma, config.hooks, dispatcher, config.prismic?.writeToken),
@@ -11490,6 +11619,8 @@ function scrollToComment(editor, commentId) {
   createCommentsClient,
   createCrudData,
   createDestinationDispatcher,
+  createStorageHandler,
+  detectStorageConfig,
   fetchRssFeeds,
   filterByKeywords,
   formatDate,
@@ -11509,6 +11640,7 @@ function scrollToComment(editor, commentId) {
   runAutoDraft,
   scrollToComment,
   truncate,
+  uploadFile,
   validateSchema,
   wordCount
 });

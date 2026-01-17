@@ -54,13 +54,13 @@ export function EditorToolbar({
   loading = false,
   apiBasePath = '/api/cms',
 }: EditorToolbarProps) {
-  // Navbar height: py-4 (32px) + h-9 content (36px) + border (1px) = 69px
-  // Toolbar height: py-2 (16px) + content (~24px) + border (1px) = ~41px
-  // Using fixed positioning to ensure toolbar stays visible when scrolling
-  // Use -1px overlap to prevent subpixel gap between navbar border and toolbar
+  // Navbar height: py-4 (2rem) + h-10 mobile / h-9 desktop + border (1px)
+  // Mobile: 2rem + 2.5rem + 1px = 4.5rem + 1px, Desktop: 2rem + 2.25rem + 1px = 4.25rem + 1px
+  // Use rem for position so it scales with html font-size (for global-scale support)
+  // Use -2px overlap to prevent subpixel gap between navbar border and toolbar
   if (loading) {
     return (
-      <div className="fixed top-[68px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto">
+      <div className="fixed top-[4.375rem] md:top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto">
         <FormatButtons loading={true} />
         <Divider />
         <BlockButtons loading={true} />
@@ -77,7 +77,7 @@ export function EditorToolbar({
   }
 
   return (
-    <div className="fixed top-[68px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto">
+    <div className="fixed top-[4.375rem] md:top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto">
       <FormatButtons
         editor={editor}
         textareaRef={textareaRef}

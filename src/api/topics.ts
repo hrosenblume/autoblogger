@@ -30,6 +30,17 @@ export async function handleTopicsAPI(
     return jsonResponse({ data: topic })
   }
 
+  // POST /topics/generate - trigger generation for all active topics
+  if (method === 'POST' && path === '/topics/generate') {
+    const results = await cms.autoDraft.run(undefined, true) // skipFrequencyCheck = true for manual trigger
+    return jsonResponse({ 
+      data: { 
+        success: true, 
+        results,
+      } 
+    })
+  }
+
   // POST /topics - create topic
   if (method === 'POST' && !topicId) {
     const body = await req.json()
@@ -38,16 +49,13 @@ export async function handleTopicsAPI(
     return jsonResponse({ data: topic }, 201)
   }
 
-  // POST /topics/:id/generate - trigger generation for a topic
+  // POST /topics/:id/generate - trigger generation for a specific topic
   if (method === 'POST' && topicId && subPath === 'generate') {
-    // Mark topic as run
-    await cms.topics.markRun(topicId)
-    // Note: Actual RSS fetching and essay generation would be implemented
-    // by the host application via hooks or a separate service
+    const results = await cms.autoDraft.run(topicId, true) // skipFrequencyCheck = true for manual trigger
     return jsonResponse({ 
       data: { 
         success: true, 
-        message: 'Generation triggered. Implement generation logic in your application.',
+        results,
       } 
     })
   }

@@ -88,6 +88,27 @@ function parseEditBlocks(content: string): { edits: EssayEdit[], cleanContent: s
 }
 
 /**
+ * Strip incomplete or complete :::edit blocks from content for display during streaming.
+ * This hides the edit "spew" from the user while streaming.
+ */
+function stripEditBlocksForDisplay(content: string): string {
+  // First, remove complete :::edit...::: blocks
+  let cleaned = content.replace(/:::edit\s*[\s\S]*?\s*:::/g, '')
+  
+  // Then, remove any incomplete :::edit block at the end (still streaming)
+  // This catches: ":::edit", ":::edit\n{", ":::edit\n{\"type\":", etc.
+  cleaned = cleaned.replace(/:::edit\s*[\s\S]*$/g, '')
+  
+  // Also handle partial opening (just ":::" or ":::e" at end)
+  cleaned = cleaned.replace(/:::[a-z]*$/gi, '')
+  
+  // Clean up multiple newlines
+  cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim()
+  
+  return cleaned
+}
+
+/**
  * Clean plan mode output by extracting content from <plan> tags and stripping trailing text.
  */
 function cleanPlanOutput(content: string): string {
@@ -291,9 +312,14 @@ export function ChatProvider({
           }
         }
 
+        // Display cleaned content during streaming (strip edit blocks from view)
+        const displayContent = mode === 'agent' 
+          ? stripEditBlocksForDisplay(assistantContent)
+          : assistantContent
+          
         setMessages(prev => {
           const updated = [...prev]
-          updated[updated.length - 1] = { role: 'assistant', content: assistantContent, mode }
+          updated[updated.length - 1] = { role: 'assistant', content: displayContent, mode }
           return updated
         })
       }

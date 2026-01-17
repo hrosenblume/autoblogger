@@ -15,6 +15,8 @@ import HorizontalRule from '@tiptap/extension-horizontal-rule'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
+import Strike from '@tiptap/extension-strike'
+import Underline from '@tiptap/extension-underline'
 import { renderMarkdown, htmlToMarkdown } from '../../lib/markdown'
 import { CommentMark } from '../../lib/comment-mark'
 
@@ -74,6 +76,64 @@ const StyledHeading = Heading.extend({
   },
 })
 
+// Custom Strike extension with Cmd+Shift+X shortcut (standard in Google Docs, Word, etc.)
+const CustomStrike = Strike.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Shift-x': () => this.editor.commands.toggleStrike(),
+      'Mod-Shift-X': () => this.editor.commands.toggleStrike(),
+    }
+  },
+})
+
+// Custom BulletList with Cmd+Shift+8 shortcut (Google Docs standard)
+const CustomBulletList = BulletList.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Shift-8': () => this.editor.commands.toggleBulletList(),
+    }
+  },
+})
+
+// Custom OrderedList with Cmd+Shift+7 shortcut (Google Docs standard)
+const CustomOrderedList = OrderedList.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Shift-7': () => this.editor.commands.toggleOrderedList(),
+    }
+  },
+})
+
+// Custom Code with Cmd+E shortcut (Gmail, Slack, Notion standard)
+const CustomCode = Code.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-e': () => this.editor.commands.toggleCode(),
+      'Mod-E': () => this.editor.commands.toggleCode(),
+    }
+  },
+})
+
+// Custom Blockquote with Cmd+Shift+B shortcut
+const CustomBlockquote = Blockquote.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Shift-b': () => this.editor.commands.toggleBlockquote(),
+      'Mod-Shift-B': () => this.editor.commands.toggleBlockquote(),
+    }
+  },
+})
+
+// Custom CodeBlock with Cmd+Shift+C shortcut
+const CustomCodeBlock = CodeBlock.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Alt-c': () => this.editor.commands.toggleCodeBlock(),
+      'Mod-Alt-C': () => this.editor.commands.toggleCodeBlock(),
+    }
+  },
+})
+
 export function TiptapEditor({ 
   content, 
   onChange, 
@@ -95,7 +155,7 @@ export function TiptapEditor({
   // Memoize extensions with inline Tailwind styles (no external CSS needed)
   const extensions = useMemo(() => [
     StarterKit.configure({
-      // Disable extensions we're replacing with styled versions
+      // Disable extensions we're replacing with styled or custom versions
       heading: false,
       paragraph: false,
       bulletList: false,
@@ -105,6 +165,7 @@ export function TiptapEditor({
       codeBlock: false,
       blockquote: false,
       horizontalRule: false,
+      strike: false, // Using custom Strike with Cmd+Shift+X shortcut
     }),
     // Styled heading with per-level classes
     StyledHeading.configure({ levels: [1, 2, 3] }),
@@ -112,41 +173,45 @@ export function TiptapEditor({
     Paragraph.configure({
       HTMLAttributes: { class: 'mb-4 leading-relaxed' },
     }),
-    // Lists
-    BulletList.configure({
+    // Lists with custom keyboard shortcuts (Cmd+Shift+8 for bullet, Cmd+Shift+7 for ordered)
+    CustomBulletList.configure({
       HTMLAttributes: { class: 'list-disc pl-6 mb-4' },
     }),
-    OrderedList.configure({
+    CustomOrderedList.configure({
       HTMLAttributes: { class: 'list-decimal pl-6 mb-4' },
     }),
     ListItem.configure({
       HTMLAttributes: { class: 'mb-2' },
     }),
-    // Inline code
-    Code.configure({
-      HTMLAttributes: { class: 'bg-gray-100 ab-dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono' },
+    // Inline code with Cmd+E shortcut
+    CustomCode.configure({
+      HTMLAttributes: { class: 'bg-ab-neutral-subtle px-1.5 py-0.5 rounded text-sm font-mono' },
     }),
-    // Code block
-    CodeBlock.configure({
-      HTMLAttributes: { class: 'bg-gray-100 ab-dark:bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4 text-sm font-mono' },
+    // Code block with Cmd+Alt+C shortcut
+    CustomCodeBlock.configure({
+      HTMLAttributes: { class: 'bg-ab-neutral-subtle p-4 rounded-lg overflow-x-auto mb-4 text-sm font-mono' },
     }),
-    // Blockquote
-    Blockquote.configure({
-      HTMLAttributes: { class: 'border-l-4 border-gray-300 ab-dark:border-gray-600 pl-4 italic text-gray-600 ab-dark:text-gray-400 my-4' },
+    // Blockquote with Cmd+Shift+B shortcut
+    CustomBlockquote.configure({
+      HTMLAttributes: { class: 'border-l-4 border-ab-neutral-border pl-4 italic text-ab-neutral-strong my-4' },
     }),
     // Horizontal rule
     HorizontalRule.configure({
-      HTMLAttributes: { class: 'my-8 border-t border-gray-200 ab-dark:border-gray-700' },
+      HTMLAttributes: { class: 'my-8 border-t border-ab-neutral-border' },
     }),
+    // Strike with Cmd+Shift+X shortcut (Google Docs/Word standard)
+    CustomStrike,
+    // Underline with Cmd+U shortcut
+    Underline,
     // Placeholder
     Placeholder.configure({
       placeholder,
     }),
-    // Link (already styled)
+    // Link (already styled) - Cmd+K is built-in
     Link.configure({
       openOnClick: false,
       HTMLAttributes: {
-        class: 'text-blue-600 ab-dark:text-blue-400 underline',
+        class: 'text-ab-active underline',
       },
     }),
     // Image (already styled)

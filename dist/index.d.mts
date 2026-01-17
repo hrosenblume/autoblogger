@@ -744,6 +744,72 @@ declare function formatDate(date: Date | string, options?: Intl.DateTimeFormatOp
 declare function truncate(text: string, maxLength: number): string;
 
 /**
+ * Built-in storage module for autoblogger.
+ * Auto-detects cloud storage or falls back to local filesystem.
+ *
+ * Supported providers (auto-detected from env vars):
+ * - Vercel Blob (set BLOB_READ_WRITE_TOKEN) - best for Vercel deployments
+ * - DigitalOcean Spaces (set SPACES_KEY, SPACES_SECRET) - best for DO deployments
+ * - AWS S3 (set AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET)
+ * - Local filesystem (no config needed, saves to public/uploads) - for development
+ */
+interface UploadResult {
+    url: string;
+    key: string;
+}
+interface StorageConfig {
+    vercelBlob?: {
+        token: string;
+    };
+    s3?: {
+        accessKeyId: string;
+        secretAccessKey: string;
+        bucket: string;
+        region?: string;
+        endpoint?: string;
+        cdnEndpoint?: string;
+    };
+    local?: {
+        uploadDir?: string;
+        urlPrefix?: string;
+    };
+}
+/**
+ * Detect storage configuration from environment variables.
+ * Priority: Vercel Blob > DigitalOcean Spaces > AWS S3 > Local
+ */
+declare function detectStorageConfig(): StorageConfig;
+/**
+ * Upload a file using auto-detected or provided storage config
+ */
+declare function uploadFile(buffer: Buffer, filename: string, contentType: string, config?: StorageConfig): Promise<UploadResult>;
+/**
+ * Create a storage upload handler for autoblogger config.
+ * Auto-detects cloud storage from env vars, falls back to local.
+ *
+ * Supported providers (checked in order):
+ * - Vercel Blob: BLOB_READ_WRITE_TOKEN
+ * - DigitalOcean Spaces: SPACES_KEY, SPACES_SECRET, SPACES_BUCKET
+ * - AWS S3: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_S3_BUCKET
+ * - Local: No env vars needed (uses public/uploads)
+ *
+ * Usage:
+ * ```ts
+ * // Automatic - just works! No config needed.
+ * const cms = createAutoblogger({ prisma, auth })
+ *
+ * // Or with explicit config:
+ * import { createStorageHandler } from 'autoblogger'
+ * const cms = createAutoblogger({
+ *   storage: { upload: createStorageHandler() }
+ * })
+ * ```
+ */
+declare function createStorageHandler(config?: StorageConfig): (file: File) => Promise<{
+    url: string;
+}>;
+
+/**
  * Comment types and client-side API helpers for the editor commenting system.
  * Used for collaborative inline comments on posts.
  */
@@ -819,4 +885,4 @@ declare function applyCommentMarks(editor: Editor, comments: CommentWithUser[]):
  */
 declare function scrollToComment(editor: Editor, commentId: string): void;
 
-export { type AIModel, AI_MODELS, type AutoDraftConfig, type AutobloggerServer as Autoblogger, type AutobloggerServerConfig as AutobloggerConfig, type BaseCrud, CommentMark, type CommentWithUser, type CreateCommentData, type CrudOptions, type CustomFieldConfig, type CustomFieldProps, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_GENERATE_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_PLAN_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, type Destination, type DestinationDispatcher, type DestinationEvent, type DestinationResult, type DestinationsConfig, type DispatchResult, type DispatcherConfig, type GenerationResult, Post, type RssArticle, type SelectionState, type Session, type StylesConfig, addCommentMark, applyCommentMarks, buildAutoDraftPrompt, buildChatPrompt, buildExpandPlanPrompt, buildGeneratePrompt, buildPlanPrompt, buildRewritePrompt, canDeleteComment, canEditComment, createAPIHandler, createAutoblogger, createCommentsClient, createCrudData, createDestinationDispatcher, fetchRssFeeds, filterByKeywords, formatDate, generate, getDefaultModel, getModel, parseGeneratedContent, removeCommentMark, resolveModel, runAutoDraft, scrollToComment, truncate, validateSchema };
+export { type AIModel, AI_MODELS, type AutoDraftConfig, type AutobloggerServer as Autoblogger, type AutobloggerServerConfig as AutobloggerConfig, type BaseCrud, CommentMark, type CommentWithUser, type CreateCommentData, type CrudOptions, type CustomFieldConfig, type CustomFieldProps, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_GENERATE_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_PLAN_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, type Destination, type DestinationDispatcher, type DestinationEvent, type DestinationResult, type DestinationsConfig, type DispatchResult, type DispatcherConfig, type GenerationResult, Post, type RssArticle, type SelectionState, type Session, type StorageConfig, type StylesConfig, type UploadResult, addCommentMark, applyCommentMarks, buildAutoDraftPrompt, buildChatPrompt, buildExpandPlanPrompt, buildGeneratePrompt, buildPlanPrompt, buildRewritePrompt, canDeleteComment, canEditComment, createAPIHandler, createAutoblogger, createCommentsClient, createCrudData, createDestinationDispatcher, createStorageHandler, detectStorageConfig, fetchRssFeeds, filterByKeywords, formatDate, generate, getDefaultModel, getModel, parseGeneratedContent, removeCommentMark, resolveModel, runAutoDraft, scrollToComment, truncate, uploadFile, validateSchema };

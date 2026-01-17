@@ -57,6 +57,22 @@ module.exports = {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        
+        // Semantic tokens (auto-switch with theme, prefixed to avoid conflicts)
+        'ab-success': 'rgb(var(--ab-success) / <alpha-value>)',
+        'ab-success-muted': 'rgb(var(--ab-success-muted) / <alpha-value>)',
+        'ab-warning': 'rgb(var(--ab-warning) / <alpha-value>)',
+        'ab-warning-subtle': 'rgb(var(--ab-warning-subtle) / <alpha-value>)',
+        'ab-active': 'rgb(var(--ab-active) / <alpha-value>)',
+        'ab-neutral': 'rgb(var(--ab-neutral) / <alpha-value>)',
+        'ab-neutral-subtle': 'rgb(var(--ab-neutral-subtle) / <alpha-value>)',
+        'ab-neutral-border': 'rgb(var(--ab-neutral-border) / <alpha-value>)',
+        'ab-neutral-strong': 'rgb(var(--ab-neutral-strong) / <alpha-value>)',
+        'ab-surface-input': 'rgb(var(--ab-surface-input) / <alpha-value>)',
+        'ab-highlight': 'rgb(var(--ab-highlight) / <alpha-value>)',
+        'ab-highlight-strong': 'rgb(var(--ab-highlight-strong) / <alpha-value>)',
+        'ab-highlight-border': 'rgb(var(--ab-highlight-border) / <alpha-value>)',
+        'ab-placeholder': 'rgb(var(--ab-placeholder) / <alpha-value>)',
       },
       borderRadius: {
         lg: 'var(--radius)',

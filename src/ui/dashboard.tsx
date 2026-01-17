@@ -150,7 +150,7 @@ function DashboardLayout({
           type="button"
           onClick={() => editorState.onSave('draft')}
           disabled={!editorState.hasUnsavedChanges || !!editorState.savingAs}
-          className="w-9 h-9 rounded-md border border-border hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-10 h-10 md:w-9 md:h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Save"
           title={editorState.hasUnsavedChanges ? 'Save changes (⌘S)' : 'No unsaved changes'}
         >

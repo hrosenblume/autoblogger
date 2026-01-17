@@ -61,14 +61,41 @@
   --input: 240 5.9% 90%;
   --ring: 240 10% 3.9%;
   --radius: 0.5rem;
+
+  /* Semantic tokens for status/state colors */
+  --ab-success: 22 163 74;           /* green-600 */
+  --ab-success-muted: 34 197 94;     /* green-500 */
+  --ab-warning: 217 119 6;           /* amber-600 */
+  --ab-warning-subtle: 254 243 199;  /* amber-100 */
+  --ab-active: 59 130 246;           /* blue-500 */
+  
+  /* Neutral grays */
+  --ab-neutral: 107 114 128;         /* gray-500 - secondary text */
+  --ab-neutral-subtle: 243 244 246;  /* gray-100 - subtle backgrounds */
+  --ab-neutral-border: 229 231 235;  /* gray-200 - borders */
+  --ab-neutral-strong: 75 85 99;     /* gray-600 - stronger text */
+  
+  /* Surfaces */
+  --ab-surface-input: 255 255 255;   /* white - input backgrounds */
+  
+  /* Highlights (comments, quotes) */
+  --ab-highlight: 254 252 232;       /* yellow-50 */
+  --ab-highlight-strong: 254 249 195; /* yellow-100 */
+  --ab-highlight-border: 250 204 21; /* yellow-400 */
+  
+  /* Placeholder text */
+  --ab-placeholder: 209 213 219;     /* gray-300 */
 }
 
-/* Extend background to body to prevent color bleed on mobile bounce/overscroll */
-body:has(.autoblogger) {
-  background-color: hsl(0 0% 100%);
-}
-body:has(.autoblogger.dark) {
-  background-color: hsl(240 10% 3.9%);
+/* Fixed background layer to prevent color bleed on mobile bounce/overscroll
+   Uses a pseudo-element instead of modifying body to avoid leaking styles to host app */
+.autoblogger::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-color: hsl(var(--background));
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* Dark mode variables (scoped to .autoblogger.dark) */
@@ -113,21 +140,65 @@ body:has(.autoblogger.dark) {
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
   --ring: 240 4.9% 83.9%;
+
+  /* Semantic tokens for status/state colors */
+  --ab-success: 74 222 128;          /* green-400 */
+  --ab-success-muted: 34 197 94;     /* green-500 */
+  --ab-warning: 251 191 36;          /* amber-400 */
+  --ab-warning-subtle: 120 53 15;    /* amber-900/30 approx */
+  --ab-active: 96 165 250;           /* blue-400 */
+  
+  /* Neutral grays */
+  --ab-neutral: 156 163 175;         /* gray-400 */
+  --ab-neutral-subtle: 31 41 55;     /* gray-800 */
+  --ab-neutral-border: 55 65 81;     /* gray-700 */
+  --ab-neutral-strong: 156 163 175;  /* gray-400 */
+  
+  /* Surfaces */
+  --ab-surface-input: 17 24 39;      /* gray-900 */
+  
+  /* Highlights (comments, quotes) */
+  --ab-highlight: 113 63 18;         /* yellow-900/20 approx */
+  --ab-highlight-strong: 113 63 18;  /* yellow-900/30 approx */
+  --ab-highlight-border: 202 138 4;  /* yellow-600 */
+  
+  /* Placeholder text */
+  --ab-placeholder: 55 65 81;        /* gray-700 */
 }
 
 /* ============================================
    CSS RESET (scoped to .autoblogger)
-   Uses :where() for zero specificity so Tailwind can override
-   Prevents styles from leaking in or out
+   
+   HYBRID APPROACH:
+   - High specificity (.autoblogger.autoblogger) for margin/padding/list-style
+     → Blocks host's global "p { margin: 1rem }" etc.
+   - Zero specificity (:where()) for font-weight/color/font-size
+     → Allows Tailwind utilities like font-bold, text-red-500 to work
    ============================================ */
 
-.autoblogger :where(*, *::before, *::after) {
+/* High specificity: box-sizing (safe, doesn't conflict with utilities) */
+.autoblogger.autoblogger *,
+.autoblogger.autoblogger *::before,
+.autoblogger.autoblogger *::after {
   box-sizing: border-box;
-  /* Ensure all elements inherit font from .autoblogger container */
-  font-family: inherit;
 }
 
-.autoblogger :where(input, textarea, select) {
+/* Zero specificity: inheritable properties that Tailwind controls */
+.autoblogger :where(*, *::before, *::after) {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* High specificity: block host's form element margins only */
+.autoblogger.autoblogger input,
+.autoblogger.autoblogger textarea,
+.autoblogger.autoblogger select,
+.autoblogger.autoblogger button {
+  margin: 0;
+}
+
+/* Zero specificity: form element font inheritance (Tailwind can override) */
+.autoblogger :where(input, textarea, select, button) {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
@@ -135,43 +206,55 @@ body:has(.autoblogger.dark) {
 
 /* Prevent iOS zoom on input focus - ensure minimum 16px font size */
 @supports (-webkit-touch-callout: none) {
-  .autoblogger input,
-  .autoblogger textarea,
-  .autoblogger select {
+  .autoblogger :where(input, textarea, select) {
     font-size: max(16px, 1em);
   }
 }
 
-.autoblogger :where(button) {
-  font-family: inherit;
-  font-size: inherit;
-}
-
-.autoblogger :where(img, svg, video) {
+/* High specificity: block host's img/svg sizing */
+.autoblogger.autoblogger img,
+.autoblogger.autoblogger svg,
+.autoblogger.autoblogger video {
   display: block;
   max-width: 100%;
 }
 
+/* Zero specificity: link styling (Tailwind can override) */
 .autoblogger :where(a) {
   color: inherit;
   text-decoration: inherit;
 }
 
-.autoblogger :where(ul, ol) {
+/* High specificity: block host's list margins/padding */
+.autoblogger.autoblogger ul,
+.autoblogger.autoblogger ol {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
-.autoblogger :where(h1, h2, h3, h4, h5, h6, p) {
+/* High specificity: block host's heading/paragraph margins */
+.autoblogger.autoblogger h1,
+.autoblogger.autoblogger h2,
+.autoblogger.autoblogger h3,
+.autoblogger.autoblogger h4,
+.autoblogger.autoblogger h5,
+.autoblogger.autoblogger h6,
+.autoblogger.autoblogger p {
   margin: 0;
+}
+
+/* Zero specificity: heading/paragraph font properties (Tailwind can override) */
+.autoblogger :where(h1, h2, h3, h4, h5, h6, p) {
   font-weight: inherit;
   font-size: inherit;
+  color: inherit;
 }
 
 /* ============================================
    SCOPED BASE STYLES (only inside .autoblogger)
-   Uses host app's CSS variables for colors
+   Uses autoblogger's own CSS variables for colors
+   Completely isolated from host app
    ============================================ */
 
 .autoblogger {
@@ -190,16 +273,30 @@ body:has(.autoblogger.dark) {
   min-height: 100dvh;
 }
 
-/* Theme transition - applied only to key containers */
+/* Theme transition - applied to all elements for smooth dark/light mode switching */
 .autoblogger,
-.autoblogger header,
-.autoblogger footer,
-.autoblogger main {
+.autoblogger *,
+.autoblogger *::before,
+.autoblogger *::after {
   transition: background-color 150ms ease-in-out, border-color 150ms ease-in-out, color 150ms ease-in-out;
 }
 
 .autoblogger a, .autoblogger button {
   touch-action: manipulation;
+}
+
+/* ============================================
+   DROPDOWN BACKDROP
+   Captures clicks outside dropdown to prevent click-through
+   ============================================ */
+
+.ab-dropdown-backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 79;
 }
 
 /* ============================================

@@ -6,6 +6,7 @@ export interface InitAnswers {
   runMigration: boolean
   importContent: boolean
   importPath?: string
+  deploymentPlatform: 'vercel' | 'server' | 'skip'
 }
 
 export async function promptInit(options: {
@@ -35,6 +36,19 @@ export async function promptInit(options: {
     name: 'runMigration',
     message: 'Run database migration after setup?',
     initial: true,
+  })
+
+  // Ask about deployment platform for auto-draft cron setup
+  questions.push({
+    type: 'select',
+    name: 'deploymentPlatform',
+    message: 'Where will you deploy? (for RSS auto-draft scheduling)',
+    choices: [
+      { title: 'Vercel (serverless)', value: 'vercel', description: 'Creates API route + vercel.json cron' },
+      { title: 'Server (VPS/Docker)', value: 'server', description: 'Creates cron script for crontab' },
+      { title: 'Skip for now', value: 'skip', description: 'Set up auto-draft later' },
+    ],
+    initial: 0,
   })
 
   // Ask about importing content if any was found
@@ -77,6 +91,7 @@ export async function promptInit(options: {
     runMigration: answers.runMigration ?? true,
     importContent: answers.importContent ?? false,
     importPath: answers.importPath || options.contentPaths[0],
+    deploymentPlatform: answers.deploymentPlatform || 'vercel',
   }
 }
 

@@ -102,8 +102,8 @@ export function CommentThread({
       className={cn(
         'rounded-lg border p-3 transition-colors cursor-pointer',
         isActive
-          ? 'border-yellow-400 bg-yellow-50/50 ab-dark:border-yellow-600 ab-dark:bg-yellow-900/20'
-          : 'border-gray-200 ab-dark:border-gray-700 bg-white ab-dark:bg-gray-900',
+          ? 'border-ab-highlight-border bg-ab-highlight'
+          : 'border-ab-neutral-border bg-ab-surface-input',
         comment.resolved && 'opacity-60'
       )}
     >
@@ -113,11 +113,11 @@ export function CommentThread({
           <span className="font-medium">
             {isOwn ? 'You' : comment.user.name || comment.user.email.split('@')[0]}
           </span>
-          <span className="text-gray-500 ab-dark:text-gray-400">
+          <span className="text-ab-neutral">
             {formatRelativeTime(comment.createdAt)}
           </span>
           {comment.resolved && (
-            <span className="inline-flex items-center gap-1 text-xs text-green-600 ab-dark:text-green-400">
+            <span className="inline-flex items-center gap-1 text-xs text-ab-success">
               <Check className="w-3 h-3" />
               Resolved
             </span>
@@ -130,7 +130,7 @@ export function CommentThread({
             trigger={
               <button
                 type="button"
-                className="w-6 h-6 rounded hover:bg-gray-100 ab-dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"
+                className="w-6 h-6 rounded hover:bg-ab-neutral-subtle flex items-center justify-center text-ab-neutral"
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
@@ -169,7 +169,7 @@ export function CommentThread({
 
       {/* Quoted text */}
       {comment.quotedText && (
-        <div className="mb-2 px-2 py-1 bg-yellow-100/50 ab-dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 ab-dark:text-gray-400 line-clamp-2">
+        <div className="mb-2 px-2 py-1 bg-ab-highlight-strong rounded text-sm italic text-ab-neutral-strong line-clamp-2">
           "{comment.quotedText}"
         </div>
       )}
@@ -197,7 +197,7 @@ export function CommentThread({
               }
             }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 ab-dark:border-gray-600 rounded-md bg-white ab-dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-ab-neutral-border rounded-md bg-ab-surface-input resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
           <div className="flex gap-2 justify-end">
             <button
@@ -208,7 +208,7 @@ export function CommentThread({
                 setEditContent(comment.content)
               }}
               disabled={loading}
-              className="px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 ab-dark:hover:bg-gray-800 disabled:opacity-50"
+              className="px-3 py-1.5 text-sm rounded-md hover:bg-ab-neutral-subtle disabled:opacity-50"
             >
               Cancel
             </button>
@@ -231,7 +231,7 @@ export function CommentThread({
 
       {/* Replies */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-3 pl-3 border-l-2 border-gray-200 ab-dark:border-gray-700 space-y-3">
+        <div className="mt-3 pl-3 border-l-2 border-ab-neutral-border space-y-3">
           {comment.replies.map((reply) => (
             <ReplyItem
               key={reply.id}
@@ -267,7 +267,7 @@ export function CommentThread({
                   }
                 }}
                 placeholder="Write a reply..."
-                className="w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 ab-dark:border-gray-600 rounded-md bg-white ab-dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-ab-neutral-border rounded-md bg-ab-surface-input resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                 onClick={(e) => e.stopPropagation()}
               />
               <div className="flex gap-2 justify-end">
@@ -279,7 +279,7 @@ export function CommentThread({
                     setReplyContent('')
                   }}
                   disabled={loading}
-                  className="px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 ab-dark:hover:bg-gray-800 disabled:opacity-50"
+                  className="px-3 py-1.5 text-sm rounded-md hover:bg-ab-neutral-subtle disabled:opacity-50"
                 >
                   Cancel
                 </button>
@@ -303,7 +303,7 @@ export function CommentThread({
                 e.stopPropagation()
                 setIsReplying(true)
               }}
-              className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 ab-dark:hover:text-white transition-colors"
+              className="inline-flex items-center gap-1 text-sm text-ab-neutral hover:text-foreground transition-colors"
             >
               <Reply className="w-3.5 h-3.5" />
               Reply
@@ -331,11 +331,11 @@ function ReplyItem({
         <span className="font-medium">
           {isOwn ? 'You' : reply.user.name || reply.user.email.split('@')[0]}
         </span>
-        <span className="text-gray-500 ab-dark:text-gray-400 text-xs">
+        <span className="text-ab-neutral text-xs">
           {formatRelativeTime(reply.createdAt)}
         </span>
       </div>
-      <p className="whitespace-pre-wrap text-gray-600 ab-dark:text-gray-400">{reply.content}</p>
+      <p className="whitespace-pre-wrap text-ab-neutral-strong">{reply.content}</p>
     </div>
   )
 }

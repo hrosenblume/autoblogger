@@ -79,8 +79,8 @@ function useDashboardContext() {
 }
 var DEFAULT_STYLES = {
   container: "max-w-[680px] mx-auto px-6",
-  title: "text-2xl font-bold",
-  subtitle: "text-lg text-muted-foreground",
+  title: "text-[22px] md:text-2xl font-bold leading-tight",
+  subtitle: "text-base md:text-lg text-muted-foreground leading-snug",
   byline: "text-sm text-muted-foreground",
   prose: "prose"
 };
@@ -284,7 +284,7 @@ var import_jsx_runtime3 = require("react/jsx-runtime");
 var ControlButton = (0, import_react2.forwardRef)(
   ({ className = "", active, disabled, children, type = "button", ...props }, ref) => {
     const baseClasses = "inline-flex items-center gap-1 text-sm transition-colors focus:outline-none";
-    const stateClasses = disabled ? "text-muted-foreground/30 cursor-not-allowed" : active ? "text-blue-500 ab-dark:text-blue-400" : "text-muted-foreground active:text-foreground md:hover:text-foreground";
+    const stateClasses = disabled ? "text-muted-foreground/30 cursor-not-allowed" : active ? "text-ab-active" : "text-muted-foreground active:text-foreground md:hover:text-foreground";
     return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
       "button",
       {
@@ -723,7 +723,7 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
     /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("button", { onClick: onNavigate, className: "block text-left w-full", children: [
       /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("h3", { className: "font-medium truncate group-hover:text-muted-foreground", children: post.title || "Untitled" }),
       /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("p", { className: "text-sm text-muted-foreground mt-1 flex items-center gap-2", children: [
-        showStatus && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: `text-xs px-1.5 py-0.5 rounded uppercase font-medium ${post.status === "draft" ? "bg-amber-500/20 text-amber-600 ab-dark:text-amber-400" : "bg-green-500/20 text-green-600 ab-dark:text-green-400"}`, children: post.status }),
+        showStatus && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: `text-xs px-1.5 py-0.5 rounded uppercase font-medium ${post.status === "draft" ? "bg-ab-warning/20 text-ab-warning" : "bg-ab-success/20 text-ab-success"}`, children: post.status }),
         /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("span", { children: [
           formatRelativeTime(post.updatedAt),
           post.wordCount ? ` \xB7 ${post.wordCount} words` : ""
@@ -821,7 +821,7 @@ function ToolbarButton({ onClick, active, disabled, children, title }) {
   );
 }
 function Divider() {
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "w-px h-6 bg-border mx-1" });
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "w-px h-6 bg-border mx-1 shrink-0" });
 }
 function SkeletonButton() {
   return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-7 w-7 shrink-0" });
@@ -976,6 +976,7 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Divider, {}),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {})
     ] });
@@ -1035,10 +1036,20 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
     /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
       ToolbarButton,
       {
+        onClick: () => editor ? editor.chain().focus().toggleUnderline?.().run() : null,
+        active: editor?.isActive("underline"),
+        disabled: aiGenerating || !!isMarkdownMode,
+        title: "Underline (\u2318U)",
+        children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "underline", children: "U" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+      ToolbarButton,
+      {
         onClick: () => editor ? editor.chain().focus().toggleStrike().run() : wrapSelection("~~", "~~"),
         active: editor?.isActive("strike"),
         disabled: aiGenerating,
-        title: "Strikethrough",
+        title: "Strikethrough (\u2318\u21E7X)",
         children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "line-through", children: "S" })
       }
     ),
@@ -1444,15 +1455,21 @@ function Dropdown({
   }, [isControlled, controlledOpen, position, updatePosition]);
   (0, import_react9.useEffect)(() => {
     if (!isOpen) return;
-    const handleClick = (e) => {
-      const target = e.target;
-      if (menuRef.current && !menuRef.current.contains(target) && triggerRef.current && !triggerRef.current.contains(target)) {
-        setOpen(false);
-      }
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.overflow = "";
+      window.scrollTo(0, scrollY);
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [isOpen, setOpen]);
+  }, [isOpen]);
   (0, import_react9.useEffect)(() => {
     if (!isOpen) return;
     const handleKeyDown = (e) => {
@@ -1478,23 +1495,38 @@ function Dropdown({
     setOpen(!isOpen);
   };
   const close = (0, import_react9.useCallback)(() => setOpen(false), [setOpen]);
-  const menu = isOpen && mounted && position ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(AutobloggerPortal, { children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(DropdownContext.Provider, { value: { close }, children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
-    "div",
-    {
-      ref: menuRef,
-      style: {
-        position: "fixed",
-        top: position.top,
-        ...align === "right" ? { right: position.right } : { left: position.left }
-      },
-      className: cn(
-        "z-[80] min-w-[160px] bg-popover text-popover-foreground border border-border rounded-md shadow-lg p-1 overscroll-contain",
-        className
-      ),
-      onWheel: (e) => e.stopPropagation(),
-      children
-    }
-  ) }) }) : null;
+  const handleBackdropClick = (0, import_react9.useCallback)((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpen(false);
+  }, [setOpen]);
+  const menu = isOpen && mounted && position ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(AutobloggerPortal, { children: /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(DropdownContext.Provider, { value: { close }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+      "div",
+      {
+        className: "ab-dropdown-backdrop",
+        onClick: handleBackdropClick,
+        onMouseDown: handleBackdropClick
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
+      "div",
+      {
+        ref: menuRef,
+        style: {
+          position: "fixed",
+          top: position.top,
+          ...align === "right" ? { right: position.right } : { left: position.left }
+        },
+        className: cn(
+          "z-[80] min-w-[160px] bg-popover text-popover-foreground border border-border rounded-md shadow-lg p-1 overscroll-contain",
+          className
+        ),
+        onWheel: (e) => e.stopPropagation(),
+        children
+      }
+    )
+  ] }) }) : null;
   return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
     /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { ref: triggerRef, onClick: handleTriggerClick, children: trigger }),
     menu
@@ -1563,7 +1595,7 @@ function RevisionHistoryDropdown({
       type: "button",
       disabled: disabled || isPreviewMode || previewLoading,
       title: disabled ? "Save post to enable history" : "Revision history",
-      className: "px-2.5 py-1.5 text-sm font-medium rounded transition-colors flex items-center justify-center hover:bg-gray-100 ab-dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-gray-600 ab-dark:text-gray-400",
+      className: "px-3 py-2 md:px-2.5 md:py-1.5 text-base md:text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 active:bg-accent md:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-muted-foreground",
       children: previewLoading ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react6.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react6.History, { className: "w-4 h-4" })
     }
   );
@@ -1698,7 +1730,7 @@ function EditorToolbar({
   apiBasePath = "/api/cms"
 }) {
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "fixed top-[68px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "fixed top-[4.375rem] md:top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
       /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(FormatButtons, { loading: true }),
       /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
       /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(BlockButtons, { loading: true }),
@@ -1711,7 +1743,7 @@ function EditorToolbar({
       /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SkeletonButton, {})
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "fixed top-[68px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "fixed top-[4.375rem] md:top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
     /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
       FormatButtons,
       {
@@ -7814,6 +7846,8 @@ var index_default9 = HorizontalRule;
 var import_extension_placeholder = __toESM(require("@tiptap/extension-placeholder"));
 var import_extension_link = __toESM(require("@tiptap/extension-link"));
 var import_extension_image = __toESM(require("@tiptap/extension-image"));
+var import_extension_strike = __toESM(require("@tiptap/extension-strike"));
+var import_extension_underline = __toESM(require("@tiptap/extension-underline"));
 
 // src/lib/markdown.ts
 var import_marked = require("marked");
@@ -8101,6 +8135,52 @@ var StyledHeading = index_default.extend({
     return [`h${level}`, { ...HTMLAttributes, class: classes[level] || "" }, 0];
   }
 });
+var CustomStrike = import_extension_strike.default.extend({
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-x": () => this.editor.commands.toggleStrike(),
+      "Mod-Shift-X": () => this.editor.commands.toggleStrike()
+    };
+  }
+});
+var CustomBulletList = index_default3.extend({
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-8": () => this.editor.commands.toggleBulletList()
+    };
+  }
+});
+var CustomOrderedList = index_default4.extend({
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-7": () => this.editor.commands.toggleOrderedList()
+    };
+  }
+});
+var CustomCode = index_default6.extend({
+  addKeyboardShortcuts() {
+    return {
+      "Mod-e": () => this.editor.commands.toggleCode(),
+      "Mod-E": () => this.editor.commands.toggleCode()
+    };
+  }
+});
+var CustomBlockquote = index_default8.extend({
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Shift-b": () => this.editor.commands.toggleBlockquote(),
+      "Mod-Shift-B": () => this.editor.commands.toggleBlockquote()
+    };
+  }
+});
+var CustomCodeBlock = index_default7.extend({
+  addKeyboardShortcuts() {
+    return {
+      "Mod-Alt-c": () => this.editor.commands.toggleCodeBlock(),
+      "Mod-Alt-C": () => this.editor.commands.toggleCodeBlock()
+    };
+  }
+});
 function TiptapEditor({
   content,
   onChange,
@@ -8117,7 +8197,7 @@ function TiptapEditor({
   const initialHtml = (0, import_react12.useMemo)(() => content ? renderMarkdown(content) : "", [content]);
   const extensions = (0, import_react12.useMemo)(() => [
     import_starter_kit.default.configure({
-      // Disable extensions we're replacing with styled versions
+      // Disable extensions we're replacing with styled or custom versions
       heading: false,
       paragraph: false,
       bulletList: false,
@@ -8126,7 +8206,9 @@ function TiptapEditor({
       code: false,
       codeBlock: false,
       blockquote: false,
-      horizontalRule: false
+      horizontalRule: false,
+      strike: false
+      // Using custom Strike with Cmd+Shift+X shortcut
     }),
     // Styled heading with per-level classes
     StyledHeading.configure({ levels: [1, 2, 3] }),
@@ -8134,41 +8216,45 @@ function TiptapEditor({
     index_default2.configure({
       HTMLAttributes: { class: "mb-4 leading-relaxed" }
     }),
-    // Lists
-    index_default3.configure({
+    // Lists with custom keyboard shortcuts (Cmd+Shift+8 for bullet, Cmd+Shift+7 for ordered)
+    CustomBulletList.configure({
       HTMLAttributes: { class: "list-disc pl-6 mb-4" }
     }),
-    index_default4.configure({
+    CustomOrderedList.configure({
       HTMLAttributes: { class: "list-decimal pl-6 mb-4" }
     }),
     index_default5.configure({
       HTMLAttributes: { class: "mb-2" }
     }),
-    // Inline code
-    index_default6.configure({
-      HTMLAttributes: { class: "bg-gray-100 ab-dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono" }
+    // Inline code with Cmd+E shortcut
+    CustomCode.configure({
+      HTMLAttributes: { class: "bg-ab-neutral-subtle px-1.5 py-0.5 rounded text-sm font-mono" }
     }),
-    // Code block
-    index_default7.configure({
-      HTMLAttributes: { class: "bg-gray-100 ab-dark:bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4 text-sm font-mono" }
+    // Code block with Cmd+Alt+C shortcut
+    CustomCodeBlock.configure({
+      HTMLAttributes: { class: "bg-ab-neutral-subtle p-4 rounded-lg overflow-x-auto mb-4 text-sm font-mono" }
     }),
-    // Blockquote
-    index_default8.configure({
-      HTMLAttributes: { class: "border-l-4 border-gray-300 ab-dark:border-gray-600 pl-4 italic text-gray-600 ab-dark:text-gray-400 my-4" }
+    // Blockquote with Cmd+Shift+B shortcut
+    CustomBlockquote.configure({
+      HTMLAttributes: { class: "border-l-4 border-ab-neutral-border pl-4 italic text-ab-neutral-strong my-4" }
     }),
     // Horizontal rule
     index_default9.configure({
-      HTMLAttributes: { class: "my-8 border-t border-gray-200 ab-dark:border-gray-700" }
+      HTMLAttributes: { class: "my-8 border-t border-ab-neutral-border" }
     }),
+    // Strike with Cmd+Shift+X shortcut (Google Docs/Word standard)
+    CustomStrike,
+    // Underline with Cmd+U shortcut
+    import_extension_underline.default,
     // Placeholder
     import_extension_placeholder.default.configure({
       placeholder
     }),
-    // Link (already styled)
+    // Link (already styled) - Cmd+K is built-in
     import_extension_link.default.configure({
       openOnClick: false,
       HTMLAttributes: {
-        class: "text-blue-600 ab-dark:text-blue-400 underline"
+        class: "text-ab-active underline"
       }
     }),
     // Image (already styled)
@@ -8417,15 +8503,15 @@ function CommentThread({
       },
       className: cn(
         "rounded-lg border p-3 transition-colors cursor-pointer",
-        isActive ? "border-yellow-400 bg-yellow-50/50 ab-dark:border-yellow-600 ab-dark:bg-yellow-900/20" : "border-gray-200 ab-dark:border-gray-700 bg-white ab-dark:bg-gray-900",
+        isActive ? "border-ab-highlight-border bg-ab-highlight" : "border-ab-neutral-border bg-ab-surface-input",
         comment.resolved && "opacity-60"
       ),
       children: [
         /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-start justify-between gap-2 mb-2", children: [
           /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-2 text-sm", children: [
             /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "font-medium", children: isOwn ? "You" : comment.user.name || comment.user.email.split("@")[0] }),
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "text-gray-500 ab-dark:text-gray-400", children: formatRelativeTime2(comment.createdAt) }),
-            comment.resolved && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "inline-flex items-center gap-1 text-xs text-green-600 ab-dark:text-green-400", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "text-ab-neutral", children: formatRelativeTime2(comment.createdAt) }),
+            comment.resolved && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "inline-flex items-center gap-1 text-xs text-ab-success", children: [
               /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Check, { className: "w-3 h-3" }),
               "Resolved"
             ] })
@@ -8437,7 +8523,7 @@ function CommentThread({
                 "button",
                 {
                   type: "button",
-                  className: "w-6 h-6 rounded hover:bg-gray-100 ab-dark:hover:bg-gray-800 flex items-center justify-center text-gray-500",
+                  className: "w-6 h-6 rounded hover:bg-ab-neutral-subtle flex items-center justify-center text-ab-neutral",
                   children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.MoreHorizontal, { className: "w-4 h-4" })
                 }
               ),
@@ -8463,7 +8549,7 @@ function CommentThread({
             }
           ) })
         ] }),
-        comment.quotedText && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "mb-2 px-2 py-1 bg-yellow-100/50 ab-dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 ab-dark:text-gray-400 line-clamp-2", children: [
+        comment.quotedText && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "mb-2 px-2 py-1 bg-ab-highlight-strong rounded text-sm italic text-ab-neutral-strong line-clamp-2", children: [
           '"',
           comment.quotedText,
           '"'
@@ -8491,7 +8577,7 @@ function CommentThread({
                 }
               },
               onClick: (e) => e.stopPropagation(),
-              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 ab-dark:border-gray-600 rounded-md bg-white ab-dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-ab-neutral-border rounded-md bg-ab-surface-input resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             }
           ),
           /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex gap-2 justify-end", children: [
@@ -8505,7 +8591,7 @@ function CommentThread({
                   setEditContent(comment.content);
                 },
                 disabled: loading,
-                className: "px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 ab-dark:hover:bg-gray-800 disabled:opacity-50",
+                className: "px-3 py-1.5 text-sm rounded-md hover:bg-ab-neutral-subtle disabled:opacity-50",
                 children: "Cancel"
               }
             ),
@@ -8524,7 +8610,7 @@ function CommentThread({
             )
           ] })
         ] }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-sm whitespace-pre-wrap", children: comment.content }),
-        comment.replies && comment.replies.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "mt-3 pl-3 border-l-2 border-gray-200 ab-dark:border-gray-700 space-y-3", children: comment.replies.map((reply) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+        comment.replies && comment.replies.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "mt-3 pl-3 border-l-2 border-ab-neutral-border space-y-3", children: comment.replies.map((reply) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
           ReplyItem,
           {
             reply,
@@ -8555,7 +8641,7 @@ function CommentThread({
                 }
               },
               placeholder: "Write a reply...",
-              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 ab-dark:border-gray-600 rounded-md bg-white ab-dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
+              className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-ab-neutral-border rounded-md bg-ab-surface-input resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
               onClick: (e) => e.stopPropagation()
             }
           ),
@@ -8570,7 +8656,7 @@ function CommentThread({
                   setReplyContent("");
                 },
                 disabled: loading,
-                className: "px-3 py-1.5 text-sm rounded-md hover:bg-gray-100 ab-dark:hover:bg-gray-800 disabled:opacity-50",
+                className: "px-3 py-1.5 text-sm rounded-md hover:bg-ab-neutral-subtle disabled:opacity-50",
                 children: "Cancel"
               }
             ),
@@ -8596,7 +8682,7 @@ function CommentThread({
               e.stopPropagation();
               setIsReplying(true);
             },
-            className: "inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 ab-dark:hover:text-white transition-colors",
+            className: "inline-flex items-center gap-1 text-sm text-ab-neutral hover:text-foreground transition-colors",
             children: [
               /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Reply, { className: "w-3.5 h-3.5" }),
               "Reply"
@@ -8615,9 +8701,9 @@ function ReplyItem({
   return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-sm", children: [
     /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-2 mb-1", children: [
       /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "font-medium", children: isOwn ? "You" : reply.user.name || reply.user.email.split("@")[0] }),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "text-gray-500 ab-dark:text-gray-400 text-xs", children: formatRelativeTime2(reply.createdAt) })
+      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "text-ab-neutral text-xs", children: formatRelativeTime2(reply.createdAt) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "whitespace-pre-wrap text-gray-600 ab-dark:text-gray-400", children: reply.content })
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "whitespace-pre-wrap text-ab-neutral-strong", children: reply.content })
   ] });
 }
 
@@ -8742,7 +8828,7 @@ function CommentsPanel({
           isAnimating ? "translate-x-0" : "translate-x-full"
         ),
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-shrink-0 border-b border-gray-200 ab-dark:border-gray-700 px-4 py-3 flex items-center justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-shrink-0 border-b border-ab-neutral-border px-4 py-3 flex items-center justify-between", children: [
             /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center gap-2", children: [
               /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.MessageSquare, { className: "w-4 h-4 text-gray-500" }),
               /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h2", { className: "font-medium", children: "Comments" }),
@@ -8757,15 +8843,15 @@ function CommentsPanel({
               {
                 type: "button",
                 onClick: onClose,
-                className: "w-8 h-8 rounded-md hover:bg-gray-100 ab-dark:hover:bg-gray-800 flex items-center justify-center text-gray-500",
+                className: "w-8 h-8 rounded-md hover:bg-ab-neutral-subtle flex items-center justify-center text-ab-neutral",
                 "aria-label": "Close comments",
                 children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.X, { className: "w-4 h-4" })
               }
             )
           ] }),
-          selectedText && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-shrink-0 border-b border-gray-200 ab-dark:border-gray-700 px-4 py-5 bg-gray-50/50 ab-dark:bg-gray-800/30", children: [
+          selectedText && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-shrink-0 border-b border-ab-neutral-border px-4 py-5 bg-ab-neutral-subtle/50", children: [
             /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-1 px-2 py-1 bg-yellow-100/50 ab-dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 ab-dark:text-gray-400 line-clamp-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-1 px-2 py-1 bg-ab-highlight-strong rounded text-sm italic text-ab-neutral-strong line-clamp-2", children: [
                 '"',
                 selectedText,
                 '"'
@@ -8779,7 +8865,7 @@ function CommentsPanel({
                     setNewComment("");
                   },
                   disabled: creating,
-                  className: "ml-2 text-xs text-gray-500 hover:text-gray-900 ab-dark:hover:text-white disabled:opacity-50",
+                  className: "ml-2 text-xs text-ab-neutral hover:text-foreground disabled:opacity-50",
                   children: "Cancel"
                 }
               )
@@ -8793,7 +8879,7 @@ function CommentsPanel({
                   onChange: (e) => setNewComment(e.target.value),
                   onKeyDown: handleKeyDown,
                   placeholder: "Add a comment...",
-                  className: "flex-1 min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 ab-dark:border-gray-600 rounded-md bg-white ab-dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
+                  className: "flex-1 min-h-[60px] max-h-[120px] px-3 py-2 border border-ab-neutral-border rounded-md bg-ab-surface-input resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500",
                   rows: 2,
                   enterKeyHint: "send"
                 }
@@ -8804,7 +8890,7 @@ function CommentsPanel({
                   type: "button",
                   onClick: handleCreateComment,
                   disabled: creating || !newComment.trim(),
-                  className: "w-10 h-10 flex-shrink-0 rounded-full bg-gray-100 ab-dark:bg-gray-800 border border-gray-200 ab-dark:border-gray-700 flex items-center justify-center disabled:opacity-50 hover:bg-gray-200 ab-dark:hover:bg-gray-700",
+                  className: "w-10 h-10 flex-shrink-0 rounded-full bg-ab-neutral-subtle border border-ab-neutral-border flex items-center justify-center disabled:opacity-50 hover:bg-ab-neutral-subtle/80",
                   children: creating ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.Loader2, { className: "h-5 w-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.ArrowUp, { className: "h-5 w-5" })
                 }
               )
@@ -8835,7 +8921,7 @@ function CommentsPanel({
                 {
                   type: "button",
                   onClick: () => setShowResolved(!showResolved),
-                  className: "w-full text-left text-sm text-gray-500 hover:text-gray-900 ab-dark:hover:text-white transition-colors py-2",
+                  className: "w-full text-left text-sm text-ab-neutral hover:text-foreground transition-colors py-2",
                   children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { className: "inline-flex items-center gap-1", children: [
                     showResolved ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.ChevronDown, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.ChevronRight, { className: "w-4 h-4" }),
                     "Resolved (",
@@ -8930,6 +9016,7 @@ function TagsSection({
   apiBasePath,
   disabled = false
 }) {
+  const { navigate } = useDashboardContext();
   const [isExpanded, setIsExpanded] = (0, import_react17.useState)(false);
   const [availableTags, setAvailableTags] = (0, import_react17.useState)([]);
   const [loading, setLoading] = (0, import_react17.useState)(false);
@@ -9011,7 +9098,19 @@ function TagsSection({
               tag.id
             ))
           }
-        ) }) : availableTags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-sm text-muted-foreground", children: "No tags available. Create tags in Settings." }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-sm text-muted-foreground", children: "All tags added" }) })
+        ) }) : availableTags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("p", { className: "text-sm text-muted-foreground", children: [
+          "No tags available.",
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+            "button",
+            {
+              type: "button",
+              onClick: () => navigate("/settings/tags"),
+              className: "underline hover:text-foreground transition-colors",
+              children: "Create tags in Settings"
+            }
+          )
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-sm text-muted-foreground", children: "All tags added" }) })
       ]
     }
   );
@@ -9194,6 +9293,13 @@ function parseEditBlocks(content) {
   cleanContent = cleanContent.replace(/\n{3,}/g, "\n\n").trim();
   return { edits, cleanContent };
 }
+function stripEditBlocksForDisplay(content) {
+  let cleaned = content.replace(/:::edit\s*[\s\S]*?\s*:::/g, "");
+  cleaned = cleaned.replace(/:::edit\s*[\s\S]*$/g, "");
+  cleaned = cleaned.replace(/:::[a-z]*$/gi, "");
+  cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
+  return cleaned;
+}
 function cleanPlanOutput(content) {
   let cleaned = content;
   const planMatch = cleaned.match(/<plan>([\s\S]*?)<\/plan>/i);
@@ -9346,9 +9452,10 @@ function ChatProvider({
             }
           }
         }
+        const displayContent = mode === "agent" ? stripEditBlocksForDisplay(assistantContent) : assistantContent;
         setMessages((prev) => {
           const updated = [...prev];
-          updated[updated.length - 1] = { role: "assistant", content: assistantContent, mode };
+          updated[updated.length - 1] = { role: "assistant", content: displayContent, mode };
           return updated;
         });
       }
@@ -10257,8 +10364,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     ] });
   }
   return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col h-full", children: [
-    previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-amber-100 ab-dark:bg-amber-900/30 border-b border-amber-200 ab-dark:border-amber-800 px-4 py-2 flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "text-sm text-amber-800 ab-dark:text-amber-200", children: [
+    previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-ab-warning/15 border-b border-ab-warning/30 px-4 py-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "text-sm text-ab-warning", children: [
         "Previewing revision from ",
         new Date(previewingRevision.createdAt).toLocaleString()
       ] }),
@@ -10267,7 +10374,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           "button",
           {
             onClick: cancelRevisionPreview,
-            className: "px-3 py-1 text-sm border border-amber-300 ab-dark:border-amber-700 rounded hover:bg-amber-200 ab-dark:hover:bg-amber-800",
+            className: "px-3 py-1 text-sm border border-ab-warning/40 rounded hover:bg-ab-warning/20",
             children: "Cancel"
           }
         ),
@@ -10319,7 +10426,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             onChange: (val) => setPost((prev) => ({ ...prev, title: val })),
             placeholder: "Title",
             disabled: generating || !!previewingRevision,
-            className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+            className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
         ),
         generating && !post.subtitle ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
@@ -10329,7 +10436,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             onChange: (val) => setPost((prev) => ({ ...prev, subtitle: val })),
             placeholder: "Subtitle",
             disabled: generating || !!previewingRevision,
-            className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+            className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
         ),
         /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
@@ -10380,7 +10487,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
           /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground w-14", children: "URL" }),
           /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground/70", children: urlPrefix }),
-          isPublished ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "flex items-center gap-1.5 text-gray-600 ab-dark:text-muted-foreground/70", children: [
+          isPublished ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "flex items-center gap-1.5 text-ab-neutral-strong", children: [
             post.slug,
             /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("svg", { className: "w-3 h-3 text-muted-foreground/70", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
           ] }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
@@ -10390,17 +10497,17 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
               value: post.slug,
               onChange: (e) => setPost((prev) => ({ ...prev, slug: e.target.value })),
               placeholder: "post-slug",
-              className: "flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-gray-600 ab-dark:text-muted-foreground/70"
+              className: "flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-ab-neutral-strong"
             }
           )
         ] }) }),
-        wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-start gap-2 p-3 rounded-md bg-amber-50 ab-dark:bg-amber-950/30 border border-amber-200 ab-dark:border-amber-800 text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("svg", { className: "w-4 h-4 text-amber-600 ab-dark:text-amber-400 mt-0.5 flex-shrink-0", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "text-amber-800 ab-dark:text-amber-200", children: [
+        wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-start gap-2 p-3 rounded-md bg-ab-warning/10 border border-ab-warning/30 text-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("svg", { className: "w-4 h-4 text-ab-warning mt-0.5 flex-shrink-0", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "text-ab-warning", children: [
             /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "font-medium", children: "URL change detected." }),
             " ",
             "Existing links to ",
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("code", { className: "px-1 py-0.5 bg-amber-100 ab-dark:bg-amber-900/50 rounded text-xs", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("code", { className: "px-1 py-0.5 bg-ab-warning/20 rounded text-xs", children: [
               urlPrefix,
               originalSlug
             ] }),
@@ -10449,7 +10556,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center justify-between text-sm", children: [
           /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
             /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground", children: "Status" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: isPublished ? "text-xs text-green-700/80 ab-dark:text-green-500/80" : "text-xs text-muted-foreground/70", children: isPublished ? "Published" : "Draft" })
+            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: isPublished ? "text-xs text-ab-success-muted" : "text-xs text-muted-foreground/70", children: isPublished ? "Published" : "Draft" })
           ] }),
           isPublished ? hasUnsavedChanges ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
             "button",
@@ -10469,7 +10576,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             "button",
             {
               onClick: handleUnpublish,
-              className: "px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-red-600 hover:border-red-300 hover:bg-red-50 ab-dark:hover:border-red-800 ab-dark:hover:bg-red-900/20 transition-colors",
+              className: "px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors",
               children: "Unpublish"
             }
           ) : /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
@@ -10947,7 +11054,7 @@ function GeneralSettingsContent() {
           ]
         }
       ),
-      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-green-600 ab-dark:text-green-400", children: "Saved!" })
+      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-ab-success", children: "Saved!" })
     ] })
   ] });
 }
@@ -11036,11 +11143,11 @@ function IntegrationsSettingsContent() {
           "button",
           {
             onClick: () => setPrismicEnabled(!prismicEnabled),
-            className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicEnabled ? "bg-primary" : "bg-muted"}`,
+            className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicEnabled ? "bg-foreground" : "bg-muted"}`,
             children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "span",
               {
-                className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${prismicEnabled ? "translate-x-6" : "translate-x-1"}`
+                className: `inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${prismicEnabled ? "translate-x-6" : "translate-x-1"}`
               }
             )
           }
@@ -11050,7 +11157,7 @@ function IntegrationsSettingsContent() {
         /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
           /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("label", { htmlFor: "prismicRepository", className: "text-sm font-medium leading-none", children: [
             "Repository Name",
-            configRepository && prismicRepository === configRepository && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs font-normal text-green-600 ab-dark:text-green-400", children: "\u2713 From config" })
+            configRepository && prismicRepository === configRepository && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 From config" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
@@ -11072,7 +11179,7 @@ function IntegrationsSettingsContent() {
         /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
           /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("label", { htmlFor: "prismicWriteToken", className: "text-sm font-medium leading-none", children: [
             "Write API Token",
-            hasEnvToken && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs font-normal text-green-600 ab-dark:text-green-400", children: "\u2713 Using PRISMIC_WRITE_TOKEN from env" })
+            hasEnvToken && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 Using PRISMIC_WRITE_TOKEN from env" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
@@ -11144,11 +11251,11 @@ function IntegrationsSettingsContent() {
             {
               id: "prismicAutoRename",
               onClick: () => setPrismicAutoRename(!prismicAutoRename),
-              className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicAutoRename ? "bg-primary" : "bg-muted"}`,
+              className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicAutoRename ? "bg-foreground" : "bg-muted"}`,
               children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
                 "span",
                 {
-                  className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${prismicAutoRename ? "translate-x-6" : "translate-x-1"}`
+                  className: `inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${prismicAutoRename ? "translate-x-6" : "translate-x-1"}`
                 }
               )
             }
@@ -11170,7 +11277,7 @@ function IntegrationsSettingsContent() {
           ]
         }
       ),
-      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-green-600 ab-dark:text-green-400", children: "Saved!" })
+      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-ab-success", children: "Saved!" })
     ] })
   ] });
 }
@@ -11302,7 +11409,7 @@ function AISettingsContent() {
           /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "anthropicKey", className: "text-sm font-medium leading-none", children: "Anthropic API Key" }),
           hasAnthropicEnvKey && !anthropicKey ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
             /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs text-green-600 ab-dark:text-green-400", children: "(from environment)" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
           ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
             {
@@ -11321,7 +11428,7 @@ function AISettingsContent() {
           /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "openaiKey", className: "text-sm font-medium leading-none", children: "OpenAI API Key" }),
           hasOpenaiEnvKey && !openaiKey ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
             /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs text-green-600 ab-dark:text-green-400", children: "(from environment)" })
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
           ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
             {
@@ -11586,7 +11693,7 @@ function AISettingsContent() {
             role: "switch",
             "aria-checked": autoDraftEnabled,
             onClick: () => setAutoDraftEnabled(!autoDraftEnabled),
-            className: `relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${autoDraftEnabled ? "bg-primary" : "bg-input"}`,
+            className: `relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${autoDraftEnabled ? "bg-foreground" : "bg-input"}`,
             children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               "span",
               {
@@ -11610,7 +11717,7 @@ function AISettingsContent() {
           ]
         }
       ),
-      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-green-600 ab-dark:text-green-400", children: "Saved!" })
+      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-ab-success", children: "Saved!" })
     ] })
   ] });
 }
@@ -12889,7 +12996,7 @@ function ChatButton() {
 var import_react23 = require("react");
 var import_lucide_react12 = require("lucide-react");
 var import_jsx_runtime29 = require("react/jsx-runtime");
-var DEFAULT_PROSE_CLASSES2 = "prose";
+var DEFAULT_PROSE_CLASSES2 = "";
 function stripPlanTags(content) {
   return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
 }
@@ -13124,7 +13231,7 @@ function ChatPanel({
                   children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
                     "div",
                     {
-                      className: `max-w-[85%] rounded-2xl px-3 py-2 text-sm relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
+                      className: `max-w-[85%] rounded-2xl px-3 py-2 text-base relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
                       children: [
                         message.role === "assistant" ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
                           "div",
@@ -13188,7 +13295,7 @@ function ChatPanel({
                         type: "button",
                         onClick: () => setModeMenuOpen(!modeMenuOpen),
                         title: "Switch mode (\u2318\u21E7A)",
-                        className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${mode === "ask" ? "bg-green-100 text-green-700 ab-dark:bg-green-900/30 ab-dark:text-green-400" : mode === "agent" ? "bg-muted text-muted-foreground" : "bg-amber-100 text-amber-700 ab-dark:bg-amber-900/30 ab-dark:text-amber-400"}`,
+                        className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${mode === "ask" ? "bg-ab-success/15 text-ab-success" : mode === "agent" ? "bg-muted text-muted-foreground" : "bg-ab-warning/15 text-ab-warning"}`,
                         children: [
                           mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.MessageSquare, { className: "w-3 h-3" }),
                           mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Pencil, { className: "w-3 h-3" }),
@@ -13508,7 +13615,7 @@ function DashboardLayout({
         type: "button",
         onClick: () => editorState.onSave("draft"),
         disabled: !editorState.hasUnsavedChanges || !!editorState.savingAs,
-        className: "w-9 h-9 rounded-md border border-border hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
+        className: "w-10 h-10 md:w-9 md:h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
         "aria-label": "Save",
         title: editorState.hasUnsavedChanges ? "Save changes (\u2318S)" : "No unsaved changes",
         children: editorState.savingAs ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react13.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react13.Save, { className: "h-4 w-4" })

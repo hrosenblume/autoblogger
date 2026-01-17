@@ -999,14 +999,14 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     <div className="flex flex-col h-full">
       {/* Revision Preview Banner */}
       {previewingRevision && (
-        <div className="bg-amber-100 ab-dark:bg-amber-900/30 border-b border-amber-200 ab-dark:border-amber-800 px-4 py-2 flex items-center justify-between">
-          <span className="text-sm text-amber-800 ab-dark:text-amber-200">
+        <div className="bg-ab-warning/15 border-b border-ab-warning/30 px-4 py-2 flex items-center justify-between">
+          <span className="text-sm text-ab-warning">
             Previewing revision from {new Date(previewingRevision.createdAt).toLocaleString()}
           </span>
           <div className="flex items-center gap-2">
             <button
               onClick={cancelRevisionPreview}
-              className="px-3 py-1 text-sm border border-amber-300 ab-dark:border-amber-700 rounded hover:bg-amber-200 ab-dark:hover:bg-amber-800"
+              className="px-3 py-1 text-sm border border-ab-warning/40 rounded hover:bg-ab-warning/20"
             >
               Cancel
             </button>
@@ -1063,7 +1063,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 onChange={(val) => setPost(prev => ({ ...prev, title: val }))}
                 placeholder="Title"
                 disabled={generating || !!previewingRevision}
-                className={`${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`${styles.title} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             )}
             {generating && !post.subtitle ? (
@@ -1074,7 +1074,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 onChange={(val) => setPost(prev => ({ ...prev, subtitle: val }))}
                 placeholder="Subtitle"
                 disabled={generating || !!previewingRevision}
-                className={`${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             )}
             <div className="!mt-4">
@@ -1139,7 +1139,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                   <span className="text-muted-foreground w-14">URL</span>
                   <span className="text-muted-foreground/70">{urlPrefix}</span>
                   {isPublished ? (
-                    <span className="flex items-center gap-1.5 text-gray-600 ab-dark:text-muted-foreground/70">
+                    <span className="flex items-center gap-1.5 text-ab-neutral-strong">
                       {post.slug}
                       <svg className="w-3 h-3 text-muted-foreground/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -1151,7 +1151,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                       value={post.slug}
                       onChange={(e) => setPost(prev => ({ ...prev, slug: e.target.value }))}
                       placeholder="post-slug"
-                      className="flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-gray-600 ab-dark:text-muted-foreground/70"
+                      className="flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-ab-neutral-strong"
                     />
                   )}
                 </div>
@@ -1159,13 +1159,13 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               
               {/* Slug change warning for previously-published posts */}
               {wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && (
-                <div className="flex items-start gap-2 p-3 rounded-md bg-amber-50 ab-dark:bg-amber-950/30 border border-amber-200 ab-dark:border-amber-800 text-sm">
-                  <svg className="w-4 h-4 text-amber-600 ab-dark:text-amber-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="flex items-start gap-2 p-3 rounded-md bg-ab-warning/10 border border-ab-warning/30 text-sm">
+                  <svg className="w-4 h-4 text-ab-warning mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
-                  <div className="text-amber-800 ab-dark:text-amber-200">
+                  <div className="text-ab-warning">
                     <span className="font-medium">URL change detected.</span>
-                    {' '}Existing links to <code className="px-1 py-0.5 bg-amber-100 ab-dark:bg-amber-900/50 rounded text-xs">{urlPrefix}{originalSlug}</code> will automatically redirect to the new URL when you publish.
+                    {' '}Existing links to <code className="px-1 py-0.5 bg-ab-warning/20 rounded text-xs">{urlPrefix}{originalSlug}</code> will automatically redirect to the new URL when you publish.
                   </div>
                 </div>
               )}
@@ -1222,7 +1222,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Status</span>
-                  <span className={isPublished ? "text-xs text-green-700/80 ab-dark:text-green-500/80" : "text-xs text-muted-foreground/70"}>
+                  <span className={isPublished ? "text-xs text-ab-success-muted" : "text-xs text-muted-foreground/70"}>
                     {isPublished ? 'Published' : 'Draft'}
                   </span>
                 </div>
@@ -1246,7 +1246,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                   ) : (
                     <button
                       onClick={handleUnpublish}
-                      className="px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-red-600 hover:border-red-300 hover:bg-red-50 ab-dark:hover:border-red-800 ab-dark:hover:bg-red-900/20 transition-colors"
+                      className="px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors"
                     >
                       Unpublish
                     </button>

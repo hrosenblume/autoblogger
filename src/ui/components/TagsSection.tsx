@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { ExpandableSection } from './ExpandableSection'
 import { Dropdown, DropdownItem } from './Dropdown'
+import { useDashboardContext } from '../context'
 
 interface Tag {
   id: string
@@ -22,6 +23,7 @@ export function TagsSection({
   apiBasePath,
   disabled = false,
 }: TagsSectionProps) {
+  const { navigate } = useDashboardContext()
   const [isExpanded, setIsExpanded] = useState(false)
   const [availableTags, setAvailableTags] = useState<Tag[]>([])
   const [loading, setLoading] = useState(false)
@@ -132,7 +134,14 @@ export function TagsSection({
             </div>
           ) : availableTags.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              No tags available. Create tags in Settings.
+              No tags available.{' '}
+              <button
+                type="button"
+                onClick={() => navigate('/settings/tags')}
+                className="underline hover:text-foreground transition-colors"
+              >
+                Create tags in Settings
+              </button>
             </p>
           ) : (
             <p className="text-sm text-muted-foreground">All tags added</p>

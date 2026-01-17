@@ -34,7 +34,7 @@ export function ToolbarButton({ onClick, active, disabled, children, title }: To
 }
 
 export function Divider() {
-  return <div className="w-px h-6 bg-border mx-1" />
+  return <div className="w-px h-6 bg-border mx-1 shrink-0" />
 }
 
 /** Skeleton placeholder for a toolbar button - matches ToolbarButton dimensions */

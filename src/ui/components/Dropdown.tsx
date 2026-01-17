@@ -92,23 +92,30 @@ export function Dropdown({
     }
   }, [isControlled, controlledOpen, position, updatePosition])
 
-  // Close on click outside
+  // Close on click outside is handled by the backdrop element below
+
+  // Lock scroll when dropdown is open
   useEffect(() => {
     if (!isOpen) return
     
-    const handleClick = (e: MouseEvent) => {
-      const target = e.target as Node
-      if (
-        menuRef.current && !menuRef.current.contains(target) &&
-        triggerRef.current && !triggerRef.current.contains(target)
-      ) {
-        setOpen(false)
-      }
-    }
+    // Save current scroll position and lock body scroll
+    const scrollY = window.scrollY
+    document.body.style.position = 'fixed'
+    document.body.style.top = `-${scrollY}px`
+    document.body.style.left = '0'
+    document.body.style.right = '0'
+    document.body.style.overflow = 'hidden'
     
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [isOpen, setOpen])
+    return () => {
+      // Restore scroll position
+      document.body.style.position = ''
+      document.body.style.top = ''
+      document.body.style.left = ''
+      document.body.style.right = ''
+      document.body.style.overflow = ''
+      window.scrollTo(0, scrollY)
+    }
+  }, [isOpen])
 
   // Close on escape
   useEffect(() => {
@@ -144,10 +151,23 @@ export function Dropdown({
 
   const close = useCallback(() => setOpen(false), [setOpen])
 
+  // Handle backdrop click - closes dropdown and prevents click-through
+  const handleBackdropClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setOpen(false)
+  }, [setOpen])
+
   // Only render menu when open, mounted, AND position is calculated
   const menu = isOpen && mounted && position ? (
     <AutobloggerPortal>
       <DropdownContext.Provider value={{ close }}>
+        {/* Invisible backdrop to capture clicks outside dropdown */}
+        <div
+          className="ab-dropdown-backdrop"
+          onClick={handleBackdropClick}
+          onMouseDown={handleBackdropClick}
+        />
         <div
           ref={menuRef}
           style={{

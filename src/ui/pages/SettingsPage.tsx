@@ -532,7 +532,7 @@ function GeneralSettingsContent() {
           {saving ? 'Saving...' : 'Save'}
         </button>
         {saved && (
-          <span className="text-sm text-green-600 ab-dark:text-green-400">
+          <span className="text-sm text-ab-success">
             Saved!
           </span>
         )}
@@ -647,11 +647,11 @@ function IntegrationsSettingsContent() {
             <button
               onClick={() => setPrismicEnabled(!prismicEnabled)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                prismicEnabled ? 'bg-primary' : 'bg-muted'
+                prismicEnabled ? 'bg-foreground' : 'bg-muted'
               }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
                   prismicEnabled ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
@@ -666,7 +666,7 @@ function IntegrationsSettingsContent() {
                 <label htmlFor="prismicRepository" className="text-sm font-medium leading-none">
                   Repository Name
                   {configRepository && prismicRepository === configRepository && (
-                    <span className="ml-2 text-xs font-normal text-green-600 ab-dark:text-green-400">
+                    <span className="ml-2 text-xs font-normal text-ab-success">
                       ✓ From config
                     </span>
                   )}
@@ -692,7 +692,7 @@ function IntegrationsSettingsContent() {
                 <label htmlFor="prismicWriteToken" className="text-sm font-medium leading-none">
                   Write API Token
                   {hasEnvToken && (
-                    <span className="ml-2 text-xs font-normal text-green-600 ab-dark:text-green-400">
+                    <span className="ml-2 text-xs font-normal text-ab-success">
                       ✓ Using PRISMIC_WRITE_TOKEN from env
                     </span>
                   )}
@@ -782,11 +782,11 @@ function IntegrationsSettingsContent() {
                   id="prismicAutoRename"
                   onClick={() => setPrismicAutoRename(!prismicAutoRename)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    prismicAutoRename ? 'bg-primary' : 'bg-muted'
+                    prismicAutoRename ? 'bg-foreground' : 'bg-muted'
                   }`}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${
                       prismicAutoRename ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
@@ -815,7 +815,7 @@ function IntegrationsSettingsContent() {
           {saving ? 'Saving...' : 'Save'}
         </button>
         {saved && (
-          <span className="text-sm text-green-600 ab-dark:text-green-400">
+          <span className="text-sm text-ab-success">
             Saved!
           </span>
         )}
@@ -957,7 +957,7 @@ function AISettingsContent() {
               {hasAnthropicEnvKey && !anthropicKey ? (
                 <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
                   <span className="text-muted-foreground">••••••••</span>
-                  <span className="ml-2 text-xs text-green-600 ab-dark:text-green-400">(from environment)</span>
+                  <span className="ml-2 text-xs text-ab-success">(from environment)</span>
                 </div>
               ) : (
                 <input
@@ -981,7 +981,7 @@ function AISettingsContent() {
               {hasOpenaiEnvKey && !openaiKey ? (
                 <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm">
                   <span className="text-muted-foreground">••••••••</span>
-                  <span className="ml-2 text-xs text-green-600 ab-dark:text-green-400">(from environment)</span>
+                  <span className="ml-2 text-xs text-ab-success">(from environment)</span>
                 </div>
               ) : (
                 <input
@@ -1243,7 +1243,7 @@ function AISettingsContent() {
               role="switch"
               aria-checked={autoDraftEnabled}
               onClick={() => setAutoDraftEnabled(!autoDraftEnabled)}
-              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${autoDraftEnabled ? 'bg-primary' : 'bg-input'}`}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${autoDraftEnabled ? 'bg-foreground' : 'bg-input'}`}
             >
               <span
                 className={`pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${autoDraftEnabled ? 'translate-x-5' : 'translate-x-0'}`}
@@ -1264,7 +1264,7 @@ function AISettingsContent() {
           {saving ? 'Saving...' : 'Save'}
         </button>
         {saved && (
-          <span className="text-sm text-green-600 ab-dark:text-green-400">
+          <span className="text-sm text-ab-success">
             Saved!
           </span>
         )}

@@ -446,6 +446,17 @@ async function promptInit(options) {
     message: "Run database migration after setup?",
     initial: true
   });
+  questions.push({
+    type: "select",
+    name: "deploymentPlatform",
+    message: "Where will you deploy? (for RSS auto-draft scheduling)",
+    choices: [
+      { title: "Vercel (serverless)", value: "vercel", description: "Creates API route + vercel.json cron" },
+      { title: "Server (VPS/Docker)", value: "server", description: "Creates cron script for crontab" },
+      { title: "Skip for now", value: "skip", description: "Set up auto-draft later" }
+    ],
+    initial: 0
+  });
   if (options.contentPaths.length > 0) {
     const contentSummary = options.contentPaths.map((p) => `${p} (${options.contentCounts[p]} files)`).join(", ");
     console.log(import_picocolors.default.cyan(`
@@ -478,7 +489,8 @@ Found existing content: ${contentSummary}`));
     dbProvider: answers.dbProvider || "postgresql",
     runMigration: answers.runMigration ?? true,
     importContent: answers.importContent ?? false,
-    importPath: answers.importPath || options.contentPaths[0]
+    importPath: answers.importPath || options.contentPaths[0],
+    deploymentPlatform: answers.deploymentPlatform || "vercel"
   };
 }
 async function confirm(message, initial = true) {
@@ -630,6 +642,121 @@ var WRITER_LAYOUT_TEMPLATE = `export default function WriterLayout({
 }) {
   return children
 }
+`;
+
+// src/cli/templates/auto-draft-script.ts
+var AUTO_DRAFT_SCRIPT_TEMPLATE = `/**
+ * Auto-Draft Cron Script
+ * 
+ * Fetches RSS feeds for active topic subscriptions and generates essay drafts.
+ * Run with: npx tsx --env-file=.env.local scripts/auto-draft.ts
+ * 
+ * Schedule via cron:
+ *   0 6 * * * cd /path/to/project && npx tsx scripts/auto-draft.ts >> /var/log/auto-draft.log 2>&1
+ */
+
+import 'dotenv/config'
+import { cms } from '../lib/cms'
+
+async function main() {
+  const startTime = new Date()
+  console.log(\`[\${startTime.toISOString()}] Starting auto-draft...\`)
+  
+  try {
+    const results = await cms.autoDraft.run()
+    
+    if (results.length === 0) {
+      console.log('  No active topics to process.')
+    } else {
+      let totalGenerated = 0
+      let totalSkipped = 0
+      
+      for (const r of results) {
+        console.log(\`  \${r.topicName}: generated \${r.generated}, skipped \${r.skipped}\`)
+        totalGenerated += r.generated
+        totalSkipped += r.skipped
+      }
+      
+      console.log('  ---')
+      console.log(\`  Total: \${totalGenerated} essays generated, \${totalSkipped} articles skipped\`)
+    }
+    
+    const endTime = new Date()
+    const duration = (endTime.getTime() - startTime.getTime()) / 1000
+    console.log(\`[\${endTime.toISOString()}] Done in \${duration.toFixed(1)}s\`)
+    
+    process.exit(0)
+  } catch (error) {
+    console.error('Auto-draft failed:', error)
+    process.exit(1)
+  }
+}
+
+main()
+`;
+
+// src/cli/templates/vercel-cron-route.ts
+var VERCEL_CRON_ROUTE_TEMPLATE = `import { NextResponse } from 'next/server'
+import { cms } from '@/lib/cms'
+
+/**
+ * Vercel Cron endpoint for RSS auto-draft generation.
+ * 
+ * Triggered by Vercel Cron on schedule defined in vercel.json.
+ * Fetches RSS feeds for active topic subscriptions and generates essay drafts.
+ * 
+ * To test manually:
+ *   curl -H "Authorization: Bearer YOUR_CRON_SECRET" http://localhost:3000/api/cron/auto-draft
+ */
+export async function GET(request: Request) {
+  // Verify the request is from Vercel Cron (security)
+  const authHeader = request.headers.get('authorization')
+  if (authHeader !== \`Bearer \${process.env.CRON_SECRET}\`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const startTime = new Date()
+  console.log(\`[\${startTime.toISOString()}] Starting auto-draft via Vercel Cron...\`)
+
+  try {
+    const results = await cms.autoDraft.run()
+
+    if (results.length === 0) {
+      console.log('  No active topics to process.')
+    } else {
+      let totalGenerated = 0
+      let totalSkipped = 0
+
+      for (const r of results) {
+        console.log(\`  \${r.topicName}: generated \${r.generated}, skipped \${r.skipped}\`)
+        totalGenerated += r.generated
+        totalSkipped += r.skipped
+      }
+
+      console.log('  ---')
+      console.log(\`  Total: \${totalGenerated} essays generated, \${totalSkipped} articles skipped\`)
+    }
+
+    const endTime = new Date()
+    const duration = (endTime.getTime() - startTime.getTime()) / 1000
+    console.log(\`[\${endTime.toISOString()}] Done in \${duration.toFixed(1)}s\`)
+
+    return NextResponse.json({
+      success: true,
+      results,
+      duration: \`\${duration.toFixed(1)}s\`,
+    })
+  } catch (error) {
+    console.error('Auto-draft failed:', error)
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Auto-draft failed' },
+      { status: 500 }
+    )
+  }
+}
+
+// Vercel Cron requires a longer timeout for AI generation
+export const maxDuration = 300 // 5 minutes
 `;
 
 // src/cli/import.ts
@@ -895,11 +1022,15 @@ async function init(options = {}) {
   for (const contentPath of project.contentPaths) {
     contentCounts[contentPath] = countMarkdownFiles(path6.join(cwd, contentPath));
   }
+  const hasVercelJson = fs6.existsSync(path6.join(cwd, "vercel.json"));
+  const hasVercelDir = fs6.existsSync(path6.join(cwd, ".vercel"));
+  const isLikelyVercel = hasVercelJson || hasVercelDir;
   let answers = {
     dbProvider: "postgresql",
     runMigration: !options.skipMigrate,
     importContent: !!options.importPath,
-    importPath: options.importPath || project.contentPaths[0]
+    importPath: options.importPath || project.contentPaths[0],
+    deploymentPlatform: isLikelyVercel ? "vercel" : "server"
   };
   if (!options.yes) {
     answers = await promptInit({
@@ -929,6 +1060,12 @@ Error: Found conflicting model names in your Prisma schema:`));
     console.log(`  - ${project.appRouterPath}/api/cms/[...path]/route.ts`);
     console.log(`  - ${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx`);
     console.log(`  - ${project.appRouterPath}/(writer)/layout.tsx`);
+    if (answers.deploymentPlatform === "vercel") {
+      console.log(`  - ${project.appRouterPath}/api/cron/auto-draft/route.ts (Vercel Cron endpoint)`);
+      console.log(`  - vercel.json (add cron schedule)`);
+    } else if (answers.deploymentPlatform === "server") {
+      console.log(`  - scripts/auto-draft.ts (cron script for crontab)`);
+    }
     console.log(`  - globals.css (add CSS import)`);
     console.log(`  - ${project.appRouterPath}/layout.tsx (add suppressHydrationWarning, GlobalShortcuts)`);
     if (answers.runMigration) {
@@ -998,6 +1135,53 @@ Would import ${count} posts from ${answers.importPath}`);
   } else {
     fs6.writeFileSync(writerLayoutPath, WRITER_LAYOUT_TEMPLATE);
     log("write", `Created ${project.appRouterPath}/(writer)/layout.tsx`);
+  }
+  if (answers.deploymentPlatform === "vercel") {
+    const cronRoutePath = path6.join(cwd, project.appRouterPath, "api", "cron", "auto-draft", "route.ts");
+    if (fs6.existsSync(cronRoutePath)) {
+      log("skip", `${project.appRouterPath}/api/cron/auto-draft/route.ts already exists`);
+    } else {
+      const cronRouteDir = path6.dirname(cronRoutePath);
+      if (!fs6.existsSync(cronRouteDir)) {
+        fs6.mkdirSync(cronRouteDir, { recursive: true });
+      }
+      fs6.writeFileSync(cronRoutePath, VERCEL_CRON_ROUTE_TEMPLATE);
+      log("write", `Created ${project.appRouterPath}/api/cron/auto-draft/route.ts`);
+    }
+    const vercelJsonPath = path6.join(cwd, "vercel.json");
+    let vercelConfig = {};
+    if (fs6.existsSync(vercelJsonPath)) {
+      try {
+        vercelConfig = JSON.parse(fs6.readFileSync(vercelJsonPath, "utf-8"));
+      } catch {
+      }
+    }
+    const cronPath = "/api/cron/auto-draft";
+    const existingCron = vercelConfig.crons?.find((c) => c.path === cronPath);
+    if (existingCron) {
+      log("skip", "vercel.json already has auto-draft cron");
+    } else {
+      vercelConfig.crons = vercelConfig.crons || [];
+      vercelConfig.crons.push({
+        path: cronPath,
+        schedule: "0 6 * * *"
+        // Daily at 6am UTC
+      });
+      fs6.writeFileSync(vercelJsonPath, JSON.stringify(vercelConfig, null, 2) + "\n");
+      log("write", "Updated vercel.json with auto-draft cron (daily at 6am UTC)");
+    }
+  } else if (answers.deploymentPlatform === "server") {
+    const scriptsDir = path6.join(cwd, "scripts");
+    const autoDraftScriptPath = path6.join(scriptsDir, "auto-draft.ts");
+    if (fs6.existsSync(autoDraftScriptPath)) {
+      log("skip", "scripts/auto-draft.ts already exists");
+    } else {
+      if (!fs6.existsSync(scriptsDir)) {
+        fs6.mkdirSync(scriptsDir, { recursive: true });
+      }
+      fs6.writeFileSync(autoDraftScriptPath, AUTO_DRAFT_SCRIPT_TEMPLATE);
+      log("write", "Created scripts/auto-draft.ts (schedule via crontab)");
+    }
   }
   const globalsCssPath = findGlobalsCss(cwd);
   if (globalsCssPath) {
@@ -1095,6 +1279,12 @@ Would import ${count} posts from ${answers.importPath}`);
   console.log(import_picocolors3.default.gray("  1. Update lib/cms.ts with your auth configuration"));
   console.log(import_picocolors3.default.gray("  2. Add your auth check to app/(writer)/writer/[[...path]]/page.tsx"));
   console.log(import_picocolors3.default.gray("  3. Set ANTHROPIC_API_KEY and/or OPENAI_API_KEY for AI features"));
+  if (answers.deploymentPlatform === "vercel") {
+    console.log(import_picocolors3.default.gray("  4. Set CRON_SECRET env var in Vercel for auto-draft security"));
+  } else if (answers.deploymentPlatform === "server") {
+    console.log(import_picocolors3.default.gray("  4. Schedule scripts/auto-draft.ts via crontab:"));
+    console.log(import_picocolors3.default.gray("     0 6 * * * cd /path/to/project && npx tsx scripts/auto-draft.ts"));
+  }
   console.log("");
 }
 

@@ -103,6 +103,7 @@ interface DashboardContextValue {
     currentPath: string;
     navigate: (path: string, options?: {
         skipConfirmation?: boolean;
+        replace?: boolean;
     }) => void;
     goBack: () => void;
     canGoBack: boolean;

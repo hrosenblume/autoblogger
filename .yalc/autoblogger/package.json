@@ -1,6 +1,6 @@
 {
   "name": "autoblogger",
-  "version": "0.2.7",
+  "version": "0.2.19",
   "description": "A headless CMS with AI writing tools, WYSIWYG editor, and RSS auto-draft",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -83,6 +83,8 @@
     "@tiptap/extension-image": "^3.15.3",
     "@tiptap/extension-link": "^3.15.3",
     "@tiptap/extension-placeholder": "^3.15.3",
+    "@tiptap/extension-strike": "^3.15.3",
+    "@tiptap/extension-underline": "^3.15.3",
     "@tiptap/pm": "^3.15.3",
     "@tiptap/react": "^3.15.3",
     "@tiptap/starter-kit": "^3.15.3",
@@ -117,5 +119,5 @@
     "type": "git",
     "url": "https://github.com/hrosenblume/autoblogger.git"
   },
-  "yalcSig": "ba94127c0ccf42f7004fa4e821562317"
+  "yalcSig": "a8cbdeee6ff931f0dd8e63267be625d9"
 }

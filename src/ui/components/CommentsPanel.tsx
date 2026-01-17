@@ -157,7 +157,7 @@ export function CommentsPanel({
         )}
       >
         {/* Header */}
-        <div className="flex-shrink-0 border-b border-gray-200 ab-dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+        <div className="flex-shrink-0 border-b border-ab-neutral-border px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-gray-500" />
             <h2 className="font-medium">Comments</h2>
@@ -170,7 +170,7 @@ export function CommentsPanel({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-md hover:bg-gray-100 ab-dark:hover:bg-gray-800 flex items-center justify-center text-gray-500"
+            className="w-8 h-8 rounded-md hover:bg-ab-neutral-subtle flex items-center justify-center text-ab-neutral"
             aria-label="Close comments"
           >
             <X className="w-4 h-4" />
@@ -179,9 +179,9 @@ export function CommentsPanel({
 
         {/* New comment section - shown when text is selected */}
         {selectedText && (
-          <div className="flex-shrink-0 border-b border-gray-200 ab-dark:border-gray-700 px-4 py-5 bg-gray-50/50 ab-dark:bg-gray-800/30">
+          <div className="flex-shrink-0 border-b border-ab-neutral-border px-4 py-5 bg-ab-neutral-subtle/50">
             <div className="flex items-center justify-between mb-3">
-              <div className="flex-1 px-2 py-1 bg-yellow-100/50 ab-dark:bg-yellow-900/30 rounded text-sm italic text-gray-600 ab-dark:text-gray-400 line-clamp-2">
+              <div className="flex-1 px-2 py-1 bg-ab-highlight-strong rounded text-sm italic text-ab-neutral-strong line-clamp-2">
                 "{selectedText}"
               </div>
               <button
@@ -191,7 +191,7 @@ export function CommentsPanel({
                   setNewComment('')
                 }}
                 disabled={creating}
-                className="ml-2 text-xs text-gray-500 hover:text-gray-900 ab-dark:hover:text-white disabled:opacity-50"
+                className="ml-2 text-xs text-ab-neutral hover:text-foreground disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -203,7 +203,7 @@ export function CommentsPanel({
                 onChange={(e) => setNewComment(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Add a comment..."
-                className="flex-1 min-h-[60px] max-h-[120px] px-3 py-2 border border-gray-300 ab-dark:border-gray-600 rounded-md bg-white ab-dark:bg-gray-900 resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="flex-1 min-h-[60px] max-h-[120px] px-3 py-2 border border-ab-neutral-border rounded-md bg-ab-surface-input resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                 rows={2}
                 enterKeyHint="send"
               />
@@ -211,7 +211,7 @@ export function CommentsPanel({
                 type="button"
                 onClick={handleCreateComment}
                 disabled={creating || !newComment.trim()}
-                className="w-10 h-10 flex-shrink-0 rounded-full bg-gray-100 ab-dark:bg-gray-800 border border-gray-200 ab-dark:border-gray-700 flex items-center justify-center disabled:opacity-50 hover:bg-gray-200 ab-dark:hover:bg-gray-700"
+                className="w-10 h-10 flex-shrink-0 rounded-full bg-ab-neutral-subtle border border-ab-neutral-border flex items-center justify-center disabled:opacity-50 hover:bg-ab-neutral-subtle/80"
               >
                 {creating ? (
                   <Loader2 className="h-5 w-5 animate-spin" />
@@ -258,7 +258,7 @@ export function CommentsPanel({
                   <button
                     type="button"
                     onClick={() => setShowResolved(!showResolved)}
-                    className="w-full text-left text-sm text-gray-500 hover:text-gray-900 ab-dark:hover:text-white transition-colors py-2"
+                    className="w-full text-left text-sm text-ab-neutral hover:text-foreground transition-colors py-2"
                   >
                     <span className="inline-flex items-center gap-1">
                       {showResolved ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}

@@ -8,7 +8,7 @@ import { createBackup } from './utils/backup'
 import { checkConflicts, mergeSchema, writeSchema } from './utils/prisma-merge'
 import { findGlobalsCss, patchGlobalsCss } from './utils/css-patch'
 import { promptInit, log, confirm } from './utils/prompts'
-import { CMS_CONFIG_TEMPLATE, API_ROUTE_TEMPLATE, DASHBOARD_PAGE_TEMPLATE, WRITER_LAYOUT_TEMPLATE } from './templates'
+import { CMS_CONFIG_TEMPLATE, API_ROUTE_TEMPLATE, DASHBOARD_PAGE_TEMPLATE, WRITER_LAYOUT_TEMPLATE, AUTO_DRAFT_SCRIPT_TEMPLATE, VERCEL_CRON_ROUTE_TEMPLATE } from './templates'
 import { importContent } from './import'
 
 export interface InitOptions {
@@ -55,17 +55,24 @@ export async function init(options: InitOptions = {}) {
     contentCounts[contentPath] = countMarkdownFiles(path.join(cwd, contentPath))
   }
 
+  // Detect if this looks like a Vercel project
+  const hasVercelJson = fs.existsSync(path.join(cwd, 'vercel.json'))
+  const hasVercelDir = fs.existsSync(path.join(cwd, '.vercel'))
+  const isLikelyVercel = hasVercelJson || hasVercelDir
+
   // Step 2: Prompt for options (unless --yes)
   let answers: {
     dbProvider: 'postgresql' | 'sqlite' | 'mysql'
     runMigration: boolean
     importContent: boolean
     importPath?: string
+    deploymentPlatform: 'vercel' | 'server' | 'skip'
   } = {
     dbProvider: 'postgresql',
     runMigration: !options.skipMigrate,
     importContent: !!options.importPath,
     importPath: options.importPath || project.contentPaths[0],
+    deploymentPlatform: isLikelyVercel ? 'vercel' : 'server',
   }
 
   if (!options.yes) {
@@ -102,6 +109,12 @@ export async function init(options: InitOptions = {}) {
     console.log(`  - ${project.appRouterPath}/api/cms/[...path]/route.ts`)
     console.log(`  - ${project.appRouterPath}/(writer)/writer/[[...path]]/page.tsx`)
     console.log(`  - ${project.appRouterPath}/(writer)/layout.tsx`)
+    if (answers.deploymentPlatform === 'vercel') {
+      console.log(`  - ${project.appRouterPath}/api/cron/auto-draft/route.ts (Vercel Cron endpoint)`)
+      console.log(`  - vercel.json (add cron schedule)`)
+    } else if (answers.deploymentPlatform === 'server') {
+      console.log(`  - scripts/auto-draft.ts (cron script for crontab)`)
+    }
     console.log(`  - globals.css (add CSS import)`)
     console.log(`  - ${project.appRouterPath}/layout.tsx (add suppressHydrationWarning, GlobalShortcuts)`)
     
@@ -189,6 +202,66 @@ export async function init(options: InitOptions = {}) {
     fs.writeFileSync(writerLayoutPath, WRITER_LAYOUT_TEMPLATE)
     log('write', `Created ${project.appRouterPath}/(writer)/layout.tsx`)
   }
+
+  // Auto-draft setup based on deployment platform
+  if (answers.deploymentPlatform === 'vercel') {
+    // Vercel: Create API route + update vercel.json
+    const cronRoutePath = path.join(cwd, project.appRouterPath!, 'api', 'cron', 'auto-draft', 'route.ts')
+    
+    if (fs.existsSync(cronRoutePath)) {
+      log('skip', `${project.appRouterPath}/api/cron/auto-draft/route.ts already exists`)
+    } else {
+      const cronRouteDir = path.dirname(cronRoutePath)
+      if (!fs.existsSync(cronRouteDir)) {
+        fs.mkdirSync(cronRouteDir, { recursive: true })
+      }
+      fs.writeFileSync(cronRoutePath, VERCEL_CRON_ROUTE_TEMPLATE)
+      log('write', `Created ${project.appRouterPath}/api/cron/auto-draft/route.ts`)
+    }
+
+    // Create or update vercel.json with cron config
+    const vercelJsonPath = path.join(cwd, 'vercel.json')
+    let vercelConfig: { crons?: Array<{ path: string; schedule: string }> } = {}
+    
+    if (fs.existsSync(vercelJsonPath)) {
+      try {
+        vercelConfig = JSON.parse(fs.readFileSync(vercelJsonPath, 'utf-8'))
+      } catch {
+        // Invalid JSON, start fresh
+      }
+    }
+
+    // Check if cron already exists
+    const cronPath = '/api/cron/auto-draft'
+    const existingCron = vercelConfig.crons?.find(c => c.path === cronPath)
+    
+    if (existingCron) {
+      log('skip', 'vercel.json already has auto-draft cron')
+    } else {
+      vercelConfig.crons = vercelConfig.crons || []
+      vercelConfig.crons.push({
+        path: cronPath,
+        schedule: '0 6 * * *', // Daily at 6am UTC
+      })
+      fs.writeFileSync(vercelJsonPath, JSON.stringify(vercelConfig, null, 2) + '\n')
+      log('write', 'Updated vercel.json with auto-draft cron (daily at 6am UTC)')
+    }
+  } else if (answers.deploymentPlatform === 'server') {
+    // Server: Create cron script
+    const scriptsDir = path.join(cwd, 'scripts')
+    const autoDraftScriptPath = path.join(scriptsDir, 'auto-draft.ts')
+
+    if (fs.existsSync(autoDraftScriptPath)) {
+      log('skip', 'scripts/auto-draft.ts already exists')
+    } else {
+      if (!fs.existsSync(scriptsDir)) {
+        fs.mkdirSync(scriptsDir, { recursive: true })
+      }
+      fs.writeFileSync(autoDraftScriptPath, AUTO_DRAFT_SCRIPT_TEMPLATE)
+      log('write', 'Created scripts/auto-draft.ts (schedule via crontab)')
+    }
+  }
+  // If 'skip', do nothing for auto-draft
 
   // Step 7: Patch globals.css to import autoblogger styles
   const globalsCssPath = findGlobalsCss(cwd)
@@ -308,5 +381,11 @@ export async function init(options: InitOptions = {}) {
   console.log(pc.gray('  1. Update lib/cms.ts with your auth configuration'))
   console.log(pc.gray('  2. Add your auth check to app/(writer)/writer/[[...path]]/page.tsx'))
   console.log(pc.gray('  3. Set ANTHROPIC_API_KEY and/or OPENAI_API_KEY for AI features'))
+  if (answers.deploymentPlatform === 'vercel') {
+    console.log(pc.gray('  4. Set CRON_SECRET env var in Vercel for auto-draft security'))
+  } else if (answers.deploymentPlatform === 'server') {
+    console.log(pc.gray('  4. Schedule scripts/auto-draft.ts via crontab:'))
+    console.log(pc.gray('     0 6 * * * cd /path/to/project && npx tsx scripts/auto-draft.ts'))
+  }
   console.log('')
 }

@@ -253,9 +253,12 @@ STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bulle
  * No placeholders - this is appended to chat prompt when in agent mode.
  */
 export const DEFAULT_AGENT_TEMPLATE = `<agent_mode>
-You are in AGENT MODE - you can directly edit the essay. Wrap edits in :::edit and ::: tags with a JSON object.
+CRITICAL: You are in AGENT MODE. You MUST make edits to the essay using edit commands.
 
-EDIT COMMANDS (use valid JSON):
+DO NOT respond conversationally. DO NOT just describe what you would do. DO NOT ask clarifying questions.
+You MUST output :::edit blocks to make the requested changes.
+
+EDIT COMMANDS (wrap each in :::edit and ::: tags with valid JSON):
 
 1. Replace specific text:
 :::edit
@@ -279,11 +282,11 @@ EDIT COMMANDS (use valid JSON):
 :::
 
 RULES:
+- ALWAYS output at least one :::edit block - this is REQUIRED in agent mode
 - Use EXACT text matches for "find" - copy precisely from the essay
-- One edit block per change
-- You can include multiple edit blocks in one response
-- Add brief explanation before/after edit blocks
-- Edits are applied automatically - the user will see the changes
+- One edit block per change, but you can include multiple edit blocks
+- Keep explanatory text minimal - focus on the edits
+- Edits are applied automatically when you output the :::edit blocks
 </agent_mode>`
 
 // ============================================

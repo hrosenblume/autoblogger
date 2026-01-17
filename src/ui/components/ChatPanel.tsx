@@ -10,8 +10,8 @@ import { ModelSelector } from './ModelSelector'
 import { markdownToStyledHtml } from '../../lib/markdown'
 import { DashboardContext } from '../context'
 
-/** Default prose classes for chat messages (styling handled by autoblogger.css) */
-const DEFAULT_PROSE_CLASSES = 'prose'
+/** Default prose classes for chat messages */
+const DEFAULT_PROSE_CLASSES = ''
 
 /** Strip <plan> tags for display during streaming */
 function stripPlanTags(content: string): string {
@@ -346,7 +346,7 @@ export function ChatPanel({
                   className={`flex gap-3 group ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm relative ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                    className={`max-w-[85%] rounded-2xl px-3 py-2 text-base relative ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
                   >
                     {message.role === 'assistant' ? (
                       <div 
@@ -419,10 +419,10 @@ export function ChatPanel({
                 title="Switch mode (⌘⇧A)"
                 className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${
                   mode === 'ask' 
-                    ? 'bg-green-100 text-green-700 ab-dark:bg-green-900/30 ab-dark:text-green-400' 
+                    ? 'bg-ab-success/15 text-ab-success' 
                     : mode === 'agent' 
                       ? 'bg-muted text-muted-foreground'
-                      : 'bg-amber-100 text-amber-700 ab-dark:bg-amber-900/30 ab-dark:text-amber-400'
+                      : 'bg-ab-warning/15 text-ab-warning'
                 }`}
               >
                 {mode === 'ask' && <MessageSquare className="w-3 h-3" />}
