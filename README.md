@@ -11,28 +11,6 @@ In the age of AI and SEO, the blogs that win are the ones that publish consisten
 
 ---
 
-## 🚀 Quickstart
-
-```bash
-# Install
-npm install autoblogger
-
-# Initialize (auto-configures everything)
-npx autoblogger init
-
-# Add your AI key to .env
-ANTHROPIC_API_KEY="sk-ant-..."
-
-# Start your app and visit /writer
-npm run dev
-```
-
-That's it. You're ready to write.
-
-📖 **[Full Setup Guide →](docs/GUIDE.md)**
-
----
-
 ## Why Autoblogger?
 
 **The game has changed.** AI-generated content is everywhere. SEO rewards fresh, frequent publishing. Your competitors are shipping blog posts while you're still wrestling with your CMS.
@@ -45,20 +23,6 @@ That's it. You're ready to write.
 | 2 hours per post | 15 minutes per post |
 | "I should write more..." | Actually writing more |
 | Content calendar anxiety | Content machine confidence |
-
----
-
-## ⚡ How It Works
-
-```
-You: "Write about why morning routines are overrated"
-
-Autoblogger: *generates a 500-word essay with title, subtitle, and body*
-
-You: *tweak the intro, hit publish*
-
-Done.
-```
 
 ---
 
@@ -94,97 +58,22 @@ Done.
 
 ---
 
-## Configuration
+## Quickstart
 
-```typescript
-// lib/cms.ts
-import { createAutoblogger } from 'autoblogger'
-import { prisma } from '@/lib/db'
-import { auth } from '@/lib/auth'
-
-export const cms = createAutoblogger({
-  prisma,
-  auth: {
-    getSession: () => auth(),
-    isAdmin: (session) => session?.user?.role === 'admin',
-    canPublish: (session) => ['admin', 'writer'].includes(session?.user?.role ?? ''),
-  },
-  ai: {
-    anthropicKey: process.env.ANTHROPIC_API_KEY,
-    openaiKey: process.env.OPENAI_API_KEY,
-  },
-})
+```bash
+npm install autoblogger
+npx autoblogger init
 ```
 
-📖 **[See all configuration options →](docs/GUIDE.md#configuration-options)**
+Add your AI key to `.env`:
 
----
-
-## Display Your Posts
-
-```typescript
-// app/blog/page.tsx
-import { cms } from '@/lib/cms'
-
-export default async function BlogPage() {
-  const posts = await cms.posts.findPublished()
-  
-  return (
-    <ul>
-      {posts.map(post => (
-        <li key={post.id}>
-          <a href={`/blog/${post.slug}`}>{post.title}</a>
-        </li>
-      ))}
-    </ul>
-  )
-}
+```env
+ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-```typescript
-// app/blog/[slug]/page.tsx
-import { cms } from '@/lib/cms'
-import { renderMarkdown } from 'autoblogger/markdown'
-import { notFound } from 'next/navigation'
+Start your app and visit `/writer`. That's it.
 
-export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
-  const post = await cms.posts.findBySlug(slug)
-  
-  if (!post || post.status !== 'published') notFound()
-  
-  return (
-    <article>
-      <h1>{post.title}</h1>
-      <div dangerouslySetInnerHTML={{ __html: renderMarkdown(post.markdown) }} />
-    </article>
-  )
-}
-```
-
----
-
-## Sync to External CMSs
-
-Publish once, sync everywhere:
-
-```typescript
-export const cms = createAutoblogger({
-  // Built-in Prismic support
-  prismic: {
-    repository: 'your-repo',
-    writeToken: process.env.PRISMIC_WRITE_TOKEN,
-  },
-  
-  // Or custom destinations
-  destinations: [myContentfulAdapter, mySanityAdapter],
-  
-  // Or webhooks
-  webhooks: ['https://api.example.com/cms-webhook'],
-})
-```
-
-📖 **[External CMS integration guide →](docs/GUIDE.md#external-cms-integration)**
+📖 **[Full Setup Guide →](docs/GUIDE.md)**
 
 ---
 
@@ -193,18 +82,6 @@ export const cms = createAutoblogger({
 - Next.js 14, 15, or 16 (App Router)
 - Prisma 5 or 6
 - Node.js 20+
-
----
-
-## Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `⌘K` | Open chat |
-| `⌘⇧A` | Toggle Ask/Agent mode |
-| `⌘S` | Save |
-| `⌘.` | Toggle theme |
-| `Esc` | Go back / Stop generation |
 
 ---
 
