@@ -11,16 +11,6 @@ In the age of AI and SEO, the blogs that win are the ones that publish consisten
 
 ---
 
-## Why Autoblogger?
-
-The game has changed. AI-generated content is everywhere. SEO rewards fresh, frequent publishing. You need to write fast.
-
-**Before:** Open CMS. Open ChatGPT. Copy. Paste. Format. Fix formatting. Publish. *2 hours later...*
-
-**After:** Type your idea. AI writes. You tweak. Publish. *Done in 15 minutes.*
-
----
-
 ## Features
 
 ### 🤖 AI That Actually Helps
