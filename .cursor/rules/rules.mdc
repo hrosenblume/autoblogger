@@ -1,329 +1,255 @@
-<critical>
-SINGLE-LETTER GIT COMMANDS — EXECUTE IMMEDIATELY
-
-When user types ONLY `g`, `d`, `m`, `p`, or `pf` — THIS IS A COMMAND. EXECUTE NOW.
-DO NOT interpret as chat. DO NOT ask questions. DO NOT say "Great!" or "Sure!".
-RUN THE WORKFLOW IMMEDIATELY.
-</critical>
-
-<git_commands priority="highest">
-<command name="g" action="production commit and push">
-ONLY run when user EXPLICITLY types `g`. Pushes to main.
-
-1. `npm run build` — TypeScript must pass
-2. `git status -sb` — check untracked files
-   NEVER auto-add: .env*, *.save, *.bak, credentials, secrets
-3. `git add -u` — tracked files only
-4. `git diff --staged --stat`
-5. READ modified files for context
-6. READ chat history for intent
-7. Update .cursor/rules/ if significant changes
-8. Commit with HEREDOC format (see below)
-9. `git push origin main`
-
-If on dev branch:
-1. `git stash` (if uncommitted)
-2. `git checkout main && git merge dev`
-3. Run steps above
-4. `git checkout dev && git stash pop`
-</command>
-
-<command name="d" action="dev commit and push">
-Commits to dev branch ONLY. NEVER touch main.
-
-1. `git status -sb` — check untracked files
-   NEVER auto-add: .env*, *.save, *.bak, credentials, secrets
-2. `git add -u` — tracked files only
-3. `git diff --staged --stat`
-4. READ modified files for context
-5. READ chat history for intent
-6. Commit with HEREDOC format
-7. `git push origin dev`
-</command>
-
-<command name="m" action="merge dev into main">
-1. `git fetch origin`
-2. `git log --oneline main..dev` — see commits
-3. `git diff main..dev --stat`
-4. READ chat history for context
-5. Update .cursor/rules/ if needed (commit to dev first)
-6. `git checkout main && git merge dev`
-7. `git push origin main`
-8. `git checkout dev`
-</command>
-
-<command name="p" action="pull current branch">
-1. `git stash`
-2. `git pull origin $(git branch --show-current)`
-3. `git stash pop`
-</command>
-
-<command name="pf" action="force reset to origin/main">
-1. `git stash` — changes saved in stash
-2. `git fetch origin main`
-3. `git reset --hard origin/main`
-</command>
-
-<commit_format>
-Always use HEREDOC for commit messages:
-
-```bash
-git commit -m "$(cat &lt;&lt;'EOF'
-type: short summary
-
-- Detail one
-- Detail two
-
-EOF
-)"
-```
-</commit_format>
-
-<package_lock_conflicts>
-Don't manually edit lockfile conflicts. Instead:
-```bash
-git checkout --theirs package-lock.json
-npm install
-```
-</package_lock_conflicts>
-</git_commands>
-
-<warning>
-NEVER push to main automatically.
-Only `g` pushes to main.
-After making fixes, use `d` and WAIT for user to type `g`.
-</warning>
-
+---
+description: "⚠️ ALWAYS READ THIS FILE FIRST — Contains critical git commands (g/p/pf) and coding conventions"
+globs: ["**/*"]
+alwaysApply: true
 ---
 
-<security>
-THIS FILE IS COMMITTED TO GIT.
-Do not add: emails, URLs, passwords, API keys, secrets.
-</security>
+# Coding Rules
 
-<code_style>
-<typescript>
-- Use strict mode
-- Prefer explicit types over `any`
-- Export types from `src/types.ts` for public API
-- Internal types stay in their respective files
-- Use `unknown` for Prisma client in config
-</typescript>
+> 🚨 **READ THIS ENTIRE FILE AT THE START OF EVERY CONVERSATION.** This contains single-letter git commands (`g`, `p`, `pf`) that must be executed immediately when typed.
 
-<react>
-- Functional components only
-- All UI components are client-side (`'use client'` added by tsup)
-- Use `useCallback` and `useMemo` for performance
-- Use `cn()` utility for conditional classes
-- Prefer `useState` + `useEffect` over `useReducer`
-</react>
+> ⚠️ **THIS FILE IS COMMITTED TO GIT.** Do not add sensitive data: no emails, URLs, passwords, API keys, or secrets. Use environment variable references instead.
 
-<styling>
-- Tailwind CSS exclusively
-- Dark mode: `dark:` prefix
-- Semantic tokens: `bg-popover`, `text-muted-foreground`, `border-border`
-- Skeletons: `bg-muted` (never hardcode `bg-gray-200 dark:bg-gray-800`)
-- Mobile-first with `md:`, `lg:` for desktop
-- Touch targets: `min-h-[44px] md:min-h-0`
-</styling>
+## Code Organization
 
-<dropdowns>
-Container: `bg-popover border border-border rounded-md shadow-lg p-1`
-Items: `w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default`
-Destructive: `text-destructive`
-Separator: `h-px bg-border my-1`
-</dropdowns>
+### Server vs Client Split
+- `src/index.ts` exports server-safe code only (no React imports)
+- `src/ui/index.ts` exports React components
+- Never import React in server files
+- Types in `types/config.ts` must be server-safe (no ComponentType, etc.)
 
-<toolbar_buttons>
-- Use `ToolbarButton` from `toolbar/ToolbarButton.tsx`
-- Sizing: `px-2.5 py-1.5`
-- Active: `bg-accent text-accent-foreground`
-- Skeleton: `SkeletonButton` from `Skeleton.tsx`
-</toolbar_buttons>
+### File Naming
+- React components: PascalCase (`ChatPanel.tsx`)
+- Utilities/hooks: camelCase (`useChat.ts`, `markdown.ts`)
+- Types: Keep in `types/` folder, export from `types/index.ts`
 
-<skeletons>
-- Import from `../components/Skeleton`
-- Variants: `Skeleton`, `SkeletonText`, `SkeletonButton`, `SkeletonCard`, `SkeletonTableRow`
-- All use `bg-muted` for light/dark support
-- NEVER use inline `bg-muted rounded animate-pulse`
-</skeletons>
-</code_style>
+## TypeScript
 
-<architecture>
-<layers>
-| Layer | Location | Purpose |
-|-------|----------|---------|
-| CLI | src/cli/ | Setup wizard, content import |
-| Data | src/data/ | Prisma queries, CRUD |
-| API | src/api/ | HTTP handlers |
-| UI | src/ui/ | React components, hooks, pages |
-| AI | src/ai/ | LLM providers, prompts, streaming |
-| Auto-Draft | src/auto-draft/ | RSS, keywords, draft generation |
-| Lib | src/lib/ | Utilities, helpers |
-</layers>
+### Strict Mode
+- Project uses strict TypeScript
+- Avoid `any` — use `unknown` with type guards when needed
+- Prefer explicit return types on exported functions
 
-<exports>
-- `autoblogger` — Server: data layer, API, auto-draft
-- `autoblogger/ui` — Client: React dashboard, ChatProvider
-- `autoblogger/styles/article` — Article layout
-- `autoblogger/markdown` — renderMarkdown, htmlToMarkdown
-- `autoblogger/seo` — getSeoValues
-</exports>
-
-<file_conventions>
-- Data layer: `posts.ts`, `revisions.ts`, `comments.ts`
-- API: one file per resource
-- Pages: `WriterDashboard.tsx`, `EditorPage.tsx`, `SettingsPage.tsx`
-- Hooks: `use*.ts` in `src/ui/hooks/`
-- Toolbar: `FormatButtons`, `BlockButtons`, `MediaButtons`, `HistoryButtons`
-</file_conventions>
-</architecture>
-
-<api_handlers>
+### Type Patterns
 ```typescript
-export async function handleResourceAPI(
+// For Prisma client passed via config (unknown to avoid peer dep issues)
+const prisma = config.prisma as any
+
+// For optional chaining with DB models
+settings?.prismicEnabled ?? false
+
+// For discriminated unions
+type EditCommand = 
+  | { type: 'replace_all'; markdown: string }
+  | { type: 'replace_section'; find: string; replace: string }
+```
+
+## React Conventions
+
+### Client Components
+- Always add `'use client'` directive at top
+- Use hooks from `react` directly, not re-exports
+
+### State Management
+- Local state for component-specific data
+- Context for cross-component shared state (Dashboard, Chat)
+- Avoid prop drilling more than 2 levels
+
+### Event Handlers
+```typescript
+// Use useCallback for handlers passed to children
+const handleSave = useCallback(async () => {
+  // ...
+}, [dependencies])
+
+// Use refs to avoid re-creating callbacks
+const saveRef = useRef(handleSave)
+useEffect(() => { saveRef.current = handleSave }, [handleSave])
+```
+
+## Styling
+
+### Tailwind with Dark Mode
+- Use `ab-dark:` prefix for dark mode variants (custom plugin)
+- Example: `bg-white ab-dark:bg-gray-900`
+
+### Component Classes
+```typescript
+import { cn } from '../lib/cn'
+
+// Use cn() for conditional classes
+className={cn(
+  'base-classes',
+  active && 'active-classes',
+  disabled && 'disabled-classes'
+)}
+```
+
+### Mobile-First
+- Default styles for mobile
+- Use `md:` for desktop overrides
+- Touch targets: minimum 44x44px (`min-w-[44px] min-h-[44px]`)
+
+## API Patterns
+
+### Route Handlers
+```typescript
+export async function handlePostsAPI(
   req: NextRequest,
   cms: AutobloggerServer,
   session: Session | null,
-  path: string,
-  onMutate?: (type: string, data: unknown) => Promise&lt;void&gt;
-): Promise&lt;Response&gt;
-```
+  path: string
+): Promise<Response> {
+  // Check auth first
+  const authError = requireAuth(session)
+  if (authError) return authError
 
-- Use `jsonResponse(data, status)` helper
-- Check `cms.config.auth.isAdmin(session)` for protected routes
-- Call `onMutate` after mutations for cache invalidation
-- Status codes: 200, 201, 400, 401, 403, 404, 405
-</api_handlers>
-
-<cli_development>
-- `picocolors` for colored output
-- `prompts` for interactive questions
-- `log(type, message)` helper: check, write, skip, warn, error, info, run, backup
-- Support `--dry-run` and `--yes` flags
-- Create backups before modifying files
-- `detectProject()` — Find Next.js, Prisma, Tailwind
-- `checkConflicts()` — Detect Prisma model conflicts
-</cli_development>
-
-<data_layer>
-```typescript
-export function createResourceData(prisma: any) {
-  return {
-    findAll: async (options?) => { ... },
-    findById: async (id) => { ... },
-    create: async (data) => { ... },
-    update: async (id, data) => { ... },
-    delete: async (id) => { ... },
-    count: async (where?) => { ... },
+  // Route by method + path
+  if (method === 'GET' && path === '/posts') {
+    // ...
   }
 }
 ```
 
-- Always include `orderBy` for lists
-- Support pagination: `skip`, `take`
-- Include related data via Prisma `include`
-- Soft delete for posts (`status: 'deleted'`)
-</data_layer>
+### Response Format
+```typescript
+// Success
+return jsonResponse({ data: result })
 
-<ui_components>
-<dashboard_provider>
-- `navigate(path)` — SPA navigation
-- `goBack()` — Magic back
-- `apiBasePath` — Base URL for API
-- `sharedData` — Preloaded counts, settings, posts
-- `session` — Current user
-- `onEditorStateChange` — Parent app callback
-</dashboard_provider>
+// Error
+return jsonResponse({ error: 'Message' }, 400)
+```
 
-<chat_provider>
-- `messages` — Chat history
-- `essayContext` — Current essay state
-- `mode` — ask, agent, plan, search
-- `sendMessage(content)` — Send and stream
-- `registerEditHandler` — Agent mode edits
-- `registerExpandPlanHandler` — Plan expansion
-</chat_provider>
+## AI/Streaming
 
-<chat_modes>
-- `ask` — Q&A about content
-- `agent` — Direct editing, outputs `:::edit` JSON blocks
-- `plan` — Outlines in `&lt;plan&gt;` tags
-- `search` — Research mode
-</chat_modes>
+### SSE Format
+```typescript
+// Send data
+controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`))
 
-<loading_states>
-Use `&lt;Skeleton&gt;` component, match shapes to content.
-Show loading while `sharedDataLoading` is true.
-</loading_states>
-</ui_components>
+// End stream
+controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+```
 
-<editor_system>
-<tiptap>
-- Extensions: StarterKit, Placeholder, Link, Image, CommentMark
-- `immediatelyRender: false` for SSR
-- Convert with `renderMarkdown()` and `htmlToMarkdown()`
-</tiptap>
+### Safe Stream Helpers
+```typescript
+// Always use safe helpers to handle closed controllers
+function safeEnqueue(controller, data): boolean {
+  try {
+    controller.enqueue(data)
+    return true
+  } catch {
+    return false // Controller closed
+  }
+}
+```
 
-<comment_mark>
-- Custom Mark at `src/lib/comment-mark.ts`
-- Stores `commentId` attribute
-- Yellow highlight, click opens panel
-</comment_mark>
+## Destinations
 
-<revisions>
-- Fetch on dropdown open
-- Preview without saving
-- Store original for cancel
-</revisions>
-</editor_system>
+### Adapter Pattern
+```typescript
+const destination: Destination = {
+  name: 'my-destination',
+  
+  async onPublish(post) {
+    return { success: true, externalId: 'doc-123' }
+  },
+  
+  async onUnpublish(post) {
+    return { success: true }
+  },
+  
+  async onDelete(post) {
+    return { success: true }
+  },
+}
+```
 
-<url_extraction>
-- `extractAndFetchUrls(text)` — Detect and fetch URLs
-- Puppeteer for JS-rendered, fetch fallback
-- `buildUrlContext(fetched)` — XML context for prompts
-- Max 3 URLs, truncate to ~4000 chars
-- Auto-detect serverless vs local for Puppeteer
-</url_extraction>
+### Fire-and-Forget
+- Destination calls should not block the main response
+- Use `.catch()` to log errors without throwing
 
-<do_not>
-- Use inline styles
-- Hardcode URLs or paths
-- Import from host app directly
-- Create new dropdown patterns
-- Use document selectors for modals
-- Forget `'use client'` for hooks
-</do_not>
+## Error Handling
 
-<do>
-- Keep components focused and reusable
-- Handle loading states with skeletons
-- Support light and dark themes
-- Test on mobile (44px touch targets)
-- Run `npm run build` before committing
-- Use `cn()` for conditional classes
-- Clean up event listeners in useEffect
-- Use portals for overflow-escaping dropdowns
-</do>
+### Console Logging
+```typescript
+// Use prefixes for log context
+console.log('[Web Search] Fetching...')
+console.error('[prismic:repo-name] Failed to sync:', error)
+console.warn('[autoblogger] Feature not supported')
+```
 
-<host_app_checklist>
-1. CSS Import: `@import 'autoblogger/styles/standalone.css';` (includes all Tailwind utilities)
-2. No Tailwind config needed — standalone CSS works with any setup
-3. ChatMessage Model in Prisma schema
-4. Re-run `npm link autoblogger` after `npm install`
-5. Run `npm run build` after source changes
-6. Writer route: `app/(writer)/writer/[[...path]]/page.tsx` (isolated from parent layouts)
-</host_app_checklist>
+### Graceful Degradation
+- AI features should work without all providers configured
+- Web search failure should not block the response
+- Destination failures should not block publishing
 
-<build_and_test>
-Before committing:
-1. `npm run build` — TypeScript + bundling
-2. Check for type errors
-3. Test in linked host apps for UI changes
+## Do
+- Keep components small and focused
+- Use semantic HTML
+- Handle loading and error states
+- Check existing abstractions before creating new ones
+- Use `immediatelyRender: false` for Tiptap (prevents hydration mismatch)
+- Always handle SSE controller.close() errors
 
-Linked projects:
-- /Users/hunter/Local Documents/Code/sample-blog
-- /Users/hunter/Local Documents/Code/blog
+## Don't
+- Don't import React in server files
+- Don't use `dark:` prefix (use `ab-dark:` instead)
+- Don't block on destination failures
+- Don't hardcode API keys or secrets
+- Don't use inline styles
+- Don't duplicate code — abstract to lib/
 
-If npm install breaks link: `npm link autoblogger`
-</build_and_test>
+## Git Workflow
+
+> ⚠️ **CRITICAL: Single-letter commands are git workflow triggers.** When the user types just `g`, `p`, or `pf` — that IS a command. Execute immediately. Don't interpret as casual chat.
+
+| Command | Action |
+|---------|--------|
+| `g` | Commit all changes → push to `main` |
+| `p` | Pull current branch |
+| `pf` | Force reset to `origin/main` |
+| `rebuild` | Rebuild and push to yalc |
+
+### When user types "g" (commit + push)
+1. `git status -sb` — review untracked files, never auto-add `.env*`, `*.save`, `*.bak`
+2. `git add -u` (tracked files only) or selectively add new files
+3. `git diff --staged --stat` — review what's being committed
+4. Read modified files for context
+5. Review chat history for context
+6. **Update `.cursor/rules/` if significant changes were made:**
+   - `rules.mdc` — New conventions, patterns, do's/don'ts
+   - `context.mdc` — New systems, architecture, file structure
+7. Commit with comprehensive message
+8. `git push origin main`
+
+### When user types "p" (pull)
+1. `git stash` — save local changes
+2. `git pull --rebase origin main`
+3. `git stash pop` — restore local changes
+
+### When user types "pf" (force reset)
+1. `git stash` — save local changes
+2. `git fetch origin main`
+3. `git reset --hard origin/main`
+
+Changes preserved in stash (`git stash list` to see, `git stash pop` to restore)
+
+### When user types "rebuild"
+Rebuild package and push to yalc for local testing:
+1. `npm run build`
+2. `yalc push`
+
+## Terminal Commands
+Before running dev servers or long-running processes:
+1. Check terminals folder if already running
+2. Let user manage existing terminals
+3. Don't start conflicting sandboxed commands
+
+## Common Gotchas
+
+- **Hydration mismatches**: Use `immediatelyRender: false` for Tiptap
+- **Prisma types**: Cast to `any` since we use host app's client
+- **Dark mode**: Use `ab-dark:` not `dark:` (custom prefix)
+- **SSE streams**: Always handle controller.close() errors
+- **useEffect deps**: Include all referenced values to avoid stale closures
