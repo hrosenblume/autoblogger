@@ -253,8 +253,10 @@ AutobloggerDashboard
 1. Make changes in autoblogger
 2. Run `npm run build`
 3. Run `yalc push`
-4. In host app: `yalc link autoblogger`
+4. In host app: `yalc link autoblogger` (NOT `yalc add`)
 5. Test the changes
+
+**CRITICAL: Never use `yalc add`** — it writes `file:.yalc/...` into package.json, which breaks production builds. Always use `yalc link` which creates symlinks without modifying package.json.
 
 ## Package Exports
 

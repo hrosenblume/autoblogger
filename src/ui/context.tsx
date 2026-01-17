@@ -66,7 +66,7 @@ export interface DashboardContextValue {
   styles: Required<StylesConfig>
   fields: CustomFieldConfig[]
   currentPath: string
-  navigate: (path: string, options?: { skipConfirmation?: boolean }) => void
+  navigate: (path: string, options?: { skipConfirmation?: boolean; replace?: boolean }) => void
   goBack: () => void
   canGoBack: boolean
   config: DashboardConfig

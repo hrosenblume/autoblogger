@@ -39,6 +39,10 @@ export { renderMarkdown, parseMarkdown, htmlToMarkdown, markdownToHtml, wordCoun
 export { getSeoValues } from './lib/seo'
 export { formatDate, truncate } from './lib/format'
 
+// Storage (file uploads)
+export { createStorageHandler, uploadFile, detectStorageConfig } from './lib/storage'
+export type { StorageConfig, UploadResult } from './lib/storage'
+
 // Auto-draft
 export { runAutoDraft, fetchRssFeeds, filterByKeywords } from './auto-draft'
 export type { RssArticle, GenerationResult, AutoDraftConfig } from './auto-draft'

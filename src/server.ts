@@ -10,6 +10,7 @@ import { createUsersData } from './data/users'
 import { createAPIHandler } from './api'
 import { runAutoDraft as runAutoDraftInternal, type AutoDraftConfig } from './auto-draft'
 import { createDestinationDispatcher } from './destinations'
+import { createStorageHandler } from './lib/storage'
 import type { AutobloggerServerConfig, StylesConfig } from './types/config'
 import { DEFAULT_STYLES } from './types/config'
 
@@ -45,6 +46,12 @@ export function createAutoblogger(config: AutobloggerServerConfig): AutobloggerS
     ...config.styles,
   }
 
+  // Use built-in storage handler if none provided
+  // Auto-detects cloud storage (S3/Spaces) from env vars, falls back to local
+  const storage = config.storage || {
+    upload: createStorageHandler(),
+  }
+
   // Create destination dispatcher
   const dispatcher = createDestinationDispatcher({
     destinations: config.destinations,
@@ -58,6 +65,7 @@ export function createAutoblogger(config: AutobloggerServerConfig): AutobloggerS
   const baseServer = {
     config: {
       ...config,
+      storage,
       styles: mergedStyles,
     },
     posts: createPostsData(prisma, config.hooks, dispatcher, config.prismic?.writeToken),
