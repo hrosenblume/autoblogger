@@ -201,6 +201,24 @@ export function TiptapEditor({
       attributes: {
         class: `${proseClasses} min-h-[500px] outline-none`,
       },
+      // Handle Tab key for list indentation
+      handleKeyDown: (view, event) => {
+        if (event.key === 'Tab') {
+          // Let TipTap handle Tab for list indentation
+          // This prevents Tab from navigating to other elements
+          const { state, dispatch } = view
+          const { $from } = state.selection
+          
+          // Check if we're in a list item
+          const listItem = $from.node(-1)
+          if (listItem && listItem.type.name === 'listItem') {
+            // Prevent default tab behavior (focus change)
+            event.preventDefault()
+            return false // Let TipTap's default list handling take over
+          }
+        }
+        return false
+      },
     },
   })
 

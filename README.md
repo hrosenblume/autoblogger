@@ -29,10 +29,13 @@ Visit `/writer` to start writing.
 
 - **AI Writing** — Generate essays with Claude or GPT. Stream responses in real-time.
 - **Chat Modes** — Ask questions, let AI edit directly (Agent mode), or generate outlines (Plan mode).
+- **Web Search** — Ground AI responses with real-time web search (works with all models).
+- **Thinking Mode** — Extended thinking for more thoughtful Claude responses.
 - **WYSIWYG Editor** — Tiptap-based editor with formatting toolbar. Syncs to markdown.
 - **Revision History** — Every save creates a revision. Browse and restore any version.
 - **Inline Comments** — Highlight text and leave threaded comments.
 - **RSS Auto-Draft** — Subscribe to feeds, filter by keywords, auto-generate drafts.
+- **CMS Integrations** — Sync posts to Prismic, Contentful, Sanity, or custom destinations.
 - **User Roles** — Admin, writer, and drafter with different permissions.
 - **SEO Fields** — Custom title, description, keywords, and OG image per post.
 
@@ -132,16 +135,16 @@ npx autoblogger import ./posts    # Import markdown files
 | ⌘K | Toggle chat panel |
 | ⌘⇧A | Toggle Ask/Agent mode |
 | ⌘. | Toggle theme |
-| ⌘/ | Toggle view |
-| N | New article |
-| Esc | Go back |
+| ⌘S | Save draft |
+| Esc | Go back / Stop generation |
 
 ## Package Exports
 
 ```typescript
 // Server
-import { createAutoblogger } from 'autoblogger'
-import { runAutoDraft } from 'autoblogger'
+import { createAutoblogger, runAutoDraft } from 'autoblogger'
+import { createDestinationDispatcher } from 'autoblogger'
+import type { Destination, DestinationResult } from 'autoblogger'
 
 // UI
 import { AutobloggerDashboard } from 'autoblogger/ui'
@@ -151,6 +154,75 @@ import { ChatProvider, ChatPanel, ChatButton } from 'autoblogger/ui'
 import { renderMarkdown, htmlToMarkdown } from 'autoblogger/markdown'
 import { getSeoValues } from 'autoblogger/seo'
 import { ARTICLE_CLASSES } from 'autoblogger/styles/article'
+
+// Rich text converters (for custom destination adapters)
+import { 
+  markdownToPrismicRichText,
+  markdownToContentfulRichText,
+  markdownToPortableText,
+} from 'autoblogger/rich-text'
+```
+
+## CMS Integrations
+
+Autoblogger can sync published posts to external CMSs like Prismic, Contentful, or Sanity.
+
+### Prismic (Built-in)
+
+Configure Prismic integration via the Settings UI or in code:
+
+```typescript
+export const cms = createAutoblogger({
+  // ... other config
+  prismic: {
+    repository: 'your-repo',
+    writeToken: process.env.PRISMIC_WRITE_TOKEN,
+  },
+})
+```
+
+Then enable it in Settings → CMS Integrations → Prismic.
+
+**Sync Modes:**
+- **Stub** (default): Only syncs the post slug as UID. Content lives in autoblogger, Prismic stores references for collection slices.
+- **Full**: Syncs complete content as Prismic rich text.
+
+### Custom Destinations
+
+Create custom adapters for any CMS:
+
+```typescript
+import { createAutoblogger, type Destination } from 'autoblogger'
+
+const myDestination: Destination = {
+  name: 'my-cms',
+  async onPublish(post) {
+    // Sync post to your CMS
+    return { success: true, externalId: 'doc-123' }
+  },
+  async onUnpublish(post) {
+    return { success: true }
+  },
+  async onDelete(post) {
+    return { success: true }
+  },
+}
+
+export const cms = createAutoblogger({
+  // ... other config
+  destinations: [myDestination],
+})
+```
+
+### Webhooks
+
+Send POST requests to URLs when posts are published/unpublished/deleted:
+
+```typescript
+export const cms = createAutoblogger({
+  // ... other config
+  webhooks: ['https://api.example.com/cms-webhook'],
+})
 ```
 
 ## Styling

@@ -5,12 +5,16 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __typeError = (msg) => {
+  throw TypeError(msg);
+};
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __esm = (fn, res) => function __init() {
   return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
 };
 var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
+  for (var name2 in all)
+    __defProp(target, name2, { get: all[name2], enumerable: true });
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -29,6 +33,3453 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
+var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
+var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
+
+// node_modules/@prismicio/client/dist/types/value/richText.js
+var RichTextNodeType;
+var init_richText = __esm({
+  "node_modules/@prismicio/client/dist/types/value/richText.js"() {
+    "use strict";
+    RichTextNodeType = {
+      heading1: "heading1",
+      heading2: "heading2",
+      heading3: "heading3",
+      heading4: "heading4",
+      heading5: "heading5",
+      heading6: "heading6",
+      paragraph: "paragraph",
+      preformatted: "preformatted",
+      strong: "strong",
+      em: "em",
+      listItem: "list-item",
+      oListItem: "o-list-item",
+      list: "group-list-item",
+      oList: "group-o-list-item",
+      image: "image",
+      embed: "embed",
+      hyperlink: "hyperlink",
+      label: "label",
+      span: "span"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/mapSliceZone.js
+function mapSliceZone(sliceZone2, mappers, context) {
+  return Promise.all(sliceZone2.map(async (slice, index, slices) => {
+    const isRestSliceType = "slice_type" in slice;
+    const sliceType = isRestSliceType ? slice.slice_type : slice.type;
+    const mapper = mappers[sliceType];
+    if (!mapper) return slice;
+    const mapperArgs = {
+      slice,
+      slices,
+      index,
+      context
+    };
+    let result = await mapper(mapperArgs);
+    if (mapper.length < 1 && (typeof result === "function" || typeof result === "object" && "default" in result)) {
+      result = "default" in result ? result.default : result;
+      result = await result(mapperArgs);
+    }
+    if (isRestSliceType) return {
+      __mapped: true,
+      id: slice.id,
+      slice_type: sliceType,
+      ...result
+    };
+    else return {
+      __mapped: true,
+      type: sliceType,
+      ...result
+    };
+  }));
+}
+var init_mapSliceZone = __esm({
+  "node_modules/@prismicio/client/dist/helpers/mapSliceZone.js"() {
+    "use strict";
+  }
+});
+
+// node_modules/@prismicio/client/dist/filter.js
+var formatValue, pathWithArgsFilter, pathFilter, argsFilter, filter;
+var init_filter = __esm({
+  "node_modules/@prismicio/client/dist/filter.js"() {
+    "use strict";
+    formatValue = (value) => {
+      if (Array.isArray(value)) return `[${value.map(formatValue).join(", ")}]`;
+      if (typeof value === "string") return `"${value.replace(/"/g, '\\"')}"`;
+      if (value instanceof Date) return `${value.getTime()}`;
+      return `${value}`;
+    };
+    pathWithArgsFilter = (name2) => {
+      const fn = (path, ...args) => {
+        const formattedArgs = args.map(formatValue).join(", ");
+        return `[${name2}(${path}${path && args.length ? ", " : ""}${formattedArgs})]`;
+      };
+      return fn;
+    };
+    pathFilter = (name2) => {
+      const filterFn = pathWithArgsFilter(name2);
+      const fn = (path) => {
+        return filterFn(path);
+      };
+      return fn;
+    };
+    argsFilter = (name2) => {
+      const filterFn = pathWithArgsFilter(name2);
+      const fn = (...args) => {
+        return filterFn("", ...args);
+      };
+      return fn;
+    };
+    filter = {
+      at: pathWithArgsFilter("at"),
+      not: pathWithArgsFilter("not"),
+      any: pathWithArgsFilter("any"),
+      in: pathWithArgsFilter("in"),
+      fulltext: pathWithArgsFilter("fulltext"),
+      has: pathFilter("has"),
+      missing: pathFilter("missing"),
+      similar: argsFilter("similar"),
+      geopointNear: pathWithArgsFilter("geopoint.near"),
+      numberLessThan: pathWithArgsFilter("number.lt"),
+      numberGreaterThan: pathWithArgsFilter("number.gt"),
+      numberInRange: pathWithArgsFilter("number.inRange"),
+      dateAfter: pathWithArgsFilter("date.after"),
+      dateBefore: pathWithArgsFilter("date.before"),
+      dateBetween: pathWithArgsFilter("date.between"),
+      dateDayOfMonth: pathWithArgsFilter("date.day-of-month"),
+      dateDayOfMonthAfter: pathWithArgsFilter("date.day-of-month-after"),
+      dateDayOfMonthBefore: pathWithArgsFilter("date.day-of-month-before"),
+      dateDayOfWeek: pathWithArgsFilter("date.day-of-week"),
+      dateDayOfWeekAfter: pathWithArgsFilter("date.day-of-week-after"),
+      dateDayOfWeekBefore: pathWithArgsFilter("date.day-of-week-before"),
+      dateMonth: pathWithArgsFilter("date.month"),
+      dateMonthAfter: pathWithArgsFilter("date.month-after"),
+      dateMonthBefore: pathWithArgsFilter("date.month-before"),
+      dateYear: pathWithArgsFilter("date.year"),
+      dateHour: pathWithArgsFilter("date.hour"),
+      dateHourAfter: pathWithArgsFilter("date.hour-after"),
+      dateHourBefore: pathWithArgsFilter("date.hour-before")
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/_virtual/rolldown_runtime.js
+var __defProp2, __export2;
+var init_rolldown_runtime = __esm({
+  "node_modules/@prismicio/client/dist/_virtual/rolldown_runtime.js"() {
+    "use strict";
+    __defProp2 = Object.defineProperty;
+    __export2 = (all) => {
+      let target = {};
+      for (var name2 in all) __defProp2(target, name2, {
+        get: all[name2],
+        enumerable: true
+      });
+      return target;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/cookie.js
+var cookie_exports, preview;
+var init_cookie = __esm({
+  "node_modules/@prismicio/client/dist/cookie.js"() {
+    "use strict";
+    init_rolldown_runtime();
+    cookie_exports = /* @__PURE__ */ __export2({ preview: () => preview });
+    preview = "io.prismic.preview";
+  }
+});
+
+// node_modules/@prismicio/client/dist/errors.js
+var PrismicError, ForbiddenError, NotFoundError, RepositoryNotFoundError, ParsingError, InvalidDataError, RefExpiredError, RefNotFoundError, PreviewTokenExpiredError;
+var init_errors = __esm({
+  "node_modules/@prismicio/client/dist/errors.js"() {
+    "use strict";
+    PrismicError = class extends Error {
+      constructor(message = "An invalid API response was returned", url, response) {
+        super(message);
+        __publicField(this, "url");
+        __publicField(this, "response");
+        this.url = url;
+        this.response = response;
+      }
+    };
+    ForbiddenError = class extends PrismicError {
+    };
+    NotFoundError = class extends PrismicError {
+    };
+    RepositoryNotFoundError = class extends NotFoundError {
+    };
+    ParsingError = class extends PrismicError {
+    };
+    InvalidDataError = class extends PrismicError {
+    };
+    RefExpiredError = class extends ForbiddenError {
+    };
+    RefNotFoundError = class extends ForbiddenError {
+    };
+    PreviewTokenExpiredError = class extends ForbiddenError {
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/value/link.js
+var LinkType;
+var init_link = __esm({
+  "node_modules/@prismicio/client/dist/types/value/link.js"() {
+    "use strict";
+    LinkType = {
+      Any: "Any",
+      Document: "Document",
+      Media: "Media",
+      Web: "Web"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/documentToLinkField.js
+var documentToLinkField;
+var init_documentToLinkField = __esm({
+  "node_modules/@prismicio/client/dist/helpers/documentToLinkField.js"() {
+    "use strict";
+    init_link();
+    documentToLinkField = (prismicDocument2) => {
+      var _prismicDocument$slug;
+      return {
+        link_type: LinkType.Document,
+        id: prismicDocument2.id,
+        uid: prismicDocument2.uid || void 0,
+        type: prismicDocument2.type,
+        tags: prismicDocument2.tags,
+        lang: prismicDocument2.lang,
+        url: prismicDocument2.url == null ? void 0 : prismicDocument2.url,
+        slug: (_prismicDocument$slug = prismicDocument2.slugs) === null || _prismicDocument$slug === void 0 ? void 0 : _prismicDocument$slug[0],
+        ...prismicDocument2.data && Object.keys(prismicDocument2.data).length > 0 ? { data: prismicDocument2.data } : {}
+      };
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/asLink.js
+var asLink;
+var init_asLink = __esm({
+  "node_modules/@prismicio/client/dist/helpers/asLink.js"() {
+    "use strict";
+    init_link();
+    init_documentToLinkField();
+    asLink = (linkFieldOrDocument, ...configObjectOrTuple) => {
+      if (!linkFieldOrDocument) return null;
+      const linkField = "link_type" in linkFieldOrDocument ? linkFieldOrDocument : documentToLinkField(linkFieldOrDocument);
+      const [configObjectOrLinkResolver] = configObjectOrTuple;
+      let config;
+      if (typeof configObjectOrLinkResolver === "function" || configObjectOrLinkResolver == null) config = { linkResolver: configObjectOrLinkResolver };
+      else config = { ...configObjectOrLinkResolver };
+      switch (linkField.link_type) {
+        case LinkType.Media:
+        case LinkType.Web:
+          return "url" in linkField ? linkField.url : null;
+        case LinkType.Document:
+          if ("id" in linkField && config.linkResolver) {
+            const resolvedURL = config.linkResolver(linkField);
+            if (resolvedURL != null) return resolvedURL;
+          }
+          if ("url" in linkField && linkField.url) return linkField.url;
+          return null;
+        case LinkType.Any:
+        default:
+          return null;
+      }
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/package.js
+var name, version;
+var init_package = __esm({
+  "node_modules/@prismicio/client/dist/package.js"() {
+    "use strict";
+    name = "@prismicio/client";
+    version = "7.21.3";
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/devMsg.js
+var devMsg;
+var init_devMsg = __esm({
+  "node_modules/@prismicio/client/dist/lib/devMsg.js"() {
+    "use strict";
+    init_package();
+    devMsg = (slug) => {
+      return `https://prismic.dev/msg/client/v${version}/${slug}`;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/buildQueryURL.js
+function castArray(a) {
+  return Array.isArray(a) ? a : [a];
+}
+var PRISMIC_DEV_PARAM, PRISMIC_CLIENT_VERSION_PARAM, RENAMED_PARAMS, castOrderingToString, buildQueryURL;
+var init_buildQueryURL = __esm({
+  "node_modules/@prismicio/client/dist/buildQueryURL.js"() {
+    "use strict";
+    init_package();
+    init_devMsg();
+    PRISMIC_DEV_PARAM = "x-d";
+    PRISMIC_CLIENT_VERSION_PARAM = "x-c";
+    RENAMED_PARAMS = { accessToken: "access_token" };
+    castOrderingToString = (ordering) => {
+      if (typeof ordering === "string") {
+        if (process.env.NODE_ENV === "development") {
+          const [field, direction] = ordering.split(" ");
+          const objectForm = direction === "desc" ? `{ field: "${field}", direction: "desc" }` : `{ field: "${field}" }`;
+          console.warn(`[@prismicio/client] A string value was provided to the \`orderings\` query parameter. Strings are deprecated. Please convert it to the object form: ${objectForm}. For more details, see ${devMsg("orderings-must-be-an-array-of-objects")}`);
+        }
+        return ordering;
+      }
+      return ordering.direction === "desc" ? `${ordering.field} desc` : ordering.field;
+    };
+    buildQueryURL = (endpoint, args) => {
+      const { filters, predicates, ...params } = args;
+      if (!endpoint.endsWith("/")) endpoint += "/";
+      const url = new URL(`documents/search`, endpoint);
+      if (filters) {
+        if (process.env.NODE_ENV === "development" && !Array.isArray(filters)) console.warn(`[@prismicio/client] A non-array value was provided to the \`filters\` query parameter (\`${filters}\`). Non-array values are deprecated. Please convert it to an array. For more details, see ${devMsg("filters-must-be-an-array")}`);
+        for (const filter2 of castArray(filters)) url.searchParams.append("q", `[${filter2}]`);
+      }
+      if (predicates) for (const predicate2 of castArray(predicates)) url.searchParams.append("q", `[${predicate2}]`);
+      for (const k in params) {
+        const name2 = RENAMED_PARAMS[k] || k;
+        let value = params[k];
+        if (name2 === "orderings") {
+          const scopedValue = params[name2];
+          if (scopedValue != null) {
+            if (process.env.NODE_ENV === "development" && typeof scopedValue === "string") console.warn(`[@prismicio/client] A string value was provided to the \`orderings\` query parameter. Strings are deprecated. Please convert it to an array of objects. For more details, see ${devMsg("orderings-must-be-an-array-of-objects")}`);
+            value = `[${castArray(scopedValue).map((ordering) => castOrderingToString(ordering)).join(",")}]`;
+          }
+        } else if (name2 === "routes") {
+          if (typeof params[name2] === "object") value = JSON.stringify(castArray(params[name2]));
+        }
+        if (value != null) url.searchParams.set(name2, castArray(value).join(","));
+      }
+      url.searchParams.set(PRISMIC_CLIENT_VERSION_PARAM, `js-${version}`);
+      if (process.env.NODE_ENV === "development") url.searchParams.set(PRISMIC_DEV_PARAM, "1");
+      return url.toString();
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/isRepositoryName.js
+var isRepositoryName;
+var init_isRepositoryName = __esm({
+  "node_modules/@prismicio/client/dist/isRepositoryName.js"() {
+    "use strict";
+    isRepositoryName = (input) => {
+      return /^[a-zA-Z0-9][-a-zA-Z0-9]{2,}[a-zA-Z0-9]$/.test(input);
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/getRepositoryEndpoint.js
+var getRepositoryEndpoint;
+var init_getRepositoryEndpoint = __esm({
+  "node_modules/@prismicio/client/dist/getRepositoryEndpoint.js"() {
+    "use strict";
+    init_errors();
+    init_isRepositoryName();
+    getRepositoryEndpoint = (repositoryName) => {
+      if (isRepositoryName(repositoryName)) return `https://${repositoryName}.cdn.prismic.io/api/v2`;
+      else throw new PrismicError(`An invalid Prismic repository name was given: ${repositoryName}`, void 0, void 0);
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/getRepositoryName.js
+var getRepositoryName;
+var init_getRepositoryName = __esm({
+  "node_modules/@prismicio/client/dist/getRepositoryName.js"() {
+    "use strict";
+    init_errors();
+    getRepositoryName = (repositoryEndpoint) => {
+      try {
+        const hostname = new URL(repositoryEndpoint).hostname;
+        if (hostname.endsWith("prismic.io") || hostname.endsWith("wroom.io") || hostname.endsWith("wroom.test")) return hostname.split(".")[0];
+      } catch {
+      }
+      throw new PrismicError(`An invalid Prismic Document API endpoint was provided: ${repositoryEndpoint}`, void 0, void 0);
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/isRepositoryEndpoint.js
+var isRepositoryEndpoint;
+var init_isRepositoryEndpoint = __esm({
+  "node_modules/@prismicio/client/dist/isRepositoryEndpoint.js"() {
+    "use strict";
+    isRepositoryEndpoint = (input) => {
+      try {
+        new URL(input);
+        return true;
+      } catch {
+        return false;
+      }
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/getPreviewCookie.js
+var readValue, getPreviewCookie;
+var init_getPreviewCookie = __esm({
+  "node_modules/@prismicio/client/dist/lib/getPreviewCookie.js"() {
+    "use strict";
+    init_cookie();
+    readValue = (value) => {
+      return value.replace(/%3B/g, ";");
+    };
+    getPreviewCookie = (cookieJar) => {
+      const cookies = cookieJar.split("; ");
+      let value;
+      for (const cookie of cookies) {
+        const parts = cookie.split("=");
+        if (readValue(parts[0]).replace(/%3D/g, "=") === preview) {
+          value = readValue(parts.slice(1).join("="));
+          break;
+        }
+      }
+      return value;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/pLimit.js
+var sleep, pLimit;
+var init_pLimit = __esm({
+  "node_modules/@prismicio/client/dist/lib/pLimit.js"() {
+    "use strict";
+    sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    pLimit = ({ interval } = {}) => {
+      const queue = [];
+      let busy = false;
+      let lastCompletion = 0;
+      const resumeNext = () => {
+        if (!busy && queue.length > 0) {
+          var _queue$shift;
+          (_queue$shift = queue.shift()) === null || _queue$shift === void 0 || _queue$shift();
+          busy = true;
+        }
+      };
+      const next = () => {
+        busy = false;
+        resumeNext();
+      };
+      const run3 = async (function_, resolve, arguments_) => {
+        const timeSinceLastCompletion = Date.now() - lastCompletion;
+        if (interval && timeSinceLastCompletion < interval) await sleep(interval - timeSinceLastCompletion);
+        const result = (async () => function_(...arguments_))();
+        resolve(result);
+        try {
+          await result;
+        } catch {
+        }
+        lastCompletion = Date.now();
+        next();
+      };
+      const enqueue = (function_, resolve, arguments_) => {
+        new Promise((internalResolve) => {
+          queue.push(internalResolve);
+        }).then(run3.bind(void 0, function_, resolve, arguments_));
+        (async () => {
+          await Promise.resolve();
+          if (!busy) resumeNext();
+        })();
+      };
+      return ((function_, ...arguments_) => new Promise((resolve) => {
+        enqueue(function_, resolve, arguments_);
+      }));
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/request.js
+async function request(url, init, fetchFn) {
+  const stringURL = url.toString();
+  let job;
+  if (init === null || init === void 0 ? void 0 : init.body) {
+    var _url$hostname;
+    job = (THROTTLED_RUNNERS[_url$hostname = url.hostname] || (THROTTLED_RUNNERS[_url$hostname] = pLimit({ interval: DEFAULT_RETRY_AFTER })))(() => fetchFn(stringURL, init));
+  } else {
+    var _DEDUPLICATED_JOBS$st;
+    const existingJob = (_DEDUPLICATED_JOBS$st = DEDUPLICATED_JOBS[stringURL]) === null || _DEDUPLICATED_JOBS$st === void 0 ? void 0 : _DEDUPLICATED_JOBS$st.get(init === null || init === void 0 ? void 0 : init.signal);
+    if (existingJob) job = existingJob;
+    else {
+      job = fetchFn(stringURL, init).finally(() => {
+        var _DEDUPLICATED_JOBS$st2, _DEDUPLICATED_JOBS$st3;
+        (_DEDUPLICATED_JOBS$st2 = DEDUPLICATED_JOBS[stringURL]) === null || _DEDUPLICATED_JOBS$st2 === void 0 || _DEDUPLICATED_JOBS$st2.delete(init === null || init === void 0 ? void 0 : init.signal);
+        if (((_DEDUPLICATED_JOBS$st3 = DEDUPLICATED_JOBS[stringURL]) === null || _DEDUPLICATED_JOBS$st3 === void 0 ? void 0 : _DEDUPLICATED_JOBS$st3.size) === 0) delete DEDUPLICATED_JOBS[stringURL];
+      });
+      (DEDUPLICATED_JOBS[stringURL] || (DEDUPLICATED_JOBS[stringURL] = /* @__PURE__ */ new Map())).set(init === null || init === void 0 ? void 0 : init.signal, job);
+    }
+  }
+  const response = await job;
+  if (response.status === 429) {
+    const retryAfter = Number(response.headers.get("retry-after"));
+    const resolvedRetryAfter = Number.isNaN(retryAfter) ? DEFAULT_RETRY_AFTER : retryAfter * 1e3;
+    await new Promise((resolve) => setTimeout(resolve, resolvedRetryAfter));
+    return request(url, init, fetchFn);
+  }
+  return response.clone();
+}
+var DEFAULT_RETRY_AFTER, THROTTLED_RUNNERS, DEDUPLICATED_JOBS;
+var init_request = __esm({
+  "node_modules/@prismicio/client/dist/lib/request.js"() {
+    "use strict";
+    init_pLimit();
+    DEFAULT_RETRY_AFTER = 1500;
+    THROTTLED_RUNNERS = {};
+    DEDUPLICATED_JOBS = {};
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/throttledWarn.js
+var THROTTLE_THRESHOLD_MS, lastMessage, lastCalledAt, throttledWarn;
+var init_throttledWarn = __esm({
+  "node_modules/@prismicio/client/dist/lib/throttledWarn.js"() {
+    "use strict";
+    THROTTLE_THRESHOLD_MS = 5e3;
+    lastCalledAt = 0;
+    throttledWarn = (message) => {
+      if (message === lastMessage && Date.now() - lastCalledAt < THROTTLE_THRESHOLD_MS) {
+        lastCalledAt = Date.now();
+        return;
+      }
+      lastCalledAt = Date.now();
+      lastMessage = message;
+      console.warn(message);
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/Client.js
+function appendFilters(params = {}, ...filters) {
+  return {
+    ...params,
+    filters: [...params.filters ?? [], ...filters]
+  };
+}
+var MAX_PAGE_SIZE, REPOSITORY_CACHE_TTL, GET_ALL_QUERY_DELAY, MAX_INVALID_REF_RETRY_ATTEMPTS, _repositoryName, _getRef, _autoPreviews, _autoPreviewsRequest, _cachedRepository, _cachedRepositoryExpiration, _Client_instances, getResolvedRef_fn, internalGet_fn, throwContentAPIError_fn, request_fn, _a, Client;
+var init_Client = __esm({
+  "node_modules/@prismicio/client/dist/Client.js"() {
+    "use strict";
+    init_filter();
+    init_devMsg();
+    init_getPreviewCookie();
+    init_request();
+    init_throttledWarn();
+    init_errors();
+    init_asLink();
+    init_buildQueryURL();
+    init_getRepositoryEndpoint();
+    init_getRepositoryName();
+    init_isRepositoryEndpoint();
+    MAX_PAGE_SIZE = 100;
+    REPOSITORY_CACHE_TTL = 5e3;
+    GET_ALL_QUERY_DELAY = 500;
+    MAX_INVALID_REF_RETRY_ATTEMPTS = 3;
+    Client = (_a = class {
+      /**
+      * @param repositoryNameOrEndpoint - The Prismic repository name or full
+      *   Content API endpoint for the repository.
+      * @param config - Client configuration.
+      */
+      constructor(repositoryNameOrEndpoint, config = {}) {
+        __privateAdd(this, _Client_instances);
+        /**
+        * The client's Content API endpoint.
+        *
+        * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
+        */
+        __publicField(this, "documentAPIEndpoint");
+        /**
+        * The secure token used for the Content API.
+        *
+        * @see {@link https://prismic.io/docs/fetch-content#content-visibility}
+        */
+        __publicField(this, "accessToken");
+        /**
+        * A list of route resolver objects that define how a document's `url`
+        * property is resolved.
+        *
+        * @see {@link https://prismic.io/docs/routes}
+        * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
+        */
+        __publicField(this, "routes");
+        /**
+        * The URL used for link or content relationship fields that point to an
+        * archived or deleted page.
+        *
+        * @see {@link https://prismic.io/docs/routes}
+        * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
+        */
+        __publicField(this, "brokenRoute");
+        /**
+        * Default parameters sent with each Content API request. These parameters can
+        * be overridden on each method.
+        *
+        * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
+        */
+        __publicField(this, "defaultParams");
+        /**
+        * The `fetch` function used to make network requests.
+        *
+        * @default The global `fetch` function.
+        *
+        * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
+        */
+        __publicField(this, "fetchFn");
+        /**
+        * The default `fetch` options sent with each Content API request. These
+        * parameters can be overriden on each method.
+        *
+        * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
+        */
+        __publicField(this, "fetchOptions");
+        __privateAdd(this, _repositoryName);
+        __privateAdd(this, _getRef);
+        __privateAdd(this, _autoPreviews, true);
+        __privateAdd(this, _autoPreviewsRequest);
+        __privateAdd(this, _cachedRepository);
+        __privateAdd(this, _cachedRepositoryExpiration, 0);
+        var _globalThis$fetch;
+        const { documentAPIEndpoint, accessToken, ref, routes, brokenRoute, defaultParams, fetchOptions = {}, fetch: fetch2 = (_globalThis$fetch = globalThis.fetch) === null || _globalThis$fetch === void 0 ? void 0 : _globalThis$fetch.bind(globalThis) } = config;
+        if (isRepositoryEndpoint(repositoryNameOrEndpoint)) {
+          try {
+            this.repositoryName = getRepositoryName(repositoryNameOrEndpoint);
+          } catch {
+            console.warn(`[@prismicio/client] A repository name could not be inferred from the provided endpoint (\`${repositoryNameOrEndpoint}\`). Some methods will be disabled. Create the client using a repository name to prevent this warning. For more details, see ${devMsg("prefer-repository-name")}`);
+          }
+          this.documentAPIEndpoint = documentAPIEndpoint || repositoryNameOrEndpoint;
+        } else {
+          this.repositoryName = repositoryNameOrEndpoint;
+          this.documentAPIEndpoint = documentAPIEndpoint || getRepositoryEndpoint(repositoryNameOrEndpoint);
+        }
+        if (!fetch2) throw new PrismicError("A valid fetch implementation was not provided. In environments where fetch is not available, a fetch implementation must be provided via a polyfill or the `fetch` option.", void 0, void 0);
+        if (typeof fetch2 !== "function") throw new PrismicError(`fetch must be a function, but received: ${typeof fetch2}`, void 0, void 0);
+        if (!isRepositoryEndpoint(this.documentAPIEndpoint)) throw new PrismicError(`documentAPIEndpoint is not a valid URL: ${documentAPIEndpoint}`, void 0, void 0);
+        if (isRepositoryEndpoint(repositoryNameOrEndpoint) && documentAPIEndpoint && repositoryNameOrEndpoint !== documentAPIEndpoint) console.warn(`[@prismicio/client] Multiple incompatible endpoints were provided. Create the client using a repository name to prevent this error. For more details, see ${devMsg("prefer-repository-name")}`);
+        if (process.env.NODE_ENV === "development" && /\.prismic\.io\/(?!api\/v2\/?)/i.test(this.documentAPIEndpoint)) throw new PrismicError("@prismicio/client only supports Prismic Rest API V2. Please provide only the repository name to the first createClient() parameter or use the getRepositoryEndpoint() helper to generate a valid Rest API V2 endpoint URL.", void 0, void 0);
+        if (process.env.NODE_ENV === "development" && /(?<!\.cdn)\.prismic\.io$/i.test(new URL(this.documentAPIEndpoint).hostname)) console.warn(`[@prismicio/client] The client was created with a non-CDN endpoint. Convert it to the CDN endpoint for better performance. For more details, see ${devMsg("endpoint-must-use-cdn")}`);
+        this.accessToken = accessToken;
+        this.routes = routes;
+        this.brokenRoute = brokenRoute;
+        this.defaultParams = defaultParams;
+        this.fetchOptions = fetchOptions;
+        this.fetchFn = fetch2;
+        this.graphQLFetch = this.graphQLFetch.bind(this);
+        if (ref) this.queryContentFromRef(ref);
+      }
+      /** The Prismic repository's name. */
+      set repositoryName(value) {
+        __privateSet(this, _repositoryName, value);
+      }
+      /** The Prismic repository's name. */
+      get repositoryName() {
+        if (!__privateGet(this, _repositoryName)) throw new PrismicError(`A repository name is required for this method but one could not be inferred from the provided API endpoint (\`${this.documentAPIEndpoint}\`). To fix this error, provide a repository name when creating the client. For more details, see ${devMsg("prefer-repository-name")}`, void 0, void 0);
+        return __privateGet(this, _repositoryName);
+      }
+      /** @deprecated Replace with `documentAPIEndpoint`. */
+      set endpoint(value) {
+        this.documentAPIEndpoint = value;
+      }
+      /** @deprecated Replace with `documentAPIEndpoint`. */
+      get endpoint() {
+        return this.documentAPIEndpoint;
+      }
+      /**
+      * Enables the client to automatically query content from a preview session.
+      *
+      * @example
+      *
+      * ```ts
+      * client.enableAutoPreviews()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#enableautopreviews}
+      */
+      enableAutoPreviews() {
+        __privateSet(this, _autoPreviews, true);
+      }
+      /**
+      * Enables the client to automatically query content from a preview session
+      * using an HTTP request object.
+      *
+      * @example
+      *
+      * ```ts
+      * client.enableAutoPreviewsFromReq(req)
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#enableautopreviewsfromreq}
+      */
+      enableAutoPreviewsFromReq(request$1) {
+        this.enableAutoPreviews();
+        __privateSet(this, _autoPreviewsRequest, request$1);
+      }
+      /**
+      * Disables the client from automatically querying content from a preview
+      * session.
+      *
+      * @example
+      *
+      * ```ts
+      * client.disableAutoPreviews()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#disableautopreviews}
+      */
+      disableAutoPreviews() {
+        __privateSet(this, _autoPreviews, false);
+        __privateSet(this, _autoPreviewsRequest, void 0);
+      }
+      /**
+      * Fetches pages based on the `params` argument. Results are paginated.
+      *
+      * @example
+      *
+      * ```ts
+      * const response = await client.get({ pageSize: 10 })
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#get}
+      */
+      async get(params) {
+        return await (await __privateMethod(this, _Client_instances, internalGet_fn).call(this, params)).json();
+      }
+      /**
+      * Fetches the first page returned based on the `params` argument.
+      *
+      * @example
+      *
+      * ```ts
+      * const page = await client.getFirst()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getfirst}
+      */
+      async getFirst(params) {
+        const actualParams = (params === null || params === void 0 ? void 0 : params.page) || (params === null || params === void 0 ? void 0 : params.pageSize) ? params : {
+          ...params,
+          pageSize: 1
+        };
+        const response = await __privateMethod(this, _Client_instances, internalGet_fn).call(this, actualParams);
+        const { results } = await response.clone().json();
+        if (results[0]) return results[0];
+        throw new NotFoundError("No documents were returned", response.url, void 0);
+      }
+      /**
+      * Fetches all pages based on the `params` argument. This method may make
+      * multiple network requests to fetch all matching pages.
+      *
+      * @example
+      *
+      * ```ts
+      * const pages = await client.dangerouslyGetAll()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#dangerouslygetall}
+      */
+      async dangerouslyGetAll(params = {}) {
+        var _this$defaultParams;
+        const { limit = Infinity, ...actualParams } = params;
+        const resolvedParams = {
+          ...actualParams,
+          pageSize: Math.min(limit, actualParams.pageSize || ((_this$defaultParams = this.defaultParams) === null || _this$defaultParams === void 0 ? void 0 : _this$defaultParams.pageSize) || MAX_PAGE_SIZE)
+        };
+        const documents = [];
+        let latestResult;
+        while ((!latestResult || latestResult.next_page) && documents.length < limit) {
+          const page = latestResult ? latestResult.page + 1 : void 0;
+          latestResult = await this.get({
+            ...resolvedParams,
+            page
+          });
+          documents.push(...latestResult.results);
+          if (latestResult.next_page) await new Promise((res) => setTimeout(res, GET_ALL_QUERY_DELAY));
+        }
+        return documents.slice(0, limit);
+      }
+      /**
+      * Fetches a page with a specific ID.
+      *
+      * @example
+      *
+      * ```ts
+      * const page = await client.getByID("WW4bKScAAMAqmluX")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyid}
+      */
+      async getByID(id, params) {
+        return await this.getFirst(appendFilters(params, filter.at("document.id", id)));
+      }
+      /**
+      * Fetches pages with specific IDs. Results are paginated.
+      *
+      * @example
+      *
+      * ```ts
+      * const response = await client.getByIDs([
+      * 	"WW4bKScAAMAqmluX",
+      * 	"U1kTRgEAAC8A5ldS",
+      * ])
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyids}
+      */
+      async getByIDs(ids, params) {
+        return await this.get(appendFilters(params, filter.in("document.id", ids)));
+      }
+      /**
+      * Fetches pages with specific IDs. This method may make multiple network
+      * requests to fetch all matching pages.
+      *
+      * @example
+      *
+      * ```ts
+      * const pages = await client.getAllByIDs([
+      * 	"WW4bKScAAMAqmluX",
+      * 	"U1kTRgEAAC8A5ldS",
+      * ])
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbyids}
+      */
+      async getAllByIDs(ids, params) {
+        return await this.dangerouslyGetAll(appendFilters(params, filter.in("document.id", ids)));
+      }
+      /**
+      * Fetches a page with a specific UID and type.
+      *
+      * @example
+      *
+      * ```ts
+      * const page = await client.getByUID("blog_post", "my-first-post")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyuid}
+      */
+      async getByUID(documentType, uid, params) {
+        return await this.getFirst(appendFilters(params, filter.at("document.type", documentType), filter.at(`my.${documentType}.uid`, uid)));
+      }
+      /**
+      * Fetches pages with specific UIDs and a specific type. Results are
+      * paginated.
+      *
+      * @example
+      *
+      * ```ts
+      * const response = await client.getByUIDs("blog_post", [
+      * 	"my-first-post",
+      * 	"my-second-post",
+      * ])
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyuids}
+      */
+      async getByUIDs(documentType, uids, params) {
+        return await this.get(appendFilters(params, filter.at("document.type", documentType), filter.in(`my.${documentType}.uid`, uids)));
+      }
+      /**
+      * Fetches pages with specific UIDs and a specific type. This method may make
+      * multiple network requests to fetch all matching pages.
+      *
+      * @example
+      *
+      * ```ts
+      * const pages = await client.getAllByUIDs("blog_post", [
+      * 	"my-first-post",
+      * 	"my-second-post",
+      * ])
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbyuids}
+      */
+      async getAllByUIDs(documentType, uids, params) {
+        return await this.dangerouslyGetAll(appendFilters(params, filter.at("document.type", documentType), filter.in(`my.${documentType}.uid`, uids)));
+      }
+      /**
+      * Fetches a specific single type page.
+      *
+      * @example
+      *
+      * ```ts
+      * const page = await client.getSingle("settings")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getsingle}
+      */
+      async getSingle(documentType, params) {
+        return await this.getFirst(appendFilters(params, filter.at("document.type", documentType)));
+      }
+      /**
+      * Fetches pages with a specific type. Results are paginated.
+      *
+      * @example
+      *
+      * ```ts
+      * const response = await client.getByType("blog_post")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbytype}
+      */
+      async getByType(documentType, params) {
+        return await this.get(appendFilters(params, filter.at("document.type", documentType)));
+      }
+      /**
+      * Fetches pages with a specific type. This method may make multiple network
+      * requests to fetch all matching documents.
+      *
+      * @example
+      *
+      * ```ts
+      * const pages = await client.getAllByType("blog_post")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbytype}
+      */
+      async getAllByType(documentType, params) {
+        return await this.dangerouslyGetAll(appendFilters(params, filter.at("document.type", documentType)));
+      }
+      /**
+      * Fetches pages with a specific tag. Results are paginated.
+      *
+      * @example
+      *
+      * ```ts
+      * const response = await client.getByTag("featured")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbytag}
+      */
+      async getByTag(tag, params) {
+        return await this.get(appendFilters(params, filter.any("document.tags", [tag])));
+      }
+      /**
+      * Fetches pages with a specific tag. This method may make multiple network
+      * requests to fetch all matching documents.
+      *
+      * @example
+      *
+      * ```ts
+      * const pages = await client.getAllByTag("featured")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbytag}
+      */
+      async getAllByTag(tag, params) {
+        return await this.dangerouslyGetAll(appendFilters(params, filter.any("document.tags", [tag])));
+      }
+      /**
+      * Fetches pages with every tag from a list of tags. Results are paginated.
+      *
+      * @example
+      *
+      * ```ts
+      * const response = await client.getByEveryTag(["featured", "homepage"])
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyeverytag}
+      */
+      async getByEveryTag(tags, params) {
+        return await this.get(appendFilters(params, filter.at("document.tags", tags)));
+      }
+      /**
+      * Fetches pages with every tag from a list of tags. This method may make
+      * multiple network requests to fetch all matching pages.
+      *
+      * @example
+      *
+      * ```ts
+      * const pages = await client.getAllByEveryTag(["featured", "homepage"])
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbyeverytag}
+      */
+      async getAllByEveryTag(tags, params) {
+        return await this.dangerouslyGetAll(appendFilters(params, filter.at("document.tags", tags)));
+      }
+      /**
+      * Fetches pages with at least one tag from a list of tags. Results are
+      * paginated.
+      *
+      * @example
+      *
+      * ```ts
+      * const response = await client.getBySomeTags(["featured", "homepage"])
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbysometags}
+      */
+      async getBySomeTags(tags, params) {
+        return await this.get(appendFilters(params, filter.any("document.tags", tags)));
+      }
+      /**
+      * Fetches pages with at least one tag from a list of tags. This method may
+      * make multiple network requests to fetch all matching documents.
+      *
+      * @example
+      *
+      * ```ts
+      * const pages = await client.getAllBySomeTags(["featured", "homepage"])
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbysometags}
+      */
+      async getAllBySomeTags(tags, params) {
+        return await this.dangerouslyGetAll(appendFilters(params, filter.any("document.tags", tags)));
+      }
+      /**
+      * Fetches metadata about the client's Prismic repository.
+      *
+      * @example
+      *
+      * ```ts
+      * const repository = await client.getRepository()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getrepository}
+      */
+      async getRepository(params) {
+        if (__privateGet(this, _cachedRepository) && __privateGet(this, _cachedRepositoryExpiration) > Date.now()) return __privateGet(this, _cachedRepository);
+        const url = new URL(this.documentAPIEndpoint);
+        const accessToken = (params === null || params === void 0 ? void 0 : params.accessToken) || this.accessToken;
+        if (accessToken) url.searchParams.set("access_token", accessToken);
+        const response = await __privateMethod(this, _Client_instances, request_fn).call(this, url, params);
+        if (response.ok) {
+          __privateSet(this, _cachedRepository, await response.json());
+          __privateSet(this, _cachedRepositoryExpiration, Date.now() + REPOSITORY_CACHE_TTL);
+          return __privateGet(this, _cachedRepository);
+        }
+        if (response.status === 404) throw new RepositoryNotFoundError(`Prismic repository not found. Check that "${this.documentAPIEndpoint}" is pointing to the correct repository.`, url.toString(), void 0);
+        return await __privateMethod(this, _Client_instances, throwContentAPIError_fn).call(this, response, url.toString());
+      }
+      /**
+      * Fetches the repository's active refs.
+      *
+      * @example
+      *
+      * ```ts
+      * const refs = await client.getRefs()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getrefs}
+      */
+      async getRefs(params) {
+        return (await this.getRepository(params)).refs;
+      }
+      /**
+      * Fetches a ref by its ID.
+      *
+      * @example
+      *
+      * ```ts
+      * const ref = await client.getRefByID("YhE3YhEAACIA4321")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getrefbyid}
+      */
+      async getRefByID(id, params) {
+        const ref = (await this.getRefs(params)).find((ref$1) => ref$1.id === id);
+        if (!ref) throw new PrismicError(`Ref with ID "${id}" could not be found.`, void 0, void 0);
+        return ref;
+      }
+      /**
+      * Fetches a ref by its label. A release ref's label is its name shown in the
+      * Page Builder.
+      *
+      * @example
+      *
+      * ```ts
+      * const ref = await client.getRefByLabel("My Release")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getrefbylabel}
+      */
+      async getRefByLabel(label, params) {
+        const ref = (await this.getRefs(params)).find((ref$1) => ref$1.label === label);
+        if (!ref) throw new PrismicError(`Ref with label "${label}" could not be found.`, void 0, void 0);
+        return ref;
+      }
+      /**
+      * Fetches the repository's master ref.
+      *
+      * @example
+      *
+      * ```ts
+      * const masterRef = await client.getMasterRef()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getmasterref}
+      */
+      async getMasterRef(params) {
+        const ref = (await this.getRefs(params)).find((ref$1) => ref$1.isMasterRef);
+        if (!ref) throw new PrismicError("Master ref could not be found.", void 0, void 0);
+        return ref;
+      }
+      /**
+      * Fetches the repository's active releases.
+      *
+      * @example
+      *
+      * ```ts
+      * const releases = await client.getReleases()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getreleases}
+      */
+      async getReleases(params) {
+        return (await this.getRefs(params)).filter((ref) => !ref.isMasterRef);
+      }
+      /**
+      * Fetches a release with a specific ID.
+      *
+      * @example
+      *
+      * ```ts
+      * const release = await client.getReleaseByID("YhE3YhEAACIA4321")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getreleasebyid}
+      */
+      async getReleaseByID(id, params) {
+        const release = (await this.getReleases(params)).find((ref) => ref.id === id);
+        if (!release) throw new PrismicError(`Release with ID "${id}" could not be found.`, void 0, void 0);
+        return release;
+      }
+      /**
+      * Fetches a release by its label. A release ref's label is its name shown in
+      * the Page Builder.
+      *
+      * @example
+      *
+      * ```ts
+      * const release = await client.getReleaseByLabel("My Release")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getreleasebylabel}
+      */
+      async getReleaseByLabel(label, params) {
+        const release = (await this.getReleases(params)).find((ref) => ref.label === label);
+        if (!release) throw new PrismicError(`Release with label "${label}" could not be found.`, void 0, void 0);
+        return release;
+      }
+      /**
+      * Fetches the repository's page tags.
+      *
+      * @example
+      *
+      * ```ts
+      * const tags = await client.getTags()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#gettags}
+      */
+      async getTags(params) {
+        const repository = await this.getRepository(params);
+        const form = repository.forms.tags;
+        if (form) {
+          const url = new URL(form.action);
+          if (this.accessToken) url.searchParams.set("access_token", this.accessToken);
+          const response = await __privateMethod(this, _Client_instances, request_fn).call(this, url, params);
+          if (response.ok) return await response.json();
+        }
+        return repository.tags;
+      }
+      /**
+      * Builds a Content API query URL with a set of parameters.
+      *
+      * @example
+      *
+      * ```ts
+      * const url = await client.buildQueryURL({
+      * 	filters: [filter.at("document.type", "blog_post")],
+      * })
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#buildqueryurl}
+      */
+      async buildQueryURL({ signal, fetchOptions, ...params } = {}) {
+        const ref = params.ref || await __privateMethod(this, _Client_instances, getResolvedRef_fn).call(this, {
+          accessToken: params.accessToken,
+          signal,
+          fetchOptions
+        });
+        const integrationFieldsRef = params.integrationFieldsRef || (await this.getRepository({
+          accessToken: params.accessToken,
+          signal,
+          fetchOptions
+        })).integrationFieldsRef || void 0;
+        return buildQueryURL(this.documentAPIEndpoint, {
+          ...this.defaultParams,
+          ...params,
+          ref,
+          integrationFieldsRef,
+          routes: params.routes || this.routes,
+          brokenRoute: params.brokenRoute || this.brokenRoute,
+          accessToken: params.accessToken || this.accessToken
+        });
+      }
+      /**
+      * Fetches a previewed page's URL using a preview token and page ID.
+      *
+      * @example
+      *
+      * ```ts
+      * const url = await client.resolvePreviewURL({
+      * 	linkResolver,
+      * 	defaultURL: "/",
+      * })
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#resolvepreviewurl}
+      */
+      async resolvePreviewURL(args) {
+        let documentID = args.documentID;
+        let previewToken = args.previewToken;
+        if (typeof globalThis.location !== "undefined") {
+          const searchParams = new URLSearchParams(globalThis.location.search);
+          documentID = documentID || searchParams.get("documentId");
+          previewToken = previewToken || searchParams.get("token");
+        } else if (__privateGet(this, _autoPreviewsRequest)) {
+          if ("query" in __privateGet(this, _autoPreviewsRequest)) {
+            var _this$autoPreviewsReq, _this$autoPreviewsReq2;
+            documentID = documentID || ((_this$autoPreviewsReq = __privateGet(this, _autoPreviewsRequest).query) === null || _this$autoPreviewsReq === void 0 ? void 0 : _this$autoPreviewsReq.documentId);
+            previewToken = previewToken || ((_this$autoPreviewsReq2 = __privateGet(this, _autoPreviewsRequest).query) === null || _this$autoPreviewsReq2 === void 0 ? void 0 : _this$autoPreviewsReq2.token);
+          } else if ("url" in __privateGet(this, _autoPreviewsRequest) && __privateGet(this, _autoPreviewsRequest).url) {
+            const searchParams = new URL(__privateGet(this, _autoPreviewsRequest).url, "missing-host://").searchParams;
+            documentID = documentID || searchParams.get("documentId");
+            previewToken = previewToken || searchParams.get("token");
+          }
+        }
+        if (documentID != null && previewToken != null) {
+          const url = asLink(await this.getByID(documentID, {
+            ref: previewToken,
+            lang: "*",
+            signal: args.signal,
+            fetchOptions: args.fetchOptions
+          }), { linkResolver: args.linkResolver });
+          if (typeof url === "string") return url;
+        }
+        return args.defaultURL;
+      }
+      /**
+      * Configures the client to query the latest published content. This is the
+      * client's default mode.
+      *
+      * @example
+      *
+      * ```ts
+      * client.queryLatestContent()
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#querylatestcontent}
+      */
+      queryLatestContent() {
+        __privateSet(this, _getRef, void 0);
+      }
+      /**
+      * Configures the client to query content from a release with a specific ID.
+      *
+      * @example
+      *
+      * ```ts
+      * client.queryContentFromReleaseByID("YhE3YhEAACIA4321")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#querycontentfromreleasebyid}
+      */
+      queryContentFromReleaseByID(id) {
+        __privateSet(this, _getRef, async (params) => {
+          return (await this.getReleaseByID(id, params)).ref;
+        });
+      }
+      /**
+      * Configures the client to query content from a release with a specific
+      * label.
+      *
+      * @example
+      *
+      * ```ts
+      * client.queryContentFromReleaseByLabel("My Release")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#querycontentfromreleasebylabel}
+      */
+      queryContentFromReleaseByLabel(label) {
+        __privateSet(this, _getRef, async (params) => {
+          return (await this.getReleaseByLabel(label, params)).ref;
+        });
+      }
+      /**
+      * Configures the client to query content from a specific ref.
+      *
+      * @example
+      *
+      * ```ts
+      * client.queryContentFromRef("my-ref")
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#querycontentfromref}
+      */
+      queryContentFromRef(ref) {
+        __privateSet(this, _getRef, typeof ref === "string" ? () => ref : ref);
+      }
+      /**
+      * A preconfigured `fetch()` function for Prismic's GraphQL API that can be
+      * provided to GraphQL clients.
+      *
+      * @example
+      *
+      * ```ts
+      * import { createClient, getGraphQLEndpoint } from "@prismicio/client"
+      *
+      * const client = createClient("example-prismic-repo")
+      * const graphQLClient = new ApolloClient({
+      * 	link: new HttpLink({
+      * 		uri: getGraphQLEndpoint(client.repositoryName),
+      * 		// Provide `client.graphQLFetch` as the fetch implementation.
+      * 		fetch: client.graphQLFetch,
+      * 		// Using GET is required.
+      * 		useGETForQueries: true,
+      * 	}),
+      * 	cache: new InMemoryCache(),
+      * })
+      * ```
+      *
+      * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#graphqlfetch}
+      */
+      async graphQLFetch(input, init) {
+        const params = {
+          accessToken: this.accessToken,
+          fetchOptions: this.fetchOptions
+        };
+        const repository = await this.getRepository(params);
+        const ref = await __privateMethod(this, _Client_instances, getResolvedRef_fn).call(this, params);
+        const headers = {};
+        headers["prismic-ref"] = ref;
+        if (this.accessToken) headers["authorization"] = `Token ${this.accessToken}`;
+        if (repository.integrationFieldsRef) headers["prismic-integration-field-ref"] = repository.integrationFieldsRef;
+        for (const [key, value] of Object.entries((init === null || init === void 0 ? void 0 : init.headers) ?? {})) headers[key.toLowerCase()] = value;
+        const url = new URL(typeof input === "string" ? input : input.url);
+        const query = (url.searchParams.get("query") ?? "").replace(/(\n| )*( |{|})(\n| )*/gm, (_chars, _spaces, brackets) => brackets);
+        url.searchParams.set("query", query);
+        url.searchParams.set("ref", ref);
+        return await this.fetchFn(url.toString(), {
+          ...init,
+          headers
+        });
+      }
+    }, _repositoryName = new WeakMap(), _getRef = new WeakMap(), _autoPreviews = new WeakMap(), _autoPreviewsRequest = new WeakMap(), _cachedRepository = new WeakMap(), _cachedRepositoryExpiration = new WeakMap(), _Client_instances = new WeakSet(), getResolvedRef_fn = async function(params) {
+      var _this$getRef;
+      if (__privateGet(this, _autoPreviews)) {
+        var _this$autoPreviewsReq3, _globalThis$document;
+        const previewRef = getPreviewCookie((((_this$autoPreviewsReq3 = __privateGet(this, _autoPreviewsRequest)) === null || _this$autoPreviewsReq3 === void 0 ? void 0 : _this$autoPreviewsReq3.headers) ? "get" in __privateGet(this, _autoPreviewsRequest).headers ? __privateGet(this, _autoPreviewsRequest).headers.get("cookie") : __privateGet(this, _autoPreviewsRequest).headers.cookie : (_globalThis$document = globalThis.document) === null || _globalThis$document === void 0 ? void 0 : _globalThis$document.cookie) ?? "");
+        if (previewRef) return previewRef;
+      }
+      const ref = await ((_this$getRef = __privateGet(this, _getRef)) === null || _this$getRef === void 0 ? void 0 : _this$getRef.call(this, params));
+      if (ref) return ref;
+      return (await this.getMasterRef(params)).ref;
+    }, internalGet_fn = async function(params, attempt = 1) {
+      const url = await this.buildQueryURL(params);
+      const response = await __privateMethod(this, _Client_instances, request_fn).call(this, new URL(url), params);
+      if (response.ok) return response;
+      try {
+        return await __privateMethod(this, _Client_instances, throwContentAPIError_fn).call(this, response, url);
+      } catch (error) {
+        if ((error instanceof RefNotFoundError || error instanceof RefExpiredError) && attempt < MAX_INVALID_REF_RETRY_ATTEMPTS) {
+          var _error$message$match;
+          if (!(params === null || params === void 0 ? void 0 : params.ref)) __privateSet(this, _cachedRepository, void 0);
+          const masterRef = (_error$message$match = error.message.match(/master ref is: (?<ref>.*)$/i)) === null || _error$message$match === void 0 || (_error$message$match = _error$message$match.groups) === null || _error$message$match === void 0 ? void 0 : _error$message$match.ref;
+          if (!masterRef) throw error;
+          throttledWarn(`[@prismicio/client] The ref (${new URL(url).searchParams.get("ref")}) was ${error instanceof RefNotFoundError ? "invalid" : "expired"}. Now retrying with the latest master ref (${masterRef}). If you were previewing content, the response will not include draft content.`);
+          return await __privateMethod(this, _Client_instances, internalGet_fn).call(this, {
+            ...params,
+            ref: masterRef
+          }, attempt + 1);
+        }
+        throw error;
+      }
+    }, throwContentAPIError_fn = async function(response, url) {
+      switch (response.status) {
+        case 400: {
+          const json = await response.clone().json();
+          throw new ParsingError(json.message, url, json);
+        }
+        case 401: {
+          const json = await response.clone().json();
+          throw new ForbiddenError(json.message, url, json);
+        }
+        case 404: {
+          const json = await response.clone().json();
+          switch (json.type) {
+            case "api_notfound_error":
+              throw new RefNotFoundError(json.message, url, json);
+            case "api_security_error":
+              if (/preview token.*expired/i.test(json.message)) throw new PreviewTokenExpiredError(json.message, url, json);
+            default:
+              throw new NotFoundError(json.message, url, json);
+          }
+        }
+        case 410: {
+          const json = await response.clone().json();
+          throw new RefExpiredError(json.message, url, json);
+        }
+        default:
+          throw new PrismicError(void 0, url, await response.text());
+      }
+    }, request_fn = async function(url, params) {
+      var _this$fetchOptions, _params$fetchOptions, _params$fetchOptions2, _this$fetchOptions2;
+      return await request(url, {
+        ...this.fetchOptions,
+        ...params === null || params === void 0 ? void 0 : params.fetchOptions,
+        headers: {
+          ...(_this$fetchOptions = this.fetchOptions) === null || _this$fetchOptions === void 0 ? void 0 : _this$fetchOptions.headers,
+          ...params === null || params === void 0 || (_params$fetchOptions = params.fetchOptions) === null || _params$fetchOptions === void 0 ? void 0 : _params$fetchOptions.headers
+        },
+        signal: (params === null || params === void 0 || (_params$fetchOptions2 = params.fetchOptions) === null || _params$fetchOptions2 === void 0 ? void 0 : _params$fetchOptions2.signal) || (params === null || params === void 0 ? void 0 : params.signal) || ((_this$fetchOptions2 = this.fetchOptions) === null || _this$fetchOptions2 === void 0 ? void 0 : _this$fetchOptions2.signal)
+      }, this.fetchFn);
+    }, _a);
+  }
+});
+
+// node_modules/@prismicio/client/dist/createClient.js
+var createClient;
+var init_createClient = __esm({
+  "node_modules/@prismicio/client/dist/createClient.js"() {
+    "use strict";
+    init_Client();
+    createClient = (repositoryNameOrEndpoint, options) => new Client(repositoryNameOrEndpoint, options);
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/migration/Asset.js
+var PrismicMigrationAsset;
+var init_Asset = __esm({
+  "node_modules/@prismicio/client/dist/types/migration/Asset.js"() {
+    "use strict";
+    PrismicMigrationAsset = class {
+      /**
+      * Creates a migration asset used with the Prismic Migration API.
+      *
+      * @param config - Configuration of the asset.
+      * @param initialField - The initial field value if any.
+      *
+      * @returns A migration asset instance.
+      */
+      constructor(config, initialField) {
+        /**
+        * Asset object from Prismic, available once created.
+        */
+        __publicField(this, "asset");
+        /**
+        * Configuration of the asset.
+        */
+        __publicField(this, "config");
+        /**
+        * The initial field value this migration field was created with.
+        */
+        __publicField(this, "originalField");
+        this.config = config;
+        this.originalField = initialField;
+      }
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/migration/Document.js
+var PrismicMigrationDocument;
+var init_Document = __esm({
+  "node_modules/@prismicio/client/dist/types/migration/Document.js"() {
+    "use strict";
+    PrismicMigrationDocument = class {
+      /**
+      * Creates a Prismic migration document instance.
+      *
+      * @param document - The document to be sent to the Migration API.
+      * @param title - The name of the document displayed in the editor.
+      * @param params - Parameters to create/update the document with on the
+      *   Migration API.
+      *
+      * @returns A Prismic migration document instance.
+      */
+      constructor(document2, title2, params) {
+        /**
+        * The document to be sent to the Migration API.
+        */
+        __publicField(this, "document");
+        /**
+        * The name of the document displayed in the editor.
+        */
+        __publicField(this, "title");
+        /**
+        * The link to the master language document to relate the document to if any.
+        */
+        __publicField(this, "masterLanguageDocument");
+        /**
+        * Original Prismic document when the migration document came from another
+        * Prismic repository.
+        *
+        * @remarks
+        * When migrating a document from another repository, one might want to alter
+        * it with migration specific types, hence accepting an
+        * `ExistingPrismicDocument` instead of a regular `PrismicDocument`.
+        */
+        __publicField(this, "originalPrismicDocument");
+        this.document = document2;
+        this.title = title2;
+        this.masterLanguageDocument = params === null || params === void 0 ? void 0 : params.masterLanguageDocument;
+        this.originalPrismicDocument = params === null || params === void 0 ? void 0 : params.originalPrismicDocument;
+      }
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/isFilled.js
+var isFilled_exports, isNonNullish, isNonEmptyArray, richText, title, imageThumbnail, image, link, linkToMedia, contentRelationship, date, timestamp, color, number, keyText, select, embed, geoPoint, table, integration, integrationField, integrationFields, repeatable, group, sliceZone;
+var init_isFilled = __esm({
+  "node_modules/@prismicio/client/dist/helpers/isFilled.js"() {
+    "use strict";
+    init_rolldown_runtime();
+    isFilled_exports = /* @__PURE__ */ __export2({
+      color: () => color,
+      contentRelationship: () => contentRelationship,
+      date: () => date,
+      embed: () => embed,
+      geoPoint: () => geoPoint,
+      group: () => group,
+      image: () => image,
+      imageThumbnail: () => imageThumbnail,
+      integration: () => integration,
+      integrationField: () => integrationField,
+      integrationFields: () => integrationFields,
+      keyText: () => keyText,
+      link: () => link,
+      linkToMedia: () => linkToMedia,
+      number: () => number,
+      repeatable: () => repeatable,
+      richText: () => richText,
+      select: () => select,
+      sliceZone: () => sliceZone,
+      table: () => table,
+      timestamp: () => timestamp,
+      title: () => title
+    });
+    isNonNullish = (input) => {
+      return input != null;
+    };
+    isNonEmptyArray = (input) => {
+      return !!input.length;
+    };
+    richText = (field) => {
+      if (!isNonNullish(field)) return false;
+      else if (field.length === 1 && "text" in field[0]) return !!field[0].text;
+      else return !!field.length;
+    };
+    title = richText;
+    imageThumbnail = (thumbnail) => {
+      return isNonNullish(thumbnail) && !!thumbnail.url;
+    };
+    image = imageThumbnail;
+    link = (field) => {
+      return isNonNullish(field) && ("id" in field || "url" in field);
+    };
+    linkToMedia = link;
+    contentRelationship = link;
+    date = isNonNullish;
+    timestamp = isNonNullish;
+    color = isNonNullish;
+    number = isNonNullish;
+    keyText = (field) => {
+      return !!field;
+    };
+    select = isNonNullish;
+    embed = (field) => {
+      return isNonNullish(field) && !!field.embed_url;
+    };
+    geoPoint = (field) => {
+      return isNonNullish(field) && "longitude" in field;
+    };
+    table = isNonNullish;
+    integration = isNonNullish;
+    integrationField = integration;
+    integrationFields = integration;
+    repeatable = (repeatable$1) => {
+      return isNonNullish(repeatable$1) && isNonEmptyArray(repeatable$1);
+    };
+    group = (group$1) => {
+      return isNonNullish(group$1) && isNonEmptyArray(group$1);
+    };
+    sliceZone = (slices) => {
+      return isNonNullish(slices) && isNonEmptyArray(slices);
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/isValue.js
+var filledLinkToMedia, imageLike, filledImage, rtImageNode, filledContentRelationship, prismicDocument;
+var init_isValue = __esm({
+  "node_modules/@prismicio/client/dist/lib/isValue.js"() {
+    "use strict";
+    init_richText();
+    init_link();
+    filledLinkToMedia = (value) => {
+      if (value && typeof value === "object" && !("version" in value)) {
+        if ("link_type" in value && value.link_type === LinkType.Media && "id" in value && "name" in value && "kind" in value && "url" in value && "size" in value) return true;
+      }
+      return false;
+    };
+    imageLike = (value) => {
+      if (value && typeof value === "object" && (!("version" in value) || typeof value.version === "object")) {
+        if ("id" in value && "url" in value && typeof value.url === "string" && "dimensions" in value && "edit" in value && "alt" in value && "copyright" in value) return true;
+      }
+      return false;
+    };
+    filledImage = (value) => {
+      if (imageLike(value) && (!("type" in value) || value.type !== RichTextNodeType.image)) return true;
+      return false;
+    };
+    rtImageNode = (value) => {
+      if (imageLike(value) && "type" in value && value.type === RichTextNodeType.image) return true;
+      return false;
+    };
+    filledContentRelationship = (value) => {
+      if (value && typeof value === "object" && !("version" in value)) {
+        if ("link_type" in value && value.link_type === LinkType.Document && "id" in value && "type" in value && "tags" in value && "lang" in value) return true;
+      }
+      return false;
+    };
+    prismicDocument = (value) => {
+      try {
+        return typeof value === "object" && value !== null && "id" in value && "href" in value && typeof value.href === "string" && new URL(value.href) && "type" in value && "lang" in value && "tags" in value && Array.isArray(value.tags);
+      } catch {
+        return false;
+      }
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/isMigrationValue.js
+var contentRelationship2, image2, linkToMedia2, rtImageNode2;
+var init_isMigrationValue = __esm({
+  "node_modules/@prismicio/client/dist/lib/isMigrationValue.js"() {
+    "use strict";
+    init_richText();
+    init_link();
+    init_Asset();
+    init_Document();
+    init_isValue();
+    contentRelationship2 = (value) => {
+      return value instanceof PrismicMigrationDocument || prismicDocument(value) || typeof value === "object" && value !== null && "link_type" in value && value.link_type === LinkType.Document && "id" in value && (contentRelationship2(value.id) || typeof value.id === "function");
+    };
+    image2 = (value) => {
+      return value instanceof PrismicMigrationAsset || typeof value === "object" && value !== null && "id" in value && Object.values(value).every((maybeThumbnail) => maybeThumbnail instanceof PrismicMigrationAsset);
+    };
+    linkToMedia2 = (value) => {
+      return typeof value === "object" && value !== null && "id" in value && value.id instanceof PrismicMigrationAsset && "link_type" in value && value.link_type === LinkType.Media;
+    };
+    rtImageNode2 = (value) => {
+      return typeof value === "object" && value !== null && "id" in value && value.id instanceof PrismicMigrationAsset && "type" in value && value.type === RichTextNodeType.image;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/getOptionalLinkProperties.js
+var getOptionalLinkProperties;
+var init_getOptionalLinkProperties = __esm({
+  "node_modules/@prismicio/client/dist/lib/getOptionalLinkProperties.js"() {
+    "use strict";
+    getOptionalLinkProperties = (input) => {
+      const res = {};
+      if ("text" in input) res.text = input.text;
+      if ("variant" in input) res.variant = input.variant;
+      return res;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/resolveMigrationDocumentData.js
+async function resolveMigrationContentRelationship(relation) {
+  if (typeof relation === "function") return resolveMigrationContentRelationship(await relation());
+  if (relation instanceof PrismicMigrationDocument) return relation.document.id ? {
+    link_type: LinkType.Document,
+    id: relation.document.id
+  } : { link_type: LinkType.Any };
+  const optionalLinkProperties = relation && "link_type" in relation ? getOptionalLinkProperties(relation) : void 0;
+  if (relation) {
+    if (contentRelationship2(relation.id) || typeof relation.id !== "string") return {
+      ...optionalLinkProperties,
+      ...await resolveMigrationContentRelationship(relation.id)
+    };
+    return {
+      ...optionalLinkProperties,
+      link_type: LinkType.Document,
+      id: relation.id
+    };
+  }
+  return {
+    ...optionalLinkProperties,
+    link_type: LinkType.Any
+  };
+}
+async function resolveMigrationDocumentData(input, migration) {
+  if (contentRelationship2(input)) return resolveMigrationContentRelationship(input);
+  if (image2(input)) return resolveMigrationImage(input, migration, true);
+  if (linkToMedia2(input)) return resolveMigrationLinkToMedia(input, migration);
+  if (rtImageNode2(input)) return resolveMigrationRTImageNode(input, migration);
+  if (typeof input === "function") return await resolveMigrationDocumentData(await input(), migration);
+  if (Array.isArray(input)) {
+    const res = [];
+    for (const element of input) res.push(await resolveMigrationDocumentData(element, migration));
+    return res.filter(Boolean);
+  }
+  if (input && typeof input === "object") {
+    const res = {};
+    for (const key in input) res[key] = await resolveMigrationDocumentData(input[key], migration);
+    return res;
+  }
+  return input;
+}
+var resolveMigrationImage, resolveMigrationRTImageNode, resolveMigrationLinkToMedia;
+var init_resolveMigrationDocumentData = __esm({
+  "node_modules/@prismicio/client/dist/lib/resolveMigrationDocumentData.js"() {
+    "use strict";
+    init_richText();
+    init_link();
+    init_Asset();
+    init_Document();
+    init_isFilled();
+    init_isMigrationValue();
+    init_getOptionalLinkProperties();
+    resolveMigrationImage = (image$1, migration, withThumbnails) => {
+      var _migration$_assets$ge;
+      const { id: master, ...thumbnails } = image$1 instanceof PrismicMigrationAsset ? { id: image$1 } : image$1;
+      const asset = (_migration$_assets$ge = migration._assets.get(master.config.id)) === null || _migration$_assets$ge === void 0 ? void 0 : _migration$_assets$ge.asset;
+      const maybeInitialField = master.originalField;
+      if (asset) {
+        const parameters = ((maybeInitialField === null || maybeInitialField === void 0 ? void 0 : maybeInitialField.url) || asset.url).split("?")[1];
+        const url = `${asset.url.split("?")[0]}${parameters ? `?${parameters}` : ""}`;
+        const dimensions = {
+          width: asset.width,
+          height: asset.height
+        };
+        const edit = maybeInitialField && "edit" in maybeInitialField ? maybeInitialField === null || maybeInitialField === void 0 ? void 0 : maybeInitialField.edit : {
+          x: 0,
+          y: 0,
+          zoom: 1,
+          background: "transparent"
+        };
+        const alt = master.config.alt || asset.alt || null;
+        const resolvedThumbnails = {};
+        if (withThumbnails) for (const [name2, thumbnail] of Object.entries(thumbnails)) {
+          const resolvedThumbnail = resolveMigrationImage(thumbnail, migration);
+          if (resolvedThumbnail) resolvedThumbnails[name2] = resolvedThumbnail;
+        }
+        return {
+          id: asset.id,
+          url,
+          dimensions,
+          edit,
+          alt,
+          copyright: asset.credits || null,
+          ...resolvedThumbnails
+        };
+      }
+    };
+    resolveMigrationRTImageNode = async (rtImageNode$1, migration) => {
+      const image$1 = resolveMigrationImage(rtImageNode$1.id, migration);
+      if (image$1) {
+        const linkTo = await resolveMigrationDocumentData(rtImageNode$1.linkTo, migration);
+        return {
+          ...image$1,
+          type: RichTextNodeType.image,
+          linkTo: link(linkTo) ? linkTo : void 0
+        };
+      }
+    };
+    resolveMigrationLinkToMedia = (linkToMedia$1, migration) => {
+      var _migration$_assets$ge2;
+      const asset = (_migration$_assets$ge2 = migration._assets.get(linkToMedia$1.id.config.id)) === null || _migration$_assets$ge2 === void 0 ? void 0 : _migration$_assets$ge2.asset;
+      const optionalLinkProperties = getOptionalLinkProperties(linkToMedia$1);
+      if (asset) return {
+        ...optionalLinkProperties,
+        id: asset.id,
+        link_type: LinkType.Media
+      };
+      return {
+        ...optionalLinkProperties,
+        link_type: LinkType.Any
+      };
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/WriteClient.js
+var CLIENT_IDENTIFIER, _WriteClient_instances, request_fn2, handleAssetAPIError_fn, handleMigrationAPIError_fn, _a2, WriteClient;
+var init_WriteClient = __esm({
+  "node_modules/@prismicio/client/dist/WriteClient.js"() {
+    "use strict";
+    init_package();
+    init_devMsg();
+    init_pLimit();
+    init_request();
+    init_errors();
+    init_Client();
+    init_resolveMigrationDocumentData();
+    CLIENT_IDENTIFIER = `${name.replace("@", "").replace("/", "-")}/${version}`;
+    WriteClient = (_a2 = class extends Client {
+      /**
+      * Creates a Prismic client that can be used to query and write content to a
+      * repository.
+      *
+      * If used in an environment where a global `fetch` function is unavailable,
+      * such as in some Node.js versions, the `fetch` option must be provided as
+      * part of the `options` parameter.
+      *
+      * @param repositoryName - The Prismic repository name for the repository.
+      * @param options - Configuration that determines how content will be queried
+      *   from and written to the Prismic repository.
+      *
+      * @returns A client that can query and write content to the repository.
+      */
+      constructor(repositoryName, options) {
+        super(repositoryName, options);
+        __privateAdd(this, _WriteClient_instances);
+        __publicField(this, "writeToken");
+        __publicField(this, "assetAPIEndpoint", "https://asset-api.prismic.io/");
+        __publicField(this, "migrationAPIEndpoint", "https://migration.prismic.io/");
+        /**
+        * {@link resolveAssetTagIDs} rate limiter.
+        */
+        __publicField(this, "_resolveAssetTagIDsLimit", pLimit());
+        if (typeof globalThis.window !== "undefined") console.warn(`[@prismicio/client] Prismic write client appears to be running in a browser environment. This is not recommended as it exposes your write token. Consider using Prismic write client in a server environment only, preferring the regular client for browser environment. For more details, see ${devMsg("avoid-write-client-in-browser")}`);
+        this.writeToken = options.writeToken;
+        if (options.assetAPIEndpoint) this.assetAPIEndpoint = `${options.assetAPIEndpoint}/`;
+        if (options.migrationAPIEndpoint) this.migrationAPIEndpoint = `${options.migrationAPIEndpoint}/`;
+      }
+      /**
+      * Creates a migration release on the Prismic repository based on the provided
+      * prepared migration.
+      *
+      * @param migration - A migration prepared with {@link createMigration}.
+      * @param params - An event listener and additional fetch parameters.
+      *
+      * @see Prismic Migration API technical reference: {@link https://prismic.io/docs/migration-api-technical-reference}
+      */
+      async migrate(migration, params = {}) {
+        var _params$reporter, _params$reporter2;
+        (_params$reporter = params.reporter) === null || _params$reporter === void 0 || _params$reporter.call(params, {
+          type: "start",
+          data: { pending: {
+            documents: migration._documents.length,
+            assets: migration._assets.size
+          } }
+        });
+        await this.migrateCreateAssets(migration, params);
+        await this.migrateCreateDocuments(migration, params);
+        await this.migrateUpdateDocuments(migration, params);
+        (_params$reporter2 = params.reporter) === null || _params$reporter2 === void 0 || _params$reporter2.call(params, {
+          type: "end",
+          data: { migrated: {
+            documents: migration._documents.length,
+            assets: migration._assets.size
+          } }
+        });
+      }
+      /**
+      * Creates assets in the Prismic repository's media library.
+      *
+      * @param migration - A migration prepared with {@link createMigration}.
+      * @param params - An event listener and additional fetch parameters.
+      *
+      * @internal This method is one of the step performed by the {@link migrate} method.
+      */
+      async migrateCreateAssets(migration, { reporter, ...fetchParams } = {}) {
+        let created = 0;
+        for (const [_, migrationAsset] of migration._assets) {
+          reporter === null || reporter === void 0 || reporter({
+            type: "assets:creating",
+            data: {
+              current: ++created,
+              remaining: migration._assets.size - created,
+              total: migration._assets.size,
+              asset: migrationAsset
+            }
+          });
+          const { file, filename, notes, credits, alt, tags } = migrationAsset.config;
+          let resolvedFile;
+          if (typeof file === "string") {
+            let url;
+            try {
+              url = new URL(file);
+            } catch {
+            }
+            if (url) resolvedFile = await this.fetchForeignAsset(url.toString(), fetchParams);
+            else resolvedFile = file;
+          } else if (file instanceof URL) resolvedFile = await this.fetchForeignAsset(file.toString(), fetchParams);
+          else resolvedFile = file;
+          migrationAsset.asset = await this.createAsset(resolvedFile, filename, {
+            notes,
+            credits,
+            alt,
+            tags,
+            ...fetchParams
+          });
+        }
+        reporter === null || reporter === void 0 || reporter({
+          type: "assets:created",
+          data: { created }
+        });
+      }
+      /**
+      * Creates documents in the Prismic repository's migration release.
+      *
+      * @param migration - A migration prepared with {@link createMigration}.
+      * @param params - An event listener and additional fetch parameters.
+      *
+      * @internal This method is one of the step performed by the {@link migrate} method.
+      */
+      async migrateCreateDocuments(migration, { reporter, ...fetchParams } = {}) {
+        const masterLocale = (await this.getRepository(fetchParams)).languages[0].id;
+        reporter === null || reporter === void 0 || reporter({
+          type: "documents:masterLocale",
+          data: { masterLocale }
+        });
+        const documentsToCreate = [];
+        for (const doc of migration._documents) if (!doc.document.id) if (doc.document.lang === masterLocale) documentsToCreate.unshift(doc);
+        else documentsToCreate.push(doc);
+        let created = 0;
+        for (const doc of documentsToCreate) {
+          reporter === null || reporter === void 0 || reporter({
+            type: "documents:creating",
+            data: {
+              current: ++created,
+              remaining: documentsToCreate.length - created,
+              total: documentsToCreate.length,
+              document: doc
+            }
+          });
+          let masterLanguageDocumentID;
+          if (doc.masterLanguageDocument) {
+            const masterLanguageDocument = await resolveMigrationContentRelationship(doc.masterLanguageDocument);
+            masterLanguageDocumentID = "id" in masterLanguageDocument ? masterLanguageDocument.id : void 0;
+          } else if (doc.originalPrismicDocument) {
+            var _doc$originalPrismicD;
+            const maybeOriginalID = (_doc$originalPrismicD = doc.originalPrismicDocument.alternate_languages.find(({ lang }) => lang === masterLocale)) === null || _doc$originalPrismicD === void 0 ? void 0 : _doc$originalPrismicD.id;
+            if (maybeOriginalID) {
+              var _migration$_getByOrig;
+              masterLanguageDocumentID = (_migration$_getByOrig = migration._getByOriginalID(maybeOriginalID)) === null || _migration$_getByOrig === void 0 ? void 0 : _migration$_getByOrig.document.id;
+            }
+          }
+          const { id } = await this.createDocument({
+            ...doc.document,
+            data: {}
+          }, doc.title, {
+            masterLanguageDocumentID,
+            ...fetchParams
+          });
+          doc.document.id = id;
+        }
+        reporter === null || reporter === void 0 || reporter({
+          type: "documents:created",
+          data: { created }
+        });
+      }
+      /**
+      * Updates documents in the Prismic repository's migration release with their
+      * patched data.
+      *
+      * @param migration - A migration prepared with {@link createMigration}.
+      * @param params - An event listener and additional fetch parameters.
+      *
+      * @internal This method is one of the step performed by the {@link migrate} method.
+      */
+      async migrateUpdateDocuments(migration, { reporter, ...fetchParams } = {}) {
+        let i = 0;
+        for (const doc of migration._documents) {
+          reporter === null || reporter === void 0 || reporter({
+            type: "documents:updating",
+            data: {
+              current: ++i,
+              remaining: migration._documents.length - i,
+              total: migration._documents.length,
+              document: doc
+            }
+          });
+          await this.updateDocument(doc.document.id, {
+            ...doc.document,
+            documentTitle: doc.title,
+            data: await resolveMigrationDocumentData(doc.document.data, migration)
+          }, fetchParams);
+        }
+        reporter === null || reporter === void 0 || reporter({
+          type: "documents:updated",
+          data: { updated: migration._documents.length }
+        });
+      }
+      /**
+      * Creates an asset in the Prismic media library.
+      *
+      * @param file - The file to upload as an asset.
+      * @param filename - The filename of the asset.
+      * @param params - Additional asset data and fetch parameters.
+      *
+      * @returns The created asset.
+      */
+      async createAsset(file, filename, { notes, credits, alt, tags, ...params } = {}) {
+        const url = new URL("assets", this.assetAPIEndpoint);
+        const formData = new FormData();
+        formData.append("file", new File([file], filename, { type: file instanceof File ? file.type : void 0 }));
+        if (notes) formData.append("notes", notes);
+        if (credits) formData.append("credits", credits);
+        if (alt) formData.append("alt", alt);
+        const response = await __privateMethod(this, _WriteClient_instances, request_fn2).call(this, url, params, {
+          method: "POST",
+          body: formData
+        });
+        switch (response.status) {
+          case 200: {
+            const asset = await response.json();
+            if (tags && tags.length) return this.updateAsset(asset.id, { tags });
+            return asset;
+          }
+          default:
+            return await __privateMethod(this, _WriteClient_instances, handleAssetAPIError_fn).call(this, response);
+        }
+      }
+      /**
+      * Updates an asset in the Prismic media library.
+      *
+      * @param id - The ID of the asset to update.
+      * @param params - The asset data to update and additional fetch parameters.
+      *
+      * @returns The updated asset.
+      */
+      async updateAsset(id, { notes, credits, alt, filename, tags, ...params } = {}) {
+        const url = new URL(`assets/${id}`, this.assetAPIEndpoint);
+        if (tags && tags.length) tags = await this.resolveAssetTagIDs(tags, {
+          createTags: true,
+          ...params
+        });
+        const response = await __privateMethod(this, _WriteClient_instances, request_fn2).call(this, url, params, {
+          method: "PATCH",
+          body: JSON.stringify({
+            notes,
+            credits,
+            alt,
+            filename,
+            tags
+          }),
+          headers: { "content-type": "application/json" }
+        });
+        switch (response.status) {
+          case 200:
+            return await response.json();
+          default:
+            return await __privateMethod(this, _WriteClient_instances, handleAssetAPIError_fn).call(this, response);
+        }
+      }
+      /**
+      * Fetches a foreign asset from a URL.
+      *
+      * @param url - The URL of the asset to fetch.
+      * @param params - Additional fetch parameters.
+      *
+      * @returns A file representing the fetched asset.
+      */
+      async fetchForeignAsset(url, params = {}) {
+        const res = await __privateMethod(this, _WriteClient_instances, request_fn2).call(this, new URL(url), params);
+        if (!res.ok) throw new PrismicError("Could not fetch foreign asset", url, void 0);
+        const blob = await res.blob();
+        return new File([blob], "", { type: res.headers.get("content-type") || void 0 });
+      }
+      /**
+      * Resolves asset tag IDs from tag names.
+      *
+      * @param tagNames - An array of tag names to resolve.
+      * @param params - Whether or not missing tags should be created and
+      *   additional fetch parameters.
+      *
+      * @returns An array of resolved tag IDs.
+      */
+      async resolveAssetTagIDs(tagNames = [], { createTags, ...params } = {}) {
+        return this._resolveAssetTagIDsLimit(async () => {
+          const existingTags = await this.getAssetTags(params);
+          const existingTagMap = {};
+          for (const tag of existingTags) existingTagMap[tag.name] = tag;
+          const resolvedTagIDs = [];
+          for (const tagName of tagNames) {
+            if (!existingTagMap[tagName] && createTags) existingTagMap[tagName] = await this.createAssetTag(tagName, params);
+            if (existingTagMap[tagName]) resolvedTagIDs.push(existingTagMap[tagName].id);
+          }
+          return resolvedTagIDs;
+        });
+      }
+      /**
+      * Creates a tag in the Asset API.
+      *
+      * @remarks
+      * Tags should be at least 3 characters long and 20 characters at most.
+      *
+      * @param name - The name of the tag to create.
+      * @param params - Additional fetch parameters.
+      *
+      * @returns The created tag.
+      */
+      async createAssetTag(name$1, params) {
+        const url = new URL("tags", this.assetAPIEndpoint);
+        const response = await __privateMethod(this, _WriteClient_instances, request_fn2).call(this, url, params, {
+          method: "POST",
+          body: JSON.stringify({ name: name$1 }),
+          headers: { "content-type": "application/json" }
+        });
+        switch (response.status) {
+          case 201:
+            return await response.json();
+          default:
+            return await __privateMethod(this, _WriteClient_instances, handleAssetAPIError_fn).call(this, response);
+        }
+      }
+      /**
+      * Queries existing tags from the Asset API.
+      *
+      * @param params - Additional fetch parameters.
+      *
+      * @returns An array of existing tags.
+      */
+      async getAssetTags(params) {
+        const url = new URL("tags", this.assetAPIEndpoint);
+        const response = await __privateMethod(this, _WriteClient_instances, request_fn2).call(this, url, params);
+        switch (response.status) {
+          case 200:
+            return (await response.json()).items;
+          default:
+            return await __privateMethod(this, _WriteClient_instances, handleAssetAPIError_fn).call(this, response);
+        }
+      }
+      /**
+      * Creates a document in the repository's migration release.
+      *
+      * @typeParam TType - Type of Prismic documents to create.
+      *
+      * @param document - The document to create.
+      * @param documentTitle - The title of the document to create which will be
+      *   displayed in the editor.
+      * @param params - Document master language document ID and additional fetch
+      *   parameters.
+      *
+      * @returns The ID of the created document.
+      *
+      * @see Prismic Migration API technical reference: {@link https://prismic.io/docs/migration-api-technical-reference}
+      */
+      async createDocument(document2, documentTitle, { masterLanguageDocumentID, ...params } = {}) {
+        const url = new URL("documents", this.migrationAPIEndpoint);
+        const response = await __privateMethod(this, _WriteClient_instances, request_fn2).call(this, url, params, {
+          method: "POST",
+          body: JSON.stringify({
+            title: documentTitle,
+            type: document2.type,
+            uid: document2.uid || void 0,
+            lang: document2.lang,
+            alternate_language_id: masterLanguageDocumentID,
+            tags: document2.tags,
+            data: document2.data
+          }),
+          headers: {
+            "content-type": "application/json",
+            "x-client": CLIENT_IDENTIFIER
+          }
+        });
+        switch (response.status) {
+          case 201:
+            return { id: (await response.json()).id };
+          default:
+            return await __privateMethod(this, _WriteClient_instances, handleMigrationAPIError_fn).call(this, response);
+        }
+      }
+      /**
+      * Updates an existing document in the repository's migration release.
+      *
+      * @typeParam TType - Type of Prismic documents to update.
+      *
+      * @param id - The ID of the document to update.
+      * @param document - The document content to update.
+      * @param params - Additional fetch parameters.
+      *
+      * @see Prismic Migration API technical reference: {@link https://prismic.io/docs/migration-api-technical-reference}
+      */
+      async updateDocument(id, document2, params) {
+        const url = new URL(`documents/${id}`, this.migrationAPIEndpoint);
+        const response = await __privateMethod(this, _WriteClient_instances, request_fn2).call(this, url, params, {
+          method: "PUT",
+          body: JSON.stringify({
+            title: document2.documentTitle,
+            uid: document2.uid || void 0,
+            tags: document2.tags,
+            data: document2.data
+          }),
+          headers: {
+            "content-type": "application/json",
+            "x-client": CLIENT_IDENTIFIER
+          }
+        });
+        switch (response.status) {
+          case 200:
+            return;
+          default:
+            await __privateMethod(this, _WriteClient_instances, handleMigrationAPIError_fn).call(this, response);
+        }
+      }
+    }, _WriteClient_instances = new WeakSet(), request_fn2 = async function(url, params, init) {
+      var _this$fetchOptions, _params$fetchOptions, _params$fetchOptions2, _this$fetchOptions2;
+      return await request(url, {
+        ...this.fetchOptions,
+        ...params === null || params === void 0 ? void 0 : params.fetchOptions,
+        ...init,
+        headers: {
+          ...(_this$fetchOptions = this.fetchOptions) === null || _this$fetchOptions === void 0 ? void 0 : _this$fetchOptions.headers,
+          ...params === null || params === void 0 || (_params$fetchOptions = params.fetchOptions) === null || _params$fetchOptions === void 0 ? void 0 : _params$fetchOptions.headers,
+          ...init === null || init === void 0 ? void 0 : init.headers,
+          repository: this.repositoryName,
+          authorization: `Bearer ${this.writeToken}`
+        },
+        signal: (params === null || params === void 0 || (_params$fetchOptions2 = params.fetchOptions) === null || _params$fetchOptions2 === void 0 ? void 0 : _params$fetchOptions2.signal) || (params === null || params === void 0 ? void 0 : params.signal) || ((_this$fetchOptions2 = this.fetchOptions) === null || _this$fetchOptions2 === void 0 ? void 0 : _this$fetchOptions2.signal)
+      }, this.fetchFn);
+    }, handleAssetAPIError_fn = async function(response) {
+      const json = await response.json();
+      switch (response.status) {
+        case 401:
+        case 403:
+          throw new ForbiddenError(json.error, response.url, json);
+        case 404:
+          throw new NotFoundError(json.error, response.url, json);
+        case 400:
+          throw new InvalidDataError(json.error, response.url, json);
+        case 500:
+        case 503:
+        default:
+          throw new PrismicError(json.error, response.url, json);
+      }
+    }, handleMigrationAPIError_fn = async function(response) {
+      const payload = await response.json();
+      const message = payload.message;
+      switch (response.status) {
+        case 400:
+          throw new InvalidDataError(message, response.url, payload);
+        case 401:
+          throw new ForbiddenError(message, response.url, payload);
+        case 403:
+          throw new ForbiddenError(message ?? payload.Message, response.url, payload);
+        case 404:
+          throw new NotFoundError(message, response.url, payload);
+        case 500:
+        default:
+          throw new PrismicError(message, response.url, payload);
+      }
+    }, _a2);
+  }
+});
+
+// node_modules/@prismicio/client/dist/createWriteClient.js
+var createWriteClient;
+var init_createWriteClient = __esm({
+  "node_modules/@prismicio/client/dist/createWriteClient.js"() {
+    "use strict";
+    init_WriteClient();
+    createWriteClient = (repositoryName, options) => new WriteClient(repositoryName, options);
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/validateAssetMetadata.js
+var ASSET_NOTES_MAX_LENGTH, ASSET_CREDITS_MAX_LENGTH, ASSET_ALT_MAX_LENGTH, ASSET_TAG_MIN_LENGTH, ASSET_TAG_MAX_LENGTH, validateAssetMetadata;
+var init_validateAssetMetadata = __esm({
+  "node_modules/@prismicio/client/dist/lib/validateAssetMetadata.js"() {
+    "use strict";
+    init_errors();
+    ASSET_NOTES_MAX_LENGTH = 500;
+    ASSET_CREDITS_MAX_LENGTH = 500;
+    ASSET_ALT_MAX_LENGTH = 500;
+    ASSET_TAG_MIN_LENGTH = 3;
+    ASSET_TAG_MAX_LENGTH = 20;
+    validateAssetMetadata = ({ notes, credits, alt, tags }) => {
+      const errors = [];
+      if (notes && notes.length > ASSET_NOTES_MAX_LENGTH) errors.push(`\`notes\` must be at most ${ASSET_NOTES_MAX_LENGTH} characters`);
+      if (credits && credits.length > ASSET_CREDITS_MAX_LENGTH) errors.push(`\`credits\` must be at most ${ASSET_CREDITS_MAX_LENGTH} characters`);
+      if (alt && alt.length > ASSET_ALT_MAX_LENGTH) errors.push(`\`alt\` must be at most ${ASSET_ALT_MAX_LENGTH} characters`);
+      if (tags && tags.length && tags.some((tag) => tag.length < ASSET_TAG_MIN_LENGTH || tag.length > ASSET_TAG_MAX_LENGTH)) errors.push(`tags must be at least 3 characters long and 20 characters at most`);
+      if (errors.length) throw new PrismicError(`Errors validating asset metadata: ${errors.join(", ")}`, void 0, {
+        notes,
+        credits,
+        alt,
+        tags
+      });
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/Migration.js
+var _Migration_instances, migratePrismicDocumentData_fn, _a3, Migration;
+var init_Migration = __esm({
+  "node_modules/@prismicio/client/dist/Migration.js"() {
+    "use strict";
+    init_richText();
+    init_link();
+    init_Asset();
+    init_Document();
+    init_isValue();
+    init_getOptionalLinkProperties();
+    init_validateAssetMetadata();
+    Migration = (_a3 = class {
+      constructor() {
+        __privateAdd(this, _Migration_instances);
+        /**
+        * Assets registered in the migration.
+        *
+        * @internal
+        */
+        __publicField(this, "_assets", /* @__PURE__ */ new Map());
+        /**
+        * Documents registered in the migration.
+        *
+        * @internal
+        */
+        __publicField(this, "_documents", []);
+      }
+      /**
+      * Registers an asset to be created in the migration from a file, an asset
+      * object, or an image or link to media field.
+      *
+      * @remarks
+      * This method does not create the asset in Prismic media library right away.
+      * Instead, it registers it in your migration. The asset will be created when
+      * the migration is executed through the `writeClient.migrate()` method.
+      *
+      * @returns A migration asset field instance.
+      */
+      createAsset(fileOrAssetOrField, filename, { notes, credits, alt, tags } = {}) {
+        let config;
+        let maybeInitialField;
+        if (typeof fileOrAssetOrField === "object" && "url" in fileOrAssetOrField) if ("dimensions" in fileOrAssetOrField || "link_type" in fileOrAssetOrField) {
+          const url = fileOrAssetOrField.url.split("?")[0];
+          const filename$1 = "name" in fileOrAssetOrField ? fileOrAssetOrField.name : url.split("/").pop().split("_").pop();
+          const credits$1 = "copyright" in fileOrAssetOrField && fileOrAssetOrField.copyright ? fileOrAssetOrField.copyright : void 0;
+          const alt$1 = "alt" in fileOrAssetOrField && fileOrAssetOrField.alt ? fileOrAssetOrField.alt : void 0;
+          if ("dimensions" in fileOrAssetOrField) maybeInitialField = fileOrAssetOrField;
+          config = {
+            id: fileOrAssetOrField.id,
+            file: url,
+            filename: filename$1,
+            notes: void 0,
+            credits: credits$1,
+            alt: alt$1,
+            tags: void 0
+          };
+        } else {
+          var _fileOrAssetOrField$t;
+          config = {
+            id: fileOrAssetOrField.id,
+            file: fileOrAssetOrField.url,
+            filename: fileOrAssetOrField.filename,
+            notes: fileOrAssetOrField.notes,
+            credits: fileOrAssetOrField.credits,
+            alt: fileOrAssetOrField.alt,
+            tags: (_fileOrAssetOrField$t = fileOrAssetOrField.tags) === null || _fileOrAssetOrField$t === void 0 ? void 0 : _fileOrAssetOrField$t.map(({ name: name2 }) => name2)
+          };
+        }
+        else config = {
+          id: fileOrAssetOrField,
+          file: fileOrAssetOrField,
+          filename,
+          notes,
+          credits,
+          alt,
+          tags
+        };
+        validateAssetMetadata(config);
+        const migrationAsset = new PrismicMigrationAsset(config, maybeInitialField);
+        const maybeAsset = this._assets.get(config.id);
+        if (maybeAsset) {
+          maybeAsset.config.notes = maybeAsset.config.notes || config.notes;
+          maybeAsset.config.credits = maybeAsset.config.credits || config.credits;
+          maybeAsset.config.alt = maybeAsset.config.alt || config.alt;
+          maybeAsset.config.tags = Array.from(/* @__PURE__ */ new Set([...maybeAsset.config.tags || [], ...config.tags || []]));
+        } else this._assets.set(config.id, migrationAsset);
+        return migrationAsset;
+      }
+      /**
+      * Registers a document to be created in the migration.
+      *
+      * @remarks
+      * This method does not create the document in Prismic right away. Instead, it
+      * registers it in your migration. The document will be created when the
+      * migration is executed through the `writeClient.migrate()` method.
+      *
+      * @typeParam TType - Type of the Prismic document to create.
+      *
+      * @param document - The document to create.
+      * @param title - The title of the document to create which will be displayed
+      *   in the editor.
+      * @param params - Document master language document ID.
+      *
+      * @returns A migration document instance.
+      */
+      createDocument(document2, title2, params) {
+        const doc = new PrismicMigrationDocument(document2, title2, params);
+        this._documents.push(doc);
+        return doc;
+      }
+      /**
+      * Registers an existing document to be updated in the migration.
+      *
+      * @remarks
+      * This method does not update the document in Prismic right away. Instead, it
+      * registers it in your migration. The document will be updated when the
+      * migration is executed through the `writeClient.migrate()` method.
+      *
+      * @typeParam TType - Type of Prismic documents to update.
+      *
+      * @param document - The document to update.
+      * @param title - The title of the document to update which will be displayed
+      *   in the editor.
+      *
+      * @returns A migration document instance.
+      */
+      updateDocument(document2, title2) {
+        const doc = new PrismicMigrationDocument(document2, title2);
+        this._documents.push(doc);
+        return doc;
+      }
+      /**
+      * Registers a document from another Prismic repository to be created in the
+      * migration.
+      *
+      * @remarks
+      * This method does not create the document in Prismic right away. Instead, it
+      * registers it in your migration. The document will be created when the
+      * migration is executed through the `writeClient.migrate()` method.
+      *
+      * @param document - The document from Prismic to create.
+      * @param title - The title of the document to create which will be displayed
+      *   in the editor.
+      *
+      * @returns A migration document instance.
+      */
+      createDocumentFromPrismic(document2, title2) {
+        const doc = new PrismicMigrationDocument(__privateMethod(this, _Migration_instances, migratePrismicDocumentData_fn).call(this, {
+          type: document2.type,
+          lang: document2.lang,
+          uid: document2.uid,
+          tags: document2.tags,
+          data: document2.data
+        }), title2, { originalPrismicDocument: document2 });
+        this._documents.push(doc);
+        return doc;
+      }
+      /**
+      * Queries a document from the migration instance with a specific UID and
+      * custom type.
+      *
+      * @example
+      *
+      * ```ts
+      * const contentRelationship = migration.createContentRelationship(() =>
+      * 	migration.getByUID("blog_post", "my-first-post"),
+      * )
+      * ```
+      *
+      * @typeParam TType - Type of the Prismic document returned.
+      *
+      * @param type - The API ID of the document's custom type.
+      * @param uid - The UID of the document.
+      *
+      * @returns The migration document instance with a UID matching the `uid`
+      *   parameter, if a matching document is found.
+      */
+      getByUID(type, uid) {
+        return this._documents.find((doc) => doc.document.type === type && doc.document.uid === uid);
+      }
+      /**
+      * Queries a singleton document from the migration instance for a specific
+      * custom type.
+      *
+      * @example
+      *
+      * ```ts
+      * const contentRelationship = migration.createContentRelationship(() =>
+      * 	migration.getSingle("settings"),
+      * )
+      * ```
+      *
+      * @typeParam TType - Type of the Prismic document returned.
+      *
+      * @param type - The API ID of the singleton custom type.
+      *
+      * @returns The migration document instance for the custom type, if a matching
+      *   document is found.
+      */
+      getSingle(type) {
+        return this._documents.find((doc) => doc.document.type === type);
+      }
+      /**
+      * Queries a document from the migration instance for a specific original ID.
+      *
+      * @example
+      *
+      * ```ts
+      * const contentRelationship = migration.createContentRelationship(() =>
+      * 	migration._getByOriginalID("YhdrDxIAACgAcp_b"),
+      * )
+      * ```
+      *
+      * @typeParam TType - Type of the Prismic document returned.
+      *
+      * @param id - The original ID of the Prismic document.
+      *
+      * @returns The migration document instance for the original ID, if a matching
+      *   document is found.
+      *
+      * @internal
+      */
+      _getByOriginalID(id) {
+        return this._documents.find((doc) => {
+          var _doc$originalPrismicD;
+          return ((_doc$originalPrismicD = doc.originalPrismicDocument) === null || _doc$originalPrismicD === void 0 ? void 0 : _doc$originalPrismicD.id) === id;
+        });
+      }
+    }, _Migration_instances = new WeakSet(), /**
+    * Migrates a Prismic document data from another repository so that it can be
+    * created through the current repository's Migration API.
+    *
+    * @param input - The Prismic document data to migrate.
+    *
+    * @returns The migrated Prismic document data.
+    */
+    migratePrismicDocumentData_fn = function(input) {
+      if (filledContentRelationship(input)) {
+        const optionalLinkProperties = getOptionalLinkProperties(input);
+        if (input.isBroken) return {
+          ...optionalLinkProperties,
+          link_type: LinkType.Document,
+          id: "_____broken_____",
+          isBroken: true
+        };
+        return {
+          ...optionalLinkProperties,
+          link_type: LinkType.Document,
+          id: () => this._getByOriginalID(input.id)
+        };
+      }
+      if (filledLinkToMedia(input)) return {
+        ...getOptionalLinkProperties(input),
+        link_type: LinkType.Media,
+        id: this.createAsset(input)
+      };
+      if (rtImageNode(input)) {
+        const rtImageNode$1 = {
+          type: RichTextNodeType.image,
+          id: this.createAsset(input)
+        };
+        if (input.linkTo) rtImageNode$1.linkTo = __privateMethod(this, _Migration_instances, migratePrismicDocumentData_fn).call(this, input.linkTo);
+        return rtImageNode$1;
+      }
+      if (filledImage(input)) {
+        const image3 = { id: this.createAsset(input) };
+        const { id: _id, url: _url, dimensions: _dimensions, edit: _edit, alt: _alt, copyright: _copyright, ...thumbnails } = input;
+        for (const name2 in thumbnails) if (filledImage(thumbnails[name2])) image3[name2] = this.createAsset(thumbnails[name2]);
+        return image3;
+      }
+      if (Array.isArray(input)) return input.map((element) => __privateMethod(this, _Migration_instances, migratePrismicDocumentData_fn).call(this, element));
+      if (input && typeof input === "object") {
+        const res = {};
+        for (const key in input) res[key] = __privateMethod(this, _Migration_instances, migratePrismicDocumentData_fn).call(this, input[key]);
+        return res;
+      }
+      return input;
+    }, _a3);
+  }
+});
+
+// node_modules/@prismicio/client/dist/createMigration.js
+var createMigration;
+var init_createMigration = __esm({
+  "node_modules/@prismicio/client/dist/createMigration.js"() {
+    "use strict";
+    init_Migration();
+    createMigration = () => new Migration();
+  }
+});
+
+// node_modules/@prismicio/client/dist/getGraphQLEndpoint.js
+var getGraphQLEndpoint;
+var init_getGraphQLEndpoint = __esm({
+  "node_modules/@prismicio/client/dist/getGraphQLEndpoint.js"() {
+    "use strict";
+    init_errors();
+    init_isRepositoryName();
+    getGraphQLEndpoint = (repositoryName) => {
+      if (isRepositoryName(repositoryName)) return `https://${repositoryName}.cdn.prismic.io/graphql`;
+      else throw new PrismicError(`An invalid Prismic repository name was given: ${repositoryName}`, void 0, void 0);
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/getToolbarSrc.js
+var getToolbarSrc;
+var init_getToolbarSrc = __esm({
+  "node_modules/@prismicio/client/dist/getToolbarSrc.js"() {
+    "use strict";
+    init_errors();
+    init_isRepositoryName();
+    getToolbarSrc = (repositoryName) => {
+      if (isRepositoryName(repositoryName)) return `https://static.cdn.prismic.io/prismic.js?new=true&repo=${repositoryName}`;
+      else throw new PrismicError(`An invalid Prismic repository name was given: ${repositoryName}`, void 0, void 0);
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/asDate.js
+var asDate;
+var init_asDate = __esm({
+  "node_modules/@prismicio/client/dist/helpers/asDate.js"() {
+    "use strict";
+    asDate = (dateOrTimestampField) => {
+      if (!dateOrTimestampField) return null;
+      if (dateOrTimestampField.length === 24)
+        return new Date(dateOrTimestampField.replace(/(\+|-)(\d{2})(\d{2})$/, ".000$1$2:$3"));
+      else return new Date(dateOrTimestampField);
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/isInternalURL.js
+var isInternalURL;
+var init_isInternalURL = __esm({
+  "node_modules/@prismicio/client/dist/lib/isInternalURL.js"() {
+    "use strict";
+    isInternalURL = (url) => {
+      const isInternal = /^(\/(?!\/)|#)/.test(url);
+      const isSpecialLink = !isInternal && !/^https?:\/\//.test(url);
+      return isInternal && !isSpecialLink;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/asLinkAttrs.js
+var asLinkAttrs;
+var init_asLinkAttrs = __esm({
+  "node_modules/@prismicio/client/dist/helpers/asLinkAttrs.js"() {
+    "use strict";
+    init_asLink();
+    init_isFilled();
+    init_isInternalURL();
+    asLinkAttrs = (linkFieldOrDocument, config = {}) => {
+      if (linkFieldOrDocument && ("link_type" in linkFieldOrDocument ? link(linkFieldOrDocument) : linkFieldOrDocument)) {
+        const target = "target" in linkFieldOrDocument ? linkFieldOrDocument.target : void 0;
+        const rawHref = asLink(linkFieldOrDocument, config.linkResolver);
+        const href = rawHref == null ? void 0 : rawHref;
+        const isExternal = typeof href === "string" ? !isInternalURL(href) : false;
+        const rel = config.rel ? config.rel({
+          href,
+          isExternal,
+          target
+        }) : isExternal ? "noreferrer" : void 0;
+        return {
+          href,
+          target,
+          rel: rel == null ? void 0 : rel
+        };
+      }
+      return {};
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/richtext/asText.js
+var asText;
+var init_asText = __esm({
+  "node_modules/@prismicio/client/dist/richtext/asText.js"() {
+    "use strict";
+    asText = (richTextField, separator = " ") => {
+      let result = "";
+      for (let i = 0; i < richTextField.length; i++) if ("text" in richTextField[i]) result += (result ? separator : "") + richTextField[i].text;
+      return result;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/asText.js
+var asText$1;
+var init_asText2 = __esm({
+  "node_modules/@prismicio/client/dist/helpers/asText.js"() {
+    "use strict";
+    init_asText();
+    asText$1 = (richTextField, ...configObjectOrTuple) => {
+      if (richTextField) {
+        const [configObjectOrSeparator] = configObjectOrTuple;
+        let config;
+        if (typeof configObjectOrSeparator === "string") config = { separator: configObjectOrSeparator };
+        else config = { ...configObjectOrSeparator };
+        return asText(richTextField, config.separator);
+      } else return null;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/escapeHTML.js
+var matchHtmlRegExp, escapeHTML;
+var init_escapeHTML = __esm({
+  "node_modules/@prismicio/client/dist/lib/escapeHTML.js"() {
+    "use strict";
+    matchHtmlRegExp = /["'&<>]/;
+    escapeHTML = (string) => {
+      const str = "" + string;
+      const match = matchHtmlRegExp.exec(str);
+      if (!match) return str;
+      let escape;
+      let html = "";
+      let index = 0;
+      let lastIndex = 0;
+      for (index = match.index; index < str.length; index++) {
+        switch (str.charCodeAt(index)) {
+          case 34:
+            escape = "&quot;";
+            break;
+          case 38:
+            escape = "&amp;";
+            break;
+          case 39:
+            escape = "&#39;";
+            break;
+          case 60:
+            escape = "&lt;";
+            break;
+          case 62:
+            escape = "&gt;";
+            break;
+          default:
+            continue;
+        }
+        if (lastIndex !== index) html += str.substring(lastIndex, index);
+        lastIndex = index + 1;
+        html += escape;
+      }
+      return lastIndex !== index ? html + str.substring(lastIndex, index) : html;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/serializerHelpers.js
+var formatAttributes, getGeneralAttributes, serializeStandardTag, serializePreFormatted, serializeImage, serializeEmbed, serializeHyperlink, serializeSpan;
+var init_serializerHelpers = __esm({
+  "node_modules/@prismicio/client/dist/lib/serializerHelpers.js"() {
+    "use strict";
+    init_link();
+    init_asLink();
+    init_escapeHTML();
+    formatAttributes = (node, attributes) => {
+      const _attributes = { ...attributes };
+      if ("direction" in node && node.direction === "rtl") _attributes.dir = node.direction;
+      if ("data" in node && "label" in node.data && node.data.label) _attributes.class = _attributes.class ? `${_attributes.class} ${node.data.label}` : node.data.label;
+      const result = [];
+      for (const key in _attributes) {
+        const value = _attributes[key];
+        if (value) if (typeof value === "boolean") result.push(key);
+        else result.push(`${key}="${escapeHTML(value)}"`);
+      }
+      if (result.length) result.unshift("");
+      return result.join(" ");
+    };
+    getGeneralAttributes = (serializerOrShorthand) => {
+      return serializerOrShorthand && typeof serializerOrShorthand !== "function" ? serializerOrShorthand : {};
+    };
+    serializeStandardTag = (tag, serializerOrShorthand) => {
+      const generalAttributes = getGeneralAttributes(serializerOrShorthand);
+      return (({ node, children }) => {
+        return `<${tag}${formatAttributes(node, generalAttributes)}>${children}</${tag}>`;
+      });
+    };
+    serializePreFormatted = (serializerOrShorthand) => {
+      const generalAttributes = getGeneralAttributes(serializerOrShorthand);
+      return ({ node }) => {
+        return `<pre${formatAttributes(node, generalAttributes)}>${escapeHTML(node.text)}</pre>`;
+      };
+    };
+    serializeImage = (linkResolver, serializerOrShorthand) => {
+      const generalAttributes = getGeneralAttributes(serializerOrShorthand);
+      return ({ node }) => {
+        let imageTag = `<img${formatAttributes(node, {
+          ...generalAttributes,
+          src: node.url,
+          alt: node.alt,
+          copyright: node.copyright
+        })} />`;
+        if (node.linkTo) imageTag = serializeHyperlink(linkResolver)({
+          type: "hyperlink",
+          node: {
+            type: "hyperlink",
+            data: node.linkTo,
+            start: 0,
+            end: 0
+          },
+          text: "",
+          children: imageTag,
+          key: ""
+        });
+        return `<p class="block-img">${imageTag}</p>`;
+      };
+    };
+    serializeEmbed = (serializerOrShorthand) => {
+      const generalAttributes = getGeneralAttributes(serializerOrShorthand);
+      return ({ node }) => {
+        return `<div${formatAttributes(node, {
+          ...generalAttributes,
+          ["data-oembed"]: node.oembed.embed_url,
+          ["data-oembed-type"]: node.oembed.type,
+          ["data-oembed-provider"]: node.oembed.provider_name
+        })}>${node.oembed.html}</div>`;
+      };
+    };
+    serializeHyperlink = (linkResolver, serializerOrShorthand) => {
+      const generalAttributes = getGeneralAttributes(serializerOrShorthand);
+      return ({ node, children }) => {
+        const attributes = { ...generalAttributes };
+        if (node.data.link_type === LinkType.Web) {
+          attributes.href = node.data.url;
+          attributes.target = node.data.target;
+          attributes.rel = "noopener noreferrer";
+        } else if (node.data.link_type === LinkType.Document) attributes.href = asLink(node.data, { linkResolver });
+        else if (node.data.link_type === LinkType.Media) attributes.href = node.data.url;
+        return `<a${formatAttributes(node, attributes)}>${children}</a>`;
+      };
+    };
+    serializeSpan = () => {
+      return ({ text }) => {
+        return text ? escapeHTML(text).replace(/\n/g, "<br />") : "";
+      };
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/richtext/asTree.js
+var uuid, asTree, createTreeNode, createTextTreeNode, prepareNodes, nodeToTreeNode, textNodeSpansToTreeNodeChildren;
+var init_asTree = __esm({
+  "node_modules/@prismicio/client/dist/richtext/asTree.js"() {
+    "use strict";
+    init_richText();
+    uuid = () => {
+      return (++uuid.i).toString();
+    };
+    uuid.i = 0;
+    asTree = (nodes) => {
+      const preparedNodes = prepareNodes(nodes);
+      const children = [];
+      for (let i = 0; i < preparedNodes.length; i++) children.push(nodeToTreeNode(preparedNodes[i]));
+      return {
+        key: uuid(),
+        children
+      };
+    };
+    createTreeNode = (node, children = []) => {
+      return {
+        key: uuid(),
+        type: node.type,
+        text: "text" in node ? node.text : void 0,
+        node,
+        children
+      };
+    };
+    createTextTreeNode = (text) => {
+      return createTreeNode({
+        type: RichTextNodeType.span,
+        text,
+        spans: []
+      });
+    };
+    prepareNodes = (nodes) => {
+      const mutNodes = nodes.slice(0);
+      for (let i = 0; i < mutNodes.length; i++) {
+        const node = mutNodes[i];
+        if (node.type === RichTextNodeType.listItem || node.type === RichTextNodeType.oListItem) {
+          const items = [node];
+          while (mutNodes[i + 1] && mutNodes[i + 1].type === node.type) {
+            items.push(mutNodes[i + 1]);
+            mutNodes.splice(i, 1);
+          }
+          if (node.type === RichTextNodeType.listItem) mutNodes[i] = {
+            type: RichTextNodeType.list,
+            items
+          };
+          else mutNodes[i] = {
+            type: RichTextNodeType.oList,
+            items
+          };
+        }
+      }
+      return mutNodes;
+    };
+    nodeToTreeNode = (node) => {
+      if ("text" in node) return createTreeNode(node, textNodeSpansToTreeNodeChildren(node.spans, node));
+      if ("items" in node) {
+        const children = [];
+        for (let i = 0; i < node.items.length; i++) children.push(nodeToTreeNode(node.items[i]));
+        return createTreeNode(node, children);
+      }
+      return createTreeNode(node);
+    };
+    textNodeSpansToTreeNodeChildren = (spans, node, parentSpan) => {
+      if (!spans.length) return [createTextTreeNode(node.text)];
+      const mutSpans = spans.slice(0);
+      mutSpans.sort((a, b) => a.start - b.start || b.end - a.end);
+      const children = [];
+      for (let i = 0; i < mutSpans.length; i++) {
+        const span = mutSpans[i];
+        const parentSpanStart = parentSpan && parentSpan.start || 0;
+        const spanStart = span.start - parentSpanStart;
+        const spanEnd = span.end - parentSpanStart;
+        const text = node.text.slice(spanStart, spanEnd);
+        const childSpans = [];
+        for (let j = i; j < mutSpans.length; j++) {
+          const siblingSpan = mutSpans[j];
+          if (siblingSpan !== span) {
+            if (siblingSpan.start >= span.start && siblingSpan.end <= span.end) {
+              childSpans.push(siblingSpan);
+              mutSpans.splice(j, 1);
+              j--;
+            } else if (siblingSpan.start < span.end && siblingSpan.end > span.start) {
+              childSpans.push({
+                ...siblingSpan,
+                end: span.end
+              });
+              mutSpans[j] = {
+                ...siblingSpan,
+                start: span.end
+              };
+            }
+          }
+        }
+        if (i === 0 && spanStart > 0) children.push(createTextTreeNode(node.text.slice(0, spanStart)));
+        const spanWithText = {
+          ...span,
+          text
+        };
+        children.push(createTreeNode(spanWithText, textNodeSpansToTreeNodeChildren(childSpans, {
+          ...node,
+          text
+        }, span)));
+        if (spanEnd < node.text.length) children.push(createTextTreeNode(node.text.slice(spanEnd, mutSpans[i + 1] ? mutSpans[i + 1].start - parentSpanStart : void 0)));
+      }
+      return children;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/richtext/serialize.js
+var serialize, serializeTreeNodes;
+var init_serialize = __esm({
+  "node_modules/@prismicio/client/dist/richtext/serialize.js"() {
+    "use strict";
+    init_asTree();
+    serialize = (richTextField, serializer) => {
+      return serializeTreeNodes(asTree(richTextField).children, serializer);
+    };
+    serializeTreeNodes = (nodes, serializer) => {
+      const serializedTreeNodes = [];
+      for (let i = 0; i < nodes.length; i++) {
+        const treeNode = nodes[i];
+        const serializedTreeNode = serializer(treeNode.type, treeNode.node, treeNode.text, serializeTreeNodes(treeNode.children, serializer), treeNode.key);
+        if (serializedTreeNode != null) serializedTreeNodes.push(serializedTreeNode);
+      }
+      return serializedTreeNodes;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/richtext/types.js
+var RichTextReversedNodeType;
+var init_types = __esm({
+  "node_modules/@prismicio/client/dist/richtext/types.js"() {
+    "use strict";
+    init_richText();
+    RichTextReversedNodeType = {
+      [RichTextNodeType.listItem]: "listItem",
+      [RichTextNodeType.oListItem]: "oListItem",
+      [RichTextNodeType.list]: "list",
+      [RichTextNodeType.oList]: "oList"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/richtext/wrapMapSerializer.js
+var wrapMapSerializer;
+var init_wrapMapSerializer = __esm({
+  "node_modules/@prismicio/client/dist/richtext/wrapMapSerializer.js"() {
+    "use strict";
+    init_types();
+    wrapMapSerializer = (mapSerializer) => {
+      return (type, node, text, children, key) => {
+        const tagSerializer = mapSerializer[RichTextReversedNodeType[type] || type];
+        if (tagSerializer) return tagSerializer({
+          type,
+          node,
+          text,
+          children,
+          key
+        });
+      };
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/richtext/composeSerializers.js
+var composeSerializers;
+var init_composeSerializers = __esm({
+  "node_modules/@prismicio/client/dist/richtext/composeSerializers.js"() {
+    "use strict";
+    composeSerializers = (...serializers) => {
+      return (...args) => {
+        for (let i = 0; i < serializers.length; i++) {
+          const serializer = serializers[i];
+          if (serializer) {
+            const res = serializer(...args);
+            if (res != null) return res;
+          }
+        }
+      };
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/asHTML.js
+var createHTMLRichTextSerializer, wrapMapSerializerWithStringChildren, asHTML;
+var init_asHTML = __esm({
+  "node_modules/@prismicio/client/dist/helpers/asHTML.js"() {
+    "use strict";
+    init_serializerHelpers();
+    init_serialize();
+    init_wrapMapSerializer();
+    init_composeSerializers();
+    createHTMLRichTextSerializer = (linkResolver, serializer) => {
+      const useSerializerOrDefault = (nodeSerializerOrShorthand, defaultWithShorthand) => {
+        if (typeof nodeSerializerOrShorthand === "function") return ((payload) => {
+          return (nodeSerializerOrShorthand === null || nodeSerializerOrShorthand === void 0 ? void 0 : nodeSerializerOrShorthand(payload)) || defaultWithShorthand(payload);
+        });
+        return defaultWithShorthand;
+      };
+      return wrapMapSerializerWithStringChildren({
+        heading1: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading1, serializeStandardTag("h1", serializer === null || serializer === void 0 ? void 0 : serializer.heading1)),
+        heading2: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading2, serializeStandardTag("h2", serializer === null || serializer === void 0 ? void 0 : serializer.heading2)),
+        heading3: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading3, serializeStandardTag("h3", serializer === null || serializer === void 0 ? void 0 : serializer.heading3)),
+        heading4: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading4, serializeStandardTag("h4", serializer === null || serializer === void 0 ? void 0 : serializer.heading4)),
+        heading5: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading5, serializeStandardTag("h5", serializer === null || serializer === void 0 ? void 0 : serializer.heading5)),
+        heading6: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading6, serializeStandardTag("h6", serializer === null || serializer === void 0 ? void 0 : serializer.heading6)),
+        paragraph: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.paragraph, serializeStandardTag("p", serializer === null || serializer === void 0 ? void 0 : serializer.paragraph)),
+        preformatted: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.preformatted, serializePreFormatted(serializer === null || serializer === void 0 ? void 0 : serializer.preformatted)),
+        strong: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.strong, serializeStandardTag("strong", serializer === null || serializer === void 0 ? void 0 : serializer.strong)),
+        em: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.em, serializeStandardTag("em", serializer === null || serializer === void 0 ? void 0 : serializer.em)),
+        listItem: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.listItem, serializeStandardTag("li", serializer === null || serializer === void 0 ? void 0 : serializer.listItem)),
+        oListItem: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.oListItem, serializeStandardTag("li", serializer === null || serializer === void 0 ? void 0 : serializer.oListItem)),
+        list: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.list, serializeStandardTag("ul", serializer === null || serializer === void 0 ? void 0 : serializer.list)),
+        oList: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.oList, serializeStandardTag("ol", serializer === null || serializer === void 0 ? void 0 : serializer.oList)),
+        image: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.image, serializeImage(linkResolver, serializer === null || serializer === void 0 ? void 0 : serializer.image)),
+        embed: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.embed, serializeEmbed(serializer === null || serializer === void 0 ? void 0 : serializer.embed)),
+        hyperlink: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.hyperlink, serializeHyperlink(linkResolver, serializer === null || serializer === void 0 ? void 0 : serializer.hyperlink)),
+        label: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.label, serializeStandardTag("span", serializer === null || serializer === void 0 ? void 0 : serializer.label)),
+        span: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.span, serializeSpan())
+      });
+    };
+    wrapMapSerializerWithStringChildren = (mapSerializer) => {
+      const modifiedMapSerializer = {};
+      for (const tag in mapSerializer) {
+        const tagSerializer = mapSerializer[tag];
+        if (tagSerializer) modifiedMapSerializer[tag] = (payload) => {
+          return tagSerializer({
+            ...payload,
+            children: payload.children.join("")
+          });
+        };
+      }
+      return wrapMapSerializer(modifiedMapSerializer);
+    };
+    asHTML = (richTextField, ...configObjectOrTuple) => {
+      if (richTextField) {
+        const [configObjectOrLinkResolver, maybeSerializer] = configObjectOrTuple;
+        let config;
+        if (typeof configObjectOrLinkResolver === "function" || configObjectOrLinkResolver == null) config = {
+          linkResolver: configObjectOrLinkResolver,
+          serializer: maybeSerializer
+        };
+        else config = { ...configObjectOrLinkResolver };
+        let serializer;
+        if (config.serializer) if (typeof config.serializer === "function") serializer = composeSerializers((type, node, text, children, key) => config.serializer(type, node, text, children.join(""), key), createHTMLRichTextSerializer(config.linkResolver));
+        else serializer = createHTMLRichTextSerializer(config.linkResolver, config.serializer);
+        else serializer = createHTMLRichTextSerializer(config.linkResolver);
+        return serialize(richTextField, serializer).join("");
+      } else return null;
+    };
+  }
+});
+
+// node_modules/imgix-url-builder/dist/buildURL.js
+var camelCaseToParamCase, buildURL;
+var init_buildURL = __esm({
+  "node_modules/imgix-url-builder/dist/buildURL.js"() {
+    "use strict";
+    camelCaseToParamCase = (input) => {
+      return input.replace(/[A-Z]/g, (match) => {
+        return `-${match.toLowerCase()}`;
+      });
+    };
+    buildURL = (url, params) => {
+      const instance = new URL(url);
+      for (const camelCasedParamKey in params) {
+        const paramKey = camelCaseToParamCase(camelCasedParamKey);
+        const paramValue = params[camelCasedParamKey];
+        if (paramValue === void 0) {
+          instance.searchParams.delete(paramKey);
+        } else if (Array.isArray(paramValue)) {
+          instance.searchParams.set(paramKey, paramValue.join(","));
+        } else {
+          instance.searchParams.set(paramKey, `${paramValue}`);
+        }
+      }
+      const s = instance.searchParams.get("s");
+      if (s) {
+        instance.searchParams.delete("s");
+        instance.searchParams.append("s", s);
+      }
+      return instance.toString();
+    };
+  }
+});
+
+// node_modules/imgix-url-builder/dist/buildPixelDensitySrcSet.js
+var buildPixelDensitySrcSet;
+var init_buildPixelDensitySrcSet = __esm({
+  "node_modules/imgix-url-builder/dist/buildPixelDensitySrcSet.js"() {
+    "use strict";
+    init_buildURL();
+    buildPixelDensitySrcSet = (url, { pixelDensities, ...params }) => {
+      return pixelDensities.map((dpr) => {
+        return `${buildURL(url, { ...params, dpr })} ${dpr}x`;
+      }).join(", ");
+    };
+  }
+});
+
+// node_modules/imgix-url-builder/dist/buildWidthSrcSet.js
+var buildWidthSrcSet;
+var init_buildWidthSrcSet = __esm({
+  "node_modules/imgix-url-builder/dist/buildWidthSrcSet.js"() {
+    "use strict";
+    init_buildURL();
+    buildWidthSrcSet = (url, { widths, ...params }) => {
+      return widths.map((width) => {
+        return `${buildURL(url, { ...params, w: void 0, h: void 0, height: void 0, width })} ${width}w`;
+      }).join(", ");
+    };
+  }
+});
+
+// node_modules/imgix-url-builder/dist/index.js
+var init_dist = __esm({
+  "node_modules/imgix-url-builder/dist/index.js"() {
+    "use strict";
+    init_buildURL();
+    init_buildWidthSrcSet();
+    init_buildPixelDensitySrcSet();
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/asImageSrc.js
+var asImageSrc;
+var init_asImageSrc = __esm({
+  "node_modules/@prismicio/client/dist/helpers/asImageSrc.js"() {
+    "use strict";
+    init_isFilled();
+    init_dist();
+    asImageSrc = (field, config = {}) => {
+      if (field && imageThumbnail(field)) return buildURL(field.url, config);
+      else return null;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/asImageWidthSrcSet.js
+var DEFAULT_WIDTHS, asImageWidthSrcSet;
+var init_asImageWidthSrcSet = __esm({
+  "node_modules/@prismicio/client/dist/helpers/asImageWidthSrcSet.js"() {
+    "use strict";
+    init_isFilled();
+    init_dist();
+    DEFAULT_WIDTHS = [
+      640,
+      828,
+      1200,
+      2048,
+      3840
+    ];
+    asImageWidthSrcSet = (field, config = {}) => {
+      if (field && imageThumbnail(field)) {
+        let { widths = DEFAULT_WIDTHS, ...imgixParams } = config;
+        const { url, dimensions, id: _id, alt: _alt, copyright: _copyright, edit: _edit, ...responsiveViews } = field;
+        const responsiveViewObjects = Object.values(responsiveViews);
+        if (widths === "thumbnails" && responsiveViewObjects.length < 1) widths = DEFAULT_WIDTHS;
+        return {
+          src: buildURL(url, imgixParams),
+          srcset: widths === "thumbnails" ? [buildWidthSrcSet(url, {
+            ...imgixParams,
+            widths: [dimensions.width]
+          }), ...responsiveViewObjects.map((thumbnail) => {
+            return buildWidthSrcSet(thumbnail.url, {
+              ...imgixParams,
+              widths: [thumbnail.dimensions.width]
+            });
+          })].join(", ") : buildWidthSrcSet(field.url, {
+            ...imgixParams,
+            widths
+          })
+        };
+      } else return null;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/asImagePixelDensitySrcSet.js
+var DEFAULT_PIXEL_DENSITIES, asImagePixelDensitySrcSet;
+var init_asImagePixelDensitySrcSet = __esm({
+  "node_modules/@prismicio/client/dist/helpers/asImagePixelDensitySrcSet.js"() {
+    "use strict";
+    init_isFilled();
+    init_dist();
+    DEFAULT_PIXEL_DENSITIES = [
+      1,
+      2,
+      3
+    ];
+    asImagePixelDensitySrcSet = (field, config = {}) => {
+      if (field && imageThumbnail(field)) {
+        const { pixelDensities = DEFAULT_PIXEL_DENSITIES, ...imgixParams } = config;
+        return {
+          src: buildURL(field.url, imgixParams),
+          srcset: buildPixelDensitySrcSet(field.url, {
+            ...imgixParams,
+            pixelDensities
+          })
+        };
+      } else return null;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/value/embed.js
+var OEmbedType;
+var init_embed = __esm({
+  "node_modules/@prismicio/client/dist/types/value/embed.js"() {
+    "use strict";
+    OEmbedType = {
+      Photo: "photo",
+      Video: "video",
+      Link: "link",
+      Rich: "rich"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/model/types.js
+var CustomTypeModelFieldType;
+var init_types2 = __esm({
+  "node_modules/@prismicio/client/dist/types/model/types.js"() {
+    "use strict";
+    CustomTypeModelFieldType = {
+      Boolean: "Boolean",
+      Color: "Color",
+      Date: "Date",
+      Embed: "Embed",
+      GeoPoint: "GeoPoint",
+      Group: "Group",
+      Image: "Image",
+      Integration: "IntegrationFields",
+      Link: "Link",
+      Number: "Number",
+      Select: "Select",
+      Slices: "Slices",
+      StructuredText: "StructuredText",
+      Table: "Table",
+      Text: "Text",
+      Timestamp: "Timestamp",
+      UID: "UID",
+      IntegrationFields: "IntegrationFields",
+      Range: "Range",
+      Separator: "Separator",
+      LegacySlices: "Choice"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/model/link.js
+var CustomTypeModelLinkSelectType;
+var init_link2 = __esm({
+  "node_modules/@prismicio/client/dist/types/model/link.js"() {
+    "use strict";
+    CustomTypeModelLinkSelectType = {
+      Document: "document",
+      Media: "media",
+      Web: "web"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/model/sliceZone.js
+var CustomTypeModelSliceType;
+var init_sliceZone = __esm({
+  "node_modules/@prismicio/client/dist/types/model/sliceZone.js"() {
+    "use strict";
+    CustomTypeModelSliceType = {
+      Slice: "Slice",
+      SharedSlice: "SharedSlice"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/model/slice.js
+var CustomTypeModelSliceDisplay;
+var init_slice = __esm({
+  "node_modules/@prismicio/client/dist/types/model/slice.js"() {
+    "use strict";
+    CustomTypeModelSliceDisplay = {
+      List: "list",
+      Grid: "grid"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/webhook/types.js
+var WebhookType;
+var init_types3 = __esm({
+  "node_modules/@prismicio/client/dist/types/webhook/types.js"() {
+    "use strict";
+    WebhookType = {
+      APIUpdate: "api-update",
+      TestTrigger: "test-trigger"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/index.js
+var dist_exports = {};
+__export(dist_exports, {
+  Client: () => Client,
+  CustomTypeModelFieldType: () => CustomTypeModelFieldType,
+  CustomTypeModelLinkSelectType: () => CustomTypeModelLinkSelectType,
+  CustomTypeModelSliceDisplay: () => CustomTypeModelSliceDisplay,
+  CustomTypeModelSliceType: () => CustomTypeModelSliceType,
+  Element: () => Element,
+  ForbiddenError: () => ForbiddenError,
+  InvalidDataError: () => InvalidDataError,
+  LinkType: () => LinkType,
+  Migration: () => Migration,
+  NotFoundError: () => NotFoundError,
+  OEmbedType: () => OEmbedType,
+  ParsingError: () => ParsingError,
+  PreviewTokenExpiredError: () => PreviewTokenExpiredError,
+  PrismicError: () => PrismicError,
+  PrismicMigrationAsset: () => PrismicMigrationAsset,
+  PrismicMigrationDocument: () => PrismicMigrationDocument,
+  RefExpiredError: () => RefExpiredError,
+  RefNotFoundError: () => RefNotFoundError,
+  RepositoryNotFoundError: () => RepositoryNotFoundError,
+  RichTextNodeType: () => RichTextNodeType,
+  WebhookType: () => WebhookType,
+  WriteClient: () => WriteClient,
+  asDate: () => asDate,
+  asHTML: () => asHTML,
+  asImagePixelDensitySrcSet: () => asImagePixelDensitySrcSet,
+  asImageSrc: () => asImageSrc,
+  asImageWidthSrcSet: () => asImageWidthSrcSet,
+  asLink: () => asLink,
+  asLinkAttrs: () => asLinkAttrs,
+  asText: () => asText$1,
+  buildQueryURL: () => buildQueryURL,
+  cookie: () => cookie_exports,
+  createClient: () => createClient,
+  createMigration: () => createMigration,
+  createWriteClient: () => createWriteClient,
+  documentToLinkField: () => documentToLinkField,
+  filter: () => filter,
+  getGraphQLEndpoint: () => getGraphQLEndpoint,
+  getRepositoryEndpoint: () => getRepositoryEndpoint,
+  getRepositoryName: () => getRepositoryName,
+  getToolbarSrc: () => getToolbarSrc,
+  isFilled: () => isFilled_exports,
+  isRepositoryEndpoint: () => isRepositoryEndpoint,
+  isRepositoryName: () => isRepositoryName,
+  mapSliceZone: () => mapSliceZone,
+  predicate: () => predicate,
+  unstable_mapSliceZone: () => unstable_mapSliceZone
+});
+var predicate, unstable_mapSliceZone, Element;
+var init_dist2 = __esm({
+  "node_modules/@prismicio/client/dist/index.js"() {
+    "use strict";
+    init_richText();
+    init_mapSliceZone();
+    init_filter();
+    init_cookie();
+    init_errors();
+    init_link();
+    init_documentToLinkField();
+    init_asLink();
+    init_buildQueryURL();
+    init_isRepositoryName();
+    init_getRepositoryEndpoint();
+    init_getRepositoryName();
+    init_isRepositoryEndpoint();
+    init_Client();
+    init_createClient();
+    init_Asset();
+    init_Document();
+    init_isFilled();
+    init_WriteClient();
+    init_createWriteClient();
+    init_Migration();
+    init_createMigration();
+    init_getGraphQLEndpoint();
+    init_getToolbarSrc();
+    init_asDate();
+    init_asLinkAttrs();
+    init_asText2();
+    init_asHTML();
+    init_asImageSrc();
+    init_asImageWidthSrcSet();
+    init_asImagePixelDensitySrcSet();
+    init_embed();
+    init_types2();
+    init_link2();
+    init_sliceZone();
+    init_slice();
+    init_types3();
+    predicate = filter;
+    unstable_mapSliceZone = mapSliceZone;
+    Element = RichTextNodeType;
+  }
+});
 
 // src/ai/prompts.ts
 var DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_PLAN_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_AGENT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_SEARCH_ONLY_PROMPT;
@@ -419,18 +3870,34 @@ async function getApiKey(provider, prisma) {
   return process.env.OPENAI_API_KEY || null;
 }
 async function fetchSearchResults(query, openaiKey) {
+  const timeoutMs = 3e4;
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error("Search timeout after 30s")), timeoutMs);
+  });
   try {
     console.log("[Web Search] Fetching search results for:", query.slice(0, 100));
+    const apiKey = openaiKey || process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      console.warn("[Web Search] No OpenAI API key available for search");
+      return null;
+    }
     const openai = new import_openai.default({
-      ...openaiKey && { apiKey: openaiKey }
+      apiKey
     });
-    const response = await openai.responses.create({
-      model: "gpt-5-mini",
-      input: `You are a research assistant. Provide a concise summary of the most relevant and recent information from the web about the following query. Include key facts, dates, and sources when available. Keep your response under 500 words.
+    const response = await Promise.race([
+      openai.responses.create({
+        model: "gpt-4o-mini",
+        input: `You are a research assistant. Provide a concise summary of the most relevant and recent information from the web about the following query. Include key facts, dates, and sources when available. Keep your response under 500 words.
 
 Query: ${query}`,
-      tools: [{ type: "web_search" }]
-    });
+        tools: [{ type: "web_search" }]
+      }),
+      timeoutPromise
+    ]);
+    if (!response) {
+      console.warn("[Web Search] No response received");
+      return null;
+    }
     const result = response.output_text || null;
     console.log("[Web Search] Got results:", result ? `${result.length} chars` : "null");
     return result;
@@ -523,15 +3990,26 @@ async function createStream(options) {
   if (options.useWebSearch && modelConfig.provider === "anthropic") {
     const query = extractSearchQuery(options.messages);
     if (query) {
-      const searchResults = await fetchSearchResults(query, options.openaiKey);
-      if (searchResults) {
-        searchContext = `
+      try {
+        const searchResults = await fetchSearchResults(query, options.openaiKey);
+        if (searchResults) {
+          searchContext = `
 
 <web_search_results>
 ${searchResults}
 </web_search_results>
 
 Use the search results above to inform your response with current, accurate information.`;
+        } else {
+          searchContext = `
+
+<web_search_status>Web search was requested but returned no results. Answer based on your training knowledge and note any information that may be outdated.</web_search_status>`;
+        }
+      } catch (err) {
+        console.error("[createStream] Search failed, continuing without:", err);
+        searchContext = `
+
+<web_search_status>Web search encountered an error. Answer based on your training knowledge.</web_search_status>`;
       }
     }
   }
@@ -814,7 +4292,7 @@ function extractUrls(text) {
 }
 function extractTextFromHtml(html, url) {
   const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const title = titleMatch ? titleMatch[1].trim() : void 0;
+  const title2 = titleMatch ? titleMatch[1].trim() : void 0;
   let text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "").replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "").replace(/<nav[^>]*>[\s\S]*?<\/nav>/gi, "").replace(/<footer[^>]*>[\s\S]*?<\/footer>/gi, "").replace(/<header[^>]*>[\s\S]*?<\/header>/gi, "").replace(/<aside[^>]*>[\s\S]*?<\/aside>/gi, "").replace(/<!--[\s\S]*?-->/g, "").replace(/<(p|div|br|h[1-6]|li|tr)[^>]*>/gi, "\n").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&[a-z]+;/gi, " ").replace(/\s+/g, " ").replace(/\n\s+/g, "\n").replace(/\n+/g, "\n").trim();
   if (text.length > 4e3) {
     text = text.slice(0, 4e3) + "\n\n[Content truncated...]";
@@ -822,7 +4300,7 @@ function extractTextFromHtml(html, url) {
   if (text.length < 50) {
     return { url, content: "", error: "Could not extract meaningful content" };
   }
-  return { url, title, content: text };
+  return { url, title: title2, content: text };
 }
 async function parseWithReadability(html, url) {
   try {
@@ -1218,6 +4696,7 @@ __export(src_exports, {
   createAutoblogger: () => createAutoblogger,
   createCommentsClient: () => createCommentsClient,
   createCrudData: () => createCrudData,
+  createDestinationDispatcher: () => createDestinationDispatcher,
   fetchRssFeeds: () => fetchRssFeeds,
   filterByKeywords: () => filterByKeywords,
   formatDate: () => formatDate,
@@ -1242,6 +4721,97 @@ __export(src_exports, {
 });
 module.exports = __toCommonJS(src_exports);
 
+// src/destinations/prismic.ts
+function mapPostToStub(_post) {
+  return {};
+}
+function createPrismicDestination(config) {
+  const masterLocale = config.masterLocale || "en-us";
+  const syncMode = config.syncMode || "stub";
+  const getDocumentId = config.getDocumentId || ((post) => `autoblogger-${post.id}`);
+  return {
+    name: `prismic:${config.repository}`,
+    async onPublish(post) {
+      try {
+        const prismic = await Promise.resolve().then(() => (init_dist2(), dist_exports));
+        const writeClient = prismic.createWriteClient(config.repository, {
+          writeToken: config.writeToken
+        });
+        const readClient = prismic.createClient(config.repository);
+        const migration = prismic.createMigration();
+        const documentId = getDocumentId(post);
+        const documentData = mapPostToStub(post);
+        let existingDoc = null;
+        try {
+          existingDoc = await readClient.getByUID(config.documentType, post.slug, {
+            lang: masterLocale
+          });
+        } catch {
+        }
+        if (existingDoc) {
+          const updatedDoc = {
+            ...existingDoc,
+            uid: post.slug,
+            data: { ...existingDoc.data, ...documentData }
+          };
+          if (config.autoRename) {
+            migration.updateDocument(updatedDoc, post.title);
+            console.log(`[prismic:${config.repository}] Updating document with new title for post "${post.slug}"`);
+          } else {
+            migration.updateDocument(updatedDoc);
+            console.log(`[prismic:${config.repository}] Updating existing document for post "${post.slug}"`);
+          }
+        } else {
+          migration.createDocument(
+            {
+              type: config.documentType,
+              uid: post.slug,
+              lang: masterLocale,
+              data: documentData
+            },
+            post.title
+          );
+          console.log(`[prismic:${config.repository}] Creating new document for post "${post.slug}"`);
+        }
+        await writeClient.migrate(migration, {
+          reporter: () => {
+          }
+          // Silent reporter
+        });
+        console.log(`[prismic:${config.repository}] Synced stub for post "${post.slug}"`);
+        return {
+          success: true,
+          externalId: documentId
+        };
+      } catch (error) {
+        console.error(`[prismic:${config.repository}] Failed to sync post "${post.slug}":`, error);
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error publishing to Prismic"
+        };
+      }
+    },
+    async onUnpublish(post) {
+      console.warn(
+        `[prismic:${config.repository}] Unpublish not fully supported via Migration API. Document for post "${post.slug}" will remain in Prismic.`
+      );
+      return {
+        success: true,
+        externalId: getDocumentId(post)
+      };
+    },
+    async onDelete(post) {
+      console.warn(
+        `[prismic:${config.repository}] Delete not fully supported via Migration API. Document for post "${post.slug}" will remain in Prismic.`
+      );
+      return {
+        success: true,
+        externalId: getDocumentId(post)
+      };
+    }
+  };
+}
+
 // src/data/posts.ts
 function slugify(text) {
   return text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
@@ -1261,7 +4831,39 @@ async function generateUniqueSlug(prisma, baseSlug, excludeId) {
     slug = `${baseSlug}-${counter}`;
   }
 }
-function createPostsData(prisma, hooks) {
+async function fireDynamicPrismicDestination(prisma, post, event, envWriteToken) {
+  try {
+    const settings = await prisma.integrationSettings.findUnique({
+      where: { id: "default" }
+    });
+    if (!settings?.prismicEnabled || !settings?.prismicRepository) {
+      return;
+    }
+    const writeToken = settings.prismicWriteToken || envWriteToken;
+    if (!writeToken) {
+      console.warn("[autoblogger] Prismic enabled but no write token configured");
+      return;
+    }
+    const prismicDest = createPrismicDestination({
+      repository: settings.prismicRepository,
+      writeToken,
+      documentType: settings.prismicDocumentType || "autoblog",
+      syncMode: settings.prismicSyncMode || "stub",
+      masterLocale: settings.prismicLocale || "en-us",
+      autoRename: settings.prismicAutoRename ?? false
+    });
+    if (event === "publish") {
+      await prismicDest.onPublish(post);
+    } else if (event === "unpublish") {
+      await prismicDest.onUnpublish(post);
+    } else if (event === "delete") {
+      await prismicDest.onDelete(post);
+    }
+  } catch (error) {
+    console.error("[autoblogger] Failed to fire dynamic Prismic destination:", error);
+  }
+}
+function createPostsData(prisma, hooks, dispatcher, prismicEnvToken) {
   return {
     async count(where) {
       return prisma.post.count({ where });
@@ -1343,14 +4945,29 @@ function createPostsData(prisma, hooks) {
         // Computed field, don't save
         ...postData
       } = data;
+      let isPublishing = false;
+      let isUnpublishing = false;
+      let isUpdatingPublished = false;
+      const existing = await prisma.post.findUnique({ where: { id } });
+      const hasDestinationChanges = existing && (postData.title !== void 0 && postData.title !== existing.title || postData.slug !== void 0 && postData.slug !== existing.slug || postData.markdown !== void 0 && postData.markdown !== existing.markdown);
+      const hasSlugChange = existing && postData.slug !== void 0 && postData.slug !== existing.slug;
+      const hasTitleChange = existing && postData.title !== void 0 && postData.title !== existing.title;
       if (postData.status === "published") {
-        const existing = await prisma.post.findUnique({ where: { id } });
         if (existing?.status !== "published") {
           postData.publishedAt = /* @__PURE__ */ new Date();
+          isPublishing = true;
           if (hooks?.beforePublish) {
             await hooks.beforePublish(existing);
           }
+        } else if (hasDestinationChanges) {
+          isUpdatingPublished = true;
         }
+      } else if (postData.status === "draft") {
+        if (existing?.status === "published") {
+          isUnpublishing = true;
+        }
+      } else if (postData.status === void 0 && existing?.status === "published" && hasDestinationChanges) {
+        isUpdatingPublished = true;
       }
       if (postData.slug) {
         postData.slug = await generateUniqueSlug(prisma, postData.slug, id);
@@ -1378,13 +4995,56 @@ function createPostsData(prisma, hooks) {
       if (hooks?.afterSave) {
         await hooks.afterSave(result);
       }
+      const oldSlug = existing?.slug;
+      const newSlug = postData.slug;
+      const slugChanged = oldSlug && newSlug && newSlug !== oldSlug;
+      const wasPublished = existing?.publishedAt !== null;
+      if (slugChanged && wasPublished && hooks?.onSlugChange) {
+        hooks.onSlugChange({
+          postId: id,
+          oldSlug,
+          newSlug
+        }).catch((err) => {
+          console.error("[autoblogger] Failed to handle slug change:", err);
+        });
+      }
+      if (isPublishing || isUnpublishing || isUpdatingPublished) {
+        if (dispatcher) {
+          if (isPublishing || isUpdatingPublished) {
+            dispatcher.publish(result).catch((err) => {
+              console.error("[autoblogger] Failed to dispatch publish event:", err);
+            });
+          } else if (isUnpublishing) {
+            dispatcher.unpublish(result).catch((err) => {
+              console.error("[autoblogger] Failed to dispatch unpublish event:", err);
+            });
+          }
+        }
+      }
+      if (isPublishing || isUnpublishing || isUpdatingPublished && (hasSlugChange || hasTitleChange)) {
+        const event = isUnpublishing ? "unpublish" : "publish";
+        fireDynamicPrismicDestination(prisma, result, event, prismicEnvToken);
+      }
       return result;
     },
     async delete(id) {
-      return prisma.post.update({
+      const existing = await prisma.post.findUnique({
+        where: { id },
+        include: { tags: { include: { tag: true } } }
+      });
+      const result = await prisma.post.update({
         where: { id },
         data: { status: "deleted" }
       });
+      if (existing?.status === "published") {
+        if (dispatcher) {
+          dispatcher.delete(existing).catch((err) => {
+            console.error("[autoblogger] Failed to dispatch delete event:", err);
+          });
+        }
+        fireDynamicPrismicDestination(prisma, existing, "delete", prismicEnvToken);
+      }
+      return result;
     },
     async getPreviewUrl(id, basePath = "/e") {
       const token = crypto.randomUUID();
@@ -1645,16 +5305,16 @@ function createTagsData(prisma) {
     async findAllWithCounts() {
       return base.findAll();
     },
-    async findByName(name) {
-      return prisma.tag.findUnique({ where: { name } });
+    async findByName(name2) {
+      return prisma.tag.findUnique({ where: { name: name2 } });
     },
     // Override create to accept string directly
-    async create(name) {
-      return prisma.tag.create({ data: { name } });
+    async create(name2) {
+      return prisma.tag.create({ data: { name: name2 } });
     },
     // Override update to accept name directly
-    async update(id, name) {
-      return prisma.tag.update({ where: { id }, data: { name } });
+    async update(id, name2) {
+      return prisma.tag.update({ where: { id }, data: { name: name2 } });
     },
     async addToPost(postId, tagId) {
       return prisma.postTag.create({
@@ -2611,6 +6271,11 @@ async function handleAdminAPI(req, cms, session, path) {
 }
 
 // src/api/settings.ts
+function maskToken(token) {
+  if (!token) return "";
+  if (token.length <= 8) return "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022";
+  return token.slice(0, 4) + "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" + token.slice(-4);
+}
 async function handleSettingsAPI(req, cms, session, path) {
   const method = req.method;
   const prisma = cms.config.prisma;
@@ -2652,6 +6317,97 @@ async function handleSettingsAPI(req, cms, session, path) {
       data: {
         autoDraftEnabled: integrationSettings?.autoDraftEnabled ?? false,
         postUrlPattern: integrationSettings?.postUrlPattern ?? "/e/{slug}"
+      }
+    });
+  }
+  if (method === "GET" && path === "/settings/integrations") {
+    const integrationSettings = await prisma.integrationSettings.findUnique({
+      where: { id: "default" }
+    });
+    const configRepo = cms.config.prismic?.repository;
+    const hasEnvToken = !!cms.config.prismic?.writeToken;
+    const hasDbToken = !!integrationSettings?.prismicWriteToken;
+    return jsonResponse2({
+      data: {
+        prismic: {
+          enabled: integrationSettings?.prismicEnabled ?? false,
+          repository: integrationSettings?.prismicRepository ?? "",
+          configRepository: configRepo ?? null,
+          writeToken: maskToken(integrationSettings?.prismicWriteToken),
+          hasWriteToken: hasDbToken,
+          hasEnvToken,
+          documentType: integrationSettings?.prismicDocumentType ?? "autoblog",
+          syncMode: integrationSettings?.prismicSyncMode ?? "stub",
+          locale: integrationSettings?.prismicLocale ?? "en-us",
+          autoRename: integrationSettings?.prismicAutoRename ?? false
+        }
+      }
+    });
+  }
+  if (method === "PATCH" && path === "/settings/integrations") {
+    const adminError = requireAdmin(cms, session);
+    if (adminError) return adminError;
+    const body = await req.json();
+    const updateData = {};
+    if (typeof body.prismicEnabled === "boolean") {
+      updateData.prismicEnabled = body.prismicEnabled;
+    }
+    if (typeof body.prismicRepository === "string") {
+      updateData.prismicRepository = body.prismicRepository || null;
+    }
+    if (typeof body.prismicWriteToken === "string") {
+      if (!body.prismicWriteToken.includes("\u2022\u2022\u2022\u2022")) {
+        updateData.prismicWriteToken = body.prismicWriteToken || null;
+      }
+    }
+    if (typeof body.prismicDocumentType === "string") {
+      updateData.prismicDocumentType = body.prismicDocumentType || "autoblog";
+    }
+    if (typeof body.prismicSyncMode === "string" && ["stub", "full"].includes(body.prismicSyncMode)) {
+      updateData.prismicSyncMode = body.prismicSyncMode;
+    }
+    if (typeof body.prismicLocale === "string") {
+      updateData.prismicLocale = body.prismicLocale || "en-us";
+    }
+    if (typeof body.prismicAutoRename === "boolean") {
+      updateData.prismicAutoRename = body.prismicAutoRename;
+    }
+    if (updateData.prismicEnabled === true) {
+      const current = await prisma.integrationSettings.findUnique({
+        where: { id: "default" }
+      });
+      const repo = updateData.prismicRepository ?? current?.prismicRepository;
+      const hasDbToken = !!(updateData.prismicWriteToken ?? current?.prismicWriteToken);
+      const hasEnvToken = !!cms.config.prismic?.writeToken;
+      if (!repo) {
+        return jsonResponse2({ error: "Repository name is required to enable Prismic" }, 400);
+      }
+      if (!hasDbToken && !hasEnvToken) {
+        return jsonResponse2({ error: "Write token is required to enable Prismic (set PRISMIC_WRITE_TOKEN in config or enter in field)" }, 400);
+      }
+    }
+    if (Object.keys(updateData).length > 0) {
+      await prisma.integrationSettings.upsert({
+        where: { id: "default" },
+        create: { id: "default", ...updateData },
+        update: updateData
+      });
+    }
+    const integrationSettings = await prisma.integrationSettings.findUnique({
+      where: { id: "default" }
+    });
+    return jsonResponse2({
+      data: {
+        prismic: {
+          enabled: integrationSettings?.prismicEnabled ?? false,
+          repository: integrationSettings?.prismicRepository ?? "",
+          writeToken: maskToken(integrationSettings?.prismicWriteToken),
+          hasWriteToken: !!integrationSettings?.prismicWriteToken,
+          documentType: integrationSettings?.prismicDocumentType ?? "autoblog",
+          syncMode: integrationSettings?.prismicSyncMode ?? "stub",
+          locale: integrationSettings?.prismicLocale ?? "en-us",
+          autoRename: integrationSettings?.prismicAutoRename ?? false
+        }
       }
     });
   }
@@ -2902,11 +6658,11 @@ init_prompts();
 // src/ai/parse.ts
 function parseGeneratedContent(markdown) {
   const lines = markdown.trim().split("\n");
-  let title = "";
+  let title2 = "";
   let subtitle = "";
   let bodyStartIndex = 0;
   if (lines[0]?.startsWith("# ")) {
-    title = lines[0].replace(/^#\s+/, "").trim();
+    title2 = lines[0].replace(/^#\s+/, "").trim();
     bodyStartIndex = 1;
   }
   for (let i = bodyStartIndex; i < lines.length; i++) {
@@ -2923,7 +6679,7 @@ function parseGeneratedContent(markdown) {
     bodyStartIndex++;
   }
   const body = lines.slice(bodyStartIndex).join("\n").trim();
-  return { title, subtitle, body };
+  return { title: title2, subtitle, body };
 }
 
 // src/lib/markdown.ts
@@ -3035,8 +6791,8 @@ function wordCount(text) {
   if (!text) return 0;
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
-function generateSlug(title) {
-  return title.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").substring(0, 60);
+function generateSlug(title2) {
+  return title2.toLowerCase().trim().replace(/[^\w\s-]/g, "").replace(/\s+/g, "-").replace(/-+/g, "-").substring(0, 60);
 }
 function renderMarkdownSanitized(markdown) {
   const html = renderMarkdown(markdown);
@@ -3090,8 +6846,8 @@ async function deduplicateArticles(prisma, articles) {
   const urlSet = new Set(existingUrls.map((n) => n.url));
   return articles.filter((a) => !urlSet.has(a.url));
 }
-async function generateUniqueSlug2(prisma, title) {
-  const baseSlug = generateSlug(title);
+async function generateUniqueSlug2(prisma, title2) {
+  const baseSlug = generateSlug(title2);
   const existing = await prisma.post.findUnique({ where: { slug: baseSlug } });
   if (!existing) return baseSlug;
   let suffix = 2;
@@ -3214,6 +6970,110 @@ async function runAutoDraft(config, topicId, skipFrequencyCheck = false) {
   return results;
 }
 
+// src/destinations/dispatcher.ts
+function createDestinationDispatcher(config) {
+  const { destinations = [], webhooks = [], onPublish, onUnpublish, onDelete } = config;
+  async function fireWebhook(url, event) {
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(event)
+      });
+      if (!response.ok) {
+        return {
+          url,
+          success: false,
+          error: `HTTP ${response.status}: ${response.statusText}`
+        };
+      }
+      return { url, success: true };
+    } catch (error) {
+      return {
+        url,
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error"
+      };
+    }
+  }
+  async function fireDestination(destination, method, post) {
+    try {
+      const result = await destination[method](post);
+      return { name: destination.name, result };
+    } catch (error) {
+      return {
+        name: destination.name,
+        result: {
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error"
+        }
+      };
+    }
+  }
+  async function dispatch(type, post, callback) {
+    const event = {
+      type,
+      post,
+      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const method = type === "publish" ? "onPublish" : type === "unpublish" ? "onUnpublish" : "onDelete";
+    const destinationPromises = destinations.map((dest) => fireDestination(dest, method, post));
+    const webhookPromises = webhooks.map((url) => fireWebhook(url, event));
+    const callbackPromise = callback ? callback(post).catch((err) => {
+      console.error(`[autoblogger] ${type} callback error:`, err);
+    }) : Promise.resolve();
+    const [destinationResults, webhookResults] = await Promise.all([
+      Promise.all(destinationPromises),
+      Promise.all(webhookPromises),
+      callbackPromise
+    ]);
+    const allSucceeded = destinationResults.every((r) => r.result.success) && webhookResults.every((r) => r.success);
+    for (const { name: name2, result } of destinationResults) {
+      if (!result.success) {
+        console.error(`[autoblogger] Destination "${name2}" failed:`, result.error);
+      }
+    }
+    for (const { url, success, error } of webhookResults) {
+      if (!success) {
+        console.error(`[autoblogger] Webhook "${url}" failed:`, error);
+      }
+    }
+    return {
+      destinations: destinationResults,
+      webhooks: webhookResults,
+      allSucceeded
+    };
+  }
+  return {
+    /**
+     * Dispatch a publish event to all destinations
+     */
+    async publish(post) {
+      return dispatch("publish", post, onPublish);
+    },
+    /**
+     * Dispatch an unpublish event to all destinations
+     */
+    async unpublish(post) {
+      return dispatch("unpublish", post, onUnpublish);
+    },
+    /**
+     * Dispatch a delete event to all destinations
+     */
+    async delete(post) {
+      return dispatch("delete", post, onDelete);
+    },
+    /**
+     * Check if any destinations or webhooks are configured
+     */
+    get hasDestinations() {
+      return destinations.length > 0 || webhooks.length > 0 || !!onPublish || !!onUnpublish || !!onDelete;
+    }
+  };
+}
+
 // src/types/config.ts
 var DEFAULT_STYLES = {
   container: "max-w-ab-content mx-auto px-ab-content-padding",
@@ -3230,12 +7090,19 @@ function createAutoblogger(config) {
     ...DEFAULT_STYLES,
     ...config.styles
   };
+  const dispatcher = createDestinationDispatcher({
+    destinations: config.destinations,
+    webhooks: config.webhooks,
+    onPublish: config.onPublish,
+    onUnpublish: config.onUnpublish,
+    onDelete: config.onDelete
+  });
   const baseServer = {
     config: {
       ...config,
       styles: mergedStyles
     },
-    posts: createPostsData(prisma, config.hooks),
+    posts: createPostsData(prisma, config.hooks, dispatcher, config.prismic?.writeToken),
     comments: createCommentsData(prisma, config.comments),
     tags: createTagsData(prisma),
     revisions: createRevisionsData(prisma),
@@ -3297,18 +7164,18 @@ var REQUIRED_TABLES = [
 async function validateSchema(prisma) {
   const p = prisma;
   const missingTables = [];
-  for (const table of REQUIRED_TABLES) {
-    const modelName = table.charAt(0).toLowerCase() + table.slice(1);
+  for (const table2 of REQUIRED_TABLES) {
+    const modelName = table2.charAt(0).toLowerCase() + table2.slice(1);
     try {
       if (!p[modelName]) {
-        missingTables.push(table);
+        missingTables.push(table2);
       } else {
         await p[modelName].findFirst({ take: 1 }).catch(() => {
-          missingTables.push(table);
+          missingTables.push(table2);
         });
       }
     } catch {
-      missingTables.push(table);
+      missingTables.push(table2);
     }
   }
   return {
@@ -3318,8 +7185,8 @@ async function validateSchema(prisma) {
 }
 
 // src/lib/format.ts
-function formatDate(date, options) {
-  const d = typeof date === "string" ? new Date(date) : date;
+function formatDate(date2, options) {
+  const d = typeof date2 === "string" ? new Date(date2) : date2;
   const defaultOptions = {
     year: "numeric",
     month: "long",
@@ -3485,10 +7352,10 @@ var import_state22 = require("@tiptap/pm/state");
 var import_transform10 = require("@tiptap/pm/transform");
 var import_state23 = require("@tiptap/pm/state");
 var import_state24 = require("@tiptap/pm/state");
-var __defProp2 = Object.defineProperty;
-var __export2 = (target, all) => {
-  for (var name in all)
-    __defProp2(target, name, { get: all[name], enumerable: true });
+var __defProp3 = Object.defineProperty;
+var __export3 = (target, all) => {
+  for (var name2 in all)
+    __defProp3(target, name2, { get: all[name2], enumerable: true });
 };
 function createChainableState(config) {
   const { state, transaction } = config;
@@ -3538,7 +7405,7 @@ var CommandManager = class {
     const { tr } = state;
     const props = this.buildProps(tr);
     return Object.fromEntries(
-      Object.entries(rawCommands).map(([name, command2]) => {
+      Object.entries(rawCommands).map(([name2, command2]) => {
         const method = (...args) => {
           const callback = command2(...args)(props);
           if (!tr.getMeta("preventDispatch") && !this.hasCustomState) {
@@ -3546,7 +7413,7 @@ var CommandManager = class {
           }
           return callback;
         };
-        return [name, method];
+        return [name2, method];
       })
     );
   }
@@ -3570,14 +7437,14 @@ var CommandManager = class {
     };
     const chain = {
       ...Object.fromEntries(
-        Object.entries(rawCommands).map(([name, command2]) => {
+        Object.entries(rawCommands).map(([name2, command2]) => {
           const chainedCommand = (...args) => {
             const props = this.buildProps(tr, shouldDispatch);
             const callback = command2(...args)(props);
             callbacks.push(callback);
             return chain;
           };
-          return [name, chainedCommand];
+          return [name2, chainedCommand];
         })
       ),
       run: run3
@@ -3590,8 +7457,8 @@ var CommandManager = class {
     const tr = startTr || state.tr;
     const props = this.buildProps(tr, dispatch);
     const formattedCommands = Object.fromEntries(
-      Object.entries(rawCommands).map(([name, command2]) => {
-        return [name, (...args) => command2(...args)({ ...props, dispatch: void 0 })];
+      Object.entries(rawCommands).map(([name2, command2]) => {
+        return [name2, (...args) => command2(...args)({ ...props, dispatch: void 0 })];
       })
     );
     return {
@@ -3615,8 +7482,8 @@ var CommandManager = class {
       can: () => this.createCan(tr),
       get commands() {
         return Object.fromEntries(
-          Object.entries(rawCommands).map(([name, command2]) => {
-            return [name, (...args) => command2(...args)(props)];
+          Object.entries(rawCommands).map(([name2, command2]) => {
+            return [name2, (...args) => command2(...args)(props)];
           })
         );
       }
@@ -3625,7 +7492,7 @@ var CommandManager = class {
   }
 };
 var commands_exports = {};
-__export2(commands_exports, {
+__export3(commands_exports, {
   blur: () => blur,
   clearContent: () => clearContent,
   clearNodes: () => clearNodes,
@@ -3689,11 +7556,11 @@ __export2(commands_exports, {
 });
 var blur = () => ({ editor, view }) => {
   requestAnimationFrame(() => {
-    var _a;
+    var _a4;
     if (!editor.isDestroyed) {
       ;
       view.dom.blur();
-      (_a = window == null ? void 0 : window.getSelection()) == null ? void 0 : _a.removeAllRanges();
+      (_a4 = window == null ? void 0 : window.getSelection()) == null ? void 0 : _a4.removeAllRanges();
     }
   });
   return true;
@@ -3838,7 +7705,7 @@ function isMarkInSet(marks, type, attributes = {}) {
   return !!findMarkInSet(marks, type, attributes);
 }
 function getMarkRange($pos, type, attributes) {
-  var _a;
+  var _a4;
   if (!$pos || !type) {
     return;
   }
@@ -3849,7 +7716,7 @@ function getMarkRange($pos, type, attributes) {
   if (!start.node || !start.node.marks.some((mark2) => mark2.type === type)) {
     return;
   }
-  attributes = attributes || ((_a = start.node.marks[0]) == null ? void 0 : _a.attrs);
+  attributes = attributes || ((_a4 = start.node.marks[0]) == null ? void 0 : _a4.attrs);
   const mark = findMarkInSet([...start.node.marks], type, attributes);
   if (!mark) {
     return;
@@ -4103,7 +7970,7 @@ var isFragment = (nodeOrFragment) => {
   return !("type" in nodeOrFragment);
 };
 var insertContentAt = (position, value, options) => ({ tr, dispatch, editor }) => {
-  var _a;
+  var _a4;
   if (dispatch) {
     options = {
       parseOptions: editor.options.parseOptions,
@@ -4142,7 +8009,7 @@ var insertContentAt = (position, value, options) => ({ tr, dispatch, editor }) =
     try {
       content = createNodeFromContent(value, editor.schema, {
         parseOptions,
-        errorOnInvalidContent: (_a = options.errorOnInvalidContent) != null ? _a : editor.options.enableContentCheck
+        errorOnInvalidContent: (_a4 = options.errorOnInvalidContent) != null ? _a4 : editor.options.enableContentCheck
       });
     } catch (e) {
       emitContentError(e);
@@ -4258,8 +8125,8 @@ var joinTextblockForward = () => ({ state, dispatch }) => {
 function isMacOS() {
   return typeof navigator !== "undefined" ? /Mac/.test(navigator.platform) : false;
 }
-function normalizeKeyName(name) {
-  const parts = name.split(/-(?!$)/);
+function normalizeKeyName(name2) {
+  const parts = name2.split(/-(?!$)/);
   let result = parts[parts.length - 1];
   if (result === "Space") {
     result = " ";
@@ -4302,8 +8169,8 @@ function normalizeKeyName(name) {
   }
   return result;
 }
-var keyboardShortcut = (name) => ({ editor, view, tr, dispatch }) => {
-  const keys = normalizeKeyName(name).split(/-(?!$)/);
+var keyboardShortcut = (name2) => ({ editor, view, tr, dispatch }) => {
+  const keys = normalizeKeyName(name2).split(/-(?!$)/);
   const key = keys.find((item) => !["Alt", "Ctrl", "Meta", "Shift"].includes(item));
   const event = new KeyboardEvent("keydown", {
     key: key === "Space" ? " " : key,
@@ -4372,11 +8239,11 @@ var liftListItem = (typeOrName) => ({ state, dispatch }) => {
 var newlineInCode = () => ({ state, dispatch }) => {
   return (0, import_commands9.newlineInCode)(state, dispatch);
 };
-function getSchemaTypeNameByName(name, schema) {
-  if (schema.nodes[name]) {
+function getSchemaTypeNameByName(name2, schema) {
+  if (schema.nodes[name2]) {
     return "node";
   }
-  if (schema.marks[name]) {
+  if (schema.marks[name2]) {
     return "mark";
   }
   return null;
@@ -4521,10 +8388,10 @@ function defaultBlockAt(match) {
   }
   return null;
 }
-function findParentNodeClosestToPos($pos, predicate) {
+function findParentNodeClosestToPos($pos, predicate2) {
   for (let i = $pos.depth; i > 0; i -= 1) {
     const node = $pos.node(i);
-    if (predicate(node)) {
+    if (predicate2(node)) {
       return {
         pos: i > 0 ? $pos.before(i) : 0,
         start: $pos.start(i),
@@ -4534,8 +8401,8 @@ function findParentNodeClosestToPos($pos, predicate) {
     }
   }
 }
-function findParentNode(predicate) {
-  return (selection) => findParentNodeClosestToPos(selection.$from, predicate);
+function findParentNode(predicate2) {
+  return (selection) => findParentNodeClosestToPos(selection.$from, predicate2);
 }
 function getExtensionField(extension, field, context) {
   if (extension.config[field] === void 0 && extension.parent) {
@@ -4627,10 +8494,10 @@ function getAttributesFromExtensions(extensions) {
     const globalAttributes = addGlobalAttributes();
     globalAttributes.forEach((globalAttribute) => {
       globalAttribute.types.forEach((type) => {
-        Object.entries(globalAttribute.attributes).forEach(([name, attribute]) => {
+        Object.entries(globalAttribute.attributes).forEach(([name2, attribute]) => {
           extensionAttributes.push({
             type,
-            name,
+            name: name2,
             attribute: {
               ...defaultAttribute,
               ...attribute
@@ -4655,7 +8522,7 @@ function getAttributesFromExtensions(extensions) {
       return;
     }
     const attributes = addAttributes();
-    Object.entries(attributes).forEach(([name, attribute]) => {
+    Object.entries(attributes).forEach(([name2, attribute]) => {
       const mergedAttr = {
         ...defaultAttribute,
         ...attribute
@@ -4668,7 +8535,7 @@ function getAttributesFromExtensions(extensions) {
       }
       extensionAttributes.push({
         type: extension.name,
-        name,
+        name: name2,
         attribute: mergedAttr
       });
     });
@@ -4771,9 +8638,9 @@ function cleanUpSchemaItem(data) {
   );
 }
 function buildAttributeSpec(extensionAttribute) {
-  var _a, _b;
+  var _a4, _b;
   const spec = {};
-  if (!((_a = extensionAttribute == null ? void 0 : extensionAttribute.attribute) == null ? void 0 : _a.isRequired) && "default" in ((extensionAttribute == null ? void 0 : extensionAttribute.attribute) || {})) {
+  if (!((_a4 = extensionAttribute == null ? void 0 : extensionAttribute.attribute) == null ? void 0 : _a4.isRequired) && "default" in ((extensionAttribute == null ? void 0 : extensionAttribute.attribute) || {})) {
     spec.default = extensionAttribute.attribute.default;
   }
   if (((_b = extensionAttribute == null ? void 0 : extensionAttribute.attribute) == null ? void 0 : _b.validate) !== void 0) {
@@ -4782,10 +8649,10 @@ function buildAttributeSpec(extensionAttribute) {
   return [extensionAttribute.name, spec];
 }
 function getSchemaByResolvedExtensions(extensions, editor) {
-  var _a;
+  var _a4;
   const allAttributes = getAttributesFromExtensions(extensions);
   const { nodeExtensions, markExtensions } = splitExtensions(extensions);
-  const topNode = (_a = nodeExtensions.find((extension) => getExtensionField(extension, "topNode"))) == null ? void 0 : _a.name;
+  const topNode = (_a4 = nodeExtensions.find((extension) => getExtensionField(extension, "topNode"))) == null ? void 0 : _a4.name;
   const nodes = Object.fromEntries(
     nodeExtensions.map((extension) => {
       const extensionAttributes = allAttributes.filter((attribute) => attribute.type === extension.name);
@@ -4920,7 +8787,7 @@ function getTextBetween(startNode, range, options) {
   const { blockSeparator = "\n\n", textSerializers = {} } = options || {};
   let text = "";
   startNode.nodesBetween(from, to, (node, pos, parent, index) => {
-    var _a;
+    var _a4;
     if (node.isBlock && pos > from) {
       text += blockSeparator;
     }
@@ -4938,14 +8805,14 @@ function getTextBetween(startNode, range, options) {
       return false;
     }
     if (node.isText) {
-      text += (_a = node == null ? void 0 : node.text) == null ? void 0 : _a.slice(Math.max(from, pos) - pos, to - pos);
+      text += (_a4 = node == null ? void 0 : node.text) == null ? void 0 : _a4.slice(Math.max(from, pos) - pos, to - pos);
     }
   });
   return text;
 }
 function getTextSerializersFromSchema(schema) {
   return Object.fromEntries(
-    Object.entries(schema.nodes).filter(([, node]) => node.spec.toText).map(([name, node]) => [name, node.spec.toText])
+    Object.entries(schema.nodes).filter(([, node]) => node.spec.toText).map(([name2, node]) => [name2, node.spec.toText])
   );
 }
 function removeDuplicates(array, by = JSON.stringify) {
@@ -4999,14 +8866,14 @@ function getChangedRanges(transform) {
   });
   return simplifyChangedRanges(changes);
 }
-function getSchemaTypeByName(name, schema) {
-  return schema.nodes[name] || schema.marks[name] || null;
+function getSchemaTypeByName(name2, schema) {
+  return schema.nodes[name2] || schema.marks[name2] || null;
 }
 function getSplittedAttributes(extensionAttributes, typeName, attributes) {
   return Object.fromEntries(
-    Object.entries(attributes).filter(([name]) => {
+    Object.entries(attributes).filter(([name2]) => {
       const extensionAttribute = extensionAttributes.find((item) => {
-        return item.type === typeName && item.name === name;
+        return item.type === typeName && item.name === name2;
       });
       if (!extensionAttribute) {
         return false;
@@ -5019,8 +8886,8 @@ var getTextContentFromNodes = ($from, maxMatch = 500) => {
   let textBefore = "";
   const sliceEndPos = $from.parentOffset;
   $from.parent.nodesBetween(Math.max(0, sliceEndPos - maxMatch), sliceEndPos, (node, pos, parent, index) => {
-    var _a, _b;
-    const chunk = ((_b = (_a = node.type.spec).toText) == null ? void 0 : _b.call(_a, {
+    var _a4, _b;
+    const chunk = ((_b = (_a4 = node.type.spec).toText) == null ? void 0 : _b.call(_a4, {
       node,
       pos,
       parent,
@@ -5084,15 +8951,15 @@ function isMarkActive(state, typeOrName, attributes = {}) {
 function isExtensionRulesEnabled(extension, enabled) {
   if (Array.isArray(enabled)) {
     return enabled.some((enabledExtension) => {
-      const name = typeof enabledExtension === "string" ? enabledExtension : enabledExtension.name;
-      return name === extension.name;
+      const name2 = typeof enabledExtension === "string" ? enabledExtension : enabledExtension.name;
+      return name2 === extension.name;
     });
   }
   return enabled;
 }
-function isList(name, extensions) {
+function isList(name2, extensions) {
   const { nodeExtensions } = splitExtensions(extensions);
-  const extension = nodeExtensions.find((item) => item.name === name);
+  const extension = nodeExtensions.find((item) => item.name === name2);
   if (!extension) {
     return false;
   }
@@ -5101,23 +8968,23 @@ function isList(name, extensions) {
     options: extension.options,
     storage: extension.storage
   };
-  const group = callOrReturn(getExtensionField(extension, "group", context));
-  if (typeof group !== "string") {
+  const group2 = callOrReturn(getExtensionField(extension, "group", context));
+  if (typeof group2 !== "string") {
     return false;
   }
-  return group.split(" ").includes("list");
+  return group2.split(" ").includes("list");
 }
 function isNodeEmpty(node, {
   checkChildren = true,
   ignoreWhitespace = false
 } = {}) {
-  var _a;
+  var _a4;
   if (ignoreWhitespace) {
     if (node.type.name === "hardBreak") {
       return true;
     }
     if (node.isText) {
-      return /^\s*$/m.test((_a = node.text) != null ? _a : "");
+      return /^\s*$/m.test((_a4 = node.text) != null ? _a4 : "");
     }
   }
   if (node.isText) {
@@ -5144,14 +9011,14 @@ function isNodeEmpty(node, {
   return false;
 }
 function canSetMark(state, tr, newMarkType) {
-  var _a;
+  var _a4;
   const { selection } = tr;
   let cursor = null;
   if (isTextSelection(selection)) {
     cursor = selection.$cursor;
   }
   if (cursor) {
-    const currentMarks = (_a = state.storedMarks) != null ? _a : cursor.marks();
+    const currentMarks = (_a4 = state.storedMarks) != null ? _a4 : cursor.marks();
     const parentAllowsMarkType = cursor.parent.type.allowsMarkType(newMarkType);
     return parentAllowsMarkType && (!!newMarkType.isInSet(currentMarks) || !currentMarks.some((mark) => mark.type.excludes(newMarkType)));
   }
@@ -5359,7 +9226,7 @@ var splitBlock = ({ keepMarks = true } = {}) => ({ tr, state, dispatch, editor }
   return can;
 };
 var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr, state, dispatch, editor }) => {
-  var _a;
+  var _a4;
   const type = getNodeType(typeOrName, state.schema);
   const { $from, $to } = state.selection;
   const node = state.selection.node;
@@ -5389,7 +9256,7 @@ var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr, state, dispatch, 
         ...getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs),
         ...overrideAttrs
       };
-      const nextType2 = ((_a = type.contentMatch.defaultType) == null ? void 0 : _a.createAndFill(newNextTypeAttributes2)) || void 0;
+      const nextType2 = ((_a4 = type.contentMatch.defaultType) == null ? void 0 : _a4.createAndFill(newNextTypeAttributes2)) || void 0;
       wrap = wrap.append(import_model8.Fragment.from(type.createAndFill(null, nextType2) || void 0));
       const start = $from.before($from.depth - (depthBefore - 1));
       tr.replace(start, $from.after(-depthAfter), new import_model8.Slice(wrap, 4 - depthBefore, 0));
@@ -5583,7 +9450,7 @@ var unsetAllMarks = () => ({ tr, dispatch }) => {
   return true;
 };
 var unsetMark = (typeOrName, options = {}) => ({ tr, state, dispatch }) => {
-  var _a;
+  var _a4;
   const { extendEmptyMarkRange = false } = options;
   const { selection } = tr;
   const type = getMarkType(typeOrName, state.schema);
@@ -5593,7 +9460,7 @@ var unsetMark = (typeOrName, options = {}) => ({ tr, state, dispatch }) => {
   }
   if (empty && extendEmptyMarkRange) {
     let { from, to } = selection;
-    const attrs = (_a = $from.marks().find((mark) => mark.type === type)) == null ? void 0 : _a.attrs;
+    const attrs = (_a4 = $from.marks().find((mark) => mark.type === type)) == null ? void 0 : _a4.attrs;
     const range = getMarkRange($from, type, attrs);
     if (range) {
       from = range.from;
@@ -5763,7 +9630,7 @@ var inputRuleMatcherHandler = (text, find) => {
   return result;
 };
 function run(config) {
-  var _a;
+  var _a4;
   const { editor, from, to, text, rules, plugin } = config;
   const { view } = editor;
   if (view.composing) {
@@ -5773,7 +9640,7 @@ function run(config) {
   if (
     // check for code node
     $from.parent.type.spec.code || // check for code mark
-    !!((_a = $from.nodeBefore || $from.nodeAfter) == null ? void 0 : _a.marks.find((mark) => mark.type.spec.code))
+    !!((_a4 = $from.nodeBefore || $from.nodeAfter) == null ? void 0 : _a4.marks.find((mark) => mark.type.spec.code))
   ) {
     return false;
   }
@@ -6064,8 +9931,8 @@ function run2(config) {
   });
   const handlers = [];
   state.doc.nodesBetween(from, to, (node, pos) => {
-    var _a, _b, _c, _d, _e;
-    if (((_b = (_a = node.type) == null ? void 0 : _a.spec) == null ? void 0 : _b.code) || !(node.isText || node.isTextblock || node.isInline)) {
+    var _a4, _b, _c, _d, _e;
+    if (((_b = (_a4 = node.type) == null ? void 0 : _a4.spec) == null ? void 0 : _b.code) || !(node.isText || node.isTextblock || node.isInline)) {
       return;
     }
     const contentSize = (_e = (_d = (_c = node.content) == null ? void 0 : _c.size) != null ? _d : node.nodeSize) != null ? _e : 0;
@@ -6104,11 +9971,11 @@ function run2(config) {
 }
 var tiptapDragFromOtherEditor = null;
 var createClipboardPasteEvent = (text) => {
-  var _a;
+  var _a4;
   const event = new ClipboardEvent("paste", {
     clipboardData: new DataTransfer()
   });
-  (_a = event.clipboardData) == null ? void 0 : _a.setData("text/html", text);
+  (_a4 = event.clipboardData) == null ? void 0 : _a4.setData("text/html", text);
   return event;
 };
 function pasteRulesPlugin(props) {
@@ -6160,8 +10027,8 @@ function pasteRulesPlugin(props) {
       // we register a global drag handler to track the current drag source element
       view(view) {
         const handleDragstart = (event) => {
-          var _a;
-          dragSourceElement = ((_a = view.dom.parentElement) == null ? void 0 : _a.contains(event.target)) ? view.dom.parentElement : null;
+          var _a4;
+          dragSourceElement = ((_a4 = view.dom.parentElement) == null ? void 0 : _a4.contains(event.target)) ? view.dom.parentElement : null;
           if (dragSourceElement) {
             tiptapDragFromOtherEditor = editor;
           }
@@ -6199,8 +10066,8 @@ function pasteRulesPlugin(props) {
             return false;
           },
           paste: (_view, event) => {
-            var _a;
-            const html = (_a = event.clipboardData) == null ? void 0 : _a.getData("text/html");
+            var _a4;
+            const html = (_a4 = event.clipboardData) == null ? void 0 : _a4.getData("text/html");
             pasteEvent = event;
             isPastedFromProseMirror = !!(html == null ? void 0 : html.includes("data-pm-slice"));
             return false;
@@ -6478,7 +10345,7 @@ var ExtensionManager = class {
       extensions.map((extension) => [extension.name, extension.storage])
     );
     extensions.forEach((extension) => {
-      var _a;
+      var _a4;
       const context = {
         name: extension.name,
         options: extension.options,
@@ -6487,7 +10354,7 @@ var ExtensionManager = class {
         type: getSchemaTypeByName(extension.name, this.schema)
       };
       if (extension.type === "mark") {
-        const keepOnSplit = (_a = callOrReturn(getExtensionField(extension, "keepOnSplit", context))) != null ? _a : true;
+        const keepOnSplit = (_a4 = callOrReturn(getExtensionField(extension, "keepOnSplit", context))) != null ? _a4 : true;
         if (keepOnSplit) {
           this.splittableMarks.push(extension.name);
         }
@@ -6535,7 +10402,7 @@ ExtensionManager.resolve = resolveExtensions;
 ExtensionManager.sort = sortExtensions;
 ExtensionManager.flatten = flattenExtensions;
 var extensions_exports = {};
-__export2(extensions_exports, {
+__export3(extensions_exports, {
   ClipboardTextSerializer: () => ClipboardTextSerializer,
   Commands: () => Commands,
   Delete: () => Delete,
@@ -6611,10 +10478,10 @@ var Commands = Extension.create({
 var Delete = Extension.create({
   name: "delete",
   onUpdate({ transaction, appendedTransactions }) {
-    var _a, _b, _c;
+    var _a4, _b, _c;
     const callback = () => {
-      var _a2, _b2, _c2, _d;
-      if ((_d = (_c2 = (_b2 = (_a2 = this.editor.options.coreExtensionOptions) == null ? void 0 : _a2.delete) == null ? void 0 : _b2.filterTransaction) == null ? void 0 : _c2.call(_b2, transaction)) != null ? _d : transaction.getMeta("y-sync$")) {
+      var _a22, _b2, _c2, _d;
+      if ((_d = (_c2 = (_b2 = (_a22 = this.editor.options.coreExtensionOptions) == null ? void 0 : _a22.delete) == null ? void 0 : _b2.filterTransaction) == null ? void 0 : _c2.call(_b2, transaction)) != null ? _d : transaction.getMeta("y-sync$")) {
         return;
       }
       const nextTransaction = combineTransactionSteps(transaction.before, [transaction, ...appendedTransactions]);
@@ -6643,13 +10510,13 @@ var Delete = Extension.create({
       });
       const mapping = nextTransaction.mapping;
       nextTransaction.steps.forEach((step, index) => {
-        var _a3, _b3;
+        var _a32, _b3;
         if (step instanceof import_transform9.RemoveMarkStep) {
           const newStart = mapping.slice(index).map(step.from, -1);
           const newEnd = mapping.slice(index).map(step.to);
           const oldStart = mapping.invert().map(newStart, -1);
           const oldEnd = mapping.invert().map(newEnd);
-          const foundBeforeMark = (_a3 = nextTransaction.doc.nodeAt(newStart - 1)) == null ? void 0 : _a3.marks.some((mark) => mark.eq(step.mark));
+          const foundBeforeMark = (_a32 = nextTransaction.doc.nodeAt(newStart - 1)) == null ? void 0 : _a32.marks.some((mark) => mark.eq(step.mark));
           const foundAfterMark = (_b3 = nextTransaction.doc.nodeAt(newEnd)) == null ? void 0 : _b3.marks.some((mark) => mark.eq(step.mark));
           this.editor.emit("delete", {
             type: "mark",
@@ -6672,7 +10539,7 @@ var Delete = Extension.create({
         }
       });
     };
-    if ((_c = (_b = (_a = this.editor.options.coreExtensionOptions) == null ? void 0 : _a.delete) == null ? void 0 : _b.async) != null ? _c : true) {
+    if ((_c = (_b = (_a4 = this.editor.options.coreExtensionOptions) == null ? void 0 : _a4.delete) == null ? void 0 : _b.async) != null ? _c : true) {
       setTimeout(callback, 0);
     } else {
       callback();
@@ -6942,7 +10809,7 @@ var TextDirection = Extension.create({
   }
 });
 var markdown_exports = {};
-__export2(markdown_exports, {
+__export3(markdown_exports, {
   createAtomBlockMarkdownSpec: () => createAtomBlockMarkdownSpec,
   createBlockMarkdownSpec: () => createBlockMarkdownSpec,
   createInlineMarkdownSpec: () => createInlineMarkdownSpec,
@@ -6973,8 +10840,8 @@ function parseAttributes(attrString) {
   const kvRegex = /([a-zA-Z][\w-]*)\s*=\s*(__QUOTED_\d+__)/g;
   const kvMatches = Array.from(tempString.matchAll(kvRegex));
   kvMatches.forEach(([, key, quotedRef]) => {
-    var _a;
-    const quotedIndex = parseInt(((_a = quotedRef.match(/__QUOTED_(\d+)__/)) == null ? void 0 : _a[1]) || "0", 10);
+    var _a4;
+    const quotedIndex = parseInt(((_a4 = quotedRef.match(/__QUOTED_(\d+)__/)) == null ? void 0 : _a4[1]) || "0", 10);
     const quotedValue = quotedStrings[quotedIndex];
     if (quotedValue) {
       attributes[key] = quotedValue.slice(1, -1);
@@ -7047,9 +10914,9 @@ function createAtomBlockMarkdownSpec(options) {
       name: nodeName,
       level: "block",
       start(src) {
-        var _a;
+        var _a4;
         const regex = new RegExp(`^:::${blockName}(?:\\s|$)`, "m");
-        const index = (_a = src.match(regex)) == null ? void 0 : _a.index;
+        const index = (_a4 = src.match(regex)) == null ? void 0 : _a4.index;
         return index !== void 0 ? index : -1;
       },
       tokenize(src, _tokens, _lexer) {
@@ -7121,13 +10988,13 @@ function createBlockMarkdownSpec(options) {
       name: nodeName,
       level: "block",
       start(src) {
-        var _a;
+        var _a4;
         const regex = new RegExp(`^:::${blockName}`, "m");
-        const index = (_a = src.match(regex)) == null ? void 0 : _a.index;
+        const index = (_a4 = src.match(regex)) == null ? void 0 : _a4.index;
         return index !== void 0 ? index : -1;
       },
       tokenize(src, _tokens, lexer) {
-        var _a;
+        var _a4;
         const openingRegex = new RegExp(`^:::${blockName}(?:\\s+\\{([^}]*)\\})?\\s*\\n`);
         const openingMatch = src.match(openingRegex);
         if (!openingMatch) {
@@ -7148,7 +11015,7 @@ function createBlockMarkdownSpec(options) {
           }
           const matchPos = match.index;
           const blockType = match[1];
-          if ((_a = match[2]) == null ? void 0 : _a.endsWith(":::")) {
+          if ((_a4 = match[2]) == null ? void 0 : _a4.endsWith(":::")) {
             continue;
           }
           if (blockType) {
@@ -7318,7 +11185,7 @@ function createInlineMarkdownSpec(options) {
   };
 }
 function parseIndentedBlocks(src, config, lexer) {
-  var _a, _b, _c, _d;
+  var _a4, _b, _c, _d;
   const lines = src.split("\n");
   const items = [];
   let totalRaw = "";
@@ -7353,7 +11220,7 @@ function parseIndentedBlocks(src, config, lexer) {
           break;
         }
         const nextNonEmpty = lines[i + 1 + nextNonEmptyIndex];
-        const nextIndent2 = ((_b = (_a = nextNonEmpty.match(/^(\s*)/)) == null ? void 0 : _a[1]) == null ? void 0 : _b.length) || 0;
+        const nextIndent2 = ((_b = (_a4 = nextNonEmpty.match(/^(\s*)/)) == null ? void 0 : _a4[1]) == null ? void 0 : _b.length) || 0;
         if (nextIndent2 > indentLevel) {
           itemContent.push(nextLine);
           totalRaw = `${totalRaw}${nextLine}
@@ -7622,6 +11489,7 @@ function scrollToComment(editor, commentId) {
   createAutoblogger,
   createCommentsClient,
   createCrudData,
+  createDestinationDispatcher,
   fetchRssFeeds,
   filterByKeywords,
   formatDate,

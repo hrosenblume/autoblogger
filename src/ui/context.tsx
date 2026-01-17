@@ -77,6 +77,7 @@ export interface DashboardContextValue {
   sharedDataLoading: boolean
   refetchSharedData: () => Promise<void>
   updateSharedPost: (post: { id: string; [key: string]: unknown }) => void
+  removeSharedPost: (postId: string) => void
   // Editor state callback (for parent app integration)
   onEditorStateChange?: (state: EditorState | null) => void
   // Edit handler registration (for AI agent mode)
@@ -257,6 +258,14 @@ export function DashboardProvider({
     })
   }, [])
 
+  // Remove a post from shared data (for deletions)
+  const removeSharedPost = useCallback((postId: string) => {
+    setSharedData(prev => {
+      if (!prev) return prev
+      return { ...prev, posts: prev.posts.filter((p: any) => p.id !== postId) }
+    })
+  }, [])
+
   // Wrap onEditorStateChange to track editor state for navigation warnings
   const handleEditorStateChange = useCallback((state: EditorState | null) => {
     editorStateRef.current = state
@@ -288,6 +297,7 @@ export function DashboardProvider({
     sharedDataLoading,
     refetchSharedData: fetchSharedData,
     updateSharedPost,
+    removeSharedPost,
     onEditorStateChange: handleEditorStateChange,
     onRegisterEditHandler,
   }), [
@@ -305,6 +315,7 @@ export function DashboardProvider({
     sharedDataLoading,
     fetchSharedData,
     updateSharedPost,
+    removeSharedPost,
     handleEditorStateChange,
     onRegisterEditHandler,
   ])

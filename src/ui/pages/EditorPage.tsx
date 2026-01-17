@@ -150,6 +150,10 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   const [revisionsLoading, setRevisionsLoading] = useState(false)
   const [previewingRevision, setPreviewingRevision] = useState<Revision | null>(null)
   const [originalPost, setOriginalPost] = useState<Post | null>(null)
+  
+  // Track original slug for redirect warning (when editing slug of previously-published post)
+  const [originalSlug, setOriginalSlug] = useState<string | null>(null)
+  const [wasPublished, setWasPublished] = useState(false)
 
   // Helper to stringify with sorted keys (JSON.stringify is key-order sensitive)
   const stableStringify = useCallback((obj: Record<string, unknown>) => 
@@ -251,9 +255,12 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...post,
           title: post.title || 'Untitled',
+          subtitle: post.subtitle || null,
+          slug: post.slug || undefined, // API auto-generates from title if empty
+          markdown: post.markdown,
           status: 'published',
+          tagIds: post.tags?.map(t => t.id),
           ...Object.fromEntries(fields.map(f => [f.name, post[f.name]]))
         }),
       })
@@ -261,7 +268,12 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       if (res.ok) {
         const data = await res.json()
         if (data.data) {
+          // Update local state with new post data (including generated slug and id)
+          setPost(prev => ({ ...prev, ...data.data }))
           updateSharedPost(data.data)
+          // Track saved content to clear unsaved changes state
+          const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = { ...post, ...data.data }
+          savedContent.current = stableStringify(contentFields)
         }
         toast.success('Post published successfully!')
         navigate('/', { skipConfirmation: true })
@@ -275,7 +287,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       setSaving(false)
       setSavingAs(null)
     }
-  }, [post, apiBasePath, fields, navigate, updateSharedPost])
+  }, [post, apiBasePath, fields, navigate, updateSharedPost, stableStringify])
 
   // Comments hook - handles all comment logic
   const comments = useComments({
@@ -345,6 +357,9 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
             if (found.updatedAt) {
               setLastSaved(new Date(found.updatedAt))
             }
+            // Track original slug and publication status for redirect warning
+            setOriginalSlug(found.slug)
+            setWasPublished(!!found.publishedAt)
           }
           setLoading(false)
         })
@@ -1036,7 +1051,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       )}
 
       {/* Editor Content - pt-[41px] accounts for fixed toolbar height when visible */}
-      <main className={`flex-1 overflow-auto pb-20 overscroll-contain ${!previewingRevision ? 'pt-[41px]' : ''}`}>
+      <main className={`flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y ${!previewingRevision ? 'pt-[41px]' : ''}`}>
         <article className={`${styles.container} pt-12 pb-24 mx-auto`}>
           {/* Header - Title & Subtitle */}
           <header className="space-y-2 mb-8">
@@ -1141,6 +1156,19 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                   )}
                 </div>
               </div>
+              
+              {/* Slug change warning for previously-published posts */}
+              {wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && (
+                <div className="flex items-start gap-2 p-3 rounded-md bg-amber-50 ab-dark:bg-amber-950/30 border border-amber-200 ab-dark:border-amber-800 text-sm">
+                  <svg className="w-4 h-4 text-amber-600 ab-dark:text-amber-400 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <div className="text-amber-800 ab-dark:text-amber-200">
+                    <span className="font-medium">URL change detected.</span>
+                    {' '}Existing links to <code className="px-1 py-0.5 bg-amber-100 ab-dark:bg-amber-900/50 rounded text-xs">{urlPrefix}{originalSlug}</code> will automatically redirect to the new URL when you publish.
+                  </div>
+                </div>
+              )}
 
               {/* Custom Fields (footer position) */}
               {fields.filter(f => f.position === 'footer').map(field => {

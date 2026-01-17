@@ -147,6 +147,16 @@ model IntegrationSettings {
   id               String   @id @default("default")
   autoDraftEnabled Boolean  @default(false)
   postUrlPattern   String   @default("/e/{slug}") // Pattern for post URLs, use {slug} placeholder
+  
+  // Prismic Integration
+  prismicEnabled      Boolean  @default(false)
+  prismicRepository   String?
+  prismicWriteToken   String?
+  prismicDocumentType String   @default("autoblog")
+  prismicSyncMode     String   @default("stub")  // "stub" or "full"
+  prismicLocale       String   @default("en-us")
+  prismicAutoRename   Boolean  @default(false) // Auto-update Prismic document name from title on publish
+  
   updatedAt        DateTime @updatedAt
   // Host app can add additional fields like:
   // googleAnalyticsId String?

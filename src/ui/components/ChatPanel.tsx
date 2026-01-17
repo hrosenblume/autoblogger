@@ -310,10 +310,10 @@ export function ChatPanel({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground"
+            className="w-9 h-9 md:w-8 md:h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground"
             aria-label="Close chat"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5 md:w-4 md:h-4" />
           </button>
         </div>
 
@@ -509,7 +509,7 @@ export function ChatPanel({
                       ? "Ask about your essay..." 
                       : "Ask anything..."
               }
-              className="flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none"
+              className="flex-1 min-h-[44px] max-h-[120px] resize-none px-3 py-2.5 border border-input rounded-md bg-transparent text-base focus:outline-none"
               rows={1}
               autoFocus
             />
@@ -517,12 +517,12 @@ export function ChatPanel({
               type={isStreaming ? 'button' : 'submit'}
               onClick={isStreaming ? stopStreaming : undefined}
               disabled={!isStreaming && !input.trim()}
-              className="rounded-full w-10 h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation"
+              className="rounded-full w-11 h-11 md:w-10 md:h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation"
             >
               {isStreaming ? (
-                <Square className="h-4 w-4 fill-current" />
+                <Square className="h-5 w-5 md:h-4 md:w-4 fill-current" />
               ) : (
-                <ArrowUp className="h-5 w-5" />
+                <ArrowUp className="h-6 w-6 md:h-5 md:w-5" />
               )}
             </button>
           </div>

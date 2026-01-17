@@ -9,6 +9,7 @@ import { createNewsItemsData } from './data/news-items'
 import { createUsersData } from './data/users'
 import { createAPIHandler } from './api'
 import { runAutoDraft as runAutoDraftInternal, type AutoDraftConfig } from './auto-draft'
+import { createDestinationDispatcher } from './destinations'
 import type { AutobloggerServerConfig, StylesConfig } from './types/config'
 import { DEFAULT_STYLES } from './types/config'
 
@@ -44,13 +45,22 @@ export function createAutoblogger(config: AutobloggerServerConfig): AutobloggerS
     ...config.styles,
   }
 
+  // Create destination dispatcher
+  const dispatcher = createDestinationDispatcher({
+    destinations: config.destinations,
+    webhooks: config.webhooks,
+    onPublish: config.onPublish,
+    onUnpublish: config.onUnpublish,
+    onDelete: config.onDelete,
+  })
+
   // Create the base server object first (without handleRequest)
   const baseServer = {
     config: {
       ...config,
       styles: mergedStyles,
     },
-    posts: createPostsData(prisma, config.hooks),
+    posts: createPostsData(prisma, config.hooks, dispatcher, config.prismic?.writeToken),
     comments: createCommentsData(prisma, config.comments),
     tags: createTagsData(prisma),
     revisions: createRevisionsData(prisma),

@@ -140,6 +140,12 @@ function DashboardProvider({
       return { ...prev, posts: updatedPosts };
     });
   }, []);
+  const removeSharedPost = useCallback((postId) => {
+    setSharedData((prev) => {
+      if (!prev) return prev;
+      return { ...prev, posts: prev.posts.filter((p) => p.id !== postId) };
+    });
+  }, []);
   const handleEditorStateChange = useCallback((state) => {
     editorStateRef.current = state;
     onEditorStateChange?.(state);
@@ -167,6 +173,7 @@ function DashboardProvider({
     sharedDataLoading,
     refetchSharedData: fetchSharedData,
     updateSharedPost,
+    removeSharedPost,
     onEditorStateChange: handleEditorStateChange,
     onRegisterEditHandler
   }), [
@@ -184,6 +191,7 @@ function DashboardProvider({
     sharedDataLoading,
     fetchSharedData,
     updateSharedPost,
+    removeSharedPost,
     handleEditorStateChange,
     onRegisterEditHandler
   ]);
@@ -327,7 +335,7 @@ function countWords(text) {
 // src/ui/pages/WriterDashboard.tsx
 import { jsx as jsx5, jsxs as jsxs2 } from "react/jsx-runtime";
 function WriterDashboard() {
-  const { apiBasePath, navigate, sharedData, sharedDataLoading } = useDashboardContext();
+  const { apiBasePath, navigate, sharedData, sharedDataLoading, removeSharedPost } = useDashboardContext();
   const [posts, setPosts] = useState3(() => sharedData?.posts || []);
   const [loading, setLoading] = useState3(() => !sharedData && sharedDataLoading);
   const [searchQuery, setSearchQuery] = useState3("");
@@ -380,6 +388,7 @@ function WriterDashboard() {
     if (!confirm("Delete this post?")) return;
     await fetch(`${apiBasePath}/posts/${id}`, { method: "DELETE" });
     setPosts(posts.filter((p) => p.id !== id));
+    removeSharedPost(id);
   }
   async function handlePublish(id) {
     await fetch(`${apiBasePath}/posts/${id}`, {
@@ -735,9 +744,10 @@ function ToolbarButton({ onClick, active, disabled, children, title }) {
       onClick,
       disabled,
       title,
+      tabIndex: -1,
       className: cn(
-        "px-2.5 py-1.5 text-sm font-medium rounded transition-colors shrink-0",
-        "flex items-center justify-center",
+        "px-3 py-2 md:px-2.5 md:py-1.5 text-base md:text-sm font-medium rounded transition-colors shrink-0",
+        "flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0",
         "active:bg-accent md:hover:bg-accent",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         active && "bg-accent text-accent-foreground",
@@ -1625,7 +1635,7 @@ function EditorToolbar({
   apiBasePath = "/api/cms"
 }) {
   if (loading) {
-    return /* @__PURE__ */ jsxs9("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
+    return /* @__PURE__ */ jsxs9("div", { className: "fixed top-[68px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
       /* @__PURE__ */ jsx15(FormatButtons, { loading: true }),
       /* @__PURE__ */ jsx15(Divider, {}),
       /* @__PURE__ */ jsx15(BlockButtons, { loading: true }),
@@ -1638,7 +1648,7 @@ function EditorToolbar({
       /* @__PURE__ */ jsx15(SkeletonButton, {})
     ] });
   }
-  return /* @__PURE__ */ jsxs9("div", { className: "fixed top-[69px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
+  return /* @__PURE__ */ jsxs9("div", { className: "fixed top-[68px] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
     /* @__PURE__ */ jsx15(
       FormatButtons,
       {
@@ -8150,6 +8160,19 @@ function TiptapEditor({
     editorProps: {
       attributes: {
         class: `${proseClasses} min-h-[500px] outline-none`
+      },
+      // Handle Tab key for list indentation
+      handleKeyDown: (view, event) => {
+        if (event.key === "Tab") {
+          const { state, dispatch } = view;
+          const { $from } = state.selection;
+          const listItem = $from.node(-1);
+          if (listItem && listItem.type.name === "listItem") {
+            event.preventDefault();
+            return false;
+          }
+        }
+        return false;
       }
     }
   });
@@ -9506,6 +9529,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   const [revisionsLoading, setRevisionsLoading] = useState15(false);
   const [previewingRevision, setPreviewingRevision] = useState15(null);
   const [originalPost, setOriginalPost] = useState15(null);
+  const [originalSlug, setOriginalSlug] = useState15(null);
+  const [wasPublished, setWasPublished] = useState15(false);
   const stableStringify = useCallback10((obj) => JSON.stringify(obj, Object.keys(obj).sort()), []);
   const hasUnsavedChanges = useMemo5(() => {
     if (previewingRevision) return false;
@@ -9580,16 +9605,23 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...post,
           title: post.title || "Untitled",
+          subtitle: post.subtitle || null,
+          slug: post.slug || void 0,
+          // API auto-generates from title if empty
+          markdown: post.markdown,
           status: "published",
+          tagIds: post.tags?.map((t) => t.id),
           ...Object.fromEntries(fields.map((f) => [f.name, post[f.name]]))
         })
       });
       if (res.ok) {
         const data = await res.json();
         if (data.data) {
+          setPost((prev) => ({ ...prev, ...data.data }));
           updateSharedPost(data.data);
+          const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = { ...post, ...data.data };
+          savedContent.current = stableStringify(contentFields);
         }
         toast.success("Post published successfully!");
         navigate("/", { skipConfirmation: true });
@@ -9603,7 +9635,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
       setSaving(false);
       setSavingAs(null);
     }
-  }, [post, apiBasePath, fields, navigate, updateSharedPost]);
+  }, [post, apiBasePath, fields, navigate, updateSharedPost, stableStringify]);
   const comments = useComments({
     postId: post.id || null,
     editor,
@@ -9648,6 +9680,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           if (found.updatedAt) {
             setLastSaved(new Date(found.updatedAt));
           }
+          setOriginalSlug(found.slug);
+          setWasPublished(!!found.publishedAt);
         }
         setLoading(false);
       }).catch(() => setLoading(false));
@@ -10218,7 +10252,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         onViewComments: () => setCommentsOpen(true)
       }
     ),
-    /* @__PURE__ */ jsx22("main", { className: `flex-1 overflow-auto pb-20 overscroll-contain ${!previewingRevision ? "pt-[41px]" : ""}`, children: /* @__PURE__ */ jsxs14("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+    /* @__PURE__ */ jsx22("main", { className: `flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y ${!previewingRevision ? "pt-[41px]" : ""}`, children: /* @__PURE__ */ jsxs14("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
       /* @__PURE__ */ jsxs14("header", { className: "space-y-2 mb-8", children: [
         generating && !post.title ? /* @__PURE__ */ jsx22(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ jsx22(
           AutoResizeTextarea,
@@ -10302,6 +10336,19 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             }
           )
         ] }) }),
+        wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && /* @__PURE__ */ jsxs14("div", { className: "flex items-start gap-2 p-3 rounded-md bg-amber-50 ab-dark:bg-amber-950/30 border border-amber-200 ab-dark:border-amber-800 text-sm", children: [
+          /* @__PURE__ */ jsx22("svg", { className: "w-4 h-4 text-amber-600 ab-dark:text-amber-400 mt-0.5 flex-shrink-0", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx22("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" }) }),
+          /* @__PURE__ */ jsxs14("div", { className: "text-amber-800 ab-dark:text-amber-200", children: [
+            /* @__PURE__ */ jsx22("span", { className: "font-medium", children: "URL change detected." }),
+            " ",
+            "Existing links to ",
+            /* @__PURE__ */ jsxs14("code", { className: "px-1 py-0.5 bg-amber-100 ab-dark:bg-amber-900/50 rounded text-xs", children: [
+              urlPrefix,
+              originalSlug
+            ] }),
+            " will automatically redirect to the new URL when you publish."
+          ] })
+        ] }),
         fields.filter((f) => f.position === "footer").map((field) => {
           const handleFieldChange = (name, value) => {
             setPost((prev) => ({ ...prev, [name]: value }));
@@ -10441,6 +10488,7 @@ function SettingsPage({ subPath }) {
     { path: "/settings/posts", label: "All Posts", description: "Manage all posts", countKey: "posts" },
     { path: "/settings/tags", label: "Tags", description: "Organize posts with tags", countKey: "tags" },
     { path: "/settings/ai", label: "AI Settings", description: "Configure AI models and rules" },
+    { path: "/settings/integrations", label: "CMS Integrations", description: "Connect to external CMS systems" },
     { path: "/settings/revisions", label: "Revisions", description: "View revision history" },
     { path: "/settings/comments", label: "Comments", description: "Manage post comments" },
     { path: "/settings/topics", label: "Topics", description: "RSS subscriptions for auto-draft", countKey: "topics" },
@@ -10481,6 +10529,7 @@ function SettingsPage({ subPath }) {
     pageName === "ai" && /* @__PURE__ */ jsx23(AISettingsContent, {}),
     pageName === "tags" && /* @__PURE__ */ jsx23(TagsSettingsContent, {}),
     pageName === "topics" && /* @__PURE__ */ jsx23(TopicsSettingsContent, {}),
+    pageName === "integrations" && /* @__PURE__ */ jsx23(IntegrationsSettingsContent, {}),
     pageName === "posts" && /* @__PURE__ */ jsx23(PostsSettingsContent, {}),
     pageName === "revisions" && /* @__PURE__ */ jsx23(RevisionsSettingsContent, {}),
     revisionDetailMatch && /* @__PURE__ */ jsx23(RevisionDetailContent, { revisionId: revisionDetailMatch[1] }),
@@ -10827,6 +10876,229 @@ function GeneralSettingsContent() {
         ] })
       ] })
     ] }) }),
+    /* @__PURE__ */ jsxs15("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ jsxs15(
+        "button",
+        {
+          onClick: handleSave,
+          disabled: saving,
+          className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
+          children: [
+            saving && /* @__PURE__ */ jsx23(Loader24, { className: "mr-2 h-4 w-4 animate-spin" }),
+            saving ? "Saving..." : "Save"
+          ]
+        }
+      ),
+      saved && /* @__PURE__ */ jsx23("span", { className: "text-sm text-green-600 ab-dark:text-green-400", children: "Saved!" })
+    ] })
+  ] });
+}
+function IntegrationsSettingsContent() {
+  const { apiBasePath, refetchSharedData } = useDashboardContext();
+  const [prismicEnabled, setPrismicEnabled] = useState16(false);
+  const [prismicRepository, setPrismicRepository] = useState16("");
+  const [prismicWriteToken, setPrismicWriteToken] = useState16("");
+  const [prismicDocumentType, setPrismicDocumentType] = useState16("autoblog");
+  const [prismicSyncMode, setPrismicSyncMode] = useState16("stub");
+  const [prismicLocale, setPrismicLocale] = useState16("en-us");
+  const [prismicAutoRename, setPrismicAutoRename] = useState16(false);
+  const [hasWriteToken, setHasWriteToken] = useState16(false);
+  const [hasEnvToken, setHasEnvToken] = useState16(false);
+  const [configRepository, setConfigRepository] = useState16(null);
+  const [loading, setLoading] = useState16(true);
+  const [saving, setSaving] = useState16(false);
+  const [saved, setSaved] = useState16(false);
+  const [error, setError] = useState16("");
+  useEffect14(() => {
+    fetch(`${apiBasePath}/settings/integrations`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
+      const data = res.data?.prismic || {};
+      setPrismicEnabled(data.enabled ?? false);
+      setPrismicRepository(data.repository || data.configRepository || "");
+      setConfigRepository(data.configRepository ?? null);
+      setPrismicWriteToken(data.writeToken ?? "");
+      setPrismicDocumentType(data.documentType ?? "autoblog");
+      setPrismicSyncMode(data.syncMode ?? "stub");
+      setPrismicLocale(data.locale ?? "en-us");
+      setPrismicAutoRename(data.autoRename ?? false);
+      setHasWriteToken(data.hasWriteToken ?? false);
+      setHasEnvToken(data.hasEnvToken ?? false);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [apiBasePath]);
+  async function handleSave() {
+    setSaving(true);
+    setSaved(false);
+    setError("");
+    const res = await fetch(`${apiBasePath}/settings/integrations`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prismicEnabled,
+        prismicRepository,
+        prismicWriteToken,
+        prismicDocumentType,
+        prismicSyncMode,
+        prismicLocale,
+        prismicAutoRename
+      })
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error || "Failed to save");
+      setSaving(false);
+      return;
+    }
+    setSaving(false);
+    setSaved(true);
+    await refetchSharedData();
+    setTimeout(() => setSaved(false), 2e3);
+  }
+  if (loading) {
+    return /* @__PURE__ */ jsxs15("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsx23(Skeleton, { className: "h-7 w-32" }),
+      /* @__PURE__ */ jsxs15("div", { className: "rounded-lg border bg-card p-6 space-y-4", children: [
+        /* @__PURE__ */ jsx23(Skeleton, { className: "h-5 w-24" }),
+        /* @__PURE__ */ jsx23(Skeleton, { className: "h-10 w-full" }),
+        /* @__PURE__ */ jsx23(Skeleton, { className: "h-10 w-full" })
+      ] })
+    ] });
+  }
+  return /* @__PURE__ */ jsxs15("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxs15("div", { children: [
+      /* @__PURE__ */ jsx23("h2", { className: "text-lg font-semibold", children: "CMS Integrations" }),
+      /* @__PURE__ */ jsx23("p", { className: "text-sm text-muted-foreground", children: "Connect autoblogger to external CMS systems." })
+    ] }),
+    /* @__PURE__ */ jsx23("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs15("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ jsxs15("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxs15("div", { children: [
+          /* @__PURE__ */ jsx23("h3", { className: "text-base font-medium", children: "Prismic" }),
+          /* @__PURE__ */ jsx23("p", { className: "text-sm text-muted-foreground", children: "Sync posts to Prismic as stub documents." })
+        ] }),
+        /* @__PURE__ */ jsx23(
+          "button",
+          {
+            onClick: () => setPrismicEnabled(!prismicEnabled),
+            className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicEnabled ? "bg-primary" : "bg-muted"}`,
+            children: /* @__PURE__ */ jsx23(
+              "span",
+              {
+                className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${prismicEnabled ? "translate-x-6" : "translate-x-1"}`
+              }
+            )
+          }
+        )
+      ] }),
+      prismicEnabled && /* @__PURE__ */ jsxs15("div", { className: "space-y-4 pt-4 border-t border-border", children: [
+        /* @__PURE__ */ jsxs15("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsxs15("label", { htmlFor: "prismicRepository", className: "text-sm font-medium leading-none", children: [
+            "Repository Name",
+            configRepository && prismicRepository === configRepository && /* @__PURE__ */ jsx23("span", { className: "ml-2 text-xs font-normal text-green-600 ab-dark:text-green-400", children: "\u2713 From config" })
+          ] }),
+          /* @__PURE__ */ jsx23(
+            "input",
+            {
+              id: "prismicRepository",
+              type: "text",
+              value: prismicRepository,
+              onChange: (e) => setPrismicRepository(e.target.value),
+              placeholder: configRepository || "my-repo",
+              className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            }
+          ),
+          /* @__PURE__ */ jsx23("p", { className: "text-sm text-muted-foreground", children: configRepository ? `Detected from your Prismic config. Change if needed.` : /* @__PURE__ */ jsxs15(Fragment9, { children: [
+            "Your Prismic repository name (e.g., ",
+            /* @__PURE__ */ jsx23("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "ordo-playground" }),
+            ")"
+          ] }) })
+        ] }),
+        /* @__PURE__ */ jsxs15("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsxs15("label", { htmlFor: "prismicWriteToken", className: "text-sm font-medium leading-none", children: [
+            "Write API Token",
+            hasEnvToken && /* @__PURE__ */ jsx23("span", { className: "ml-2 text-xs font-normal text-green-600 ab-dark:text-green-400", children: "\u2713 Using PRISMIC_WRITE_TOKEN from env" })
+          ] }),
+          /* @__PURE__ */ jsx23(
+            "input",
+            {
+              id: "prismicWriteToken",
+              type: "password",
+              value: prismicWriteToken,
+              onChange: (e) => setPrismicWriteToken(e.target.value),
+              placeholder: hasEnvToken ? "Using env var (optional override)" : hasWriteToken ? "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" : "Enter token",
+              className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            }
+          ),
+          /* @__PURE__ */ jsx23("p", { className: "text-sm text-muted-foreground", children: hasEnvToken ? "Token detected from PRISMIC_WRITE_TOKEN environment variable. Leave blank to use it, or enter a different token to override." : "From Prismic Settings > API & Security > Repository Security" })
+        ] }),
+        /* @__PURE__ */ jsxs15("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx23("label", { htmlFor: "prismicDocumentType", className: "text-sm font-medium leading-none", children: "Document Type" }),
+          /* @__PURE__ */ jsx23(
+            "input",
+            {
+              id: "prismicDocumentType",
+              type: "text",
+              value: prismicDocumentType,
+              onChange: (e) => setPrismicDocumentType(e.target.value),
+              placeholder: "autoblog",
+              className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            }
+          ),
+          /* @__PURE__ */ jsx23("p", { className: "text-sm text-muted-foreground", children: "The Prismic custom type to create for synced posts." })
+        ] }),
+        /* @__PURE__ */ jsxs15("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx23("label", { htmlFor: "prismicSyncMode", className: "text-sm font-medium leading-none", children: "Sync Mode" }),
+          /* @__PURE__ */ jsxs15(
+            "select",
+            {
+              id: "prismicSyncMode",
+              value: prismicSyncMode,
+              onChange: (e) => setPrismicSyncMode(e.target.value),
+              className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              children: [
+                /* @__PURE__ */ jsx23("option", { value: "stub", children: "Stub (minimal reference data)" }),
+                /* @__PURE__ */ jsx23("option", { value: "full", children: "Full (sync all content)" })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsx23("p", { className: "text-sm text-muted-foreground", children: "Stub mode creates minimal documents; content is fetched from autoblogger at render time." })
+        ] }),
+        /* @__PURE__ */ jsxs15("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx23("label", { htmlFor: "prismicLocale", className: "text-sm font-medium leading-none", children: "Locale" }),
+          /* @__PURE__ */ jsx23(
+            "input",
+            {
+              id: "prismicLocale",
+              type: "text",
+              value: prismicLocale,
+              onChange: (e) => setPrismicLocale(e.target.value),
+              placeholder: "en-us",
+              className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            }
+          ),
+          /* @__PURE__ */ jsx23("p", { className: "text-sm text-muted-foreground", children: "The master locale for your Prismic repository." })
+        ] }),
+        /* @__PURE__ */ jsxs15("div", { className: "flex items-center justify-between pt-2", children: [
+          /* @__PURE__ */ jsxs15("div", { children: [
+            /* @__PURE__ */ jsx23("label", { htmlFor: "prismicAutoRename", className: "text-sm font-medium leading-none", children: "Auto-update Document Name" }),
+            /* @__PURE__ */ jsx23("p", { className: "text-sm text-muted-foreground mt-1", children: "Automatically update the Prismic document display name from the post title when publishing." })
+          ] }),
+          /* @__PURE__ */ jsx23(
+            "button",
+            {
+              id: "prismicAutoRename",
+              onClick: () => setPrismicAutoRename(!prismicAutoRename),
+              className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicAutoRename ? "bg-primary" : "bg-muted"}`,
+              children: /* @__PURE__ */ jsx23(
+                "span",
+                {
+                  className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${prismicAutoRename ? "translate-x-6" : "translate-x-1"}`
+                }
+              )
+            }
+          )
+        ] })
+      ] })
+    ] }) }),
+    error && /* @__PURE__ */ jsx23("div", { className: "rounded-md bg-destructive/15 p-3 text-sm text-destructive", children: error }),
     /* @__PURE__ */ jsxs15("div", { className: "flex items-center gap-3", children: [
       /* @__PURE__ */ jsxs15(
         "button",
@@ -12496,7 +12768,7 @@ function Navbar({
     "button",
     {
       type: "button",
-      className: "relative w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground active:ring-2 md:hover:ring-2 active:ring-ring md:hover:ring-ring transition-shadow",
+      className: "relative w-10 h-10 md:w-9 md:h-9 rounded-full bg-secondary flex items-center justify-center text-base md:text-sm font-medium text-secondary-foreground active:ring-2 md:hover:ring-2 active:ring-ring md:hover:ring-ring transition-shadow",
       children: [
         session?.user?.email?.charAt(0).toUpperCase() || "?",
         /* @__PURE__ */ jsx26("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
@@ -12512,7 +12784,7 @@ function Navbar({
       {
         type: "button",
         onClick: handleBack,
-        className: "h-9 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-sm font-medium rounded-md active:bg-accent md:hover:bg-accent active:text-accent-foreground md:hover:text-accent-foreground touch-manipulation",
+        className: "h-10 md:h-9 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-base md:text-sm font-medium rounded-md active:bg-accent md:hover:bg-accent active:text-accent-foreground md:hover:text-accent-foreground touch-manipulation",
         children: [
           /* @__PURE__ */ jsx26(ChevronLeftIcon, {}),
           /* @__PURE__ */ jsx26("span", { className: "hidden sm:inline", children: "Back" })
@@ -12547,10 +12819,10 @@ function ChatButton() {
     {
       type: "button",
       onClick: () => setIsOpen(!isOpen),
-      className: `w-9 h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent flex items-center justify-center transition-colors ${isOpen ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`,
+      className: `w-10 h-10 md:w-9 md:h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent flex items-center justify-center transition-colors ${isOpen ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`,
       "aria-label": "Toggle chat",
       title: "Chat (\u2318\u21E7A)",
-      children: /* @__PURE__ */ jsx27(ChatIcon, {})
+      children: /* @__PURE__ */ jsx27(ChatIcon, { className: "w-5 h-5 md:w-4 md:h-4" })
     }
   );
 }
@@ -12777,9 +13049,9 @@ function ChatPanel({
               "button",
               {
                 onClick: onClose,
-                className: "w-8 h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
+                className: "w-9 h-9 md:w-8 md:h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
                 "aria-label": "Close chat",
-                children: /* @__PURE__ */ jsx28(X4, { className: "w-4 h-4" })
+                children: /* @__PURE__ */ jsx28(X4, { className: "w-5 h-5 md:w-4 md:h-4" })
               }
             )
           ] }),
@@ -12972,7 +13244,7 @@ function ChatPanel({
                       onChange: (e) => setInput(e.target.value),
                       onKeyDown: handleKeyDown,
                       placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
-                      className: "flex-1 min-h-[40px] max-h-[120px] resize-none px-3 py-2 border border-input rounded-md bg-transparent text-sm focus:outline-none",
+                      className: "flex-1 min-h-[44px] max-h-[120px] resize-none px-3 py-2.5 border border-input rounded-md bg-transparent text-base focus:outline-none",
                       rows: 1,
                       autoFocus: true
                     }
@@ -12983,8 +13255,8 @@ function ChatPanel({
                       type: isStreaming ? "button" : "submit",
                       onClick: isStreaming ? stopStreaming : void 0,
                       disabled: !isStreaming && !input.trim(),
-                      className: "rounded-full w-10 h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
-                      children: isStreaming ? /* @__PURE__ */ jsx28(Square, { className: "h-4 w-4 fill-current" }) : /* @__PURE__ */ jsx28(ArrowUp3, { className: "h-5 w-5" })
+                      className: "rounded-full w-11 h-11 md:w-10 md:h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
+                      children: isStreaming ? /* @__PURE__ */ jsx28(Square, { className: "h-5 w-5 md:h-4 md:w-4 fill-current" }) : /* @__PURE__ */ jsx28(ArrowUp3, { className: "h-6 w-6 md:h-5 md:w-5" })
                     }
                   )
                 ] })

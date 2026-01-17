@@ -47,9 +47,126 @@ interface AutoDraftConfig {
  */
 declare function runAutoDraft(config: AutoDraftConfig, topicId?: string, skipFrequencyCheck?: boolean): Promise<GenerationResult[]>;
 
+/**
+ * Result returned by a destination after handling an event
+ */
+interface DestinationResult {
+    /** Whether the operation succeeded */
+    success: boolean;
+    /** External ID assigned by the destination (e.g., Prismic document ID) */
+    externalId?: string;
+    /** Error message if the operation failed */
+    error?: string;
+}
+/**
+ * A destination adapter that syncs posts to an external CMS or service.
+ *
+ * Implement this interface to create custom adapters for Prismic, Contentful,
+ * Sanity, or any other service.
+ */
+interface Destination {
+    /** Unique name for this destination (for logging/debugging) */
+    name: string;
+    /**
+     * Called when a post is published.
+     * Should create or update the post in the external service.
+     */
+    onPublish(post: Post): Promise<DestinationResult>;
+    /**
+     * Called when a post is unpublished (status changed from 'published' to 'draft').
+     * Should archive or unpublish the post in the external service.
+     */
+    onUnpublish(post: Post): Promise<DestinationResult>;
+    /**
+     * Called when a post is deleted.
+     * Should remove the post from the external service.
+     */
+    onDelete(post: Post): Promise<DestinationResult>;
+}
+/**
+ * Event payload sent to webhooks
+ */
+interface DestinationEvent {
+    /** The type of event that occurred */
+    type: 'publish' | 'unpublish' | 'delete';
+    /** The post that triggered the event */
+    post: Post;
+    /** When the event occurred */
+    timestamp: string;
+}
+/**
+ * Configuration for the destination system
+ */
+interface DestinationsConfig {
+    /** Array of destination adapters to sync posts to */
+    destinations?: Destination[];
+    /** Webhook URLs to POST event payloads to */
+    webhooks?: string[];
+    /** Callback fired when a post is published */
+    onPublish?: (post: Post) => Promise<void>;
+    /** Callback fired when a post is unpublished */
+    onUnpublish?: (post: Post) => Promise<void>;
+    /** Callback fired when a post is deleted */
+    onDelete?: (post: Post) => Promise<void>;
+}
+/**
+ * Aggregated results from all destinations
+ */
+interface DispatchResult {
+    /** Results from each destination adapter */
+    destinations: Array<{
+        name: string;
+        result: DestinationResult;
+    }>;
+    /** Results from webhook calls */
+    webhooks: Array<{
+        url: string;
+        success: boolean;
+        error?: string;
+    }>;
+    /** Whether all operations succeeded */
+    allSucceeded: boolean;
+}
+
+interface DispatcherConfig {
+    destinations?: Destination[];
+    webhooks?: string[];
+    onPublish?: (post: Post) => Promise<void>;
+    onUnpublish?: (post: Post) => Promise<void>;
+    onDelete?: (post: Post) => Promise<void>;
+}
+/**
+ * Creates a destination dispatcher that fires events to adapters, webhooks, and callbacks.
+ */
+declare function createDestinationDispatcher(config: DispatcherConfig): {
+    /**
+     * Dispatch a publish event to all destinations
+     */
+    publish(post: Post): Promise<DispatchResult>;
+    /**
+     * Dispatch an unpublish event to all destinations
+     */
+    unpublish(post: Post): Promise<DispatchResult>;
+    /**
+     * Dispatch a delete event to all destinations
+     */
+    delete(post: Post): Promise<DispatchResult>;
+    /**
+     * Check if any destinations or webhooks are configured
+     */
+    readonly hasDestinations: boolean;
+};
+type DestinationDispatcher = ReturnType<typeof createDestinationDispatcher>;
+
 interface PostHooks {
     beforePublish?: (post: Post) => Promise<void>;
     afterSave?: (post: Post) => Promise<void>;
+    /** Called when a slug changes on a post that was previously published. Used to create redirects. */
+    onSlugChange?: (data: {
+        postId: string;
+        oldSlug: string;
+        newSlug: string;
+    }) => Promise<void>;
 }
 interface CreatePostInput {
     title: string;
@@ -68,7 +185,7 @@ interface UpdatePostInput {
     publishedAt?: Date;
     [key: string]: unknown;
 }
-declare function createPostsData(prisma: any, hooks?: PostHooks): {
+declare function createPostsData(prisma: any, hooks?: PostHooks, dispatcher?: DestinationDispatcher, prismicEnvToken?: string): {
     count(where?: {
         status?: string;
     }): Promise<any>;
@@ -353,6 +470,13 @@ interface AutobloggerServerConfig {
         anthropicKey?: string;
         openaiKey?: string;
     };
+    /** Prismic integration config (passed from host app) */
+    prismic?: {
+        /** Repository name (e.g., 'my-repo') - auto-fills the settings UI */
+        repository?: string;
+        /** Write API token from env */
+        writeToken?: string;
+    };
     storage?: {
         upload: (file: File) => Promise<{
             url: string;
@@ -365,6 +489,12 @@ interface AutobloggerServerConfig {
     hooks?: {
         beforePublish?: (post: Post) => Promise<void>;
         afterSave?: (post: Post) => Promise<void>;
+        /** Called when a slug changes on a post that was previously published. Used to create redirects. */
+        onSlugChange?: (data: {
+            postId: string;
+            oldSlug: string;
+            newSlug: string;
+        }) => Promise<void>;
         /** Called during auto-draft after generating essay, return extra fields for post creation */
         onAutoDraftPostCreate?: (article: RssArticle, essay: {
             title: string;
@@ -372,6 +502,16 @@ interface AutobloggerServerConfig {
             markdown: string;
         }) => Record<string, unknown> | Promise<Record<string, unknown>>;
     };
+    /** Array of destination adapters to sync posts to (Prismic, Contentful, etc.) */
+    destinations?: Destination[];
+    /** Webhook URLs to POST event payloads to when posts are published/unpublished/deleted */
+    webhooks?: string[];
+    /** Callback fired when a post is published */
+    onPublish?: (post: Post) => Promise<void>;
+    /** Callback fired when a post is unpublished */
+    onUnpublish?: (post: Post) => Promise<void>;
+    /** Callback fired when a post is deleted */
+    onDelete?: (post: Post) => Promise<void>;
 }
 
 interface AutobloggerServer {
@@ -679,4 +819,4 @@ declare function applyCommentMarks(editor: Editor, comments: CommentWithUser[]):
  */
 declare function scrollToComment(editor: Editor, commentId: string): void;
 
-export { type AIModel, AI_MODELS, type AutoDraftConfig, type AutobloggerServer as Autoblogger, type AutobloggerServerConfig as AutobloggerConfig, type BaseCrud, CommentMark, type CommentWithUser, type CreateCommentData, type CrudOptions, type CustomFieldConfig, type CustomFieldProps, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_GENERATE_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_PLAN_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, type GenerationResult, Post, type RssArticle, type SelectionState, type Session, type StylesConfig, addCommentMark, applyCommentMarks, buildAutoDraftPrompt, buildChatPrompt, buildExpandPlanPrompt, buildGeneratePrompt, buildPlanPrompt, buildRewritePrompt, canDeleteComment, canEditComment, createAPIHandler, createAutoblogger, createCommentsClient, createCrudData, fetchRssFeeds, filterByKeywords, formatDate, generate, getDefaultModel, getModel, parseGeneratedContent, removeCommentMark, resolveModel, runAutoDraft, scrollToComment, truncate, validateSchema };
+export { type AIModel, AI_MODELS, type AutoDraftConfig, type AutobloggerServer as Autoblogger, type AutobloggerServerConfig as AutobloggerConfig, type BaseCrud, CommentMark, type CommentWithUser, type CreateCommentData, type CrudOptions, type CustomFieldConfig, type CustomFieldProps, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_GENERATE_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_PLAN_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, type Destination, type DestinationDispatcher, type DestinationEvent, type DestinationResult, type DestinationsConfig, type DispatchResult, type DispatcherConfig, type GenerationResult, Post, type RssArticle, type SelectionState, type Session, type StylesConfig, addCommentMark, applyCommentMarks, buildAutoDraftPrompt, buildChatPrompt, buildExpandPlanPrompt, buildGeneratePrompt, buildPlanPrompt, buildRewritePrompt, canDeleteComment, canEditComment, createAPIHandler, createAutoblogger, createCommentsClient, createCrudData, createDestinationDispatcher, fetchRssFeeds, filterByKeywords, formatDate, generate, getDefaultModel, getModel, parseGeneratedContent, removeCommentMark, resolveModel, runAutoDraft, scrollToComment, truncate, validateSchema };

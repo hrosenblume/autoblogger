@@ -18,9 +18,10 @@ export function ToolbarButton({ onClick, active, disabled, children, title }: To
       onClick={onClick}
       disabled={disabled}
       title={title}
+      tabIndex={-1}
       className={cn(
-        'px-2.5 py-1.5 text-sm font-medium rounded transition-colors shrink-0',
-        'flex items-center justify-center',
+        'px-3 py-2 md:px-2.5 md:py-1.5 text-base md:text-sm font-medium rounded transition-colors shrink-0',
+        'flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0',
         'active:bg-accent md:hover:bg-accent',
         'disabled:opacity-50 disabled:cursor-not-allowed',
         active && 'bg-accent text-accent-foreground',

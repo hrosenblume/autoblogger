@@ -1,8 +1,12 @@
 import type { Post } from '../types'
+import type { DestinationDispatcher } from '../destinations'
+import { createPrismicDestination } from '../destinations/prismic'
 
 interface PostHooks {
   beforePublish?: (post: Post) => Promise<void>
   afterSave?: (post: Post) => Promise<void>
+  /** Called when a slug changes on a post that was previously published. Used to create redirects. */
+  onSlugChange?: (data: { postId: string; oldSlug: string; newSlug: string }) => Promise<void>
 }
 
 interface CreatePostInput {
@@ -50,7 +54,57 @@ async function generateUniqueSlug(prisma: any, baseSlug: string, excludeId?: str
   }
 }
 
-export function createPostsData(prisma: any, hooks?: PostHooks) {
+/**
+ * Fire the dynamic Prismic destination if enabled in IntegrationSettings.
+ * This runs in the background and does not block the main response.
+ */
+async function fireDynamicPrismicDestination(
+  prisma: any, 
+  post: Post, 
+  event: 'publish' | 'unpublish' | 'delete',
+  envWriteToken?: string
+): Promise<void> {
+  try {
+    // Check if Prismic integration is enabled in DB
+    const settings = await prisma.integrationSettings.findUnique({
+      where: { id: 'default' },
+    })
+
+    if (!settings?.prismicEnabled || !settings?.prismicRepository) {
+      return // Prismic not enabled or not configured
+    }
+
+    // Use DB token or fall back to env token passed from host app config
+    const writeToken = settings.prismicWriteToken || envWriteToken
+    if (!writeToken) {
+      console.warn('[autoblogger] Prismic enabled but no write token configured')
+      return
+    }
+
+    // Create dynamic Prismic destination from DB settings
+    const prismicDest = createPrismicDestination({
+      repository: settings.prismicRepository,
+      writeToken: writeToken,
+      documentType: settings.prismicDocumentType || 'autoblog',
+      syncMode: (settings.prismicSyncMode as 'stub' | 'full') || 'stub',
+      masterLocale: settings.prismicLocale || 'en-us',
+      autoRename: settings.prismicAutoRename ?? false,
+    })
+
+    // Fire the appropriate event
+    if (event === 'publish') {
+      await prismicDest.onPublish(post)
+    } else if (event === 'unpublish') {
+      await prismicDest.onUnpublish(post)
+    } else if (event === 'delete') {
+      await prismicDest.onDelete(post)
+    }
+  } catch (error) {
+    console.error('[autoblogger] Failed to fire dynamic Prismic destination:', error)
+  }
+}
+
+export function createPostsData(prisma: any, hooks?: PostHooks, dispatcher?: DestinationDispatcher, prismicEnvToken?: string) {
   return {
     async count(where?: { status?: string }) {
       return prisma.post.count({ where })
@@ -163,16 +217,48 @@ export function createPostsData(prisma: any, hooks?: PostHooks) {
         wordCount?: number
       }
       
+      // Track if this is a publish, unpublish, or update of published content
+      let isPublishing = false
+      let isUnpublishing = false
+      let isUpdatingPublished = false
+
+      // Fetch existing post to determine state changes
+      const existing = await prisma.post.findUnique({ where: { id } })
+
+      // Check if content that affects external destinations has changed
+      // For code-configured destinations (full sync mode), check title, slug, and content
+      const hasDestinationChanges = existing && (
+        (postData.title !== undefined && postData.title !== existing.title) ||
+        (postData.slug !== undefined && postData.slug !== existing.slug) ||
+        (postData.markdown !== undefined && postData.markdown !== existing.markdown)
+      )
+      
+      // For dynamic Prismic destination (stub mode), only slug and title changes matter
+      // Content doesn't need to sync since it lives in autoblogger, not Prismic
+      const hasSlugChange = existing && postData.slug !== undefined && postData.slug !== existing.slug
+      const hasTitleChange = existing && postData.title !== undefined && postData.title !== existing.title
+
       // Auto-set publishedAt on first publish
       if (postData.status === 'published') {
-        const existing = await prisma.post.findUnique({ where: { id } })
         if (existing?.status !== 'published') {
           postData.publishedAt = new Date()
+          isPublishing = true
           
           if (hooks?.beforePublish) {
             await hooks.beforePublish(existing)
           }
+        } else if (hasDestinationChanges) {
+          // Post is already published AND has content changes - sync to destinations
+          isUpdatingPublished = true
         }
+      } else if (postData.status === 'draft') {
+        // Check if unpublishing (from published to draft)
+        if (existing?.status === 'published') {
+          isUnpublishing = true
+        }
+      } else if (postData.status === undefined && existing?.status === 'published' && hasDestinationChanges) {
+        // Status not changing but post is published AND has changes - sync to destinations
+        isUpdatingPublished = true
       }
 
       // Handle slug uniqueness if slug is being changed
@@ -214,15 +300,74 @@ export function createPostsData(prisma: any, hooks?: PostHooks) {
         await hooks.afterSave(result)
       }
 
+      // Check for slug change on a previously-published post (create redirect)
+      const oldSlug = existing?.slug
+      const newSlug = postData.slug
+      const slugChanged = oldSlug && newSlug && newSlug !== oldSlug
+      const wasPublished = existing?.publishedAt !== null
+      if (slugChanged && wasPublished && hooks?.onSlugChange) {
+        hooks.onSlugChange({
+          postId: id,
+          oldSlug,
+          newSlug,
+        }).catch((err) => {
+          console.error('[autoblogger] Failed to handle slug change:', err)
+        })
+      }
+
+      // Fire destination events after save
+      if (isPublishing || isUnpublishing || isUpdatingPublished) {
+        // Fire code-configured dispatcher (full sync mode - syncs on all content changes)
+        if (dispatcher) {
+          if (isPublishing || isUpdatingPublished) {
+            // Both new publish and updates to published content use onPublish
+            dispatcher.publish(result).catch((err) => {
+              console.error('[autoblogger] Failed to dispatch publish event:', err)
+            })
+          } else if (isUnpublishing) {
+            dispatcher.unpublish(result).catch((err) => {
+              console.error('[autoblogger] Failed to dispatch unpublish event:', err)
+            })
+          }
+        }
+      }
+      
+      // Fire dynamic Prismic destination separately (stub mode - only on publish/unpublish/slug/title changes)
+      // Don't sync on content-only saves - only when document needs to be created, UID updated, or name updated
+      if (isPublishing || isUnpublishing || (isUpdatingPublished && (hasSlugChange || hasTitleChange))) {
+        const event = isUnpublishing ? 'unpublish' : 'publish'
+        fireDynamicPrismicDestination(prisma, result, event, prismicEnvToken)
+      }
+
       return result
     },
 
     async delete(id: string) {
+      // Get the post before deleting to pass to dispatcher
+      const existing = await prisma.post.findUnique({
+        where: { id },
+        include: { tags: { include: { tag: true } } },
+      })
+
       // Soft delete - set status to 'deleted' instead of removing
-      return prisma.post.update({ 
+      const result = await prisma.post.update({ 
         where: { id },
         data: { status: 'deleted' },
       })
+
+      // Fire delete event if the post was published
+      if (existing?.status === 'published') {
+        if (dispatcher) {
+          dispatcher.delete(existing).catch((err) => {
+            console.error('[autoblogger] Failed to dispatch delete event:', err)
+          })
+        }
+        
+        // Fire dynamic Prismic destination if enabled
+        fireDynamicPrismicDestination(prisma, existing, 'delete', prismicEnvToken)
+      }
+
+      return result
     },
 
     async getPreviewUrl(id: string, basePath: string = '/e') {

@@ -62,17 +62,40 @@ export async function getApiKey(
  * Returns a summary of search results to be used as context.
  */
 async function fetchSearchResults(query: string, openaiKey?: string): Promise<string | null> {
+  // Create a timeout promise to prevent hanging
+  const timeoutMs = 30000 // 30 seconds
+  const timeoutPromise = new Promise<null>((_, reject) => {
+    setTimeout(() => reject(new Error('Search timeout after 30s')), timeoutMs)
+  })
+  
   try {
     console.log('[Web Search] Fetching search results for:', query.slice(0, 100))
+    
+    // Check if OpenAI key is available
+    const apiKey = openaiKey || process.env.OPENAI_API_KEY
+    if (!apiKey) {
+      console.warn('[Web Search] No OpenAI API key available for search')
+      return null
+    }
+    
     const openai = new OpenAI({
-      ...(openaiKey && { apiKey: openaiKey }),
+      apiKey,
     })
     
-    const response = await (openai as any).responses.create({
-      model: 'gpt-5-mini',
-      input: `You are a research assistant. Provide a concise summary of the most relevant and recent information from the web about the following query. Include key facts, dates, and sources when available. Keep your response under 500 words.\n\nQuery: ${query}`,
-      tools: [{ type: 'web_search' }],
-    })
+    // Race between the search and timeout
+    const response = await Promise.race([
+      (openai as any).responses.create({
+        model: 'gpt-4o-mini',
+        input: `You are a research assistant. Provide a concise summary of the most relevant and recent information from the web about the following query. Include key facts, dates, and sources when available. Keep your response under 500 words.\n\nQuery: ${query}`,
+        tools: [{ type: 'web_search' }],
+      }),
+      timeoutPromise,
+    ])
+    
+    if (!response) {
+      console.warn('[Web Search] No response received')
+      return null
+    }
     
     const result = response.output_text || null
     console.log('[Web Search] Got results:', result ? `${result.length} chars` : 'null')
@@ -213,9 +236,17 @@ export async function createStream(options: StreamOptions): Promise<ReadableStre
   if (options.useWebSearch && modelConfig.provider === 'anthropic') {
     const query = extractSearchQuery(options.messages)
     if (query) {
-      const searchResults = await fetchSearchResults(query, options.openaiKey)
-      if (searchResults) {
-        searchContext = `\n\n<web_search_results>\n${searchResults}\n</web_search_results>\n\nUse the search results above to inform your response with current, accurate information.`
+      try {
+        const searchResults = await fetchSearchResults(query, options.openaiKey)
+        if (searchResults) {
+          searchContext = `\n\n<web_search_results>\n${searchResults}\n</web_search_results>\n\nUse the search results above to inform your response with current, accurate information.`
+        } else {
+          // Search failed but don't block - add note for AI
+          searchContext = `\n\n<web_search_status>Web search was requested but returned no results. Answer based on your training knowledge and note any information that may be outdated.</web_search_status>`
+        }
+      } catch (err) {
+        console.error('[createStream] Search failed, continuing without:', err)
+        searchContext = `\n\n<web_search_status>Web search encountered an error. Answer based on your training knowledge.</web_search_status>`
       }
     }
   }

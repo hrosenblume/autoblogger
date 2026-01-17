@@ -115,6 +115,7 @@ interface DashboardContextValue {
         id: string;
         [key: string]: unknown;
     }) => void;
+    removeSharedPost: (postId: string) => void;
     onEditorStateChange?: (state: EditorState | null) => void;
     onRegisterEditHandler?: (handler: EditHandler$1 | null) => void;
 }

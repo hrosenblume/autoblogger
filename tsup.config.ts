@@ -7,6 +7,7 @@ export default defineConfig([
       index: 'src/index.ts',
       'lib/seo': 'src/lib/seo.ts',
       'lib/markdown': 'src/lib/markdown.ts',
+      'lib/rich-text': 'src/lib/rich-text.ts',
       'styles/article': 'src/styles/article.ts',
     },
     format: ['cjs', 'esm'],

@@ -48,6 +48,17 @@ export { createCommentsClient, canEditComment, canDeleteComment } from './lib/co
 export type { CommentWithUser, CreateCommentData, SelectionState } from './lib/comments'
 export { CommentMark, addCommentMark, removeCommentMark, applyCommentMarks, scrollToComment } from './lib/comment-mark'
 
+// Destination adapters
+export { createDestinationDispatcher } from './destinations'
+export type { DestinationDispatcher, DispatcherConfig } from './destinations'
+export type { 
+  Destination, 
+  DestinationResult, 
+  DestinationEvent, 
+  DestinationsConfig,
+  DispatchResult,
+} from './types/destinations'
+
 // Types (server-safe only)
 export type { 
   AutobloggerServerConfig as AutobloggerConfig, 

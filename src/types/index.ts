@@ -34,3 +34,12 @@ export type {
   GenerationStatus,
   AIState,
 } from './editor'
+
+// Destinations
+export type {
+  Destination,
+  DestinationResult,
+  DestinationEvent,
+  DestinationsConfig,
+  DispatchResult,
+} from './destinations'

@@ -1,0 +1,50 @@
+{
+  "name": "@autoblogger/prismic",
+  "version": "0.1.0",
+  "description": "Prismic destination adapter for autoblogger",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "autoblogger": ">=0.2.0"
+  },
+  "dependencies": {
+    "@prismicio/client": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "autoblogger": "file:../..",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "keywords": [
+    "autoblogger",
+    "prismic",
+    "cms",
+    "adapter",
+    "destination"
+  ],
+  "author": "Hunter Rosenblume",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hrosenblume/autoblogger.git",
+    "directory": "packages/prismic"
+  }
+}

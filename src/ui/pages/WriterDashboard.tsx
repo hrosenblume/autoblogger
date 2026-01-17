@@ -32,7 +32,7 @@ interface SuggestedPost {
 type TabType = 'all' | 'drafts' | 'published'
 
 export function WriterDashboard() {
-  const { apiBasePath, navigate, sharedData, sharedDataLoading } = useDashboardContext()
+  const { apiBasePath, navigate, sharedData, sharedDataLoading, removeSharedPost } = useDashboardContext()
   // Initialize from sharedData if available (prevents flash on re-navigation)
   const [posts, setPosts] = useState<Post[]>(() => (sharedData?.posts as Post[]) || [])
   const [loading, setLoading] = useState(() => !sharedData && sharedDataLoading)
@@ -96,6 +96,8 @@ export function WriterDashboard() {
     if (!confirm('Delete this post?')) return
     await fetch(`${apiBasePath}/posts/${id}`, { method: 'DELETE' })
     setPosts(posts.filter(p => p.id !== id))
+    // Also remove from shared data so it stays deleted after navigation
+    removeSharedPost(id)
   }
 
   async function handlePublish(id: string) {

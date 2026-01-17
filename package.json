@@ -10,32 +10,50 @@
   },
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "default": "./dist/index.js"
     },
     "./ui": {
+      "types": "./dist/ui.d.ts",
       "import": "./dist/ui.mjs",
       "require": "./dist/ui.js",
-      "types": "./dist/ui.d.ts"
+      "default": "./dist/ui.js"
     },
-    "./styles/preset": "./dist/styles/preset.js",
-    "./styles/preset.js": "./dist/styles/preset.js",
-    "./dist/styles/preset.js": "./dist/styles/preset.js",
-    "./styles/editor.css": "./dist/styles/editor.css",
+    "./styles/preset": {
+      "require": "./dist/styles/preset.js",
+      "default": "./dist/styles/preset.js"
+    },
+    "./styles/preset.js": {
+      "require": "./dist/styles/preset.js",
+      "default": "./dist/styles/preset.js"
+    },
     "./styles/autoblogger.css": "./dist/styles/autoblogger.css",
     "./styles/standalone.css": "./dist/styles/standalone.css",
     "./styles/article": {
+      "types": "./dist/styles/article.d.ts",
       "import": "./dist/styles/article.mjs",
-      "require": "./dist/styles/article.js"
+      "require": "./dist/styles/article.js",
+      "default": "./dist/styles/article.js"
     },
     "./seo": {
+      "types": "./dist/lib/seo.d.ts",
       "import": "./dist/lib/seo.mjs",
-      "require": "./dist/lib/seo.js"
+      "require": "./dist/lib/seo.js",
+      "default": "./dist/lib/seo.js"
     },
     "./markdown": {
+      "types": "./dist/lib/markdown.d.ts",
       "import": "./dist/lib/markdown.mjs",
-      "require": "./dist/lib/markdown.js"
+      "require": "./dist/lib/markdown.js",
+      "default": "./dist/lib/markdown.js"
+    },
+    "./rich-text": {
+      "types": "./dist/lib/rich-text.d.ts",
+      "import": "./dist/lib/rich-text.mjs",
+      "require": "./dist/lib/rich-text.js",
+      "default": "./dist/lib/rich-text.js"
     }
   },
   "files": [
@@ -43,12 +61,13 @@
     "prisma"
   ],
   "scripts": {
-    "build": "tsup && cp src/styles/preset.js dist/styles/preset.js && cp src/styles/autoblogger.css dist/styles/autoblogger.css && tailwindcss -c tailwind.standalone.config.js -i src/styles/tailwind-input.css -o dist/styles/standalone.css --minify",
+    "build": "tsup && mkdir -p dist/styles && cp src/styles/preset.js dist/styles/preset.js && tailwindcss -c tailwind.standalone.config.js -i src/styles/tailwind-input.css -o dist/styles/autoblogger.css --minify && cp dist/styles/autoblogger.css dist/styles/standalone.css",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "yalc:push": "npm run build && yalc push"
   },
   "peerDependencies": {
     "@prisma/client": "^5.0.0 || ^6.0.0",
@@ -68,6 +87,7 @@
     "@tiptap/pm": "^3.15.3",
     "@tiptap/react": "^3.15.3",
     "@tiptap/starter-kit": "^3.15.3",
+    "autoblogger": "file:.yalc/autoblogger",
     "clsx": "^2.1.1",
     "jsdom": "^27.4.0",
     "marked": "^12.0.0",
@@ -83,6 +103,8 @@
     "turndown": "^7.0.0"
   },
   "devDependencies": {
+    "@prisma/client": "^6.19.2",
+    "@prismicio/client": "^7.21.3",
     "@types/jsdom": "^27.0.0",
     "@types/node": "^20.0.0",
     "@types/prompts": "^2.4.9",
