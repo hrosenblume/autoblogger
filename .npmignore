@@ -1,0 +1,28 @@
+# Development files
+.cursorrules
+.cursorignore
+.yalc/
+yalc.lock
+autoblogger
+
+# Source (dist is published, not src)
+src/
+packages/
+
+# Config files
+tsconfig.json
+tsup.config.ts
+tailwind.standalone.config.js
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+*.log
+*.md
+!README.md

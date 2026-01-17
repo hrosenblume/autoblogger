@@ -1,106 +1,200 @@
-# Autoblogger - Cursor Rules
+# Autoblogger - Programming Rules
 
-## Project Overview
+> For project context and architecture, see `.cursor/context.md`
 
-Autoblogger is an AI-powered headless CMS that embeds into Next.js apps. It provides:
-- AI writing assistance (Claude, GPT) with streaming
-- WYSIWYG Tiptap editor with markdown sync
-- Revision history and inline comments
-- RSS auto-draft from topic subscriptions
-- Destination adapters for syncing to external CMSs (Prismic, Contentful, Sanity)
+## Code Organization
 
-## Architecture
+### Server vs Client Split
+- `src/index.ts` exports server-safe code only (no React imports)
+- `src/ui/index.ts` exports React components
+- Never import React in server files
+- Types in `types/config.ts` must be server-safe (no ComponentType, etc.)
 
-### Package Structure
-- `src/` - Main library source
-  - `ai/` - AI provider integrations (Anthropic, OpenAI), prompts, streaming
-  - `api/` - API route handlers for posts, comments, settings, AI
-  - `auto-draft/` - RSS feed processing and auto-draft generation
-  - `cli/` - CLI for `npx autoblogger init` and import
-  - `data/` - Database access layer factories
-  - `destinations/` - External CMS adapters (Prismic, etc.)
-  - `lib/` - Utilities (markdown, comments, rich-text conversion)
-  - `types/` - TypeScript types for models, config, destinations
-  - `ui/` - React components and pages (dashboard, editor, settings)
-- `packages/prismic/` - Optional Prismic integration package
-- `prisma/schema.prisma` - Reference database schema
+### File Naming
+- React components: PascalCase (`ChatPanel.tsx`)
+- Utilities/hooks: camelCase (`useChat.ts`, `markdown.ts`)
+- Types: Keep in `types/` folder, export from `types/index.ts`
 
-### Key Patterns
+## TypeScript
 
-1. **Server/Client Split**
-   - `src/index.ts` exports server-safe code (no React)
-   - `src/ui/index.ts` exports React components
-   - Types are split between `config.ts` (server-safe) and UI types
+### Strict Mode
+- Project uses strict TypeScript
+- Avoid `any` - use `unknown` with type guards when needed
+- Prefer explicit return types on exported functions
 
-2. **Destination Adapters**
-   - Interface: `Destination` with `onPublish`, `onUnpublish`, `onDelete`
-   - Dynamic destinations: Configured via Settings UI (stored in DB)
-   - Code destinations: Passed via `config.destinations` array
-   - Webhooks: Simple POST to URLs on events
+### Type Patterns
+```typescript
+// For Prisma client passed via config (unknown to avoid peer dep issues)
+const prisma = config.prisma as any
 
-3. **AI Streaming**
-   - Uses SSE (Server-Sent Events) for streaming responses
-   - Provider abstraction in `src/ai/provider.ts`
-   - Web search via OpenAI Responses API with `web_search` tool
+// For optional chaining with DB models
+settings?.prismicEnabled ?? false
 
-4. **Database**
-   - Uses host app's Prisma client (passed via config)
-   - Reference schema in `prisma/schema.prisma`
-   - IntegrationSettings model for dynamic destination config
-
-## Current Feature Set
-
-### Prismic Integration
-- Dynamic destination configured via Settings UI
-- Stub sync mode: Only syncs UID for collection slices
-- Full sync mode: Syncs complete content as rich text
-- Auto-rename option to update Prismic document name from title
-- Token can be from env var or entered in UI
-
-### Web Search
-- OpenAI Responses API for web-grounded answers
-- Works with all models - for Anthropic, fetches results then includes in context
-- Toggle in chat UI (Globe icon)
-
-### Thinking Mode
-- Extended thinking for Claude models
-- Configurable budget tokens
-- Toggle in chat UI (Brain icon)
-
-### Chat Modes
-- **Ask**: Q&A about essay or general topics
-- **Agent**: Direct editing with search/replace commands
-- **Plan**: Generate essay outlines that can be expanded
-
-## Code Style
-
-- TypeScript strict mode
-- React with 'use client' directive for client components
-- Tailwind CSS with `ab-dark:` prefix for dark mode variants
-- Component styling via `clsx` and `tailwind-merge`
-- Sonner for toast notifications
-
-## Build & Development
-
-```bash
-npm run build      # Build with tsup + tailwindcss
-npm run dev        # Watch mode
-npm run yalc:push  # Push to local yalc for testing
+// For discriminated unions
+type EditCommand = 
+  | { type: 'replace_all'; markdown: string }
+  | { type: 'replace_section'; find: string; replace: string }
 ```
 
-## Testing Changes
+## React Conventions
 
-After making changes:
-1. Run `npm run build` to compile
-2. Use `yalc push` to update linked projects
-3. Test in a Next.js app that imports autoblogger
+### Client Components
+- Always add `'use client'` directive at top
+- Use hooks from `react` directly, not re-exports
 
-## Recent Changes (v0.2.7)
+### State Management
+- Local state for component-specific data
+- Context for cross-component shared state (Dashboard, Chat)
+- Avoid prop drilling more than 2 levels
 
-- **Prismic Integration**: Full Settings UI, stub/full sync modes, auto-rename
-- **Destinations System**: Adapter pattern for external CMS sync
-- **Rich Text Converters**: Markdown to Prismic/Contentful/Sanity formats
-- **Web Search**: OpenAI Responses API integration for all models
-- **Thinking Mode**: Extended thinking for Claude
-- **Post URL Pattern**: Configurable URL pattern in General Settings
-- **Mobile UX**: Touch-friendly toolbar and navbar improvements
+### Event Handlers
+```typescript
+// Use useCallback for handlers passed to children
+const handleSave = useCallback(async () => {
+  // ...
+}, [dependencies])
+
+// Use refs to avoid re-creating callbacks
+const saveRef = useRef(handleSave)
+useEffect(() => { saveRef.current = handleSave }, [handleSave])
+```
+
+## Styling
+
+### Tailwind with Dark Mode
+- Use `ab-dark:` prefix for dark mode variants (custom plugin)
+- Example: `bg-white ab-dark:bg-gray-900`
+
+### Component Classes
+```typescript
+import { cn } from '../lib/cn'
+
+// Use cn() for conditional classes
+className={cn(
+  'base-classes',
+  active && 'active-classes',
+  disabled && 'disabled-classes'
+)}
+```
+
+### Mobile-First
+- Default styles for mobile
+- Use `md:` for desktop overrides
+- Touch targets: minimum 44x44px (`min-w-[44px] min-h-[44px]`)
+
+## API Patterns
+
+### Route Handlers
+```typescript
+export async function handlePostsAPI(
+  req: NextRequest,
+  cms: AutobloggerServer,
+  session: Session | null,
+  path: string
+): Promise<Response> {
+  // Check auth first
+  const authError = requireAuth(session)
+  if (authError) return authError
+
+  // Route by method + path
+  if (method === 'GET' && path === '/posts') {
+    // ...
+  }
+}
+```
+
+### Response Format
+```typescript
+// Success
+return jsonResponse({ data: result })
+
+// Error
+return jsonResponse({ error: 'Message' }, 400)
+```
+
+## AI/Streaming
+
+### SSE Format
+```typescript
+// Send data
+controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text })}\n\n`))
+
+// End stream
+controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+```
+
+### Safe Stream Helpers
+```typescript
+// Always use safe helpers to handle closed controllers
+function safeEnqueue(controller, data): boolean {
+  try {
+    controller.enqueue(data)
+    return true
+  } catch {
+    return false // Controller closed
+  }
+}
+```
+
+## Destinations
+
+### Adapter Pattern
+```typescript
+const destination: Destination = {
+  name: 'my-destination',
+  
+  async onPublish(post) {
+    // Create or update in external system
+    return { success: true, externalId: 'doc-123' }
+  },
+  
+  async onUnpublish(post) {
+    // Archive or unpublish
+    return { success: true }
+  },
+  
+  async onDelete(post) {
+    // Remove from external system
+    return { success: true }
+  },
+}
+```
+
+### Fire-and-Forget
+- Destination calls should not block the main response
+- Use `.catch()` to log errors without throwing:
+```typescript
+dispatcher.publish(post).catch(err => {
+  console.error('[autoblogger] Failed to dispatch:', err)
+})
+```
+
+## Error Handling
+
+### Console Logging
+```typescript
+// Use prefixes for log context
+console.log('[Web Search] Fetching...')
+console.error('[prismic:repo-name] Failed to sync:', error)
+console.warn('[autoblogger] Feature not supported')
+```
+
+### Graceful Degradation
+- AI features should work without all providers configured
+- Web search failure should not block the response
+- Destination failures should not block publishing
+
+## Testing Locally
+
+1. Make changes
+2. `npm run build`
+3. `yalc push`
+4. In host app: verify behavior
+
+## Common Gotchas
+
+- **Hydration mismatches**: Use `immediatelyRender: false` for Tiptap
+- **Prisma types**: Cast to `any` since we use host app's client
+- **Dark mode**: Use `ab-dark:` not `dark:` (custom prefix)
+- **SSE streams**: Always handle controller.close() errors
+- **useEffect deps**: Include all referenced values to avoid stale closures
