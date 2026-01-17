@@ -11,6 +11,12 @@ In the age of AI and SEO, the blogs that win are the ones that publish consisten
 
 ---
 
+## What is Autoblogger?
+
+A CMS that installs in seconds and writes with you. One command adds AI-powered blogging to any Next.js app—your database, your auth, your content.
+
+---
+
 ## Features
 
 ### 🤖 AI That Actually Helps
