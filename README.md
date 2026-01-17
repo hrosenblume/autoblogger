@@ -13,16 +13,11 @@ In the age of AI and SEO, the blogs that win are the ones that publish consisten
 
 ## Why Autoblogger?
 
-**The game has changed.** AI-generated content is everywhere. SEO rewards fresh, frequent publishing. Your competitors are shipping blog posts while you're still wrestling with your CMS.
+The game has changed. AI-generated content is everywhere. SEO rewards fresh, frequent publishing. You need to write fast.
 
-**You need to write fast.** Autoblogger makes that possible:
+**Before:** Open CMS. Open ChatGPT. Copy. Paste. Format. Fix formatting. Publish. *2 hours later...*
 
-| Old Way | With Autoblogger |
-|---------|------------------|
-| Open CMS → Open ChatGPT → Copy-paste → Format → Publish | Type idea → AI writes → Edit → Publish |
-| 2 hours per post | 15 minutes per post |
-| "I should write more..." | Actually writing more |
-| Content calendar anxiety | Content machine confidence |
+**After:** Type your idea. AI writes. You tweak. Publish. *Done in 15 minutes.*
 
 ---
 
