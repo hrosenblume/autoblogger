@@ -64,6 +64,10 @@ ANTHROPIC_API_KEY="sk-ant-..."
 
 Start your app and visit `/writer`. That's it.
 
+**🤖 Install Prompt** — Paste into Cursor or Claude:
+
+> Install autoblogger following https://www.npmjs.com/package/autoblogger
+
 📖 **[Full Setup Guide →](docs/GUIDE.md)**
 
 ---
