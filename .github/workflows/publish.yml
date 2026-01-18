@@ -25,6 +25,9 @@ jobs:
           rm -rf node_modules package-lock.json
           npm install --ignore-scripts
 
+      - name: Generate Prisma client
+        run: npx prisma generate
+
       - name: Build
         run: npm run build
 
