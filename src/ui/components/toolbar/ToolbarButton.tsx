@@ -3,6 +3,28 @@
 import { cn } from '../../../lib/cn'
 import { Skeleton } from '../Skeleton'
 
+/** Shared toolbar button styles - use this for any toolbar button */
+export const toolbarButtonStyles = {
+  base: 'px-3 py-2 text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center',
+  interactive: 'active:bg-accent md:hover:bg-accent',
+  disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
+  active: 'bg-accent text-accent-foreground',
+  inactive: 'text-muted-foreground',
+  /** Icon size for toolbar icons */
+  iconSize: 'w-5 h-5',
+}
+
+/** Get complete toolbar button className */
+export function getToolbarButtonClass(active?: boolean, disabled?: boolean) {
+  return cn(
+    toolbarButtonStyles.base,
+    toolbarButtonStyles.interactive,
+    toolbarButtonStyles.disabled,
+    active && toolbarButtonStyles.active,
+    !active && toolbarButtonStyles.inactive
+  )
+}
+
 interface ToolbarButtonProps {
   onClick: () => void
   active?: boolean
@@ -19,14 +41,7 @@ export function ToolbarButton({ onClick, active, disabled, children, title }: To
       disabled={disabled}
       title={title}
       tabIndex={-1}
-      className={cn(
-        'px-3 py-2 md:px-2.5 md:py-1.5 text-base md:text-sm font-medium rounded transition-colors shrink-0',
-        'flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0',
-        'active:bg-accent md:hover:bg-accent',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
-        active && 'bg-accent text-accent-foreground',
-        !active && 'text-muted-foreground'
-      )}
+      className={getToolbarButtonClass(active, disabled)}
     >
       {children}
     </button>
@@ -34,10 +49,10 @@ export function ToolbarButton({ onClick, active, disabled, children, title }: To
 }
 
 export function Divider() {
-  return <div className="w-px h-6 bg-border mx-1 shrink-0" />
+  return <div className="w-px h-7 bg-border mx-1.5 shrink-0" />
 }
 
 /** Skeleton placeholder for a toolbar button - matches ToolbarButton dimensions */
 export function SkeletonButton() {
-  return <Skeleton className="h-7 w-7 shrink-0" />
+  return <Skeleton className="h-9 w-9 shrink-0" />
 }

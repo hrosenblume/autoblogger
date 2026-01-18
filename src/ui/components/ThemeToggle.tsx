@@ -24,7 +24,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       type="button"
       onClick={handleToggle}
       className={cn(
-        'w-9 h-9 rounded-md border border-border',
+        'w-10 h-10 rounded-md border border-border',
         'active:bg-accent md:hover:bg-accent',
         'text-muted-foreground',
         'flex items-center justify-center',
@@ -32,13 +32,13 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       )}
       aria-label="Toggle dark mode"
     >
-      <div className="w-4 h-4 transition-transform duration-200 active:scale-90">
+      <div className="w-5 h-5 transition-transform duration-200 active:scale-90">
         {!mounted ? (
-          <div className="w-4 h-4" />
+          <div className="w-5 h-5" />
         ) : resolvedTheme === 'dark' ? (
-          <SunIcon className="w-4 h-4" />
+          <SunIcon className="w-5 h-5" />
         ) : (
-          <MoonIcon className="w-4 h-4" />
+          <MoonIcon className="w-5 h-5" />
         )}
       </div>
     </button>

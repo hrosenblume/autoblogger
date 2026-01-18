@@ -32,10 +32,13 @@ export function AutobloggerPortal({ children, className, style }: AutobloggerPor
 
   // The wrapper provides theme context (CSS variables + dark class) for portaled content.
   // Children use position:fixed so they position themselves relative to the viewport.
+  // Note: This wrapper is for theme context only - don't add data-autoblogger-root
+  // which would apply viewport fixing that conflicts with child positioning.
   return createPortal(
     <div 
       className={cn('autoblogger', resolvedTheme === 'dark' && 'dark', className)}
       style={style}
+      data-theme={resolvedTheme}
     >
       {children}
     </div>,

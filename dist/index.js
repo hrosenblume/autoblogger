@@ -3481,10 +3481,17 @@ var init_dist2 = __esm({
   }
 });
 
-// src/ai/prompts.ts
-var DEFAULT_GENERATE_TEMPLATE, DEFAULT_CHAT_TEMPLATE, DEFAULT_REWRITE_TEMPLATE, DEFAULT_AUTO_DRAFT_TEMPLATE, DEFAULT_PLAN_TEMPLATE, DEFAULT_PLAN_RULES, DEFAULT_AGENT_TEMPLATE, DEFAULT_EXPAND_PLAN_TEMPLATE, DEFAULT_SEARCH_ONLY_PROMPT;
-var init_prompts = __esm({
-  "src/ai/prompts.ts"() {
+// src/ai/prompts/types.ts
+var init_types4 = __esm({
+  "src/ai/prompts/types.ts"() {
+    "use strict";
+  }
+});
+
+// src/ai/prompts/templates/generate.ts
+var DEFAULT_GENERATE_TEMPLATE;
+var init_generate = __esm({
+  "src/ai/prompts/templates/generate.ts"() {
     "use strict";
     DEFAULT_GENERATE_TEMPLATE = `<system>
 <role>Expert essay writer creating engaging, thoughtful content</role>
@@ -3533,6 +3540,14 @@ Line 4+: Essay body in markdown
 </subtitle_guidelines>
 </output_format>
 </system>`;
+  }
+});
+
+// src/ai/prompts/templates/chat.ts
+var DEFAULT_CHAT_TEMPLATE;
+var init_chat = __esm({
+  "src/ai/prompts/templates/chat.ts"() {
+    "use strict";
     DEFAULT_CHAT_TEMPLATE = `<system>
 <role>Helpful writing assistant for essay creation and editing</role>
 
@@ -3559,6 +3574,14 @@ Line 4+: Essay body in markdown
 - Ask clarifying questions if the request is ambiguous
 </behavior>
 </system>`;
+  }
+});
+
+// src/ai/prompts/templates/rewrite.ts
+var DEFAULT_REWRITE_TEMPLATE;
+var init_rewrite = __esm({
+  "src/ai/prompts/templates/rewrite.ts"() {
+    "use strict";
     DEFAULT_REWRITE_TEMPLATE = `<system>
 <role>Writing assistant that improves text quality</role>
 
@@ -3582,6 +3605,14 @@ Line 4+: Essay body in markdown
 - Output only the improved text, no explanations
 </behavior>
 </system>`;
+  }
+});
+
+// src/ai/prompts/templates/auto-draft.ts
+var DEFAULT_AUTO_DRAFT_TEMPLATE;
+var init_auto_draft = __esm({
+  "src/ai/prompts/templates/auto-draft.ts"() {
+    "use strict";
     DEFAULT_AUTO_DRAFT_TEMPLATE = `<system>
 <role>Expert essay writer creating engaging content from news articles</role>
 
@@ -3630,11 +3661,29 @@ Line 4+: Essay body in markdown
 </subtitle_guidelines>
 </output_format>
 </system>`;
+  }
+});
+
+// src/ai/prompts/templates/plan.ts
+var DEFAULT_PLAN_TEMPLATE, DEFAULT_PLAN_RULES;
+var init_plan = __esm({
+  "src/ai/prompts/templates/plan.ts"() {
+    "use strict";
     DEFAULT_PLAN_TEMPLATE = `<system>
-<role>Writing assistant that creates essay outlines</role>
+<role>Essay outline generator - you ONLY output plans, never conversation</role>
 
 <critical>
-Wrap your ENTIRE response in <plan> tags. Output NOTHING outside the tags.
+YOU ARE A PLAN GENERATOR. Every response must be a complete essay outline.
+
+ABSOLUTE RULES:
+1. ALWAYS output a plan wrapped in <plan> tags
+2. NEVER have conversational responses outside the plan
+3. If user asks a question \u2192 answer by generating/revising a plan
+4. If user gives feedback \u2192 output the revised plan
+5. If user gives a topic \u2192 output a new plan for that topic
+6. Your ENTIRE response is ONLY the <plan>...</plan> block
+
+NO EXCEPTIONS. Every message you send is a plan.
 </critical>
 
 <rules>
@@ -3646,7 +3695,7 @@ Wrap your ENTIRE response in <plan> tags. Output NOTHING outside the tags.
 </style_reference>
 </system>`;
     DEFAULT_PLAN_RULES = `<format>
-STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bullets.
+EXACT OUTPUT FORMAT - copy this structure precisely:
 
 <plan>
 # Essay Title
@@ -3664,12 +3713,20 @@ STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bulle
 </plan>
 </format>
 
+<syntax_requirements>
+- Title: "# " (hash + space) then title text
+- Subtitle: "*" + text + "*" (asterisks for italics)
+- Sections: "## " (double hash + space) then section name  
+- Points: "- " (dash + space) then point text
+</syntax_requirements>
+
 <constraints>
 - 4-6 section headings (## lines)
 - 1-3 bullets per section \u2014 NEVER 4 or more
-- Bullets are short phrases, not sentences
-- No prose, no paragraphs, no explanations
-- When revising, output the complete updated plan
+- Bullets are short phrases, not full sentences
+- NO prose, NO paragraphs, NO explanations outside the plan
+- When revising, output the COMPLETE updated plan
+- NEVER output anything outside the <plan> tags
 </constraints>
 
 <title_guidelines>
@@ -3683,6 +3740,14 @@ STRICT LIMIT: Maximum 3 bullets per section. Most sections should have 1-2 bulle
 - One sentence that previews the main argument
 - Create curiosity or make a bold claim
 </subtitle_guidelines>`;
+  }
+});
+
+// src/ai/prompts/templates/agent.ts
+var DEFAULT_AGENT_TEMPLATE;
+var init_agent = __esm({
+  "src/ai/prompts/templates/agent.ts"() {
+    "use strict";
     DEFAULT_AGENT_TEMPLATE = `<agent_mode>
 CRITICAL: You are in AGENT MODE. You MUST make edits to the essay using edit commands.
 
@@ -3719,6 +3784,40 @@ RULES:
 - Keep explanatory text minimal - focus on the edits
 - Edits are applied automatically when you output the :::edit blocks
 </agent_mode>`;
+  }
+});
+
+// src/ai/prompts/templates/ask.ts
+var DEFAULT_ASK_TEMPLATE;
+var init_ask = __esm({
+  "src/ai/prompts/templates/ask.ts"() {
+    "use strict";
+    DEFAULT_ASK_TEMPLATE = `<ask_mode>
+You are in ASK MODE. You can write, discuss, and create content freely in your responses.
+
+The ONLY restriction: you cannot push changes directly to the editor document.
+
+PROHIBITED (these modify the document):
+- :::edit blocks
+- JSON with "type": "replace_all", "replace_section", "insert", or "delete"
+
+ALLOWED (do these freely):
+- Write full essays, articles, drafts in your response
+- Use markdown formatting (headers, bold, lists, etc.)
+- Answer questions, give feedback, brainstorm ideas
+- Create any content the user asks for
+
+When you write content in Ask mode, it stays in the chat. The user can copy it if they want.
+If the user wants content inserted directly into their document, tell them to switch to Agent mode.
+</ask_mode>`;
+  }
+});
+
+// src/ai/prompts/templates/expand-plan.ts
+var DEFAULT_EXPAND_PLAN_TEMPLATE;
+var init_expand_plan = __esm({
+  "src/ai/prompts/templates/expand-plan.ts"() {
+    "use strict";
     DEFAULT_EXPAND_PLAN_TEMPLATE = `<system>
 <role>Writing assistant that expands essay outlines into full drafts</role>
 
@@ -3757,6 +3856,14 @@ If the plan title is generic, improve it to be:
 </title_refinement>
 </output_format>
 </system>`;
+  }
+});
+
+// src/ai/prompts/templates/search.ts
+var DEFAULT_SEARCH_ONLY_PROMPT;
+var init_search = __esm({
+  "src/ai/prompts/templates/search.ts"() {
+    "use strict";
     DEFAULT_SEARCH_ONLY_PROMPT = `You are a research assistant helping a writer gather facts and information.
 
 Your task is to provide accurate, well-sourced information to help with essay writing.
@@ -3769,6 +3876,38 @@ Guidelines:
 - Suggest interesting angles or perspectives the writer might explore
 
 Do NOT write the essay - just provide research findings.`;
+  }
+});
+
+// src/ai/prompts/builders.ts
+var init_builders = __esm({
+  "src/ai/prompts/builders.ts"() {
+    "use strict";
+    init_generate();
+    init_chat();
+    init_rewrite();
+    init_plan();
+    init_agent();
+    init_expand_plan();
+    init_search();
+  }
+});
+
+// src/ai/prompts/index.ts
+var init_prompts = __esm({
+  "src/ai/prompts/index.ts"() {
+    "use strict";
+    init_types4();
+    init_generate();
+    init_chat();
+    init_rewrite();
+    init_auto_draft();
+    init_plan();
+    init_agent();
+    init_ask();
+    init_expand_plan();
+    init_search();
+    init_builders();
   }
 });
 
@@ -4036,6 +4175,70 @@ function safeClose(controller) {
   } catch {
   }
 }
+function createProviderStream(events, errorPrefix) {
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const event of events) {
+          if (event.text) {
+            if (!safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({ text: event.text })}
+
+`))) {
+              return;
+            }
+          }
+          if (event.thinking) {
+            if (!safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({ thinking: event.thinking })}
+
+`))) {
+              return;
+            }
+          }
+        }
+        safeEnqueue(controller, encoder.encode("data: [DONE]\n\n"));
+        safeClose(controller);
+      } catch (streamError) {
+        const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
+        console.error(`[${errorPrefix}]`, streamError);
+        safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({ error: errorMessage })}
+
+`));
+        safeClose(controller);
+      }
+    }
+  });
+}
+async function* normalizeAnthropicEvents(stream) {
+  for await (const event of stream) {
+    if (event.type === "content_block_delta") {
+      const delta = event.delta;
+      if (delta.type === "text_delta" && delta.text) {
+        yield { text: delta.text };
+      } else if (delta.type === "thinking_delta" && delta.thinking) {
+        yield { thinking: delta.thinking };
+      }
+    }
+  }
+}
+async function* normalizeOpenAIEvents(stream) {
+  for await (const chunk of stream) {
+    const text = chunk.choices?.[0]?.delta?.content;
+    if (text) {
+      yield { text };
+    }
+  }
+}
+async function* normalizeOpenAIResponsesEvents(stream) {
+  for await (const event of stream) {
+    if (event.type === "response.output_text.delta") {
+      const text = event.delta;
+      if (text) {
+        yield { text };
+      }
+    }
+  }
+}
 async function createAnthropicStream(options, modelId, searchContext = "") {
   const anthropic = new import_sdk.default({
     ...options.anthropicKey && { apiKey: options.anthropicKey }
@@ -4057,39 +4260,7 @@ async function createAnthropicStream(options, modelId, searchContext = "") {
   }
   try {
     const stream = await anthropic.messages.stream(requestParams);
-    return new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const event of stream) {
-            if (event.type === "content_block_delta") {
-              const delta = event.delta;
-              if (delta.type === "text_delta" && delta.text) {
-                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text: delta.text })}
-
-`))) {
-                  return;
-                }
-              } else if (delta.type === "thinking_delta" && delta.thinking) {
-                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ thinking: delta.thinking })}
-
-`))) {
-                  return;
-                }
-              }
-            }
-          }
-          safeEnqueue(controller, new TextEncoder().encode("data: [DONE]\n\n"));
-          safeClose(controller);
-        } catch (streamError) {
-          const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
-          console.error("[Anthropic Stream Error]", streamError);
-          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
-
-`));
-          safeClose(controller);
-        }
-      }
-    });
+    return createProviderStream(normalizeAnthropicEvents(stream), "Anthropic Stream Error");
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Anthropic API error";
     console.error("[Anthropic API Error]", error);
@@ -4111,31 +4282,7 @@ async function createOpenAIStream(options, modelId, useWebSearch = false) {
   };
   try {
     const stream = await openai.chat.completions.create(requestParams);
-    return new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            const text = chunk.choices[0]?.delta?.content;
-            if (text) {
-              if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text })}
-
-`))) {
-                return;
-              }
-            }
-          }
-          safeEnqueue(controller, new TextEncoder().encode("data: [DONE]\n\n"));
-          safeClose(controller);
-        } catch (streamError) {
-          const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
-          console.error("[OpenAI Stream Error]", streamError);
-          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
-
-`));
-          safeClose(controller);
-        }
-      }
-    });
+    return createProviderStream(normalizeOpenAIEvents(stream), "OpenAI Stream Error");
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "OpenAI API error";
     console.error("[OpenAI API Error]", error);
@@ -4162,33 +4309,7 @@ ${lastUserMessage}`;
       tools: [{ type: "web_search" }],
       stream: true
     });
-    return new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const event of response) {
-            if (event.type === "response.output_text.delta") {
-              const text = event.delta;
-              if (text) {
-                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text })}
-
-`))) {
-                  return;
-                }
-              }
-            }
-          }
-          safeEnqueue(controller, new TextEncoder().encode("data: [DONE]\n\n"));
-          safeClose(controller);
-        } catch (streamError) {
-          const errorMessage = streamError instanceof Error ? streamError.message : "Stream error";
-          console.error("[OpenAI Responses Stream Error]", streamError);
-          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}
-
-`));
-          safeClose(controller);
-        }
-      }
-    });
+    return createProviderStream(normalizeOpenAIResponsesEvents(response), "OpenAI Responses Stream Error");
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "OpenAI Responses API error";
     console.error("[OpenAI Responses API Error]", error);
@@ -4209,17 +4330,17 @@ var init_provider = __esm({
 var builders_exports = {};
 __export(builders_exports, {
   buildAutoDraftPrompt: () => buildAutoDraftPrompt,
-  buildChatPrompt: () => buildChatPrompt,
-  buildExpandPlanPrompt: () => buildExpandPlanPrompt,
-  buildGeneratePrompt: () => buildGeneratePrompt,
-  buildPlanPrompt: () => buildPlanPrompt,
-  buildRewritePrompt: () => buildRewritePrompt
+  buildChatPrompt: () => buildChatPrompt2,
+  buildExpandPlanPrompt: () => buildExpandPlanPrompt2,
+  buildGeneratePrompt: () => buildGeneratePrompt2,
+  buildPlanPrompt: () => buildPlanPrompt2,
+  buildRewritePrompt: () => buildRewritePrompt2
 });
-function buildGeneratePrompt(options) {
+function buildGeneratePrompt2(options) {
   const template = options.template || DEFAULT_GENERATE_TEMPLATE;
   return template.replace("{{RULES}}", options.rules || "").replace("{{WORD_COUNT}}", String(options.wordCount || 800)).replace("{{STYLE_EXAMPLES}}", options.styleExamples || "");
 }
-function buildChatPrompt(options) {
+function buildChatPrompt2(options) {
   const template = options.template || DEFAULT_CHAT_TEMPLATE;
   let essaySection = "";
   if (options.essayContext) {
@@ -4234,16 +4355,16 @@ ${options.essayContext.markdown}
   }
   return template.replace("{{CHAT_RULES}}", options.chatRules || "").replace("{{RULES}}", options.rules || "").replace("{{ESSAY_CONTEXT}}", essaySection).replace("{{STYLE_EXAMPLES}}", options.styleExamples || "");
 }
-function buildExpandPlanPrompt(options) {
+function buildExpandPlanPrompt2(options) {
   const template = options.template || DEFAULT_EXPAND_PLAN_TEMPLATE;
   return template.replace("{{RULES}}", options.rules || "").replace("{{STYLE_EXAMPLES}}", options.styleExamples || "").replace("{{PLAN}}", options.plan);
 }
-function buildPlanPrompt(options) {
+function buildPlanPrompt2(options) {
   const template = options.template || DEFAULT_PLAN_TEMPLATE;
   const rules = options.planRules || DEFAULT_PLAN_RULES;
   return template.replace("{{PLAN_RULES}}", rules).replace("{{STYLE_EXAMPLES}}", options.styleExamples || "");
 }
-function buildRewritePrompt(options) {
+function buildRewritePrompt2(options) {
   const template = options.template || DEFAULT_REWRITE_TEMPLATE;
   return template.replace("{{REWRITE_RULES}}", options.rewriteRules || "").replace("{{RULES}}", options.rules || "").replace("{{STYLE_EXAMPLES}}", options.styleExamples || "");
 }
@@ -4251,7 +4372,7 @@ function buildAutoDraftPrompt(options) {
   const template = options.template || DEFAULT_AUTO_DRAFT_TEMPLATE;
   return template.replace("{{AUTO_DRAFT_RULES}}", options.autoDraftRules || "").replace("{{RULES}}", options.rules || "").replace("{{AUTO_DRAFT_WORD_COUNT}}", String(options.wordCount || 800)).replace("{{STYLE_EXAMPLES}}", options.styleExamples || "").replace("{{TOPIC_NAME}}", options.topicName || "").replace("{{ARTICLE_TITLE}}", options.articleTitle || "").replace("{{ARTICLE_SUMMARY}}", options.articleSummary || "").replace("{{ARTICLE_URL}}", options.articleUrl || "");
 }
-var init_builders = __esm({
+var init_builders2 = __esm({
   "src/ai/builders.ts"() {
     "use strict";
     init_prompts();
@@ -4487,7 +4608,7 @@ __export(generate_exports, {
   generateStream: () => generateStream
 });
 async function generateStream(options) {
-  const systemPrompt = buildGeneratePrompt({
+  const systemPrompt = buildGeneratePrompt2({
     rules: options.rules,
     template: options.template,
     wordCount: options.wordCount,
@@ -4528,7 +4649,7 @@ Use the source material above as reference for the essay.`;
   });
 }
 async function expandPlanStream(options) {
-  const systemPrompt = buildExpandPlanPrompt({
+  const systemPrompt = buildExpandPlanPrompt2({
     rules: options.rules,
     template: options.template,
     plan: options.plan,
@@ -4545,11 +4666,11 @@ async function expandPlanStream(options) {
     maxTokens: 8192
   });
 }
-var init_generate = __esm({
+var init_generate2 = __esm({
   "src/ai/generate.ts"() {
     "use strict";
     init_provider();
-    init_builders();
+    init_builders2();
     init_url_extractor();
   }
 });
@@ -4560,11 +4681,11 @@ __export(chat_exports, {
   chatStream: () => chatStream
 });
 async function chatStream(options) {
-  const systemPrompt = options.mode === "plan" ? buildPlanPrompt({
+  const systemPrompt = options.mode === "plan" ? buildPlanPrompt2({
     planRules: options.planRules,
     template: options.planTemplate,
     styleExamples: options.styleExamples
-  }) : buildChatPrompt({
+  }) : buildChatPrompt2({
     chatRules: options.chatRules,
     rules: options.rules,
     template: options.template,
@@ -4613,6 +4734,8 @@ URL extraction encountered an error: ${err instanceof Error ? err.message : "Unk
   let modeInstructions = "";
   if (options.mode === "agent") {
     modeInstructions = "\n\n" + (options.agentTemplate || DEFAULT_AGENT_TEMPLATE);
+  } else if (options.mode === "ask" || !options.mode) {
+    modeInstructions = "\n\n" + DEFAULT_ASK_TEMPLATE;
   }
   let webSearchContext = "";
   if (options.useWebSearch) {
@@ -4663,11 +4786,11 @@ If the fetch failed, explain what happened using the error details provided.
     useWebSearch: options.useWebSearch
   });
 }
-var init_chat = __esm({
+var init_chat2 = __esm({
   "src/ai/chat.ts"() {
     "use strict";
     init_provider();
-    init_builders();
+    init_builders2();
     init_url_extractor();
     init_prompts();
   }
@@ -4688,11 +4811,11 @@ __export(src_exports, {
   addCommentMark: () => addCommentMark,
   applyCommentMarks: () => applyCommentMarks,
   buildAutoDraftPrompt: () => buildAutoDraftPrompt,
-  buildChatPrompt: () => buildChatPrompt,
-  buildExpandPlanPrompt: () => buildExpandPlanPrompt,
-  buildGeneratePrompt: () => buildGeneratePrompt,
-  buildPlanPrompt: () => buildPlanPrompt,
-  buildRewritePrompt: () => buildRewritePrompt,
+  buildChatPrompt: () => buildChatPrompt2,
+  buildExpandPlanPrompt: () => buildExpandPlanPrompt2,
+  buildGeneratePrompt: () => buildGeneratePrompt2,
+  buildPlanPrompt: () => buildPlanPrompt2,
+  buildRewritePrompt: () => buildRewritePrompt2,
   canDeleteComment: () => canDeleteComment,
   canEditComment: () => canEditComment,
   createAPIHandler: () => createAPIHandler,
@@ -4726,6 +4849,14 @@ __export(src_exports, {
   wordCount: () => wordCount
 });
 module.exports = __toCommonJS(src_exports);
+
+// src/types/models.ts
+var PostStatus = {
+  DRAFT: "draft",
+  PUBLISHED: "published",
+  DELETED: "deleted",
+  SUGGESTED: "suggested"
+};
 
 // src/destinations/prismic.ts
 function mapPostToStub(_post) {
@@ -4876,7 +5007,7 @@ function createPostsData(prisma, hooks, dispatcher, prismicEnvToken) {
     },
     async findPublished() {
       return prisma.post.findMany({
-        where: { status: "published" },
+        where: { status: PostStatus.PUBLISHED },
         orderBy: { publishedAt: "desc" }
       });
     },
@@ -4894,7 +5025,7 @@ function createPostsData(prisma, hooks, dispatcher, prismicEnvToken) {
     },
     async findDrafts() {
       return prisma.post.findMany({
-        where: { status: "draft" },
+        where: { status: PostStatus.DRAFT },
         orderBy: { updatedAt: "desc" }
       });
     },
@@ -4918,7 +5049,7 @@ function createPostsData(prisma, hooks, dispatcher, prismicEnvToken) {
           ...postData,
           slug,
           markdown: postData.markdown || "",
-          status: postData.status || "draft"
+          status: postData.status || PostStatus.DRAFT
         }
       });
       if (tagIds?.length) {
@@ -4958,8 +5089,8 @@ function createPostsData(prisma, hooks, dispatcher, prismicEnvToken) {
       const hasDestinationChanges = existing && (postData.title !== void 0 && postData.title !== existing.title || postData.slug !== void 0 && postData.slug !== existing.slug || postData.markdown !== void 0 && postData.markdown !== existing.markdown);
       const hasSlugChange = existing && postData.slug !== void 0 && postData.slug !== existing.slug;
       const hasTitleChange = existing && postData.title !== void 0 && postData.title !== existing.title;
-      if (postData.status === "published") {
-        if (existing?.status !== "published") {
+      if (postData.status === PostStatus.PUBLISHED) {
+        if (existing?.status !== PostStatus.PUBLISHED) {
           postData.publishedAt = /* @__PURE__ */ new Date();
           isPublishing = true;
           if (hooks?.beforePublish) {
@@ -4968,11 +5099,11 @@ function createPostsData(prisma, hooks, dispatcher, prismicEnvToken) {
         } else if (hasDestinationChanges) {
           isUpdatingPublished = true;
         }
-      } else if (postData.status === "draft") {
-        if (existing?.status === "published") {
+      } else if (postData.status === PostStatus.DRAFT) {
+        if (existing?.status === PostStatus.PUBLISHED) {
           isUnpublishing = true;
         }
-      } else if (postData.status === void 0 && existing?.status === "published" && hasDestinationChanges) {
+      } else if (postData.status === void 0 && existing?.status === PostStatus.PUBLISHED && hasDestinationChanges) {
         isUpdatingPublished = true;
       }
       if (postData.slug) {
@@ -5040,9 +5171,9 @@ function createPostsData(prisma, hooks, dispatcher, prismicEnvToken) {
       });
       const result = await prisma.post.update({
         where: { id },
-        data: { status: "deleted" }
+        data: { status: PostStatus.DELETED }
       });
-      if (existing?.status === "published") {
+      if (existing?.status === PostStatus.PUBLISHED) {
         if (dispatcher) {
           dispatcher.delete(existing).catch((err) => {
             console.error("[autoblogger] Failed to dispatch delete event:", err);
@@ -5565,7 +5696,7 @@ function createNewsItemsData(prisma) {
       const post = await createPost({
         title: newsItem.title,
         markdown: newsItem.summary || "",
-        status: "suggested",
+        status: PostStatus.SUGGESTED,
         sourceUrl: newsItem.url,
         topicId: newsItem.topicId
       });
@@ -5661,7 +5792,7 @@ async function handlePostsAPI(req, cms, session, path, onMutate) {
   }
   if (method === "PATCH" && postId) {
     const body = await req.json();
-    if (body.status === "published" && !cms.config.auth.canPublish(session)) {
+    if (body.status === PostStatus.PUBLISHED && !cms.config.auth.canPublish(session)) {
       return jsonResponse({ error: "Not authorized to publish" }, 403);
     }
     const contentChanging = body.title !== void 0 || body.subtitle !== void 0 || body.markdown !== void 0;
@@ -5888,7 +6019,7 @@ async function handleAIAPI(req, cms, session, path) {
         if (!styleExamples) {
           styleExamples = await fetchStyleExamples(cms);
         }
-        const { expandPlanStream: expandPlanStream2 } = await Promise.resolve().then(() => (init_generate(), generate_exports));
+        const { expandPlanStream: expandPlanStream2 } = await Promise.resolve().then(() => (init_generate2(), generate_exports));
         stream = await expandPlanStream2({
           plan,
           model: model || settings.defaultModel,
@@ -5903,7 +6034,7 @@ async function handleAIAPI(req, cms, session, path) {
         if (!styleExamples) {
           styleExamples = await fetchStyleExamples(cms);
         }
-        const { generateStream: generateStream2 } = await Promise.resolve().then(() => (init_generate(), generate_exports));
+        const { generateStream: generateStream2 } = await Promise.resolve().then(() => (init_generate2(), generate_exports));
         stream = await generateStream2({
           prompt,
           model: model || settings.defaultModel,
@@ -5993,7 +6124,7 @@ ${examples}
     } catch (err) {
       console.error("[AI Chat] Failed to fetch published essays:", err);
     }
-    const { chatStream: chatStream2 } = await Promise.resolve().then(() => (init_chat(), chat_exports));
+    const { chatStream: chatStream2 } = await Promise.resolve().then(() => (init_chat2(), chat_exports));
     try {
       const stream = await chatStream2({
         messages,
@@ -6054,7 +6185,7 @@ ${truncatedContent}`;
     } catch (err) {
       console.error("[AI Rewrite] Failed to fetch published essays:", err);
     }
-    const { buildRewritePrompt: buildRewritePrompt3 } = await Promise.resolve().then(() => (init_builders(), builders_exports));
+    const { buildRewritePrompt: buildRewritePrompt3 } = await Promise.resolve().then(() => (init_builders2(), builders_exports));
     const { createStream: createStream2 } = await Promise.resolve().then(() => (init_provider(), provider_exports));
     try {
       const systemPrompt = buildRewritePrompt3({
@@ -6665,9 +6796,9 @@ function filterByKeywords(articles, keywords) {
 // src/ai/index.ts
 init_models();
 init_provider();
-init_generate();
-init_chat();
-init_builders();
+init_generate2();
+init_chat2();
+init_builders2();
 init_prompts();
 
 // src/ai/parse.ts
@@ -6711,79 +6842,6 @@ function renderMarkdown(markdown) {
 function markdownToHtml(markdown) {
   return import_marked.marked.parse(markdown, { gfm: true, breaks: true });
 }
-function createStyledRenderer() {
-  const renderer = new import_marked.Renderer();
-  renderer.heading = function(text, level) {
-    const classes = {
-      1: "text-[22px] leading-tight font-bold mb-4",
-      2: "text-lg leading-snug font-bold mt-6 mb-3",
-      3: "text-base leading-snug font-bold mt-4 mb-2",
-      4: "text-sm leading-snug font-semibold mt-3 mb-1",
-      5: "text-sm leading-snug font-semibold mt-2 mb-1",
-      6: "text-sm leading-snug font-medium mt-2 mb-1"
-    };
-    return `<h${level} class="${classes[level] || ""}">${text}</h${level}>
-`;
-  };
-  renderer.paragraph = function(text) {
-    return `<p class="mb-3 leading-relaxed">${text}</p>
-`;
-  };
-  renderer.list = function(body, ordered) {
-    const tag = ordered ? "ol" : "ul";
-    const listClass = ordered ? "list-decimal" : "list-disc";
-    return `<${tag} class="${listClass} pl-5 mb-3 space-y-1">${body}</${tag}>
-`;
-  };
-  renderer.listitem = function(text) {
-    return `<li>${text}</li>
-`;
-  };
-  renderer.code = function(code, language) {
-    const escaped = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    return `<pre class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg overflow-x-auto mb-3 text-sm font-mono"><code class="language-${language || ""}">${escaped}</code></pre>
-`;
-  };
-  renderer.codespan = function(text) {
-    return `<code class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono">${text}</code>`;
-  };
-  renderer.blockquote = function(quote) {
-    return `<blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic text-gray-600 dark:text-gray-400 my-3">${quote}</blockquote>
-`;
-  };
-  renderer.hr = function() {
-    return `<hr class="my-6 border-t border-gray-200 dark:border-gray-700" />
-`;
-  };
-  renderer.link = function(href, _title, text) {
-    return `<a href="${href}" class="text-blue-600 dark:text-blue-400 underline">${text}</a>`;
-  };
-  renderer.image = function(href, _title, text) {
-    return `<img src="${href}" alt="${text}" class="rounded-lg max-w-full my-3" />`;
-  };
-  renderer.strong = function(text) {
-    return `<strong class="font-semibold">${text}</strong>`;
-  };
-  renderer.em = function(text) {
-    return `<em class="italic">${text}</em>`;
-  };
-  renderer.table = function(header, body) {
-    return `<table class="w-full border-collapse mb-3"><thead>${header}</thead><tbody>${body}</tbody></table>
-`;
-  };
-  renderer.tablerow = function(content) {
-    return `<tr>${content}</tr>
-`;
-  };
-  renderer.tablecell = function(content, flags) {
-    const tag = flags.header ? "th" : "td";
-    const headerClass = flags.header ? " font-semibold bg-gray-50 dark:bg-gray-800" : "";
-    const alignClass = flags.align ? ` text-${flags.align}` : " text-left";
-    return `<${tag} class="border border-gray-200 dark:border-gray-700 px-3 py-2${alignClass}${headerClass}">${content}</${tag}>`;
-  };
-  return renderer;
-}
-var styledRenderer = createStyledRenderer();
 function parseMarkdown(markdown) {
   return import_marked.marked.lexer(markdown);
 }
@@ -6825,7 +6883,7 @@ function renderMarkdownSanitized(markdown) {
 async function getStyleContext(prisma) {
   const settings = await prisma.aISettings.findUnique({ where: { id: "default" } });
   const posts = await prisma.post.findMany({
-    where: { status: "published" },
+    where: { status: PostStatus.PUBLISHED },
     select: { title: true, subtitle: true, markdown: true },
     orderBy: { publishedAt: "desc" },
     take: 10
@@ -6947,7 +7005,7 @@ async function runAutoDraft(config, topicId, skipFrequencyCheck = false) {
               subtitle: essay.subtitle,
               slug,
               markdown: essay.markdown,
-              status: "suggested",
+              status: PostStatus.SUGGESTED,
               sourceUrl: article.url,
               topicId: topic.id,
               ...extraFields

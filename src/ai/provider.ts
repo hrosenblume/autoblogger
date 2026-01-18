@@ -278,6 +278,85 @@ function safeClose(controller: ReadableStreamDefaultController): void {
   }
 }
 
+/** Normalized event from any provider stream */
+interface NormalizedEvent {
+  text?: string
+  thinking?: string
+}
+
+/**
+ * Factory to create SSE ReadableStream from normalized provider events.
+ * Eliminates duplicate stream creation logic across providers.
+ */
+function createProviderStream(
+  events: AsyncIterable<NormalizedEvent>,
+  errorPrefix: string
+): ReadableStream {
+  const encoder = new TextEncoder()
+  
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        for await (const event of events) {
+          if (event.text) {
+            if (!safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({ text: event.text })}\n\n`))) {
+              return
+            }
+          }
+          if (event.thinking) {
+            if (!safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({ thinking: event.thinking })}\n\n`))) {
+              return
+            }
+          }
+        }
+        safeEnqueue(controller, encoder.encode('data: [DONE]\n\n'))
+        safeClose(controller)
+      } catch (streamError) {
+        const errorMessage = streamError instanceof Error ? streamError.message : 'Stream error'
+        console.error(`[${errorPrefix}]`, streamError)
+        safeEnqueue(controller, encoder.encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
+        safeClose(controller)
+      }
+    },
+  })
+}
+
+/** Normalize Anthropic stream events */
+async function* normalizeAnthropicEvents(stream: AsyncIterable<any>): AsyncGenerator<NormalizedEvent> {
+  for await (const event of stream) {
+    if (event.type === 'content_block_delta') {
+      const delta = event.delta as { type: string; text?: string; thinking?: string }
+      if (delta.type === 'text_delta' && delta.text) {
+        yield { text: delta.text }
+      } else if (delta.type === 'thinking_delta' && delta.thinking) {
+        yield { thinking: delta.thinking }
+      }
+    }
+  }
+}
+
+/** Normalize OpenAI chat completions stream events */
+async function* normalizeOpenAIEvents(stream: AsyncIterable<any>): AsyncGenerator<NormalizedEvent> {
+  for await (const chunk of stream) {
+    const text = chunk.choices?.[0]?.delta?.content
+    if (text) {
+      yield { text }
+    }
+  }
+}
+
+/** Normalize OpenAI Responses API stream events */
+async function* normalizeOpenAIResponsesEvents(stream: AsyncIterable<any>): AsyncGenerator<NormalizedEvent> {
+  for await (const event of stream) {
+    if (event.type === 'response.output_text.delta') {
+      const text = event.delta
+      if (text) {
+        yield { text }
+      }
+    }
+  }
+}
+
 async function createAnthropicStream(options: StreamOptions, modelId: string, searchContext: string = ''): Promise<ReadableStream> {
   const anthropic = new Anthropic({
     ...(options.anthropicKey && { apiKey: options.anthropicKey }),
@@ -305,34 +384,7 @@ async function createAnthropicStream(options: StreamOptions, modelId: string, se
 
   try {
     const stream = await anthropic.messages.stream(requestParams)
-
-    return new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const event of stream) {
-            if (event.type === 'content_block_delta') {
-              const delta = event.delta as { type: string; text?: string; thinking?: string }
-              if (delta.type === 'text_delta' && delta.text) {
-                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text: delta.text })}\n\n`))) {
-                  return // Controller closed, stop processing
-                }
-              } else if (delta.type === 'thinking_delta' && delta.thinking) {
-                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ thinking: delta.thinking })}\n\n`))) {
-                  return
-                }
-              }
-            }
-          }
-          safeEnqueue(controller, new TextEncoder().encode('data: [DONE]\n\n'))
-          safeClose(controller)
-        } catch (streamError) {
-          const errorMessage = streamError instanceof Error ? streamError.message : 'Stream error'
-          console.error('[Anthropic Stream Error]', streamError)
-          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
-          safeClose(controller)
-        }
-      },
-    })
+    return createProviderStream(normalizeAnthropicEvents(stream), 'Anthropic Stream Error')
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Anthropic API error'
     console.error('[Anthropic API Error]', error)
@@ -358,28 +410,7 @@ async function createOpenAIStream(options: StreamOptions, modelId: string, useWe
 
   try {
     const stream = await openai.chat.completions.create(requestParams) as unknown as AsyncIterable<OpenAI.Chat.Completions.ChatCompletionChunk>
-
-    return new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            const text = chunk.choices[0]?.delta?.content
-            if (text) {
-              if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`))) {
-                return
-              }
-            }
-          }
-          safeEnqueue(controller, new TextEncoder().encode('data: [DONE]\n\n'))
-          safeClose(controller)
-        } catch (streamError) {
-          const errorMessage = streamError instanceof Error ? streamError.message : 'Stream error'
-          console.error('[OpenAI Stream Error]', streamError)
-          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
-          safeClose(controller)
-        }
-      },
-    })
+    return createProviderStream(normalizeOpenAIEvents(stream), 'OpenAI Stream Error')
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'OpenAI API error'
     console.error('[OpenAI API Error]', error)
@@ -407,30 +438,7 @@ async function createOpenAIResponsesStream(openai: OpenAI, options: StreamOption
       tools: [{ type: 'web_search' }],
       stream: true,
     })
-
-    return new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const event of response) {
-            if (event.type === 'response.output_text.delta') {
-              const text = event.delta
-              if (text) {
-                if (!safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`))) {
-                  return
-                }
-              }
-            }
-          }
-          safeEnqueue(controller, new TextEncoder().encode('data: [DONE]\n\n'))
-          safeClose(controller)
-        } catch (streamError) {
-          const errorMessage = streamError instanceof Error ? streamError.message : 'Stream error'
-          console.error('[OpenAI Responses Stream Error]', streamError)
-          safeEnqueue(controller, new TextEncoder().encode(`data: ${JSON.stringify({ error: errorMessage })}\n\n`))
-          safeClose(controller)
-        }
-      },
-    })
+    return createProviderStream(normalizeOpenAIResponsesEvents(response), 'OpenAI Responses Stream Error')
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'OpenAI Responses API error'
     console.error('[OpenAI Responses API Error]', error)

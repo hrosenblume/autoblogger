@@ -8,7 +8,7 @@ interface ControlButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 export const ControlButton = forwardRef<HTMLButtonElement, ControlButtonProps>(
   ({ className = '', active, disabled, children, type = 'button', ...props }, ref) => {
-    const baseClasses = "inline-flex items-center gap-1 text-sm transition-colors focus:outline-none"
+    const baseClasses = "inline-flex items-center gap-1 p-1 text-sm transition-colors focus:outline-none"
     const stateClasses = disabled
       ? "text-muted-foreground/30 cursor-not-allowed"
       : active

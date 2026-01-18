@@ -46,6 +46,23 @@ interface CustomFieldConfig {
     position?: 'footer' | 'sidebar';
 }
 
+type ChatMode = 'ask' | 'agent' | 'plan' | 'search';
+interface EditCommand {
+    type: 'replace_all' | 'replace_section' | 'insert' | 'delete';
+    title?: string;
+    subtitle?: string;
+    markdown?: string;
+    find?: string;
+    replace?: string;
+    position?: 'before' | 'after' | 'start' | 'end';
+}
+interface EssaySnapshot {
+    title: string;
+    subtitle: string;
+    markdown: string;
+}
+type EditHandler = (edit: EditCommand) => boolean;
+
 interface DashboardConfig {
     fields: CustomFieldConfig[];
     styles: Required<StylesConfig>;
@@ -77,16 +94,6 @@ interface EditorContent {
     subtitle: string;
     markdown: string;
 }
-interface EditCommand {
-    type: 'replace_all' | 'replace_section' | 'insert' | 'delete';
-    title?: string;
-    subtitle?: string;
-    markdown?: string;
-    find?: string;
-    replace?: string;
-    position?: 'before' | 'after' | 'start' | 'end';
-}
-type EditHandler$1 = (edit: EditCommand) => boolean;
 interface EditorState {
     hasUnsavedChanges: boolean;
     status: 'draft' | 'published';
@@ -118,7 +125,7 @@ interface DashboardContextValue {
     }) => void;
     removeSharedPost: (postId: string) => void;
     onEditorStateChange?: (state: EditorState | null) => void;
-    onRegisterEditHandler?: (handler: EditHandler$1 | null) => void;
+    onRegisterEditHandler?: (handler: EditHandler | null) => void;
 }
 declare function useDashboardContext(): DashboardContextValue;
 
@@ -129,7 +136,7 @@ interface AutobloggerDashboardProps {
     fields?: CustomFieldConfig[];
     session?: Session | null;
     onEditorStateChange?: (state: EditorState | null) => void;
-    onRegisterEditHandler?: (handler: EditHandler$1 | null) => void;
+    onRegisterEditHandler?: (handler: EditHandler | null) => void;
     onToggleView?: (currentPath: string, slug?: string) => void;
     onSignOut?: () => void;
     navbarRightSlot?: ReactNode;
@@ -259,11 +266,6 @@ interface CommentsState {
 }
 declare function useComments({ postId: initialPostId, editor, apiBasePath, onSave, }: UseCommentsOptions): CommentsState;
 
-interface EssaySnapshot {
-    title: string;
-    subtitle: string;
-    markdown: string;
-}
 interface Message {
     role: 'user' | 'assistant';
     content: string;
@@ -276,17 +278,6 @@ interface EssayContext {
     subtitle?: string;
     markdown: string;
 }
-type ChatMode = 'ask' | 'agent' | 'plan' | 'search';
-interface EssayEdit {
-    type: 'replace_all' | 'replace_section' | 'insert' | 'delete';
-    title?: string;
-    subtitle?: string;
-    markdown?: string;
-    find?: string;
-    replace?: string;
-    position?: 'before' | 'after' | 'start' | 'end';
-}
-type EditHandler = (edit: EssayEdit) => boolean;
 type ExpandPlanHandler = (plan: string, wordCount: number) => void;
 interface ChatContextValue {
     messages: Message[];
@@ -492,4 +483,14 @@ interface SeoSectionProps {
 }
 declare function SeoSection({ post, onFieldChange, disabled, }: SeoSectionProps): react_jsx_runtime.JSX.Element;
 
-export { type AIModelOption, AutobloggerDashboard, type AutobloggerDashboardProps, ChatButton, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, ChatIcon, type Message as ChatMessage, type ChatMode, ChatPanel, ChatProvider, ChevronLeftIcon, CommentThread, CommentsPanel, type CommentsState, ControlButton, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler$1 as EditHandler, type EditorContent, type EditorState, type EssayEdit, type EssaySnapshot, type ExpandPlanHandler, ExpandableSection, GlobalShortcuts, ModelSelector, MoonIcon, Navbar, type NavbarProps, SHORTCUTS, SeoSection, type Session, type SessionUser, type StylesConfig, SunIcon, ThemeProvider, ThemeToggle, useAIModels, useAutobloggerTheme, useChatContext, useChatContextOptional, useComments, useDashboardContext, useDashboardKeyboard, useKeyboard, useTheme };
+interface PageContainerProps {
+    children: React.ReactNode;
+    className?: string;
+}
+/**
+ * Shared page container with consistent max-width and padding.
+ * Used by WriterDashboard, SettingsPage, and other full-page layouts.
+ */
+declare function PageContainer({ children, className }: PageContainerProps): react_jsx_runtime.JSX.Element;
+
+export { type AIModelOption, AutobloggerDashboard, type AutobloggerDashboardProps, ChatButton, ChatContext, type EditHandler as ChatEditHandler, type EssayContext as ChatEssayContext, ChatIcon, type Message as ChatMessage, type ChatMode, ChatPanel, ChatProvider, ChevronLeftIcon, CommentThread, CommentsPanel, type CommentsState, ControlButton, type CustomFieldConfig, type CustomFieldProps, type EditCommand, type EditHandler, type EditorContent, type EditorState, type EditCommand as EssayEdit, type EssaySnapshot, type ExpandPlanHandler, ExpandableSection, GlobalShortcuts, ModelSelector, MoonIcon, Navbar, type NavbarProps, PageContainer, SHORTCUTS, SeoSection, type Session, type SessionUser, type StylesConfig, SunIcon, ThemeProvider, ThemeToggle, useAIModels, useAutobloggerTheme, useChatContext, useChatContextOptional, useComments, useDashboardContext, useDashboardKeyboard, useKeyboard, useTheme };

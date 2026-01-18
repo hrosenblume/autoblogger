@@ -68,7 +68,7 @@ export function BlockButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Bullet list"
       >
-        <List className="w-4 h-4" />
+        <List className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleOrderedList().run() : insertBlock('1. ')}
@@ -76,7 +76,7 @@ export function BlockButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Numbered list"
       >
-        <ListOrdered className="w-4 h-4" />
+        <ListOrdered className="w-5 h-5" />
       </ToolbarButton>
 
       {/* Block elements */}
@@ -86,7 +86,7 @@ export function BlockButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Blockquote"
       >
-        <Quote className="w-4 h-4" />
+        <Quote className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleCodeBlock().run() : wrapSelection('```\n', '\n```')}
@@ -94,10 +94,10 @@ export function BlockButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Code block"
       >
-        <Code2 className="w-4 h-4" />
+        <Code2 className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton onClick={handleHorizontalRule} disabled={aiGenerating} title="Horizontal rule">
-        <Minus className="w-4 h-4" />
+        <Minus className="w-5 h-5" />
       </ToolbarButton>
     </>
   )

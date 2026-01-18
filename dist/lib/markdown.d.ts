@@ -10,8 +10,8 @@ declare function renderMarkdown(markdown: string): string;
  */
 declare function markdownToHtml(markdown: string): string;
 /**
- * Convert markdown to HTML with inline Tailwind classes.
- * Use this for rendering in contexts where autoblogger.css isn't loaded.
+ * @deprecated Use markdownToHtml with Tailwind Typography prose classes instead.
+ * Kept for backwards compatibility.
  */
 declare function markdownToStyledHtml(markdown: string): string;
 /**

@@ -1,6 +1,23 @@
 // Database model types - placeholder interfaces for Prisma models
 // Actual types come from user's Prisma client
 
+// ============================================================================
+// Post Status Constants
+// ============================================================================
+
+export const PostStatus = {
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
+  DELETED: 'deleted',
+  SUGGESTED: 'suggested',
+} as const
+
+export type PostStatusType = typeof PostStatus[keyof typeof PostStatus]
+
+// ============================================================================
+// Database Models
+// ============================================================================
+
 export interface Post {
   id: string
   title: string

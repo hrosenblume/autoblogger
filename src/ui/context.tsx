@@ -2,6 +2,10 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from 'react'
 import type { CustomFieldConfig, StylesConfig } from './types'
+import type { EditCommand, EditHandler } from '../types/editor'
+
+// Re-export for backward compatibility
+export type { EditCommand, EditHandler } from '../types/editor'
 
 export interface DashboardConfig {
   fields: CustomFieldConfig[]
@@ -35,19 +39,6 @@ export interface EditorContent {
   subtitle: string
   markdown: string
 }
-
-// Edit command from parent app (e.g., AI agent mode)
-export interface EditCommand {
-  type: 'replace_all' | 'replace_section' | 'insert' | 'delete'
-  title?: string
-  subtitle?: string
-  markdown?: string
-  find?: string
-  replace?: string
-  position?: 'before' | 'after' | 'start' | 'end'
-}
-
-export type EditHandler = (edit: EditCommand) => boolean
 
 // Editor state exposed to parent app
 export interface EditorState {
@@ -94,8 +85,8 @@ export function useDashboardContext() {
 
 const DEFAULT_STYLES: Required<StylesConfig> = {
   container: 'max-w-[680px] mx-auto px-6',
-  title: 'text-[22px] md:text-2xl font-bold leading-tight',
-  subtitle: 'text-base md:text-lg text-muted-foreground leading-snug',
+  title: 'text-2xl font-bold leading-tight',
+  subtitle: 'text-base text-muted-foreground leading-snug',
   byline: 'text-sm text-muted-foreground',
   prose: 'prose',
 }

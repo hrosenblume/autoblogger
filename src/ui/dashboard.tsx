@@ -1,16 +1,20 @@
 'use client'
 
-import { useState, useEffect, type ReactNode } from 'react'
+import { useState, useEffect, lazy, Suspense, type ReactNode } from 'react'
 import { Save, Loader2 } from 'lucide-react'
 import type { CustomFieldConfig, StylesConfig } from './types'
 import { DashboardProvider, useDashboardContext, type Session, type EditorState, type EditHandler } from './context'
 import { WriterDashboard } from './pages/WriterDashboard'
 import { EditorPage } from './pages/EditorPage'
-import { SettingsPage } from './pages/SettingsPage'
+import { SettingsPage } from './pages/settings'
 import { Navbar } from './components/Navbar'
 import { ChatButton } from './components/ChatButton'
-import { ChatPanel } from './components/ChatPanel'
 import { ThemeProvider } from './components/ThemeProvider'
+
+// Lazy load ChatPanel (only needed when chat is opened)
+const ChatPanel = lazy(() => 
+  import('./components/ChatPanel').then(m => ({ default: m.ChatPanel }))
+)
 import { ChatProvider } from './hooks/useChat'
 import { useDashboardKeyboard } from './hooks/useKeyboard'
 import { useChatContextOptional } from './hooks/useChat'
@@ -150,14 +154,14 @@ function DashboardLayout({
           type="button"
           onClick={() => editorState.onSave('draft')}
           disabled={!editorState.hasUnsavedChanges || !!editorState.savingAs}
-          className="w-10 h-10 md:w-9 md:h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-10 h-10 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label="Save"
           title={editorState.hasUnsavedChanges ? 'Save changes (⌘S)' : 'No unsaved changes'}
         >
           {editorState.savingAs ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Loader2 className="w-5 h-5 animate-spin" />
           ) : (
-            <Save className="h-4 w-4" />
+            <Save className="w-5 h-5" />
           )}
         </button>
       )}
@@ -177,8 +181,10 @@ function DashboardLayout({
       <main className="flex-1 overflow-auto">
         <DashboardRouter path={currentPath} onEditorStateChange={handleEditorStateChange} />
       </main>
-      {/* Chat Panel - built-in */}
-      <ChatPanel proseClasses={proseClasses} />
+      {/* Chat Panel - built-in (lazy loaded) */}
+      <Suspense fallback={null}>
+        <ChatPanel proseClasses={proseClasses} />
+      </Suspense>
       {/* Toast notifications */}
       <Toaster />
     </>

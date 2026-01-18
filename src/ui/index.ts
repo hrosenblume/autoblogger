@@ -18,7 +18,7 @@ export { ChatIcon, SunIcon, MoonIcon, ChevronLeftIcon } from './components/Icons
 
 // Context and types
 export { useDashboardContext } from './context'
-export type { Session, SessionUser, EditorState, EditorContent, EditCommand, EditHandler } from './context'
+export type { Session, SessionUser, EditorState, EditorContent } from './context'
 
 // Client-side types
 export type { CustomFieldConfig, CustomFieldProps, StylesConfig } from './types'
@@ -36,10 +36,10 @@ export type {
   EssayContext as ChatEssayContext,
   EssaySnapshot,
   ChatMode,
-  EssayEdit,
-  EditHandler as ChatEditHandler,
   ExpandPlanHandler,
 } from './hooks/useChat'
+// EditCommand replaces the old EssayEdit (same structure, consolidated name)
+export type { EditCommand, EditCommand as EssayEdit, EditHandler, EditHandler as ChatEditHandler } from '../types/editor'
 export { ChatPanel } from './components/ChatPanel'
 export { ChatButton } from './components/ChatButton'
 export { useAIModels } from './hooks/useAIModels'
@@ -63,4 +63,7 @@ export { ExpandableSection } from './components/ExpandableSection'
 
 // SEO section component (for consistent SEO fields UI)
 export { SeoSection } from './components/SeoSection'
+
+// Page container layout component
+export { PageContainer } from './components/PageContainer'
 

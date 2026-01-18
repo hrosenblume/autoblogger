@@ -1,12 +1,17 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } from 'react'
 import type { Editor } from '@tiptap/react'
 import { toast } from 'sonner'
 import { useDashboardContext, type EditCommand } from '../context'
 import { EditorToolbar } from '../components/EditorToolbar'
-import { TiptapEditor, type SelectionState } from '../components/TiptapEditor'
+import type { SelectionState } from '../components/TiptapEditor'
 import { CommentsPanel } from '../components/CommentsPanel'
+
+// Lazy load TiptapEditor (heavy Tiptap dependencies)
+const TiptapEditor = lazy(() => 
+  import('../components/TiptapEditor').then(m => ({ default: m.TiptapEditor }))
+)
 import { TagsSection } from '../components/TagsSection'
 import { useComments } from '../hooks/useComments'
 import { useChatContextOptional } from '../hooks/useChat'
@@ -68,7 +73,7 @@ function AutoResizeTextarea({
   disabled,
   className,
 }: {
-  value: string
+  value: string | null
   onChange: (value: string) => void
   placeholder?: string
   disabled?: boolean
@@ -86,7 +91,7 @@ function AutoResizeTextarea({
   return (
     <textarea
       ref={ref}
-      value={value}
+      value={value ?? ''}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
@@ -1104,29 +1109,37 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 className={`${styles.prose} w-full bg-transparent border-none outline-none resize-none overflow-hidden placeholder-muted-foreground leading-relaxed font-mono text-sm ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             ) : (
-              <TiptapEditor
-                content={post.markdown}
-                onChange={(md) => setPost(prev => ({ ...prev, markdown: md }))}
-                onEditorReady={setEditor}
-                autoFocus={!slug}
-                proseClasses={styles.prose}
-                onSelectionChange={(sel: SelectionState | null) => {
-                  if (sel?.hasSelection) {
-                    comments.setSelectedText({
-                      text: sel.text,
-                      from: sel.from,
-                      to: sel.to,
-                      hasExistingComment: sel.hasExistingComment,
-                    })
-                  } else {
-                    comments.setSelectedText(null)
-                  }
-                }}
-                onCommentClick={(commentId: string) => {
-                  comments.setActiveId(commentId)
-                  setCommentsOpen(true)
-                }}
-              />
+              <Suspense fallback={
+                <div className="space-y-3">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              }>
+                <TiptapEditor
+                  content={post.markdown}
+                  onChange={(md) => setPost(prev => ({ ...prev, markdown: md }))}
+                  onEditorReady={setEditor}
+                  autoFocus={!slug}
+                  proseClasses={styles.prose}
+                  onSelectionChange={(sel: SelectionState | null) => {
+                    if (sel?.hasSelection) {
+                      comments.setSelectedText({
+                        text: sel.text,
+                        from: sel.from,
+                        to: sel.to,
+                        hasExistingComment: sel.hasExistingComment,
+                      })
+                    } else {
+                      comments.setSelectedText(null)
+                    }
+                  }}
+                  onCommentClick={(commentId: string) => {
+                    comments.setActiveId(commentId)
+                    setCommentsOpen(true)
+                  }}
+                />
+              </Suspense>
             )}
           </div>
 
@@ -1278,7 +1291,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       </main>
 
       {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none">
+      <footer className="fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
         <div className="flex items-center justify-end text-sm text-muted-foreground">
           {generating ? (
             <button className="hover:text-foreground transition-colors">

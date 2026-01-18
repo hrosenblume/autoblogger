@@ -192,7 +192,7 @@ export function Dropdown({
 
   return (
     <>
-      <div ref={triggerRef} onClick={handleTriggerClick}>
+      <div ref={triggerRef} onClick={handleTriggerClick} className="shrink-0">
         {trigger}
       </div>
       {menu}

@@ -2,6 +2,7 @@ import { generate, resolveModel, buildAutoDraftPrompt, parseGeneratedContent } f
 import { generateSlug } from '../lib/markdown'
 import { fetchRssFeeds, type RssArticle } from './rss'
 import { filterByKeywords } from './keywords'
+import { PostStatus } from '../types/models'
 
 export interface GenerationResult {
   topicId: string
@@ -24,7 +25,7 @@ export interface AutoDraftConfig {
 async function getStyleContext(prisma: any) {
   const settings = await prisma.aISettings.findUnique({ where: { id: 'default' } })
   const posts = await prisma.post.findMany({
-    where: { status: 'published' },
+    where: { status: PostStatus.PUBLISHED },
     select: { title: true, subtitle: true, markdown: true },
     orderBy: { publishedAt: 'desc' },
     take: 10,
@@ -232,7 +233,7 @@ export async function runAutoDraft(
               subtitle: essay.subtitle,
               slug,
               markdown: essay.markdown,
-              status: 'suggested',
+              status: PostStatus.SUGGESTED,
               sourceUrl: article.url,
               topicId: topic.id,
               ...extraFields,

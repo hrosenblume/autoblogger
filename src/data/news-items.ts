@@ -1,3 +1,5 @@
+import { PostStatus } from '../types/models'
+
 interface CreateNewsItemInput {
   topicId: string
   url: string
@@ -74,7 +76,7 @@ export function createNewsItemsData(prisma: any) {
       const post = await createPost({
         title: newsItem.title,
         markdown: newsItem.summary || '',
-        status: 'suggested',
+        status: PostStatus.SUGGESTED,
         sourceUrl: newsItem.url,
         topicId: newsItem.topicId,
       })

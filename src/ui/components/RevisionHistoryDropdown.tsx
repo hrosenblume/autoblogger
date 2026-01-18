@@ -5,6 +5,7 @@ import { Loader2, History } from 'lucide-react'
 import { formatRelativeTime } from '../../lib/format'
 import type { RevisionSummary } from '../../lib/editor-types'
 import { Dropdown, DropdownItem, DropdownLabel } from './Dropdown'
+import { getToolbarButtonClass, toolbarButtonStyles } from './toolbar/ToolbarButton'
 
 interface Props {
   revisions: RevisionSummary[]
@@ -39,12 +40,12 @@ export function RevisionHistoryDropdown({
       type="button"
       disabled={disabled || isPreviewMode || previewLoading}
       title={disabled ? 'Save post to enable history' : 'Revision history'}
-      className="px-3 py-2 md:px-2.5 md:py-1.5 text-base md:text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 active:bg-accent md:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-muted-foreground"
+      className={getToolbarButtonClass(false, disabled || isPreviewMode || previewLoading)}
     >
       {previewLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className={`${toolbarButtonStyles.iconSize} animate-spin`} />
       ) : (
-        <History className="w-4 h-4" />
+        <History className={toolbarButtonStyles.iconSize} />
       )}
     </button>
   )

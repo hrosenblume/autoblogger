@@ -1,4 +1,5 @@
 import type { Post } from '../types'
+import { PostStatus } from '../types/models'
 import type { DestinationDispatcher } from '../destinations'
 import { createPrismicDestination } from '../destinations/prismic'
 
@@ -112,7 +113,7 @@ export function createPostsData(prisma: any, hooks?: PostHooks, dispatcher?: Des
 
     async findPublished() {
       return prisma.post.findMany({
-        where: { status: 'published' },
+        where: { status: PostStatus.PUBLISHED },
         orderBy: { publishedAt: 'desc' },
       })
     },
@@ -133,7 +134,7 @@ export function createPostsData(prisma: any, hooks?: PostHooks, dispatcher?: Des
 
     async findDrafts() {
       return prisma.post.findMany({
-        where: { status: 'draft' },
+        where: { status: PostStatus.DRAFT },
         orderBy: { updatedAt: 'desc' },
       })
     },
@@ -170,7 +171,7 @@ export function createPostsData(prisma: any, hooks?: PostHooks, dispatcher?: Des
           ...postData,
           slug,
           markdown: postData.markdown || '',
-          status: postData.status || 'draft',
+          status: postData.status || PostStatus.DRAFT,
         },
       })
 
@@ -239,8 +240,8 @@ export function createPostsData(prisma: any, hooks?: PostHooks, dispatcher?: Des
       const hasTitleChange = existing && postData.title !== undefined && postData.title !== existing.title
 
       // Auto-set publishedAt on first publish
-      if (postData.status === 'published') {
-        if (existing?.status !== 'published') {
+      if (postData.status === PostStatus.PUBLISHED) {
+        if (existing?.status !== PostStatus.PUBLISHED) {
           postData.publishedAt = new Date()
           isPublishing = true
           
@@ -251,12 +252,12 @@ export function createPostsData(prisma: any, hooks?: PostHooks, dispatcher?: Des
           // Post is already published AND has content changes - sync to destinations
           isUpdatingPublished = true
         }
-      } else if (postData.status === 'draft') {
+      } else if (postData.status === PostStatus.DRAFT) {
         // Check if unpublishing (from published to draft)
-        if (existing?.status === 'published') {
+        if (existing?.status === PostStatus.PUBLISHED) {
           isUnpublishing = true
         }
-      } else if (postData.status === undefined && existing?.status === 'published' && hasDestinationChanges) {
+      } else if (postData.status === undefined && existing?.status === PostStatus.PUBLISHED && hasDestinationChanges) {
         // Status not changing but post is published AND has changes - sync to destinations
         isUpdatingPublished = true
       }
@@ -352,11 +353,11 @@ export function createPostsData(prisma: any, hooks?: PostHooks, dispatcher?: Des
       // Soft delete - set status to 'deleted' instead of removing
       const result = await prisma.post.update({ 
         where: { id },
-        data: { status: 'deleted' },
+        data: { status: PostStatus.DELETED },
       })
 
       // Fire delete event if the post was published
-      if (existing?.status === 'published') {
+      if (existing?.status === PostStatus.PUBLISHED) {
         if (dispatcher) {
           dispatcher.delete(existing).catch((err) => {
             console.error('[autoblogger] Failed to dispatch delete event:', err)

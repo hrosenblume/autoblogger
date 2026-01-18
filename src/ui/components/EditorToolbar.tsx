@@ -60,7 +60,7 @@ export function EditorToolbar({
   // Use -2px overlap to prevent subpixel gap between navbar border and toolbar
   if (loading) {
     return (
-      <div className="fixed top-[4.375rem] md:top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto">
+      <div className="fixed top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 pt-4 pb-2 border-b border-border bg-background overflow-x-auto">
         <FormatButtons loading={true} />
         <Divider />
         <BlockButtons loading={true} />
@@ -77,7 +77,7 @@ export function EditorToolbar({
   }
 
   return (
-    <div className="fixed top-[4.375rem] md:top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto">
+    <div className="fixed top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 pt-4 pb-2 border-b border-border bg-background overflow-x-auto">
       <FormatButtons
         editor={editor}
         textareaRef={textareaRef}
@@ -133,7 +133,7 @@ export function EditorToolbar({
               : 'Select text to comment'
         }
       >
-        <MessageSquarePlus className="w-4 h-4" />
+        <MessageSquarePlus className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={onViewComments ?? (() => {})}
@@ -141,7 +141,7 @@ export function EditorToolbar({
         title="View all comments"
       >
         <span className="flex items-center gap-1">
-          <MessageSquare className="w-4 h-4" />
+          <MessageSquare className="w-5 h-5" />
           {commentsCount !== undefined && commentsCount > 0 && (
             <span className="text-xs tabular-nums">{commentsCount}</span>
           )}

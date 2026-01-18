@@ -1,12 +1,11 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo, type ReactNode } from 'react'
+import type { ChatMode, EditCommand, EssaySnapshot, EditHandler } from '../../types/editor'
+import { consumeSSEStream } from '../../lib/sse'
 
-export interface EssaySnapshot {
-  title: string
-  subtitle: string
-  markdown: string
-}
+// Re-export for backward compatibility
+export type { ChatMode, EssaySnapshot, EditHandler } from '../../types/editor'
 
 export interface Message {
   role: 'user' | 'assistant'
@@ -22,19 +21,6 @@ export interface EssayContext {
   markdown: string
 }
 
-export type ChatMode = 'ask' | 'agent' | 'plan' | 'search'
-
-export interface EssayEdit {
-  type: 'replace_all' | 'replace_section' | 'insert' | 'delete'
-  title?: string
-  subtitle?: string
-  markdown?: string
-  find?: string
-  replace?: string
-  position?: 'before' | 'after' | 'start' | 'end'
-}
-
-export type EditHandler = (edit: EssayEdit) => boolean
 export type ExpandPlanHandler = (plan: string, wordCount: number) => void
 
 interface ChatContextValue {
@@ -66,15 +52,15 @@ interface ChatContextValue {
 const ChatContext = createContext<ChatContextValue | null>(null)
 
 // Parse edit blocks from agent mode responses
-function parseEditBlocks(content: string): { edits: EssayEdit[], cleanContent: string } {
+function parseEditBlocks(content: string): { edits: EditCommand[], cleanContent: string } {
   const editRegex = /:::edit\s*([\s\S]*?)\s*:::/g
-  const edits: EssayEdit[] = []
+  const edits: EditCommand[] = []
   let cleanContent = content
   
   let match
   while ((match = editRegex.exec(content)) !== null) {
     try {
-      const edit = JSON.parse(match[1]) as EssayEdit
+      const edit = JSON.parse(match[1]) as EditCommand
       edits.push(edit)
       cleanContent = cleanContent.replace(match[0], '')
     } catch {
@@ -268,61 +254,24 @@ export function ChatProvider({
         throw new Error(errorMessage)
       }
 
-      const reader = response.body?.getReader()
-      if (!reader) throw new Error('No response body')
-
-      const decoder = new TextDecoder()
-      let assistantContent = ''
       let appliedEdits = false
-      let buffer = ''
 
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        
-        // Process complete SSE lines
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || '' // Keep incomplete line in buffer
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6) // Remove 'data: ' prefix
-            if (data === '[DONE]') continue
-            
-            try {
-              const parsed = JSON.parse(data)
-              if (parsed.error) {
-                // Error occurred during streaming
-                throw new Error(parsed.error)
-              }
-              if (parsed.text) {
-                assistantContent += parsed.text
-              }
-              // Optionally handle thinking content
-              // if (parsed.thinking) { ... }
-            } catch (parseError) {
-              // If it's our error, rethrow it
-              if (parseError instanceof Error && parseError.message !== 'Unexpected token') {
-                throw parseError
-              }
-              // Ignore parse errors for incomplete JSON
-            }
-          }
+      // Use shared SSE stream consumer - returns accumulated content
+      const assistantContent = await consumeSSEStream(response, (event) => {
+        if (event.error) {
+          throw new Error(event.error)
         }
-
         // Display cleaned content during streaming (strip edit blocks from view)
         const displayContent = mode === 'agent' 
-          ? stripEditBlocksForDisplay(assistantContent)
-          : assistantContent
+          ? stripEditBlocksForDisplay(event.fullContent)
+          : event.fullContent
           
         setMessages(prev => {
           const updated = [...prev]
           updated[updated.length - 1] = { role: 'assistant', content: displayContent, mode }
           return updated
         })
-      }
+      }, signal)
       
       // Process agent mode edits
       if (mode === 'agent' && editHandlerRef.current && essayContextRef.current) {

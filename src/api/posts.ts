@@ -1,4 +1,5 @@
 import type { AutobloggerServer as Autoblogger, Session } from '../server'
+import { PostStatus } from '../types/models'
 
 type NextRequest = Request & { nextUrl: URL }
 
@@ -79,7 +80,7 @@ export async function handlePostsAPI(
     const body = await req.json()
     
     // Check publish permission
-    if (body.status === 'published' && !cms.config.auth.canPublish(session)) {
+    if (body.status === PostStatus.PUBLISHED && !cms.config.auth.canPublish(session)) {
       return jsonResponse({ error: 'Not authorized to publish' }, 403)
     }
     

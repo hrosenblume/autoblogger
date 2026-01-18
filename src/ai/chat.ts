@@ -1,7 +1,7 @@
 import { createStream } from './provider'
 import { buildChatPrompt, buildPlanPrompt } from './builders'
 import { extractAndFetchUrls, buildUrlContext } from '../lib/url-extractor'
-import { DEFAULT_AGENT_TEMPLATE } from './prompts'
+import { DEFAULT_AGENT_TEMPLATE, DEFAULT_ASK_TEMPLATE } from './prompts'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -91,6 +91,9 @@ URL extraction encountered an error: ${err instanceof Error ? err.message : 'Unk
   if (options.mode === 'agent') {
     // Use custom agent template if set, otherwise use default
     modeInstructions = '\n\n' + (options.agentTemplate || DEFAULT_AGENT_TEMPLATE)
+  } else if (options.mode === 'ask' || !options.mode) {
+    // Ask mode: conversational only, no edit commands
+    modeInstructions = '\n\n' + DEFAULT_ASK_TEMPLATE
   }
 
   // Add web search context if enabled

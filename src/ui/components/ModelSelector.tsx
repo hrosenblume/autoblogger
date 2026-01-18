@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, Check } from 'lucide-react'
 import type { AIModelOption } from '../../lib/models'
-import { ControlButton } from './ControlButton'
 
 interface ModelSelectorProps {
   models: AIModelOption[]
@@ -34,10 +33,14 @@ export function ModelSelector({
 
   return (
     <div ref={ref} className="relative">
-      <ControlButton onClick={() => setOpen(!open)}>
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium rounded-full bg-muted text-muted-foreground transition-colors"
+      >
         {displayModel?.name || 'Select model'}
-        <ChevronDown className="w-3.5 h-3.5" />
-      </ControlButton>
+        <ChevronDown className="w-3 h-3 opacity-60" />
+      </button>
       {open && (
         <div className="absolute bottom-full left-0 mb-1 min-w-[180px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1">
           {models.map(model => (

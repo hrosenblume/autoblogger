@@ -1,5 +1,33 @@
 // Editor-related types
 
+// ============================================================================
+// Chat and Edit Types (consolidated from context.tsx and useChat.tsx)
+// ============================================================================
+
+export type ChatMode = 'ask' | 'agent' | 'plan' | 'search'
+
+export interface EditCommand {
+  type: 'replace_all' | 'replace_section' | 'insert' | 'delete'
+  title?: string
+  subtitle?: string
+  markdown?: string
+  find?: string
+  replace?: string
+  position?: 'before' | 'after' | 'start' | 'end'
+}
+
+export interface EssaySnapshot {
+  title: string
+  subtitle: string
+  markdown: string
+}
+
+export type EditHandler = (edit: EditCommand) => boolean
+
+// ============================================================================
+// Revision Types
+// ============================================================================
+
 export interface RevisionSummary {
   id: string
   title: string | null

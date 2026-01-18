@@ -7,11 +7,11 @@ import { useChatContext, type ChatMode } from '../hooks/useChat'
 import { DEFAULT_MODELS, type AIModelOption } from '../../lib/models'
 import { ControlButton } from './ControlButton'
 import { ModelSelector } from './ModelSelector'
-import { markdownToStyledHtml } from '../../lib/markdown'
+import { markdownToHtml } from '../../lib/markdown'
 import { DashboardContext } from '../context'
 
-/** Default prose classes for chat messages */
-const DEFAULT_PROSE_CLASSES = ''
+/** Default prose classes for chat messages - uses Tailwind Typography */
+const DEFAULT_PROSE_CLASSES = 'prose prose-chat dark:prose-invert'
 
 /** Strip <plan> tags for display during streaming */
 function stripPlanTags(content: string): string {
@@ -64,9 +64,9 @@ export function ChatPanel({
   const isOnEditor = isOnEditorProp ?? !!essayContext
   
   const [input, setInput] = useState('')
-  // Initialize animation state from context to prevent flash on remount
-  const [isAnimating, setIsAnimating] = useState(open)
-  const [isVisible, setIsVisible] = useState(open)
+  // Always start hidden - let useEffect handle the animation
+  const [isAnimating, setIsAnimating] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
   const [mounted, setMounted] = useState(typeof window !== 'undefined')
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
   const [modeMenuOpen, setModeMenuOpen] = useState(false)
@@ -161,9 +161,11 @@ export function ChatPanel({
   // Start animation AFTER visibility is set (separate render cycle)
   useEffect(() => {
     if (isVisible && open && !isAnimating) {
-      // Element is now in DOM with translate-x-full, trigger transition
+      // Double rAF ensures browser has painted initial state before animating
       requestAnimationFrame(() => {
-        setIsAnimating(true)
+        requestAnimationFrame(() => {
+          setIsAnimating(true)
+        })
       })
     }
   }, [isVisible, open, isAnimating])
@@ -351,7 +353,7 @@ export function ChatPanel({
                     {message.role === 'assistant' ? (
                       <div 
                         className={`${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`}
-                        dangerouslySetInnerHTML={{ __html: markdownToStyledHtml(stripPlanTags(message.content)) }}
+                        dangerouslySetInnerHTML={{ __html: markdownToHtml(stripPlanTags(message.content)) }}
                       />
                     ) : (
                       <div className="whitespace-pre-wrap break-words">
@@ -410,14 +412,14 @@ export function ChatPanel({
           className="flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]"
         >
           {/* Controls Row: Mode Dropdown, Globe Toggle, Model Dropdown */}
-          <div className="mb-2 flex items-center gap-2">
+          <div className="pb-3 flex items-center gap-2">
             {/* Mode Dropdown */}
             <div ref={modeMenuRef} className="relative">
               <button
                 type="button"
                 onClick={() => setModeMenuOpen(!modeMenuOpen)}
                 title="Switch mode (⌘⇧A)"
-                className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${
+                className={`inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium rounded-full transition-colors ${
                   mode === 'ask' 
                     ? 'bg-ab-success/15 text-ab-success' 
                     : mode === 'agent' 
@@ -425,11 +427,11 @@ export function ChatPanel({
                       : 'bg-ab-warning/15 text-ab-warning'
                 }`}
               >
-                {mode === 'ask' && <MessageSquare className="w-3 h-3" />}
-                {mode === 'agent' && <Pencil className="w-3 h-3" />}
-                {mode === 'plan' && <List className="w-3 h-3" />}
+                {mode === 'ask' && <MessageSquare className="w-3.5 h-3.5" />}
+                {mode === 'agent' && <Pencil className="w-3.5 h-3.5" />}
+                {mode === 'plan' && <List className="w-3.5 h-3.5" />}
                 {mode === 'ask' ? 'Ask' : mode === 'agent' ? 'Agent' : 'Plan'}
-                <ChevronDown className="w-2.5 h-2.5 opacity-60" />
+                <ChevronDown className="w-3 h-3 opacity-60" />
               </button>
               {modeMenuOpen && (
                 <div className="absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1">
@@ -473,7 +475,7 @@ export function ChatPanel({
               title={webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)"}
               tabIndex={-1}
             >
-              <Globe className="w-4 h-4" />
+              <Globe className="w-[18px] h-[18px]" />
             </ControlButton>
             
             {/* Thinking Mode Toggle */}
@@ -483,7 +485,7 @@ export function ChatPanel({
               title={thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode"}
               tabIndex={-1}
             >
-              <Brain className="w-4 h-4" />
+              <Brain className="w-[18px] h-[18px]" />
             </ControlButton>
             
             {/* Model Dropdown */}

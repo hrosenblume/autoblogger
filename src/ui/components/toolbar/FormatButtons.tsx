@@ -6,7 +6,7 @@ import type { Editor } from '@tiptap/react'
 // Cast editor to any for StarterKit command support
 type AnyEditor = Editor & { chain: () => any; isActive: (name: string, attrs?: any) => boolean }
 import type { RefObject } from 'react'
-import { Loader2, Wand2 } from 'lucide-react'
+import { Loader2, Wand2, Heading1, Heading2, Heading3, Bold, Italic, Underline, Strikethrough } from 'lucide-react'
 import { ToolbarButton, Divider, SkeletonButton } from './ToolbarButton'
 import { setHeadingAtCursor, insertAtCursor } from '../../../lib/markdown-helpers'
 
@@ -126,7 +126,7 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
         disabled={aiGenerating}
         title="Heading 1"
       >
-        H1
+        <Heading1 className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleHeading({ level: 2 }).run() : setHeading(2)}
@@ -134,7 +134,7 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
         disabled={aiGenerating}
         title="Heading 2"
       >
-        H2
+        <Heading2 className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleHeading({ level: 3 }).run() : setHeading(3)}
@@ -142,7 +142,7 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
         disabled={aiGenerating}
         title="Heading 3"
       >
-        H3
+        <Heading3 className="w-5 h-5" />
       </ToolbarButton>
 
       <Divider />
@@ -154,7 +154,7 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
         disabled={aiGenerating}
         title="Bold (⌘B)"
       >
-        <span className="font-bold">B</span>
+        <Bold className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleItalic().run() : wrapSelection('*', '*')}
@@ -162,7 +162,7 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
         disabled={aiGenerating}
         title="Italic (⌘I)"
       >
-        <span className="italic">I</span>
+        <Italic className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleUnderline?.().run() : null}
@@ -170,7 +170,7 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
         disabled={aiGenerating || !!isMarkdownMode}
         title="Underline (⌘U)"
       >
-        <span className="underline">U</span>
+        <Underline className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleStrike().run() : wrapSelection('~~', '~~')}
@@ -178,7 +178,7 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
         disabled={aiGenerating}
         title="Strikethrough (⌘⇧X)"
       >
-        <span className="line-through">S</span>
+        <Strikethrough className="w-5 h-5" />
       </ToolbarButton>
 
       {/* AI Rewrite (only in rich text mode, but always visible when not in markdown mode) */}
@@ -197,9 +197,9 @@ export function FormatButtons({ editor: editorProp, textareaRef, markdown, onMar
             }
           >
             {isRewriting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              <Wand2 className="w-4 h-4" />
+              <Wand2 className="w-5 h-5" />
             )}
           </ToolbarButton>
         </>

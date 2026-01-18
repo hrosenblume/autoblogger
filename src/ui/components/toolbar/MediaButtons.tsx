@@ -134,10 +134,10 @@ export function MediaButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Insert link"
       >
-        <Link2 className="w-4 h-4" />
+        <Link2 className="w-5 h-5" />
       </ToolbarButton>
       <ToolbarButton onClick={() => fileInputRef.current?.click()} disabled={aiGenerating} title="Insert image">
-        <Image className="w-4 h-4" />
+        <Image className="w-5 h-5" />
       </ToolbarButton>
       <input
         ref={fileInputRef}
@@ -147,7 +147,7 @@ export function MediaButtons({ editor: editorProp, textareaRef, markdown, onMark
         className="hidden"
       />
       <ToolbarButton onClick={handleClearFormatting} disabled={aiGenerating} title="Clear formatting">
-        <RemoveFormatting className="w-4 h-4" />
+        <RemoveFormatting className="w-5 h-5" />
       </ToolbarButton>
     </>
   )

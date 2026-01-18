@@ -1,9 +1,0 @@
-{
-  "version": "v1",
-  "packages": {
-    "autoblogger": {
-      "signature": "a8cbdeee6ff931f0dd8e63267be625d9",
-      "file": true
-    }
-  }
-}

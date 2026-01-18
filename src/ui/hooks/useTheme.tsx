@@ -1,6 +1,8 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useLayoutEffect, useCallback, useRef, type ReactNode } from 'react'
+import { getThemeBackground } from '../../lib/theme-constants'
+import { repaintIOSSafeArea } from '../../lib/safari-fixes'
 
 type Theme = 'light' | 'dark' | 'system'
 type ResolvedTheme = 'light' | 'dark'
@@ -48,17 +50,36 @@ interface AutobloggerThemeProviderProps {
   onContainerRef?: (el: HTMLDivElement | null) => void
 }
 
+// Get initial theme synchronously to prevent flash
+function getInitialTheme(): { theme: Theme; resolved: ResolvedTheme } {
+  if (typeof window === 'undefined') {
+    return { theme: 'system', resolved: 'light' }
+  }
+  const theme = getStoredTheme()
+  const resolved = resolveTheme(theme)
+  return { theme, resolved }
+}
+
 export function AutobloggerThemeProvider({ children, className, onContainerRef }: AutobloggerThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>('system')
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light')
+  // Initialize with the correct theme immediately (prevents flash)
+  const [initialState] = useState(() => getInitialTheme())
+  const [theme, setThemeState] = useState<Theme>(initialState.theme)
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(initialState.resolved)
   const [mounted, setMounted] = useState(false)
   const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null)
+  const initializedRef = useRef(false)
 
-  // Initialize theme from localStorage on mount
+  // Set body background IMMEDIATELY on first client render (before effects)
+  // This prevents the flash by setting colors before paint
+  if (typeof window !== 'undefined' && !initializedRef.current) {
+    initializedRef.current = true
+    const bgColor = getThemeBackground(initialState.resolved)
+    document.body.style.background = bgColor
+    document.documentElement.style.background = bgColor
+  }
+
+  // Mark as mounted after first render
   useEffect(() => {
-    const stored = getStoredTheme()
-    setThemeState(stored)
-    setResolvedTheme(resolveTheme(stored))
     setMounted(true)
   }, [])
 
@@ -88,6 +109,28 @@ export function AutobloggerThemeProvider({ children, className, onContainerRef }
     }
   }, [resolvedTheme, containerEl])
 
+  // iOS Safari viewport fix: Set body background directly to prevent bleed-through
+  // When Safari's address bar animates, gaps can show the underlying body color.
+  // We sync body's background with autoblogger's theme to prevent this.
+  // Using useLayoutEffect to run synchronously before browser paint.
+  const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect
+  
+  useIsomorphicLayoutEffect(() => {
+    if (typeof document === 'undefined' || !mounted) return
+    
+    const bgColor = getThemeBackground(resolvedTheme)
+    
+    // Set background on both html and body for full coverage
+    document.body.style.background = bgColor
+    document.documentElement.style.background = bgColor
+    
+    return () => {
+      // Clear the background styles when autoblogger unmounts
+      document.body.style.background = ''
+      document.documentElement.style.background = ''
+    }
+  }, [resolvedTheme, mounted])
+
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme)
     setResolvedTheme(resolveTheme(newTheme))
@@ -97,6 +140,9 @@ export function AutobloggerThemeProvider({ children, className, onContainerRef }
     } catch {
       // localStorage not available
     }
+    
+    // iOS Safari safe-area repaint fix
+    repaintIOSSafeArea(getThemeBackground(resolveTheme(newTheme)))
   }, [])
 
   const handleContainerRef = useCallback((el: HTMLDivElement | null) => {
@@ -104,22 +150,26 @@ export function AutobloggerThemeProvider({ children, className, onContainerRef }
     onContainerRef?.(el)
   }, [onContainerRef])
 
-  // Don't render children until mounted to avoid hydration mismatch
-  // But we still need to render the context provider
+  // Provide actual theme values (initialized synchronously on client)
   const value: ThemeContextValue = {
-    theme: mounted ? theme : 'system',
-    resolvedTheme: mounted ? resolvedTheme : 'light',
+    theme,
+    resolvedTheme,
     setTheme,
   }
 
-  const darkClass = mounted && resolvedTheme === 'dark' ? 'dark' : ''
+  // Use actual resolved theme for classes and attributes (no waiting for mounted)
+  const darkClass = resolvedTheme === 'dark' ? 'dark' : ''
   const combinedClassName = ['autoblogger', darkClass, className].filter(Boolean).join(' ')
+  const themeAttr = resolvedTheme
 
   return (
     <ThemeContext.Provider value={value}>
       <div 
         ref={handleContainerRef}
         className={combinedClassName}
+        data-autoblogger-root=""
+        data-theme={themeAttr}
+        suppressHydrationWarning
       >
         {children}
       </div>

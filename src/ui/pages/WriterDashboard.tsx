@@ -6,6 +6,7 @@ import { useDashboardContext } from '../context'
 import { Skeleton } from '../components/Skeleton'
 import { ControlButton } from '../components/ControlButton'
 import { ModelSelector } from '../components/ModelSelector'
+import { PageContainer } from '../components/PageContainer'
 import { LENGTH_OPTIONS, DEFAULT_MODELS, type AIModelOption } from '../../lib/models'
 import { formatRelativeTime } from '../../lib/format'
 
@@ -161,7 +162,7 @@ export function WriterDashboard() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto px-6 py-8">
+      <PageContainer>
         <div className="mt-4 mb-8">
           <Skeleton className="h-6 w-48 mb-4" />
           <Skeleton className="h-24 w-full" />
@@ -174,15 +175,16 @@ export function WriterDashboard() {
         {[1,2,3,4,5].map(i => (
           <Skeleton key={i} className="h-16 mb-2" />
         ))}
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8 pb-16">
+    <PageContainer className="pb-16">
       <button
         onClick={() => navigate('/editor')}
-        className="sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg z-50 bg-primary text-primary-foreground flex items-center justify-center"
+        className="sm:hidden fixed right-6 w-14 h-14 rounded-full shadow-lg z-50 bg-primary text-primary-foreground flex items-center justify-center"
+        style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom, 0px))' }}
       >
         <Plus className="w-6 h-6" />
       </button>
@@ -211,11 +213,11 @@ export function WriterDashboard() {
             </button>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div className="relative">
               <ControlButton onClick={() => setLengthOpen(!lengthOpen)}>
                 {length} words
-                <ChevronDown className="w-3.5 h-3.5" />
+                <ChevronDown className="w-3 h-3 opacity-60" />
               </ControlButton>
               {lengthOpen && (
                 <div className="absolute top-full left-0 mt-1 bg-popover border border-border rounded-md shadow-md z-50">
@@ -234,11 +236,11 @@ export function WriterDashboard() {
             </div>
             
             <ControlButton onClick={() => setWebEnabled(!webEnabled)} active={webEnabled} title="Search the web (works with all models)">
-              <Globe className="w-4 h-4" />
+              <Globe className="w-[18px] h-[18px]" />
             </ControlButton>
             
             <ControlButton onClick={() => setThinkingEnabled(!thinkingEnabled)} active={thinkingEnabled} title="Enable thinking mode">
-              <Brain className="w-4 h-4" />
+              <Brain className="w-[18px] h-[18px]" />
             </ControlButton>
             
             <ModelSelector models={models} selectedModel={modelId} onModelChange={setModelId} currentModel={currentModel} />
@@ -317,7 +319,7 @@ export function WriterDashboard() {
         </section>
       )}
 
-      <div className="relative flex items-center justify-between border-b border-border mb-6">
+      <div className="relative flex items-center justify-between border-b border-border">
         <div className={`flex ${searchOpen ? 'invisible sm:visible' : ''}`}>
           {(['all', 'drafts', 'published'] as TabType[]).map(tab => (
             <button
@@ -382,7 +384,7 @@ export function WriterDashboard() {
           </p>
         )}
       </section>
-    </div>
+    </PageContainer>
   )
 }
 

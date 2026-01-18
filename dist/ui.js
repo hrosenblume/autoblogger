@@ -7,6 +7,9 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -29,61 +32,12 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/ui/index.ts
-var ui_exports = {};
-__export(ui_exports, {
-  AutobloggerDashboard: () => AutobloggerDashboard,
-  ChatButton: () => ChatButton,
-  ChatContext: () => ChatContext,
-  ChatIcon: () => ChatIcon,
-  ChatPanel: () => ChatPanel,
-  ChatProvider: () => ChatProvider,
-  ChevronLeftIcon: () => ChevronLeftIcon,
-  CommentThread: () => CommentThread,
-  CommentsPanel: () => CommentsPanel,
-  ControlButton: () => ControlButton,
-  ExpandableSection: () => ExpandableSection,
-  GlobalShortcuts: () => GlobalShortcuts,
-  ModelSelector: () => ModelSelector,
-  MoonIcon: () => MoonIcon,
-  Navbar: () => Navbar,
-  SHORTCUTS: () => SHORTCUTS,
-  SeoSection: () => SeoSection,
-  SunIcon: () => SunIcon,
-  ThemeProvider: () => ThemeProvider,
-  ThemeToggle: () => ThemeToggle,
-  useAIModels: () => useAIModels,
-  useAutobloggerTheme: () => useAutobloggerTheme,
-  useChatContext: () => useChatContext,
-  useChatContextOptional: () => useChatContextOptional,
-  useComments: () => useComments,
-  useDashboardContext: () => useDashboardContext,
-  useDashboardKeyboard: () => useDashboardKeyboard,
-  useKeyboard: () => useKeyboard,
-  useTheme: () => useTheme
-});
-module.exports = __toCommonJS(ui_exports);
-
-// src/ui/dashboard.tsx
-var import_react25 = require("react");
-var import_lucide_react13 = require("lucide-react");
-
 // src/ui/context.tsx
-var import_react = require("react");
-var import_jsx_runtime = require("react/jsx-runtime");
-var DashboardContext = (0, import_react.createContext)(null);
 function useDashboardContext() {
   const ctx = (0, import_react.useContext)(DashboardContext);
   if (!ctx) throw new Error("useDashboardContext must be used within DashboardProvider");
   return ctx;
 }
-var DEFAULT_STYLES = {
-  container: "max-w-[680px] mx-auto px-6",
-  title: "text-[22px] md:text-2xl font-bold leading-tight",
-  subtitle: "text-base md:text-lg text-muted-foreground leading-snug",
-  byline: "text-sm text-muted-foreground",
-  prose: "prose"
-};
 function extractPath(pathname, basePath) {
   const normalized = pathname.replace(/\/$/, "");
   const base = basePath.replace(/\/$/, "");
@@ -260,50 +214,67 @@ function DashboardProvider({
   ]);
   return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(DashboardContext.Provider, { value: contextValue, children });
 }
-
-// src/ui/pages/WriterDashboard.tsx
-var import_react4 = require("react");
-var import_lucide_react2 = require("lucide-react");
+var import_react, import_jsx_runtime, DashboardContext, DEFAULT_STYLES;
+var init_context = __esm({
+  "src/ui/context.tsx"() {
+    "use strict";
+    "use client";
+    import_react = require("react");
+    import_jsx_runtime = require("react/jsx-runtime");
+    DashboardContext = (0, import_react.createContext)(null);
+    DEFAULT_STYLES = {
+      container: "max-w-[680px] mx-auto px-6",
+      title: "text-2xl font-bold leading-tight",
+      subtitle: "text-base text-muted-foreground leading-snug",
+      byline: "text-sm text-muted-foreground",
+      prose: "prose"
+    };
+  }
+});
 
 // src/lib/cn.ts
-var import_clsx = require("clsx");
-var import_tailwind_merge = require("tailwind-merge");
 function cn(...inputs) {
   return (0, import_tailwind_merge.twMerge)((0, import_clsx.clsx)(inputs));
 }
-
-// src/ui/components/Skeleton.tsx
-var import_jsx_runtime2 = require("react/jsx-runtime");
-function Skeleton({ className }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: cn("animate-pulse bg-muted rounded", className) });
-}
+var import_clsx, import_tailwind_merge;
+var init_cn = __esm({
+  "src/lib/cn.ts"() {
+    "use strict";
+    import_clsx = require("clsx");
+    import_tailwind_merge = require("tailwind-merge");
+  }
+});
 
 // src/ui/components/ControlButton.tsx
-var import_react2 = require("react");
-var import_jsx_runtime3 = require("react/jsx-runtime");
-var ControlButton = (0, import_react2.forwardRef)(
-  ({ className = "", active, disabled, children, type = "button", ...props }, ref) => {
-    const baseClasses = "inline-flex items-center gap-1 text-sm transition-colors focus:outline-none";
-    const stateClasses = disabled ? "text-muted-foreground/30 cursor-not-allowed" : active ? "text-ab-active" : "text-muted-foreground active:text-foreground md:hover:text-foreground";
-    return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
-      "button",
-      {
-        ref,
-        type,
-        disabled,
-        className: `${baseClasses} ${stateClasses} ${className}`,
-        ...props,
-        children
+var import_react2, import_jsx_runtime3, ControlButton;
+var init_ControlButton = __esm({
+  "src/ui/components/ControlButton.tsx"() {
+    "use strict";
+    "use client";
+    import_react2 = require("react");
+    import_jsx_runtime3 = require("react/jsx-runtime");
+    ControlButton = (0, import_react2.forwardRef)(
+      ({ className = "", active, disabled, children, type = "button", ...props }, ref) => {
+        const baseClasses = "inline-flex items-center gap-1 p-1 text-sm transition-colors focus:outline-none";
+        const stateClasses = disabled ? "text-muted-foreground/30 cursor-not-allowed" : active ? "text-ab-active" : "text-muted-foreground active:text-foreground md:hover:text-foreground";
+        return /* @__PURE__ */ (0, import_jsx_runtime3.jsx)(
+          "button",
+          {
+            ref,
+            type,
+            disabled,
+            className: `${baseClasses} ${stateClasses} ${className}`,
+            ...props,
+            children
+          }
+        );
       }
     );
+    ControlButton.displayName = "ControlButton";
   }
-);
-ControlButton.displayName = "ControlButton";
+});
 
 // src/ui/components/ModelSelector.tsx
-var import_react3 = require("react");
-var import_lucide_react = require("lucide-react");
-var import_jsx_runtime4 = require("react/jsx-runtime");
 function ModelSelector({
   models,
   selectedModel,
@@ -323,10 +294,18 @@ function ModelSelector({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { ref, className: "relative", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(ControlButton, { onClick: () => setOpen(!open), children: [
-      displayModel?.name || "Select model",
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react.ChevronDown, { className: "w-3.5 h-3.5" })
-    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+      "button",
+      {
+        type: "button",
+        onClick: () => setOpen(!open),
+        className: "inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium rounded-full bg-muted text-muted-foreground transition-colors",
+        children: [
+          displayModel?.name || "Select model",
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(import_lucide_react.ChevronDown, { className: "w-3 h-3 opacity-60" })
+        ]
+      }
+    ),
     open && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "absolute bottom-full left-0 mb-1 min-w-[180px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: models.map((model) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
       "button",
       {
@@ -344,951 +323,72 @@ function ModelSelector({
     )) })
   ] });
 }
+var import_react3, import_lucide_react, import_jsx_runtime4;
+var init_ModelSelector = __esm({
+  "src/ui/components/ModelSelector.tsx"() {
+    "use strict";
+    "use client";
+    import_react3 = require("react");
+    import_lucide_react = require("lucide-react");
+    import_jsx_runtime4 = require("react/jsx-runtime");
+  }
+});
 
 // src/lib/models.ts
-var LENGTH_OPTIONS = [300, 500, 800, 1e3];
-var DEFAULT_MODELS = [
-  { id: "claude-sonnet", name: "Sonnet 4.5", description: "Fast, capable", hasNativeSearch: false },
-  { id: "claude-opus", name: "Opus 4.5", description: "Highest quality", hasNativeSearch: false },
-  { id: "gpt-5.2", name: "GPT-5.2", description: "Latest OpenAI", hasNativeSearch: true },
-  { id: "gpt-5-mini", name: "GPT-5 Mini", description: "Fast and efficient", hasNativeSearch: true }
-];
+var LENGTH_OPTIONS, DEFAULT_MODELS;
+var init_models = __esm({
+  "src/lib/models.ts"() {
+    "use strict";
+    LENGTH_OPTIONS = [300, 500, 800, 1e3];
+    DEFAULT_MODELS = [
+      { id: "claude-sonnet", name: "Sonnet 4.5", description: "Fast, capable", hasNativeSearch: false },
+      { id: "claude-opus", name: "Opus 4.5", description: "Highest quality", hasNativeSearch: false },
+      { id: "gpt-5.2", name: "GPT-5.2", description: "Latest OpenAI", hasNativeSearch: true },
+      { id: "gpt-5-mini", name: "GPT-5 Mini", description: "Fast and efficient", hasNativeSearch: true }
+    ];
+  }
+});
 
-// src/lib/format.ts
-var MINUTE = 6e4;
-var HOUR = 36e5;
-var DAY = 864e5;
-function formatRelativeTime(isoDate) {
-  const date = new Date(isoDate);
-  const diffMs = Date.now() - date.getTime();
-  const mins = Math.floor(diffMs / MINUTE);
-  const hours = Math.floor(diffMs / HOUR);
-  const days = Math.floor(diffMs / DAY);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days === 1) return "Yesterday";
-  if (days < 7) return `${days}d ago`;
-  return date.toLocaleDateString();
-}
-function formatSavedTime(date) {
-  const now = /* @__PURE__ */ new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffSecs = Math.floor(diffMs / 1e3);
-  const diffMins = Math.floor(diffMs / MINUTE);
-  if (diffSecs < 10) return "just now";
-  if (diffSecs < 60) return `${diffSecs}s ago`;
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const isToday = date.toDateString() === now.toDateString();
-  if (isToday) {
-    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-  }
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  });
-}
-function countWords(text) {
-  if (!text) return 0;
-  return text.split(/\s+/).filter(Boolean).length;
-}
-
-// src/ui/pages/WriterDashboard.tsx
-var import_jsx_runtime5 = require("react/jsx-runtime");
-function WriterDashboard() {
-  const { apiBasePath, navigate, sharedData, sharedDataLoading, removeSharedPost } = useDashboardContext();
-  const [posts, setPosts] = (0, import_react4.useState)(() => sharedData?.posts || []);
-  const [loading, setLoading] = (0, import_react4.useState)(() => !sharedData && sharedDataLoading);
-  const [searchQuery, setSearchQuery] = (0, import_react4.useState)("");
-  const [searchOpen, setSearchOpen] = (0, import_react4.useState)(false);
-  const [activeTab, setActiveTab] = (0, import_react4.useState)("all");
-  const [suggestedPosts, setSuggestedPosts] = (0, import_react4.useState)(() => sharedData?.suggestedPosts || []);
-  const [autoDraftEnabled, setAutoDraftEnabled] = (0, import_react4.useState)(() => sharedData?.settings.autoDraftEnabled || false);
-  const [suggestedOpen, setSuggestedOpen] = (0, import_react4.useState)(false);
-  const [actionLoading, setActionLoading] = (0, import_react4.useState)(null);
-  const [models, setModels] = (0, import_react4.useState)(
-    () => sharedData?.aiSettings.availableModels?.length > 0 ? sharedData?.aiSettings.availableModels : DEFAULT_MODELS
-  );
-  const [modelId, setModelId] = (0, import_react4.useState)(() => sharedData?.aiSettings.defaultModel || "claude-sonnet");
-  const [length, setLength] = (0, import_react4.useState)(500);
-  const [webEnabled, setWebEnabled] = (0, import_react4.useState)(false);
-  const [thinkingEnabled, setThinkingEnabled] = (0, import_react4.useState)(false);
-  const [lengthOpen, setLengthOpen] = (0, import_react4.useState)(false);
-  (0, import_react4.useEffect)(() => {
-    if (sharedData) {
-      setPosts(sharedData.posts);
-      setSuggestedPosts(sharedData.suggestedPosts);
-      setAutoDraftEnabled(sharedData.settings.autoDraftEnabled);
-      if (sharedData.aiSettings.availableModels.length > 0) {
-        setModels(sharedData.aiSettings.availableModels);
-      }
-      if (sharedData.aiSettings.defaultModel) {
-        setModelId(sharedData.aiSettings.defaultModel);
-      }
-      setLoading(false);
-    }
-  }, [sharedData]);
-  (0, import_react4.useEffect)(() => {
-    if (!sharedDataLoading) {
-      setLoading(false);
-    }
-  }, [sharedDataLoading]);
-  const currentModel = models.find((m) => m.id === modelId);
-  const draftCount = (0, import_react4.useMemo)(() => posts.filter((p) => p.status === "draft").length, [posts]);
-  const publishedCount = (0, import_react4.useMemo)(() => posts.filter((p) => p.status === "published").length, [posts]);
-  const filteredPosts = (0, import_react4.useMemo)(() => {
-    let result = posts.filter((p) => p.status !== "suggested" && p.status !== "deleted");
-    if (searchQuery) {
-      result = result.filter((p) => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
-    }
-    if (activeTab === "drafts") result = result.filter((p) => p.status === "draft");
-    else if (activeTab === "published") result = result.filter((p) => p.status === "published");
-    return result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-  }, [posts, searchQuery, activeTab]);
-  async function handleDelete2(id) {
-    if (!confirm("Delete this post?")) return;
-    await fetch(`${apiBasePath}/posts/${id}`, { method: "DELETE" });
-    setPosts(posts.filter((p) => p.id !== id));
-    removeSharedPost(id);
-  }
-  async function handlePublish(id) {
-    await fetch(`${apiBasePath}/posts/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "published" })
-    });
-    setPosts(posts.map((p) => p.id === id ? { ...p, status: "published" } : p));
-  }
-  async function handleUnpublish(id) {
-    await fetch(`${apiBasePath}/posts/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "draft" })
-    });
-    setPosts(posts.map((p) => p.id === id ? { ...p, status: "draft" } : p));
-  }
-  async function handleAcceptSuggested(post) {
-    setActionLoading(post.id);
-    try {
-      const res = await fetch(`${apiBasePath}/posts/${post.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "draft" })
-      });
-      if (res.ok) navigate(`/editor/${post.slug}`);
-    } finally {
-      setActionLoading(null);
-    }
-  }
-  async function handleRejectSuggested(post) {
-    if (!confirm(`Reject "${post.title}"?`)) return;
-    setActionLoading(post.id);
-    try {
-      const res = await fetch(`${apiBasePath}/posts/${post.id}`, { method: "DELETE" });
-      if (res.ok) setSuggestedPosts(suggestedPosts.filter((p) => p.id !== post.id));
-    } finally {
-      setActionLoading(null);
-    }
-  }
-  function handleIdeaSubmit(e) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const idea = formData.get("idea")?.trim();
-    if (idea) {
-      const params = new URLSearchParams({
-        idea,
-        model: modelId,
-        length: String(length),
-        ...webEnabled && { web: "1" },
-        ...thinkingEnabled && { thinking: "1" }
-      });
-      navigate(`/editor?${params}`);
-    }
-  }
-  if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "mt-4 mb-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-6 w-48 mb-4" }),
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-24 w-full" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex border-b border-border mb-6 gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-10 w-16" }),
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-10 w-20" }),
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-10 w-24" })
-      ] }),
-      [1, 2, 3, 4, 5].map((i) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Skeleton, { className: "h-16 mb-2" }, i))
-    ] });
-  }
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8 pb-16", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-      "button",
-      {
-        onClick: () => navigate("/editor"),
-        className: "sm:hidden fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg z-50 bg-primary text-primary-foreground flex items-center justify-center",
-        children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Plus, { className: "w-6 h-6" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "mt-4 mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("h2", { className: "text-lg font-semibold mb-4", children: "What's on your mind?" }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("form", { onSubmit: handleIdeaSubmit, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-            "textarea",
-            {
-              name: "idea",
-              placeholder: "Describe your idea...",
-              rows: 3,
-              className: "w-full min-h-[100px] px-3 py-2 pr-14 border border-input rounded-md bg-transparent resize-none text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring placeholder:text-muted-foreground",
-              onKeyDown: (e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  e.currentTarget.form?.requestSubmit();
-                }
-              }
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-            "button",
-            {
-              type: "submit",
-              className: "absolute bottom-3 right-3 rounded-full w-10 h-10 bg-secondary text-secondary-foreground flex items-center justify-center hover:bg-secondary/80",
-              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.ArrowUp, { className: "w-5 h-5" })
-            }
-          )
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center gap-3", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "relative", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(ControlButton, { onClick: () => setLengthOpen(!lengthOpen), children: [
-              length,
-              " words",
-              /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.ChevronDown, { className: "w-3.5 h-3.5" })
-            ] }),
-            lengthOpen && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "absolute top-full left-0 mt-1 bg-popover border border-border rounded-md shadow-md z-50", children: LENGTH_OPTIONS.map((len) => /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
-              "button",
-              {
-                onClick: () => {
-                  setLength(len);
-                  setLengthOpen(false);
-                },
-                className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between min-w-[120px]",
-                children: [
-                  len,
-                  " words",
-                  length === len && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Check, { className: "w-4 h-4" })
-                ]
-              },
-              len
-            )) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ControlButton, { onClick: () => setWebEnabled(!webEnabled), active: webEnabled, title: "Search the web (works with all models)", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Globe, { className: "w-4 h-4" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ControlButton, { onClick: () => setThinkingEnabled(!thinkingEnabled), active: thinkingEnabled, title: "Enable thinking mode", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Brain, { className: "w-4 h-4" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(ModelSelector, { models, selectedModel: modelId, onModelChange: setModelId, currentModel })
-        ] })
-      ] })
-    ] }),
-    autoDraftEnabled && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("section", { className: "mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("button", { onClick: () => setSuggestedOpen(!suggestedOpen), className: "flex items-center gap-2 text-lg font-semibold mb-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.ChevronDown, { className: `h-4 w-4 text-muted-foreground transition-transform ${suggestedOpen ? "" : "-rotate-90"}` }),
-        "Suggested",
-        suggestedPosts.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center", children: suggestedPosts.length })
-      ] }),
-      suggestedOpen && (suggestedPosts.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "space-y-2", children: suggestedPosts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center justify-between gap-4 py-3 border-b border-border", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex-1 min-w-0", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { className: "font-medium truncate", children: post.title }),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center gap-3 text-sm text-muted-foreground", children: [
-            post.topic && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: "bg-muted px-2 py-0.5 rounded text-xs", children: post.topic.name }),
-            /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { children: new Date(post.createdAt).toLocaleDateString() }),
-            post.sourceUrl && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
-              "a",
-              {
-                href: post.sourceUrl,
-                target: "_blank",
-                rel: "noopener noreferrer",
-                className: "flex items-center gap-1 hover:text-foreground",
-                onClick: (e) => e.stopPropagation(),
-                children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.ExternalLink, { className: "h-3 w-3" }),
-                  "Source"
-                ]
-              }
-            )
-          ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-            "button",
-            {
-              onClick: () => handleRejectSuggested(post),
-              disabled: actionLoading === post.id,
-              className: "p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md",
-              children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.X, { className: "h-4 w-4" })
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
-            "button",
-            {
-              onClick: () => handleAcceptSuggested(post),
-              disabled: actionLoading === post.id,
-              className: "px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm flex items-center gap-1",
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Check, { className: "h-4 w-4" }),
-                "Accept"
-              ]
-            }
-          )
-        ] })
-      ] }, post.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("p", { className: "text-muted-foreground text-sm", children: [
-        "No suggested essays \u2014",
-        " ",
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-          "button",
-          {
-            onClick: () => navigate("/settings/topics"),
-            className: "text-primary hover:underline",
-            children: "configure topics"
-          }
-        ),
-        " ",
-        "to generate drafts"
-      ] }))
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "relative flex items-center justify-between border-b border-border mb-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: `flex ${searchOpen ? "invisible sm:visible" : ""}`, children: ["all", "drafts", "published"].map((tab) => /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(
-        "button",
-        {
-          onClick: () => setActiveTab(tab),
-          className: `px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === tab ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`,
-          children: [
-            tab.charAt(0).toUpperCase() + tab.slice(1),
-            /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("span", { className: "text-muted-foreground ml-1", children: [
-              "(",
-              tab === "all" ? posts.filter((p) => p.status !== "suggested" && p.status !== "deleted").length : tab === "drafts" ? draftCount : publishedCount,
-              ")"
-            ] })
-          ]
-        },
-        tab
-      )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: `flex items-center gap-2 pb-2 ${searchOpen ? "absolute inset-x-0 sm:relative" : ""}`, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("button", { onClick: () => navigate("/editor"), className: "hidden sm:flex p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Plus, { className: "w-4 h-4" }) }),
-        searchOpen ? /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center gap-2 flex-1 sm:flex-initial", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-            "input",
-            {
-              type: "search",
-              placeholder: "Search...",
-              value: searchQuery,
-              onChange: (e) => setSearchQuery(e.target.value),
-              autoFocus: true,
-              className: "flex-1 sm:w-48 px-3 py-1.5 text-base bg-background border border-border rounded-md outline-none focus-visible:border-ring"
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("button", { onClick: () => {
-            setSearchOpen(false);
-            setSearchQuery("");
-          }, className: "p-2 text-muted-foreground hover:text-foreground sm:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.X, { className: "w-4 h-4" }) })
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("button", { onClick: () => setSearchOpen(true), className: "p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.Search, { className: "w-4 h-4" }) })
-      ] })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("section", { children: filteredPosts.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "space-y-0", children: filteredPosts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-      PostItem,
-      {
-        post,
-        onNavigate: () => navigate(`/editor/${post.slug}`),
-        onDelete: () => handleDelete2(post.id),
-        onPublish: () => handlePublish(post.id),
-        onUnpublish: () => handleUnpublish(post.id),
-        showStatus: activeTab === "all"
+// src/lib/theme-constants.ts
+var THEME_COLORS, getThemeBackground;
+var init_theme_constants = __esm({
+  "src/lib/theme-constants.ts"() {
+    "use strict";
+    THEME_COLORS = {
+      light: {
+        background: "#ffffff"
       },
-      post.id
-    )) }) : /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("p", { className: "text-muted-foreground py-8 text-center", children: searchQuery ? "No matching articles" : "No articles yet" }) })
-  ] });
-}
-function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStatus }) {
-  const [menuOpen, setMenuOpen] = (0, import_react4.useState)(false);
-  const menuRef = (0, import_react4.useRef)(null);
-  (0, import_react4.useEffect)(() => {
-    if (!menuOpen) return;
-    function handleClick(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setMenuOpen(false);
+      dark: {
+        background: "hsl(240 10% 3.9%)"
       }
-    }
-    document.addEventListener("click", handleClick);
-    return () => document.removeEventListener("click", handleClick);
-  }, [menuOpen]);
-  return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "flex items-center justify-between py-4 border-b border-border group", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("button", { onClick: onNavigate, className: "block text-left w-full", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("h3", { className: "font-medium truncate group-hover:text-muted-foreground", children: post.title || "Untitled" }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("p", { className: "text-sm text-muted-foreground mt-1 flex items-center gap-2", children: [
-        showStatus && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("span", { className: `text-xs px-1.5 py-0.5 rounded uppercase font-medium ${post.status === "draft" ? "bg-ab-warning/20 text-ab-warning" : "bg-ab-success/20 text-ab-success"}`, children: post.status }),
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("span", { children: [
-          formatRelativeTime(post.updatedAt),
-          post.wordCount ? ` \xB7 ${post.wordCount} words` : ""
-        ] })
-      ] })
-    ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "relative", ref: menuRef, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-        "button",
-        {
-          onClick: () => setMenuOpen(!menuOpen),
-          className: "p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent",
-          children: /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(import_lucide_react2.MoreVertical, { className: "w-4 h-4" })
-        }
-      ),
-      menuOpen && /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg z-50 min-w-[12rem] md:min-w-[8rem] p-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-          "button",
-          {
-            onClick: () => {
-              onNavigate();
-              setMenuOpen(false);
-            },
-            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
-            children: "Edit"
-          }
-        ),
-        post.status === "draft" && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-          "button",
-          {
-            onClick: () => {
-              onPublish();
-              setMenuOpen(false);
-            },
-            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
-            children: "Publish"
-          }
-        ),
-        post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-          "button",
-          {
-            onClick: () => {
-              onUnpublish();
-              setMenuOpen(false);
-            },
-            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
-            children: "Unpublish"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: "h-px bg-border my-1" }),
-        /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-          "button",
-          {
-            onClick: () => {
-              onDelete();
-              setMenuOpen(false);
-            },
-            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm text-destructive hover:bg-accent cursor-default",
-            children: "Delete"
-          }
-        )
-      ] })
-    ] })
-  ] });
-}
-
-// src/ui/pages/EditorPage.tsx
-var import_react20 = require("react");
-var import_sonner = require("sonner");
-
-// src/ui/components/EditorToolbar.tsx
-var import_lucide_react8 = require("lucide-react");
-
-// src/ui/components/toolbar/ToolbarButton.tsx
-var import_jsx_runtime6 = require("react/jsx-runtime");
-function ToolbarButton({ onClick, active, disabled, children, title }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-    "button",
-    {
-      type: "button",
-      onClick,
-      disabled,
-      title,
-      tabIndex: -1,
-      className: cn(
-        "px-3 py-2 md:px-2.5 md:py-1.5 text-base md:text-sm font-medium rounded transition-colors shrink-0",
-        "flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0",
-        "active:bg-accent md:hover:bg-accent",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
-        active && "bg-accent text-accent-foreground",
-        !active && "text-muted-foreground"
-      ),
-      children
-    }
-  );
-}
-function Divider() {
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "w-px h-6 bg-border mx-1 shrink-0" });
-}
-function SkeletonButton() {
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-7 w-7 shrink-0" });
-}
-
-// src/ui/components/toolbar/FormatButtons.tsx
-var import_react5 = require("react");
-var import_lucide_react3 = require("lucide-react");
-
-// src/lib/markdown-helpers.ts
-function insertAtCursor(textarea, before, after, markdown, onMarkdownChange) {
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  const selected = markdown.substring(start, end);
-  const newText = markdown.substring(0, start) + before + selected + after + markdown.substring(end);
-  onMarkdownChange(newText);
-  requestAnimationFrame(() => {
-    textarea.focus();
-    const newCursorPos = start + before.length + selected.length;
-    textarea.setSelectionRange(newCursorPos, newCursorPos);
-  });
-}
-function insertBlockAtCursor(textarea, prefix, markdown, onMarkdownChange) {
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  let lineStart = start;
-  while (lineStart > 0 && markdown[lineStart - 1] !== "\n") {
-    lineStart--;
-  }
-  let lineEnd = end;
-  while (lineEnd < markdown.length && markdown[lineEnd] !== "\n") {
-    lineEnd++;
-  }
-  const lineContent = markdown.substring(lineStart, lineEnd);
-  if (lineContent.startsWith(prefix)) {
-    const newText = markdown.substring(0, lineStart) + lineContent.substring(prefix.length) + markdown.substring(lineEnd);
-    onMarkdownChange(newText);
-  } else {
-    const newText = markdown.substring(0, lineStart) + prefix + lineContent + markdown.substring(lineEnd);
-    onMarkdownChange(newText);
-  }
-  requestAnimationFrame(() => {
-    textarea.focus();
-  });
-}
-function setHeadingAtCursor(textarea, level, markdown, onMarkdownChange) {
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  let lineStart = start;
-  while (lineStart > 0 && markdown[lineStart - 1] !== "\n") {
-    lineStart--;
-  }
-  let lineEnd = end;
-  while (lineEnd < markdown.length && markdown[lineEnd] !== "\n") {
-    lineEnd++;
-  }
-  const lineContent = markdown.substring(lineStart, lineEnd);
-  const withoutHeading = lineContent.replace(/^#{1,6}\s*/, "");
-  const newPrefix = "#".repeat(level) + " ";
-  const currentHeadingMatch = lineContent.match(/^(#{1,6})\s/);
-  if (currentHeadingMatch && currentHeadingMatch[1].length === level) {
-    const newText = markdown.substring(0, lineStart) + withoutHeading + markdown.substring(lineEnd);
-    onMarkdownChange(newText);
-  } else {
-    const newText = markdown.substring(0, lineStart) + newPrefix + withoutHeading + markdown.substring(lineEnd);
-    onMarkdownChange(newText);
-  }
-  requestAnimationFrame(() => {
-    textarea.focus();
-  });
-}
-function clearMarkdownFormatting(textarea, markdown, onMarkdownChange) {
-  const start = textarea.selectionStart;
-  const end = textarea.selectionEnd;
-  if (start === end) return;
-  const selected = markdown.substring(start, end);
-  const cleaned = selected.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").replace(/~~(.+?)~~/g, "$1").replace(/`(.+?)`/g, "$1").replace(/\[(.+?)\]\(.+?\)/g, "$1");
-  const newText = markdown.substring(0, start) + cleaned + markdown.substring(end);
-  onMarkdownChange(newText);
-  requestAnimationFrame(() => {
-    textarea.focus();
-    textarea.setSelectionRange(start, start + cleaned.length);
-  });
-}
-
-// src/ui/components/toolbar/FormatButtons.tsx
-var import_jsx_runtime7 = require("react/jsx-runtime");
-function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownChange, aiGenerating, loading, apiBasePath = "/api/cms" }) {
-  const editor = editorProp;
-  const isMarkdownMode = !editor && textareaRef && markdown !== void 0 && onMarkdownChange;
-  const [hasSelection, setHasSelection] = (0, import_react5.useState)(false);
-  const [isRewriting, setIsRewriting] = (0, import_react5.useState)(false);
-  (0, import_react5.useEffect)(() => {
-    if (!editor) {
-      setHasSelection(false);
-      return;
-    }
-    const updateSelection = () => {
-      const { from, to } = editor.state.selection;
-      setHasSelection(from !== to);
     };
-    editor.on("selectionUpdate", updateSelection);
-    editor.on("transaction", updateSelection);
-    return () => {
-      editor.off("selectionUpdate", updateSelection);
-      editor.off("transaction", updateSelection);
+    getThemeBackground = (theme) => THEME_COLORS[theme].background;
+  }
+});
+
+// src/lib/safari-fixes.ts
+var isIOSSafari, repaintIOSSafeArea;
+var init_safari_fixes = __esm({
+  "src/lib/safari-fixes.ts"() {
+    "use strict";
+    isIOSSafari = () => {
+      if (typeof navigator === "undefined") return false;
+      const ua = navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(ua) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+      const isSafari2 = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua);
+      return isIOS && isSafari2;
     };
-  }, [editor]);
-  const handleRewrite = (0, import_react5.useCallback)(async () => {
-    if (!editor || isRewriting) return;
-    const { from, to } = editor.state.selection;
-    if (from === to) return;
-    const selectedText = editor.state.doc.textBetween(from, to, " ");
-    if (!selectedText.trim()) return;
-    setIsRewriting(true);
-    try {
-      const res = await fetch(`${apiBasePath}/ai/rewrite`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: selectedText })
-      });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Rewrite failed");
-      }
-      const result = await res.json();
-      editor.chain().focus().deleteSelection().insertContent(result.text).run();
-    } catch (err) {
-      console.error("Rewrite error:", err);
-      alert(err instanceof Error ? err.message : "Failed to rewrite text");
-    } finally {
-      setIsRewriting(false);
-    }
-  }, [editor, isRewriting, apiBasePath]);
-  const setHeading = (level) => {
-    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
-      setHeadingAtCursor(textareaRef.current, level, markdown, onMarkdownChange);
-    }
-  };
-  const wrapSelection = (before, after) => {
-    if (editor) return;
-    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
-      insertAtCursor(textareaRef.current, before, after, markdown, onMarkdownChange);
-    }
-  };
-  if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_jsx_runtime7.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(SkeletonButton, {})
-    ] });
+    repaintIOSSafeArea = (bgColor) => {
+      if (!isIOSSafari() || typeof document === "undefined") return;
+      const el = document.createElement("div");
+      el.style.cssText = `position:fixed;bottom:0;left:0;right:0;height:34px;background:${bgColor};z-index:2147483647;pointer-events:none;`;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 50);
+    };
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_jsx_runtime7.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleHeading({ level: 1 }).run() : setHeading(1),
-        active: editor?.isActive("heading", { level: 1 }),
-        disabled: aiGenerating,
-        title: "Heading 1",
-        children: "H1"
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleHeading({ level: 2 }).run() : setHeading(2),
-        active: editor?.isActive("heading", { level: 2 }),
-        disabled: aiGenerating,
-        title: "Heading 2",
-        children: "H2"
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleHeading({ level: 3 }).run() : setHeading(3),
-        active: editor?.isActive("heading", { level: 3 }),
-        disabled: aiGenerating,
-        title: "Heading 3",
-        children: "H3"
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleBold().run() : wrapSelection("**", "**"),
-        active: editor?.isActive("bold"),
-        disabled: aiGenerating,
-        title: "Bold (\u2318B)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "font-bold", children: "B" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleItalic().run() : wrapSelection("*", "*"),
-        active: editor?.isActive("italic"),
-        disabled: aiGenerating,
-        title: "Italic (\u2318I)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "italic", children: "I" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleUnderline?.().run() : null,
-        active: editor?.isActive("underline"),
-        disabled: aiGenerating || !!isMarkdownMode,
-        title: "Underline (\u2318U)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "underline", children: "U" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleStrike().run() : wrapSelection("~~", "~~"),
-        active: editor?.isActive("strike"),
-        disabled: aiGenerating,
-        title: "Strikethrough (\u2318\u21E7X)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "line-through", children: "S" })
-      }
-    ),
-    !isMarkdownMode && /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(import_jsx_runtime7.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
-        ToolbarButton,
-        {
-          onClick: handleRewrite,
-          disabled: !editor || !hasSelection || isRewriting || aiGenerating,
-          title: !editor ? "Editor loading..." : hasSelection ? "Rewrite selection with AI" : "Select text to rewrite",
-          children: isRewriting ? /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(import_lucide_react3.Loader2, { className: "w-4 h-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(import_lucide_react3.Wand2, { className: "w-4 h-4" })
-        }
-      )
-    ] })
-  ] });
-}
-
-// src/ui/components/toolbar/BlockButtons.tsx
-var import_lucide_react4 = require("lucide-react");
-var import_jsx_runtime8 = require("react/jsx-runtime");
-function BlockButtons({ editor: editorProp, textareaRef, markdown, onMarkdownChange, aiGenerating, loading }) {
-  const editor = editorProp;
-  if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {})
-    ] });
-  }
-  const isMarkdownMode = !editor && textareaRef && markdown !== void 0 && onMarkdownChange;
-  const insertBlock = (prefix) => {
-    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
-      insertBlockAtCursor(textareaRef.current, prefix, markdown, onMarkdownChange);
-    }
-  };
-  const wrapSelection = (before, after) => {
-    if (editor) return;
-    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
-      insertAtCursor(textareaRef.current, before, after, markdown, onMarkdownChange);
-    }
-  };
-  const handleHorizontalRule = () => {
-    if (editor) {
-      editor.chain().focus().setHorizontalRule().run();
-    } else if (isMarkdownMode && textareaRef?.current) {
-      const textarea = textareaRef.current;
-      const start = textarea.selectionStart;
-      const newText = markdown.substring(0, start) + "\n---\n" + markdown.substring(start);
-      onMarkdownChange(newText);
-      requestAnimationFrame(() => textarea.focus());
-    }
-  };
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleBulletList().run() : insertBlock("- "),
-        active: editor?.isActive("bulletList"),
-        disabled: aiGenerating,
-        title: "Bullet list",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react4.List, { className: "w-4 h-4" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleOrderedList().run() : insertBlock("1. "),
-        active: editor?.isActive("orderedList"),
-        disabled: aiGenerating,
-        title: "Numbered list",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react4.ListOrdered, { className: "w-4 h-4" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleBlockquote().run() : insertBlock("> "),
-        active: editor?.isActive("blockquote"),
-        disabled: aiGenerating,
-        title: "Blockquote",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react4.Quote, { className: "w-4 h-4" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-      ToolbarButton,
-      {
-        onClick: () => editor ? editor.chain().focus().toggleCodeBlock().run() : wrapSelection("```\n", "\n```"),
-        active: editor?.isActive("codeBlock"),
-        disabled: aiGenerating,
-        title: "Code block",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react4.Code2, { className: "w-4 h-4" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(ToolbarButton, { onClick: handleHorizontalRule, disabled: aiGenerating, title: "Horizontal rule", children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react4.Minus, { className: "w-4 h-4" }) })
-  ] });
-}
-
-// src/ui/components/toolbar/MediaButtons.tsx
-var import_react6 = require("react");
-var import_lucide_react5 = require("lucide-react");
-var import_jsx_runtime9 = require("react/jsx-runtime");
-function MediaButtons({ editor: editorProp, textareaRef, markdown, onMarkdownChange, aiGenerating, loading, apiBasePath = "/api/cms" }) {
-  const editor = editorProp;
-  const fileInputRef = (0, import_react6.useRef)(null);
-  const isMarkdownMode = !editor && textareaRef && markdown !== void 0 && onMarkdownChange;
-  const handleLinkClick = (0, import_react6.useCallback)(() => {
-    if (editor) {
-      if (editor.isActive("link")) {
-        editor.chain().focus().unsetLink().run();
-        return;
-      }
-      const url = window.prompt("Enter URL:");
-      if (url) {
-        editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-      }
-    } else if (isMarkdownMode) {
-      const url = window.prompt("Enter URL:");
-      if (url && textareaRef?.current) {
-        const textarea = textareaRef.current;
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const selected = markdown.substring(start, end) || "link text";
-        const newText = markdown.substring(0, start) + `[${selected}](${url})` + markdown.substring(end);
-        onMarkdownChange(newText);
-        requestAnimationFrame(() => textarea.focus());
-      }
-    }
-  }, [editor, isMarkdownMode, textareaRef, markdown, onMarkdownChange]);
-  const handleImageUpload = (0, import_react6.useCallback)(async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const maxSize = 4 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 4MB.`);
-      e.target.value = "";
-      return;
-    }
-    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    if (!validTypes.includes(file.type)) {
-      alert(`Invalid file type: ${file.type}. Supported types: JPEG, PNG, GIF, WebP.`);
-      e.target.value = "";
-      return;
-    }
-    const formData = new FormData();
-    formData.append("image", file);
-    try {
-      const res = await fetch(`${apiBasePath}/upload`, {
-        method: "POST",
-        body: formData
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Failed to upload image");
-        e.target.value = "";
-        return;
-      }
-      const url = data.url || data.data?.url;
-      if (url) {
-        if (editor) {
-          editor.chain().focus().setImage({ src: url }).run();
-        } else if (isMarkdownMode && textareaRef?.current) {
-          const textarea = textareaRef.current;
-          const start = textarea.selectionStart;
-          const newText = markdown.substring(0, start) + `![image](${url})` + markdown.substring(start);
-          onMarkdownChange(newText);
-          requestAnimationFrame(() => textarea.focus());
-        }
-      } else {
-        alert("Upload succeeded but no URL returned");
-      }
-    } catch (err) {
-      alert("Failed to upload image. Please try again.");
-      console.error("Image upload error:", err);
-    }
-    e.target.value = "";
-  }, [editor, isMarkdownMode, textareaRef, markdown, onMarkdownChange, apiBasePath]);
-  const handleClearFormatting = (0, import_react6.useCallback)(() => {
-    if (editor) {
-      editor.chain().focus().unsetAllMarks().clearNodes().run();
-    } else if (isMarkdownMode && textareaRef?.current && markdown && onMarkdownChange) {
-      clearMarkdownFormatting(textareaRef.current, markdown, onMarkdownChange);
-    }
-  }, [editor, isMarkdownMode, textareaRef, markdown, onMarkdownChange]);
-  if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(SkeletonButton, {})
-    ] });
-  }
-  return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-      ToolbarButton,
-      {
-        onClick: handleLinkClick,
-        active: editor?.isActive("link"),
-        disabled: aiGenerating,
-        title: "Insert link",
-        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react5.Link2, { className: "w-4 h-4" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(ToolbarButton, { onClick: () => fileInputRef.current?.click(), disabled: aiGenerating, title: "Insert image", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react5.Image, { className: "w-4 h-4" }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
-      "input",
-      {
-        ref: fileInputRef,
-        type: "file",
-        accept: "image/*",
-        onChange: handleImageUpload,
-        className: "hidden"
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(ToolbarButton, { onClick: handleClearFormatting, disabled: aiGenerating, title: "Clear formatting", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react5.RemoveFormatting, { className: "w-4 h-4" }) })
-  ] });
-}
-
-// src/ui/components/toolbar/HistoryButtons.tsx
-var import_react11 = require("react");
-var import_lucide_react7 = require("lucide-react");
-
-// src/ui/components/RevisionHistoryDropdown.tsx
-var import_react10 = require("react");
-var import_lucide_react6 = require("lucide-react");
-
-// src/ui/components/Dropdown.tsx
-var import_react9 = require("react");
-
-// src/ui/components/Portal.tsx
-var import_react8 = require("react");
-var import_react_dom = require("react-dom");
+});
 
 // src/ui/hooks/useTheme.tsx
-var import_react7 = require("react");
-var import_jsx_runtime10 = require("react/jsx-runtime");
-var STORAGE_KEY = "autoblogger-theme";
-var ThemeContext = (0, import_react7.createContext)(null);
 function getSystemTheme() {
   if (typeof window === "undefined") return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
@@ -1310,15 +410,28 @@ function resolveTheme(theme) {
   }
   return theme;
 }
+function getInitialTheme() {
+  if (typeof window === "undefined") {
+    return { theme: "system", resolved: "light" };
+  }
+  const theme = getStoredTheme();
+  const resolved = resolveTheme(theme);
+  return { theme, resolved };
+}
 function AutobloggerThemeProvider({ children, className, onContainerRef }) {
-  const [theme, setThemeState] = (0, import_react7.useState)("system");
-  const [resolvedTheme, setResolvedTheme] = (0, import_react7.useState)("light");
+  const [initialState] = (0, import_react7.useState)(() => getInitialTheme());
+  const [theme, setThemeState] = (0, import_react7.useState)(initialState.theme);
+  const [resolvedTheme, setResolvedTheme] = (0, import_react7.useState)(initialState.resolved);
   const [mounted, setMounted] = (0, import_react7.useState)(false);
   const [containerEl, setContainerEl] = (0, import_react7.useState)(null);
+  const initializedRef = (0, import_react7.useRef)(false);
+  if (typeof window !== "undefined" && !initializedRef.current) {
+    initializedRef.current = true;
+    const bgColor = getThemeBackground(initialState.resolved);
+    document.body.style.background = bgColor;
+    document.documentElement.style.background = bgColor;
+  }
   (0, import_react7.useEffect)(() => {
-    const stored = getStoredTheme();
-    setThemeState(stored);
-    setResolvedTheme(resolveTheme(stored));
     setMounted(true);
   }, []);
   (0, import_react7.useEffect)(() => {
@@ -1340,6 +453,17 @@ function AutobloggerThemeProvider({ children, className, onContainerRef }) {
       containerEl.classList.remove("dark");
     }
   }, [resolvedTheme, containerEl]);
+  const useIsomorphicLayoutEffect = typeof window !== "undefined" ? import_react7.useLayoutEffect : import_react7.useEffect;
+  useIsomorphicLayoutEffect(() => {
+    if (typeof document === "undefined" || !mounted) return;
+    const bgColor = getThemeBackground(resolvedTheme);
+    document.body.style.background = bgColor;
+    document.documentElement.style.background = bgColor;
+    return () => {
+      document.body.style.background = "";
+      document.documentElement.style.background = "";
+    };
+  }, [resolvedTheme, mounted]);
   const setTheme = (0, import_react7.useCallback)((newTheme) => {
     setThemeState(newTheme);
     setResolvedTheme(resolveTheme(newTheme));
@@ -1347,23 +471,28 @@ function AutobloggerThemeProvider({ children, className, onContainerRef }) {
       localStorage.setItem(STORAGE_KEY, newTheme);
     } catch {
     }
+    repaintIOSSafeArea(getThemeBackground(resolveTheme(newTheme)));
   }, []);
   const handleContainerRef = (0, import_react7.useCallback)((el) => {
     setContainerEl(el);
     onContainerRef?.(el);
   }, [onContainerRef]);
   const value = {
-    theme: mounted ? theme : "system",
-    resolvedTheme: mounted ? resolvedTheme : "light",
+    theme,
+    resolvedTheme,
     setTheme
   };
-  const darkClass = mounted && resolvedTheme === "dark" ? "dark" : "";
+  const darkClass = resolvedTheme === "dark" ? "dark" : "";
   const combinedClassName = ["autoblogger", darkClass, className].filter(Boolean).join(" ");
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(ThemeContext.Provider, { value, children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+  const themeAttr = resolvedTheme;
+  return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(ThemeContext.Provider, { value, children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
     "div",
     {
       ref: handleContainerRef,
       className: combinedClassName,
+      "data-autoblogger-root": "",
+      "data-theme": themeAttr,
+      suppressHydrationWarning: true,
       children
     }
   ) });
@@ -1378,9 +507,21 @@ function useAutobloggerTheme() {
 function useTheme() {
   return useAutobloggerTheme();
 }
+var import_react7, import_jsx_runtime11, STORAGE_KEY, ThemeContext;
+var init_useTheme = __esm({
+  "src/ui/hooks/useTheme.tsx"() {
+    "use strict";
+    "use client";
+    import_react7 = require("react");
+    init_theme_constants();
+    init_safari_fixes();
+    import_jsx_runtime11 = require("react/jsx-runtime");
+    STORAGE_KEY = "autoblogger-theme";
+    ThemeContext = (0, import_react7.createContext)(null);
+  }
+});
 
 // src/ui/components/Portal.tsx
-var import_jsx_runtime11 = require("react/jsx-runtime");
 function AutobloggerPortal({ children, className, style }) {
   const { resolvedTheme } = useAutobloggerTheme();
   const [mounted, setMounted] = (0, import_react8.useState)(false);
@@ -1389,511 +530,32 @@ function AutobloggerPortal({ children, className, style }) {
   }, []);
   if (!mounted) return null;
   return (0, import_react_dom.createPortal)(
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
       "div",
       {
         className: cn("autoblogger", resolvedTheme === "dark" && "dark", className),
         style,
+        "data-theme": resolvedTheme,
         children
       }
     ),
     document.body
   );
 }
-
-// src/ui/components/Dropdown.tsx
-var import_jsx_runtime12 = require("react/jsx-runtime");
-var DropdownContext = (0, import_react9.createContext)(null);
-function Dropdown({
-  trigger,
-  children,
-  align = "right",
-  className,
-  open: controlledOpen,
-  onOpenChange,
-  disabled
-}) {
-  const [internalOpen, setInternalOpen] = (0, import_react9.useState)(false);
-  const [position, setPosition] = (0, import_react9.useState)(null);
-  const [mounted, setMounted] = (0, import_react9.useState)(false);
-  const triggerRef = (0, import_react9.useRef)(null);
-  const menuRef = (0, import_react9.useRef)(null);
-  const isControlled = controlledOpen !== void 0;
-  const isOpen = isControlled ? controlledOpen : internalOpen;
-  const updatePosition = (0, import_react9.useCallback)(() => {
-    if (triggerRef.current) {
-      const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + 4,
-        // 4px gap
-        left: rect.left,
-        right: window.innerWidth - rect.right
-      });
-    }
-  }, []);
-  const setOpen = (0, import_react9.useCallback)((value) => {
-    if (value) {
-      updatePosition();
-    } else {
-      setPosition(null);
-    }
-    if (!isControlled) {
-      setInternalOpen(value);
-    }
-    onOpenChange?.(value);
-  }, [isControlled, onOpenChange, updatePosition]);
-  (0, import_react9.useEffect)(() => {
-    setMounted(true);
-  }, []);
-  (0, import_react9.useEffect)(() => {
-    if (isControlled && controlledOpen && !position) {
-      updatePosition();
-    }
-    if (isControlled && !controlledOpen) {
-      setPosition(null);
-    }
-  }, [isControlled, controlledOpen, position, updatePosition]);
-  (0, import_react9.useEffect)(() => {
-    if (!isOpen) return;
-    const scrollY = window.scrollY;
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.left = "0";
-    document.body.style.right = "0";
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.position = "";
-      document.body.style.top = "";
-      document.body.style.left = "";
-      document.body.style.right = "";
-      document.body.style.overflow = "";
-      window.scrollTo(0, scrollY);
-    };
-  }, [isOpen]);
-  (0, import_react9.useEffect)(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") {
-        setOpen(false);
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, setOpen]);
-  (0, import_react9.useEffect)(() => {
-    if (!isOpen) return;
-    const handleUpdate = () => updatePosition();
-    window.addEventListener("scroll", handleUpdate, true);
-    window.addEventListener("resize", handleUpdate);
-    return () => {
-      window.removeEventListener("scroll", handleUpdate, true);
-      window.removeEventListener("resize", handleUpdate);
-    };
-  }, [isOpen, updatePosition]);
-  const handleTriggerClick = () => {
-    if (disabled) return;
-    setOpen(!isOpen);
-  };
-  const close = (0, import_react9.useCallback)(() => setOpen(false), [setOpen]);
-  const handleBackdropClick = (0, import_react9.useCallback)((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setOpen(false);
-  }, [setOpen]);
-  const menu = isOpen && mounted && position ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(AutobloggerPortal, { children: /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(DropdownContext.Provider, { value: { close }, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
-      "div",
-      {
-        className: "ab-dropdown-backdrop",
-        onClick: handleBackdropClick,
-        onMouseDown: handleBackdropClick
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
-      "div",
-      {
-        ref: menuRef,
-        style: {
-          position: "fixed",
-          top: position.top,
-          ...align === "right" ? { right: position.right } : { left: position.left }
-        },
-        className: cn(
-          "z-[80] min-w-[160px] bg-popover text-popover-foreground border border-border rounded-md shadow-lg p-1 overscroll-contain",
-          className
-        ),
-        onWheel: (e) => e.stopPropagation(),
-        children
-      }
-    )
-  ] }) }) : null;
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { ref: triggerRef, onClick: handleTriggerClick, children: trigger }),
-    menu
-  ] });
-}
-function DropdownItem({
-  onClick,
-  destructive,
-  disabled,
-  children,
-  className
-}) {
-  const context = (0, import_react9.useContext)(DropdownContext);
-  const handleClick = () => {
-    if (!disabled) {
-      onClick?.();
-      context?.close();
-    }
-  };
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
-    "button",
-    {
-      type: "button",
-      onClick: handleClick,
-      disabled,
-      className: cn(
-        "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0",
-        "text-left text-sm rounded-sm cursor-default",
-        "active:bg-accent md:hover:bg-accent focus:bg-accent focus:outline-none",
-        destructive && "text-destructive",
-        disabled && "opacity-50 cursor-not-allowed",
-        className
-      ),
-      children
-    }
-  );
-}
-function DropdownDivider() {
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "h-px bg-border my-1" });
-}
-function DropdownLabel({ children }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "px-3 py-1.5 md:px-2 md:py-1 text-xs font-medium text-muted-foreground", children });
-}
-
-// src/ui/components/RevisionHistoryDropdown.tsx
-var import_jsx_runtime13 = require("react/jsx-runtime");
-function RevisionHistoryDropdown({
-  revisions,
-  loading,
-  previewLoading,
-  disabled,
-  isPreviewMode,
-  onOpen,
-  onSelect
-}) {
-  const [open, setOpen] = (0, import_react10.useState)(false);
-  const handleOpenChange = (isOpen) => {
-    if (isOpen && !open) {
-      onOpen();
-    }
-    setOpen(isOpen);
-  };
-  const trigger = /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
-    "button",
-    {
-      type: "button",
-      disabled: disabled || isPreviewMode || previewLoading,
-      title: disabled ? "Save post to enable history" : "Revision history",
-      className: "px-3 py-2 md:px-2.5 md:py-1.5 text-base md:text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 active:bg-accent md:hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-muted-foreground",
-      children: previewLoading ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react6.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react6.History, { className: "w-4 h-4" })
-    }
-  );
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
-    Dropdown,
-    {
-      trigger,
-      open,
-      onOpenChange: handleOpenChange,
-      disabled: disabled || isPreviewMode || previewLoading,
-      align: "right",
-      className: "w-64 max-h-80 overflow-y-auto p-0",
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(DropdownLabel, { children: "Revision History" }),
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "border-t border-border" }),
-        loading ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "flex items-center justify-center py-4", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(import_lucide_react6.Loader2, { className: "h-4 w-4 animate-spin text-gray-500" }) }) : revisions.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "py-4 text-center text-sm text-gray-500", children: "No revisions yet" }) : revisions.map((rev) => /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(DropdownItem, { onClick: () => onSelect(rev.id), children: /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "flex flex-col", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "text-sm truncate", children: rev.title || "Untitled" }),
-          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "text-xs text-gray-500", children: formatRelativeTime(rev.createdAt) })
-        ] }) }, rev.id))
-      ]
-    }
-  );
-}
-
-// src/ui/components/toolbar/HistoryButtons.tsx
-var import_jsx_runtime14 = require("react/jsx-runtime");
-function HistoryButtons({
-  editor: editorProp,
-  textareaRef,
-  showMarkdown,
-  setShowMarkdown,
-  postSlug,
-  revisions,
-  aiGenerating,
-  loading
-}) {
-  const editor = editorProp;
-  const handleUndo = (0, import_react11.useCallback)(() => {
-    if (editor) {
-      editor.chain().focus().undo().run();
-    } else if (textareaRef?.current) {
-      textareaRef.current.focus();
-      document.execCommand("undo");
-    }
-  }, [editor, textareaRef]);
-  const handleRedo = (0, import_react11.useCallback)(() => {
-    if (editor) {
-      editor.chain().focus().redo().run();
-    } else if (textareaRef?.current) {
-      textareaRef.current.focus();
-      document.execCommand("redo");
-    }
-  }, [editor, textareaRef]);
-  if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_jsx_runtime14.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(SkeletonButton, {})
-    ] });
+var import_react8, import_react_dom, import_jsx_runtime12;
+var init_Portal = __esm({
+  "src/ui/components/Portal.tsx"() {
+    "use strict";
+    "use client";
+    import_react8 = require("react");
+    import_react_dom = require("react-dom");
+    init_useTheme();
+    init_cn();
+    import_jsx_runtime12 = require("react/jsx-runtime");
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_jsx_runtime14.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
-      ToolbarButton,
-      {
-        onClick: handleUndo,
-        disabled: aiGenerating || (editor ? !editor.can().undo() : false),
-        title: "Undo (\u2318Z)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(import_lucide_react7.Undo2, { className: "w-4 h-4" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
-      ToolbarButton,
-      {
-        onClick: handleRedo,
-        disabled: aiGenerating || (editor ? !editor.can().redo() : false),
-        title: "Redo (\u2318\u21E7Z)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(import_lucide_react7.Redo2, { className: "w-4 h-4" })
-      }
-    ),
-    setShowMarkdown && /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_jsx_runtime14.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
-        ToolbarButton,
-        {
-          onClick: () => setShowMarkdown(!showMarkdown),
-          active: showMarkdown,
-          disabled: aiGenerating,
-          title: showMarkdown ? "Switch to rich text editor" : "Switch to markdown mode",
-          children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("span", { className: "font-mono text-xs", children: "MD" })
-        }
-      )
-    ] }),
-    revisions && /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(import_jsx_runtime14.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
-        RevisionHistoryDropdown,
-        {
-          revisions: revisions.list,
-          loading: revisions.loading,
-          previewLoading: revisions.previewLoading,
-          disabled: aiGenerating || !postSlug,
-          isPreviewMode: !!revisions.previewing,
-          onOpen: revisions.fetch,
-          onSelect: revisions.preview
-        }
-      )
-    ] })
-  ] });
-}
-
-// src/ui/components/EditorToolbar.tsx
-var import_jsx_runtime15 = require("react/jsx-runtime");
-function EditorToolbar({
-  editor,
-  textareaRef,
-  markdown,
-  onMarkdownChange,
-  showMarkdown,
-  setShowMarkdown,
-  postSlug,
-  revisions,
-  aiGenerating,
-  hasSelection,
-  selectionHasComment,
-  onAddComment,
-  commentsCount,
-  onViewComments,
-  loading = false,
-  apiBasePath = "/api/cms"
-}) {
-  if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "fixed top-[4.375rem] md:top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(FormatButtons, { loading: true }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(BlockButtons, { loading: true }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(MediaButtons, { loading: true }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(HistoryButtons, { loading: true }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SkeletonButton, {}),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SkeletonButton, {})
-    ] });
-  }
-  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "fixed top-[4.375rem] md:top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
-      FormatButtons,
-      {
-        editor,
-        textareaRef,
-        markdown,
-        onMarkdownChange,
-        aiGenerating,
-        apiBasePath
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
-      BlockButtons,
-      {
-        editor,
-        textareaRef,
-        markdown,
-        onMarkdownChange,
-        aiGenerating
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
-      MediaButtons,
-      {
-        editor,
-        textareaRef,
-        markdown,
-        onMarkdownChange,
-        aiGenerating,
-        apiBasePath
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
-      HistoryButtons,
-      {
-        editor,
-        textareaRef,
-        showMarkdown,
-        setShowMarkdown,
-        postSlug,
-        revisions,
-        aiGenerating
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
-      ToolbarButton,
-      {
-        onClick: onAddComment ?? (() => {
-        }),
-        disabled: aiGenerating || !hasSelection || !onAddComment,
-        title: hasSelection ? "New comment (\u2318\u2325M)" : selectionHasComment ? "Text already has a comment" : "Select text to comment",
-        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react8.MessageSquarePlus, { className: "w-4 h-4" })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
-      ToolbarButton,
-      {
-        onClick: onViewComments ?? (() => {
-        }),
-        disabled: aiGenerating || !onViewComments,
-        title: "View all comments",
-        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "flex items-center gap-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react8.MessageSquare, { className: "w-4 h-4" }),
-          commentsCount !== void 0 && commentsCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "text-xs tabular-nums", children: commentsCount })
-        ] })
-      }
-    )
-  ] });
-}
-
-// src/ui/components/TiptapEditor.tsx
-var import_react12 = require("react");
-var import_react13 = require("@tiptap/react");
-var import_starter_kit = __toESM(require("@tiptap/starter-kit"));
+});
 
 // node_modules/@tiptap/core/dist/index.js
-var import_transform = require("@tiptap/pm/transform");
-var import_commands = require("@tiptap/pm/commands");
-var import_state = require("@tiptap/pm/state");
-var import_commands2 = require("@tiptap/pm/commands");
-var import_commands3 = require("@tiptap/pm/commands");
-var import_state2 = require("@tiptap/pm/state");
-var import_state3 = require("@tiptap/pm/state");
-var import_state4 = require("@tiptap/pm/state");
-var import_model = require("@tiptap/pm/model");
-var import_model2 = require("@tiptap/pm/model");
-var import_state5 = require("@tiptap/pm/state");
-var import_transform2 = require("@tiptap/pm/transform");
-var import_commands4 = require("@tiptap/pm/commands");
-var import_transform3 = require("@tiptap/pm/transform");
-var import_transform4 = require("@tiptap/pm/transform");
-var import_commands5 = require("@tiptap/pm/commands");
-var import_commands6 = require("@tiptap/pm/commands");
-var import_commands7 = require("@tiptap/pm/commands");
-var import_commands8 = require("@tiptap/pm/commands");
-var import_schema_list = require("@tiptap/pm/schema-list");
-var import_commands9 = require("@tiptap/pm/commands");
-var import_state6 = require("@tiptap/pm/state");
-var import_commands10 = require("@tiptap/pm/commands");
-var import_commands11 = require("@tiptap/pm/commands");
-var import_commands12 = require("@tiptap/pm/commands");
-var import_commands13 = require("@tiptap/pm/commands");
-var import_commands14 = require("@tiptap/pm/commands");
-var import_transform5 = require("@tiptap/pm/transform");
-var import_model3 = require("@tiptap/pm/model");
-var import_model4 = require("@tiptap/pm/model");
-var import_model5 = require("@tiptap/pm/model");
-var import_model6 = require("@tiptap/pm/model");
-var import_model7 = require("@tiptap/pm/model");
-var import_state7 = require("@tiptap/pm/state");
-var import_commands15 = require("@tiptap/pm/commands");
-var import_state8 = require("@tiptap/pm/state");
-var import_state9 = require("@tiptap/pm/state");
-var import_schema_list2 = require("@tiptap/pm/schema-list");
-var import_state10 = require("@tiptap/pm/state");
-var import_transform6 = require("@tiptap/pm/transform");
-var import_model8 = require("@tiptap/pm/model");
-var import_state11 = require("@tiptap/pm/state");
-var import_transform7 = require("@tiptap/pm/transform");
-var import_transform8 = require("@tiptap/pm/transform");
-var import_commands16 = require("@tiptap/pm/commands");
-var import_schema_list3 = require("@tiptap/pm/schema-list");
-var import_state12 = require("@tiptap/pm/state");
-var import_view = require("@tiptap/pm/view");
-var import_keymap = require("@tiptap/pm/keymap");
-var import_model9 = require("@tiptap/pm/model");
-var import_state13 = require("@tiptap/pm/state");
-var import_model10 = require("@tiptap/pm/model");
-var import_state14 = require("@tiptap/pm/state");
-var import_state15 = require("@tiptap/pm/state");
-var import_transform9 = require("@tiptap/pm/transform");
-var import_state16 = require("@tiptap/pm/state");
-var import_state17 = require("@tiptap/pm/state");
-var import_state18 = require("@tiptap/pm/state");
-var import_state19 = require("@tiptap/pm/state");
-var import_state20 = require("@tiptap/pm/state");
-var import_state21 = require("@tiptap/pm/state");
-var import_state22 = require("@tiptap/pm/state");
-var import_transform10 = require("@tiptap/pm/transform");
-var import_state23 = require("@tiptap/pm/state");
-var import_state24 = require("@tiptap/pm/state");
-var __defProp2 = Object.defineProperty;
-var __export2 = (target, all) => {
-  for (var name in all)
-    __defProp2(target, name, { get: all[name], enumerable: true });
-};
 function createChainableState(config) {
   const { state, transaction } = config;
   let { selection } = transaction;
@@ -1924,252 +586,6 @@ function createChainableState(config) {
     }
   };
 }
-var CommandManager = class {
-  constructor(props) {
-    this.editor = props.editor;
-    this.rawCommands = this.editor.extensionManager.commands;
-    this.customState = props.state;
-  }
-  get hasCustomState() {
-    return !!this.customState;
-  }
-  get state() {
-    return this.customState || this.editor.state;
-  }
-  get commands() {
-    const { rawCommands, editor, state } = this;
-    const { view } = editor;
-    const { tr } = state;
-    const props = this.buildProps(tr);
-    return Object.fromEntries(
-      Object.entries(rawCommands).map(([name, command2]) => {
-        const method = (...args) => {
-          const callback = command2(...args)(props);
-          if (!tr.getMeta("preventDispatch") && !this.hasCustomState) {
-            view.dispatch(tr);
-          }
-          return callback;
-        };
-        return [name, method];
-      })
-    );
-  }
-  get chain() {
-    return () => this.createChain();
-  }
-  get can() {
-    return () => this.createCan();
-  }
-  createChain(startTr, shouldDispatch = true) {
-    const { rawCommands, editor, state } = this;
-    const { view } = editor;
-    const callbacks = [];
-    const hasStartTransaction = !!startTr;
-    const tr = startTr || state.tr;
-    const run3 = () => {
-      if (!hasStartTransaction && shouldDispatch && !tr.getMeta("preventDispatch") && !this.hasCustomState) {
-        view.dispatch(tr);
-      }
-      return callbacks.every((callback) => callback === true);
-    };
-    const chain = {
-      ...Object.fromEntries(
-        Object.entries(rawCommands).map(([name, command2]) => {
-          const chainedCommand = (...args) => {
-            const props = this.buildProps(tr, shouldDispatch);
-            const callback = command2(...args)(props);
-            callbacks.push(callback);
-            return chain;
-          };
-          return [name, chainedCommand];
-        })
-      ),
-      run: run3
-    };
-    return chain;
-  }
-  createCan(startTr) {
-    const { rawCommands, state } = this;
-    const dispatch = false;
-    const tr = startTr || state.tr;
-    const props = this.buildProps(tr, dispatch);
-    const formattedCommands = Object.fromEntries(
-      Object.entries(rawCommands).map(([name, command2]) => {
-        return [name, (...args) => command2(...args)({ ...props, dispatch: void 0 })];
-      })
-    );
-    return {
-      ...formattedCommands,
-      chain: () => this.createChain(tr, dispatch)
-    };
-  }
-  buildProps(tr, shouldDispatch = true) {
-    const { rawCommands, editor, state } = this;
-    const { view } = editor;
-    const props = {
-      tr,
-      editor,
-      view,
-      state: createChainableState({
-        state,
-        transaction: tr
-      }),
-      dispatch: shouldDispatch ? () => void 0 : void 0,
-      chain: () => this.createChain(tr, shouldDispatch),
-      can: () => this.createCan(tr),
-      get commands() {
-        return Object.fromEntries(
-          Object.entries(rawCommands).map(([name, command2]) => {
-            return [name, (...args) => command2(...args)(props)];
-          })
-        );
-      }
-    };
-    return props;
-  }
-};
-var commands_exports = {};
-__export2(commands_exports, {
-  blur: () => blur,
-  clearContent: () => clearContent,
-  clearNodes: () => clearNodes,
-  command: () => command,
-  createParagraphNear: () => createParagraphNear,
-  cut: () => cut,
-  deleteCurrentNode: () => deleteCurrentNode,
-  deleteNode: () => deleteNode,
-  deleteRange: () => deleteRange,
-  deleteSelection: () => deleteSelection,
-  enter: () => enter,
-  exitCode: () => exitCode,
-  extendMarkRange: () => extendMarkRange,
-  first: () => first,
-  focus: () => focus,
-  forEach: () => forEach,
-  insertContent: () => insertContent,
-  insertContentAt: () => insertContentAt,
-  joinBackward: () => joinBackward,
-  joinDown: () => joinDown,
-  joinForward: () => joinForward,
-  joinItemBackward: () => joinItemBackward,
-  joinItemForward: () => joinItemForward,
-  joinTextblockBackward: () => joinTextblockBackward,
-  joinTextblockForward: () => joinTextblockForward,
-  joinUp: () => joinUp,
-  keyboardShortcut: () => keyboardShortcut,
-  lift: () => lift,
-  liftEmptyBlock: () => liftEmptyBlock,
-  liftListItem: () => liftListItem,
-  newlineInCode: () => newlineInCode,
-  resetAttributes: () => resetAttributes,
-  scrollIntoView: () => scrollIntoView,
-  selectAll: () => selectAll,
-  selectNodeBackward: () => selectNodeBackward,
-  selectNodeForward: () => selectNodeForward,
-  selectParentNode: () => selectParentNode,
-  selectTextblockEnd: () => selectTextblockEnd,
-  selectTextblockStart: () => selectTextblockStart,
-  setContent: () => setContent,
-  setMark: () => setMark,
-  setMeta: () => setMeta,
-  setNode: () => setNode,
-  setNodeSelection: () => setNodeSelection,
-  setTextDirection: () => setTextDirection,
-  setTextSelection: () => setTextSelection,
-  sinkListItem: () => sinkListItem,
-  splitBlock: () => splitBlock,
-  splitListItem: () => splitListItem,
-  toggleList: () => toggleList,
-  toggleMark: () => toggleMark,
-  toggleNode: () => toggleNode,
-  toggleWrap: () => toggleWrap,
-  undoInputRule: () => undoInputRule,
-  unsetAllMarks: () => unsetAllMarks,
-  unsetMark: () => unsetMark,
-  unsetTextDirection: () => unsetTextDirection,
-  updateAttributes: () => updateAttributes,
-  wrapIn: () => wrapIn,
-  wrapInList: () => wrapInList
-});
-var blur = () => ({ editor, view }) => {
-  requestAnimationFrame(() => {
-    var _a;
-    if (!editor.isDestroyed) {
-      ;
-      view.dom.blur();
-      (_a = window == null ? void 0 : window.getSelection()) == null ? void 0 : _a.removeAllRanges();
-    }
-  });
-  return true;
-};
-var clearContent = (emitUpdate = true) => ({ commands }) => {
-  return commands.setContent("", { emitUpdate });
-};
-var clearNodes = () => ({ state, tr, dispatch }) => {
-  const { selection } = tr;
-  const { ranges } = selection;
-  if (!dispatch) {
-    return true;
-  }
-  ranges.forEach(({ $from, $to }) => {
-    state.doc.nodesBetween($from.pos, $to.pos, (node, pos) => {
-      if (node.type.isText) {
-        return;
-      }
-      const { doc, mapping } = tr;
-      const $mappedFrom = doc.resolve(mapping.map(pos));
-      const $mappedTo = doc.resolve(mapping.map(pos + node.nodeSize));
-      const nodeRange = $mappedFrom.blockRange($mappedTo);
-      if (!nodeRange) {
-        return;
-      }
-      const targetLiftDepth = (0, import_transform.liftTarget)(nodeRange);
-      if (node.type.isTextblock) {
-        const { defaultType } = $mappedFrom.parent.contentMatchAt($mappedFrom.index());
-        tr.setNodeMarkup(nodeRange.start, defaultType);
-      }
-      if (targetLiftDepth || targetLiftDepth === 0) {
-        tr.lift(nodeRange, targetLiftDepth);
-      }
-    });
-  });
-  return true;
-};
-var command = (fn) => (props) => {
-  return fn(props);
-};
-var createParagraphNear = () => ({ state, dispatch }) => {
-  return (0, import_commands.createParagraphNear)(state, dispatch);
-};
-var cut = (originRange, targetPos) => ({ editor, tr }) => {
-  const { state } = editor;
-  const contentSlice = state.doc.slice(originRange.from, originRange.to);
-  tr.deleteRange(originRange.from, originRange.to);
-  const newPos = tr.mapping.map(targetPos);
-  tr.insert(newPos, contentSlice.content);
-  tr.setSelection(new import_state.TextSelection(tr.doc.resolve(Math.max(newPos - 1, 0))));
-  return true;
-};
-var deleteCurrentNode = () => ({ tr, dispatch }) => {
-  const { selection } = tr;
-  const currentNode = selection.$anchor.node();
-  if (currentNode.content.size > 0) {
-    return false;
-  }
-  const $pos = tr.selection.$anchor;
-  for (let depth = $pos.depth; depth > 0; depth -= 1) {
-    const node = $pos.node(depth);
-    if (node.type === currentNode.type) {
-      if (dispatch) {
-        const from = $pos.before(depth);
-        const to = $pos.after(depth);
-        tr.delete(from, to).scrollIntoView();
-      }
-      return true;
-    }
-  }
-  return false;
-};
 function getNodeType(nameOrType, schema) {
   if (typeof nameOrType === "string") {
     if (!schema.nodes[nameOrType]) {
@@ -2179,38 +595,6 @@ function getNodeType(nameOrType, schema) {
   }
   return nameOrType;
 }
-var deleteNode = (typeOrName) => ({ tr, state, dispatch }) => {
-  const type = getNodeType(typeOrName, state.schema);
-  const $pos = tr.selection.$anchor;
-  for (let depth = $pos.depth; depth > 0; depth -= 1) {
-    const node = $pos.node(depth);
-    if (node.type === type) {
-      if (dispatch) {
-        const from = $pos.before(depth);
-        const to = $pos.after(depth);
-        tr.delete(from, to).scrollIntoView();
-      }
-      return true;
-    }
-  }
-  return false;
-};
-var deleteRange = (range) => ({ tr, dispatch }) => {
-  const { from, to } = range;
-  if (dispatch) {
-    tr.delete(from, to);
-  }
-  return true;
-};
-var deleteSelection = () => ({ state, dispatch }) => {
-  return (0, import_commands2.deleteSelection)(state, dispatch);
-};
-var enter = () => ({ commands }) => {
-  return commands.keyboardShortcut("Enter");
-};
-var exitCode = () => ({ state, dispatch }) => {
-  return (0, import_commands3.exitCode)(state, dispatch);
-};
 function isRegExp(value) {
   return Object.prototype.toString.call(value) === "[object RegExp]";
 }
@@ -2284,28 +668,6 @@ function getMarkType(nameOrType, schema) {
   }
   return nameOrType;
 }
-var extendMarkRange = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
-  const type = getMarkType(typeOrName, state.schema);
-  const { doc, selection } = tr;
-  const { $from, from, to } = selection;
-  if (dispatch) {
-    const range = getMarkRange($from, type, attributes);
-    if (range && range.from <= from && range.to >= to) {
-      const newSelection = import_state2.TextSelection.create(doc, range.from, range.to);
-      tr.setSelection(newSelection);
-    }
-  }
-  return true;
-};
-var first = (commands) => (props) => {
-  const items = typeof commands === "function" ? commands(props) : commands;
-  for (let i = 0; i < items.length; i += 1) {
-    if (items[i](props)) {
-      return true;
-    }
-  }
-  return false;
-};
 function isTextSelection(value) {
   return value instanceof import_state3.TextSelection;
 }
@@ -2341,67 +703,6 @@ function isiOS() {
 function isSafari() {
   return typeof navigator !== "undefined" ? /^((?!chrome|android).)*safari/i.test(navigator.userAgent) : false;
 }
-var focus = (position = null, options = {}) => ({ editor, view, tr, dispatch }) => {
-  options = {
-    scrollIntoView: true,
-    ...options
-  };
-  const delayedFocus = () => {
-    if (isiOS() || isAndroid()) {
-      ;
-      view.dom.focus();
-    }
-    if (isSafari() && !isiOS() && !isAndroid()) {
-      ;
-      view.dom.focus({ preventScroll: true });
-    }
-    requestAnimationFrame(() => {
-      if (!editor.isDestroyed) {
-        view.focus();
-        if (options == null ? void 0 : options.scrollIntoView) {
-          editor.commands.scrollIntoView();
-        }
-      }
-    });
-  };
-  if (view.hasFocus() && position === null || position === false) {
-    return true;
-  }
-  if (dispatch && position === null && !isTextSelection(editor.state.selection)) {
-    delayedFocus();
-    return true;
-  }
-  const selection = resolveFocusPosition(tr.doc, position) || editor.state.selection;
-  const isSameSelection = editor.state.selection.eq(selection);
-  if (dispatch) {
-    if (!isSameSelection) {
-      tr.setSelection(selection);
-    }
-    if (isSameSelection && tr.storedMarks) {
-      tr.setStoredMarks(tr.storedMarks);
-    }
-    delayedFocus();
-  }
-  return true;
-};
-var forEach = (items, fn) => (props) => {
-  return items.every((item, index) => fn(item, { ...props, index }));
-};
-var insertContent = (value, options) => ({ tr, commands }) => {
-  return commands.insertContentAt({ from: tr.selection.from, to: tr.selection.to }, value, options);
-};
-var removeWhitespaces = (node) => {
-  const children = node.childNodes;
-  for (let i = children.length - 1; i >= 0; i -= 1) {
-    const child = children[i];
-    if (child.nodeType === 3 && child.nodeValue && /^(\n\s\s|\n)$/.test(child.nodeValue)) {
-      node.removeChild(child);
-    } else if (child.nodeType === 1) {
-      removeWhitespaces(child);
-    }
-  }
-  return node;
-};
 function elementFromString(value) {
   if (typeof window === "undefined") {
     throw new Error("[tiptap error]: there is no window object available, so this function cannot be used");
@@ -2503,162 +804,6 @@ function selectionToInsertionEnd(tr, startLen, bias) {
   });
   tr.setSelection(import_state5.Selection.near(tr.doc.resolve(end), bias));
 }
-var isFragment = (nodeOrFragment) => {
-  return !("type" in nodeOrFragment);
-};
-var insertContentAt = (position, value, options) => ({ tr, dispatch, editor }) => {
-  var _a;
-  if (dispatch) {
-    options = {
-      parseOptions: editor.options.parseOptions,
-      updateSelection: true,
-      applyInputRules: false,
-      applyPasteRules: false,
-      ...options
-    };
-    let content;
-    const emitContentError = (error) => {
-      editor.emit("contentError", {
-        editor,
-        error,
-        disableCollaboration: () => {
-          if ("collaboration" in editor.storage && typeof editor.storage.collaboration === "object" && editor.storage.collaboration) {
-            ;
-            editor.storage.collaboration.isDisabled = true;
-          }
-        }
-      });
-    };
-    const parseOptions = {
-      preserveWhitespace: "full",
-      ...options.parseOptions
-    };
-    if (!options.errorOnInvalidContent && !editor.options.enableContentCheck && editor.options.emitContentError) {
-      try {
-        createNodeFromContent(value, editor.schema, {
-          parseOptions,
-          errorOnInvalidContent: true
-        });
-      } catch (e) {
-        emitContentError(e);
-      }
-    }
-    try {
-      content = createNodeFromContent(value, editor.schema, {
-        parseOptions,
-        errorOnInvalidContent: (_a = options.errorOnInvalidContent) != null ? _a : editor.options.enableContentCheck
-      });
-    } catch (e) {
-      emitContentError(e);
-      return false;
-    }
-    let { from, to } = typeof position === "number" ? { from: position, to: position } : { from: position.from, to: position.to };
-    let isOnlyTextContent = true;
-    let isOnlyBlockContent = true;
-    const nodes = isFragment(content) ? content : [content];
-    nodes.forEach((node) => {
-      node.check();
-      isOnlyTextContent = isOnlyTextContent ? node.isText && node.marks.length === 0 : false;
-      isOnlyBlockContent = isOnlyBlockContent ? node.isBlock : false;
-    });
-    if (from === to && isOnlyBlockContent) {
-      const { parent } = tr.doc.resolve(from);
-      const isEmptyTextBlock = parent.isTextblock && !parent.type.spec.code && !parent.childCount;
-      if (isEmptyTextBlock) {
-        from -= 1;
-        to += 1;
-      }
-    }
-    let newContent;
-    if (isOnlyTextContent) {
-      if (Array.isArray(value)) {
-        newContent = value.map((v) => v.text || "").join("");
-      } else if (value instanceof import_model.Fragment) {
-        let text = "";
-        value.forEach((node) => {
-          if (node.text) {
-            text += node.text;
-          }
-        });
-        newContent = text;
-      } else if (typeof value === "object" && !!value && !!value.text) {
-        newContent = value.text;
-      } else {
-        newContent = value;
-      }
-      tr.insertText(newContent, from, to);
-    } else {
-      newContent = content;
-      const $from = tr.doc.resolve(from);
-      const $fromNode = $from.node();
-      const fromSelectionAtStart = $from.parentOffset === 0;
-      const isTextSelection2 = $fromNode.isText || $fromNode.isTextblock;
-      const hasContent = $fromNode.content.size > 0;
-      if (fromSelectionAtStart && isTextSelection2 && hasContent) {
-        from = Math.max(0, from - 1);
-      }
-      tr.replaceWith(from, to, newContent);
-    }
-    if (options.updateSelection) {
-      selectionToInsertionEnd(tr, tr.steps.length - 1, -1);
-    }
-    if (options.applyInputRules) {
-      tr.setMeta("applyInputRules", { from, text: newContent });
-    }
-    if (options.applyPasteRules) {
-      tr.setMeta("applyPasteRules", { from, text: newContent });
-    }
-  }
-  return true;
-};
-var joinUp = () => ({ state, dispatch }) => {
-  return (0, import_commands4.joinUp)(state, dispatch);
-};
-var joinDown = () => ({ state, dispatch }) => {
-  return (0, import_commands4.joinDown)(state, dispatch);
-};
-var joinBackward = () => ({ state, dispatch }) => {
-  return (0, import_commands4.joinBackward)(state, dispatch);
-};
-var joinForward = () => ({ state, dispatch }) => {
-  return (0, import_commands4.joinForward)(state, dispatch);
-};
-var joinItemBackward = () => ({ state, dispatch, tr }) => {
-  try {
-    const point = (0, import_transform3.joinPoint)(state.doc, state.selection.$from.pos, -1);
-    if (point === null || point === void 0) {
-      return false;
-    }
-    tr.join(point, 2);
-    if (dispatch) {
-      dispatch(tr);
-    }
-    return true;
-  } catch {
-    return false;
-  }
-};
-var joinItemForward = () => ({ state, dispatch, tr }) => {
-  try {
-    const point = (0, import_transform4.joinPoint)(state.doc, state.selection.$from.pos, 1);
-    if (point === null || point === void 0) {
-      return false;
-    }
-    tr.join(point, 2);
-    if (dispatch) {
-      dispatch(tr);
-    }
-    return true;
-  } catch {
-    return false;
-  }
-};
-var joinTextblockBackward = () => ({ state, dispatch }) => {
-  return (0, import_commands5.joinTextblockBackward)(state, dispatch);
-};
-var joinTextblockForward = () => ({ state, dispatch }) => {
-  return (0, import_commands6.joinTextblockForward)(state, dispatch);
-};
 function isMacOS() {
   return typeof navigator !== "undefined" ? /Mac/.test(navigator.platform) : false;
 }
@@ -2706,29 +851,6 @@ function normalizeKeyName(name) {
   }
   return result;
 }
-var keyboardShortcut = (name) => ({ editor, view, tr, dispatch }) => {
-  const keys = normalizeKeyName(name).split(/-(?!$)/);
-  const key = keys.find((item) => !["Alt", "Ctrl", "Meta", "Shift"].includes(item));
-  const event = new KeyboardEvent("keydown", {
-    key: key === "Space" ? " " : key,
-    altKey: keys.includes("Alt"),
-    ctrlKey: keys.includes("Ctrl"),
-    metaKey: keys.includes("Meta"),
-    shiftKey: keys.includes("Shift"),
-    bubbles: true,
-    cancelable: true
-  });
-  const capturedTransaction = editor.captureTransaction(() => {
-    view.someProp("handleKeyDown", (f) => f(view, event));
-  });
-  capturedTransaction == null ? void 0 : capturedTransaction.steps.forEach((step) => {
-    const newStep = step.map(tr.mapping);
-    if (newStep && dispatch) {
-      tr.maybeStep(newStep);
-    }
-  });
-  return true;
-};
 function isNodeActive(state, typeOrName, attributes = {}) {
   const { from, to, empty } = state.selection;
   const type = typeOrName ? getNodeType(typeOrName, state.schema) : null;
@@ -2758,24 +880,6 @@ function isNodeActive(state, typeOrName, attributes = {}) {
   const range = matchedNodeRanges.reduce((sum, nodeRange) => sum + nodeRange.to - nodeRange.from, 0);
   return range >= selectionRange;
 }
-var lift = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
-  const type = getNodeType(typeOrName, state.schema);
-  const isActive2 = isNodeActive(state, type, attributes);
-  if (!isActive2) {
-    return false;
-  }
-  return (0, import_commands7.lift)(state, dispatch);
-};
-var liftEmptyBlock = () => ({ state, dispatch }) => {
-  return (0, import_commands8.liftEmptyBlock)(state, dispatch);
-};
-var liftListItem = (typeOrName) => ({ state, dispatch }) => {
-  const type = getNodeType(typeOrName, state.schema);
-  return (0, import_schema_list.liftListItem)(type)(state, dispatch);
-};
-var newlineInCode = () => ({ state, dispatch }) => {
-  return (0, import_commands9.newlineInCode)(state, dispatch);
-};
 function getSchemaTypeNameByName(name, schema) {
   if (schema.nodes[name]) {
     return "node";
@@ -2794,73 +898,6 @@ function deleteProps(obj, propOrProps) {
     return newObj;
   }, {});
 }
-var resetAttributes = (typeOrName, attributes) => ({ tr, state, dispatch }) => {
-  let nodeType = null;
-  let markType = null;
-  const schemaType = getSchemaTypeNameByName(
-    typeof typeOrName === "string" ? typeOrName : typeOrName.name,
-    state.schema
-  );
-  if (!schemaType) {
-    return false;
-  }
-  if (schemaType === "node") {
-    nodeType = getNodeType(typeOrName, state.schema);
-  }
-  if (schemaType === "mark") {
-    markType = getMarkType(typeOrName, state.schema);
-  }
-  let canReset = false;
-  tr.selection.ranges.forEach((range) => {
-    state.doc.nodesBetween(range.$from.pos, range.$to.pos, (node, pos) => {
-      if (nodeType && nodeType === node.type) {
-        canReset = true;
-        if (dispatch) {
-          tr.setNodeMarkup(pos, void 0, deleteProps(node.attrs, attributes));
-        }
-      }
-      if (markType && node.marks.length) {
-        node.marks.forEach((mark) => {
-          if (markType === mark.type) {
-            canReset = true;
-            if (dispatch) {
-              tr.addMark(pos, pos + node.nodeSize, markType.create(deleteProps(mark.attrs, attributes)));
-            }
-          }
-        });
-      }
-    });
-  });
-  return canReset;
-};
-var scrollIntoView = () => ({ tr, dispatch }) => {
-  if (dispatch) {
-    tr.scrollIntoView();
-  }
-  return true;
-};
-var selectAll = () => ({ tr, dispatch }) => {
-  if (dispatch) {
-    const selection = new import_state6.AllSelection(tr.doc);
-    tr.setSelection(selection);
-  }
-  return true;
-};
-var selectNodeBackward = () => ({ state, dispatch }) => {
-  return (0, import_commands10.selectNodeBackward)(state, dispatch);
-};
-var selectNodeForward = () => ({ state, dispatch }) => {
-  return (0, import_commands11.selectNodeForward)(state, dispatch);
-};
-var selectParentNode = () => ({ state, dispatch }) => {
-  return (0, import_commands12.selectParentNode)(state, dispatch);
-};
-var selectTextblockEnd = () => ({ state, dispatch }) => {
-  return (0, import_commands13.selectTextblockEnd)(state, dispatch);
-};
-var selectTextblockStart = () => ({ state, dispatch }) => {
-  return (0, import_commands14.selectTextblockStart)(state, dispatch);
-};
 function createDocument(content, schema, parseOptions = {}, options = {}) {
   return createNodeFromContent(content, schema, {
     slice: false,
@@ -2868,25 +905,6 @@ function createDocument(content, schema, parseOptions = {}, options = {}) {
     errorOnInvalidContent: options.errorOnInvalidContent
   });
 }
-var setContent = (content, { errorOnInvalidContent, emitUpdate = true, parseOptions = {} } = {}) => ({ editor, tr, dispatch, commands }) => {
-  const { doc } = tr;
-  if (parseOptions.preserveWhitespace !== "full") {
-    const document2 = createDocument(content, editor.schema, parseOptions, {
-      errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor.options.enableContentCheck
-    });
-    if (dispatch) {
-      tr.replaceWith(0, doc.content.size, document2).setMeta("preventUpdate", !emitUpdate);
-    }
-    return true;
-  }
-  if (dispatch) {
-    tr.setMeta("preventUpdate", !emitUpdate);
-  }
-  return commands.insertContentAt({ from: 0, to: doc.content.size }, content, {
-    parseOptions,
-    errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor.options.enableContentCheck
-  });
-};
 function getMarkAttributes(state, typeOrName) {
   const type = getMarkType(typeOrName, state.schema);
   const { from, to, empty } = state.selection;
@@ -3433,20 +1451,6 @@ function getMarksBetween(from, to, doc) {
   }
   return marks;
 }
-var getNodeAtPosition = (state, typeOrName, pos, maxDepth = 20) => {
-  const $pos = state.doc.resolve(pos);
-  let currentDepth = maxDepth;
-  let node = null;
-  while (currentDepth > 0 && node === null) {
-    const currentNode = $pos.node(currentDepth);
-    if ((currentNode == null ? void 0 : currentNode.type.name) === typeOrName) {
-      node = currentNode;
-    } else {
-      currentDepth -= 1;
-    }
-  }
-  return [node, currentDepth];
-};
 function getSchemaTypeByName(name, schema) {
   return schema.nodes[name] || schema.marks[name] || null;
 }
@@ -3463,21 +1467,6 @@ function getSplittedAttributes(extensionAttributes, typeName, attributes) {
     })
   );
 }
-var getTextContentFromNodes = ($from, maxMatch = 500) => {
-  let textBefore = "";
-  const sliceEndPos = $from.parentOffset;
-  $from.parent.nodesBetween(Math.max(0, sliceEndPos - maxMatch), sliceEndPos, (node, pos, parent, index) => {
-    var _a, _b;
-    const chunk = ((_b = (_a = node.type.spec).toText) == null ? void 0 : _b.call(_a, {
-      node,
-      pos,
-      parent,
-      index
-    })) || node.textContent || "%leaf%";
-    textBefore += node.isAtom && !node.isText ? chunk : chunk.slice(0, Math.max(0, sliceEndPos - pos));
-  });
-  return textBefore;
-};
 function isMarkActive(state, typeOrName, attributes = {}) {
   const { empty, ranges } = state.selection;
   const type = typeOrName ? getMarkType(typeOrName, state.schema) : null;
@@ -3529,31 +1518,6 @@ function isMarkActive(state, typeOrName, attributes = {}) {
   const range = matchedRange > 0 ? matchedRange + excludedRange : matchedRange;
   return range >= selectionRange;
 }
-var isAtEndOfNode = (state, nodeType) => {
-  const { $from, $to, $anchor } = state.selection;
-  if (nodeType) {
-    const parentNode = findParentNode((node) => node.type.name === nodeType)(state.selection);
-    if (!parentNode) {
-      return false;
-    }
-    const $parentPos = state.doc.resolve(parentNode.pos + 1);
-    if ($anchor.pos + 1 === $parentPos.end()) {
-      return true;
-    }
-    return false;
-  }
-  if ($to.parentOffset < $to.parent.nodeSize - 2 || $from.pos !== $to.pos) {
-    return false;
-  }
-  return true;
-};
-var isAtStartOfNode = (state) => {
-  const { $from, $to } = state.selection;
-  if ($from.parentOffset > 0 || $from.pos !== $to.pos) {
-    return false;
-  }
-  return true;
-};
 function isExtensionRulesEnabled(extension, enabled) {
   if (Array.isArray(enabled)) {
     return enabled.some((enabledExtension) => {
@@ -3648,126 +1612,6 @@ function canSetMark(state, tr, newMarkType) {
     return someNodeSupportsMark;
   });
 }
-var setMark = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
-  const { selection } = tr;
-  const { empty, ranges } = selection;
-  const type = getMarkType(typeOrName, state.schema);
-  if (dispatch) {
-    if (empty) {
-      const oldAttributes = getMarkAttributes(state, type);
-      tr.addStoredMark(
-        type.create({
-          ...oldAttributes,
-          ...attributes
-        })
-      );
-    } else {
-      ranges.forEach((range) => {
-        const from = range.$from.pos;
-        const to = range.$to.pos;
-        state.doc.nodesBetween(from, to, (node, pos) => {
-          const trimmedFrom = Math.max(pos, from);
-          const trimmedTo = Math.min(pos + node.nodeSize, to);
-          const someHasMark = node.marks.find((mark) => mark.type === type);
-          if (someHasMark) {
-            node.marks.forEach((mark) => {
-              if (type === mark.type) {
-                tr.addMark(
-                  trimmedFrom,
-                  trimmedTo,
-                  type.create({
-                    ...mark.attrs,
-                    ...attributes
-                  })
-                );
-              }
-            });
-          } else {
-            tr.addMark(trimmedFrom, trimmedTo, type.create(attributes));
-          }
-        });
-      });
-    }
-  }
-  return canSetMark(state, tr, type);
-};
-var setMeta = (key, value) => ({ tr }) => {
-  tr.setMeta(key, value);
-  return true;
-};
-var setNode = (typeOrName, attributes = {}) => ({ state, dispatch, chain }) => {
-  const type = getNodeType(typeOrName, state.schema);
-  let attributesToCopy;
-  if (state.selection.$anchor.sameParent(state.selection.$head)) {
-    attributesToCopy = state.selection.$anchor.parent.attrs;
-  }
-  if (!type.isTextblock) {
-    console.warn('[tiptap warn]: Currently "setNode()" only supports text block nodes.');
-    return false;
-  }
-  return chain().command(({ commands }) => {
-    const canSetBlock = (0, import_commands15.setBlockType)(type, { ...attributesToCopy, ...attributes })(state);
-    if (canSetBlock) {
-      return true;
-    }
-    return commands.clearNodes();
-  }).command(({ state: updatedState }) => {
-    return (0, import_commands15.setBlockType)(type, { ...attributesToCopy, ...attributes })(updatedState, dispatch);
-  }).run();
-};
-var setNodeSelection = (position) => ({ tr, dispatch }) => {
-  if (dispatch) {
-    const { doc } = tr;
-    const from = minMax(position, 0, doc.content.size);
-    const selection = import_state8.NodeSelection.create(doc, from);
-    tr.setSelection(selection);
-  }
-  return true;
-};
-var setTextDirection = (direction, position) => ({ tr, state, dispatch }) => {
-  const { selection } = state;
-  let from;
-  let to;
-  if (typeof position === "number") {
-    from = position;
-    to = position;
-  } else if (position && "from" in position && "to" in position) {
-    from = position.from;
-    to = position.to;
-  } else {
-    from = selection.from;
-    to = selection.to;
-  }
-  if (dispatch) {
-    tr.doc.nodesBetween(from, to, (node, pos) => {
-      if (node.isText) {
-        return;
-      }
-      tr.setNodeMarkup(pos, void 0, {
-        ...node.attrs,
-        dir: direction
-      });
-    });
-  }
-  return true;
-};
-var setTextSelection = (position) => ({ tr, dispatch }) => {
-  if (dispatch) {
-    const { doc } = tr;
-    const { from, to } = typeof position === "number" ? { from: position, to: position } : position;
-    const minPos = import_state9.TextSelection.atStart(doc).from;
-    const maxPos = import_state9.TextSelection.atEnd(doc).to;
-    const resolvedFrom = minMax(from, minPos, maxPos);
-    const resolvedEnd = minMax(to, minPos, maxPos);
-    const selection = import_state9.TextSelection.create(doc, resolvedFrom, resolvedEnd);
-    tr.setSelection(selection);
-  }
-  return true;
-};
-var sinkListItem = (typeOrName) => ({ state, dispatch }) => {
-  const type = getNodeType(typeOrName, state.schema);
-  return (0, import_schema_list2.sinkListItem)(type)(state, dispatch);
-};
 function ensureMarks(state, splittableMarks) {
   const marks = state.storedMarks || state.selection.$to.parentOffset && state.selection.$from.marks();
   if (marks) {
@@ -3775,477 +1619,6 @@ function ensureMarks(state, splittableMarks) {
     state.tr.ensureMarks(filteredMarks);
   }
 }
-var splitBlock = ({ keepMarks = true } = {}) => ({ tr, state, dispatch, editor }) => {
-  const { selection, doc } = tr;
-  const { $from, $to } = selection;
-  const extensionAttributes = editor.extensionManager.attributes;
-  const newAttributes = getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs);
-  if (selection instanceof import_state10.NodeSelection && selection.node.isBlock) {
-    if (!$from.parentOffset || !(0, import_transform6.canSplit)(doc, $from.pos)) {
-      return false;
-    }
-    if (dispatch) {
-      if (keepMarks) {
-        ensureMarks(state, editor.extensionManager.splittableMarks);
-      }
-      tr.split($from.pos).scrollIntoView();
-    }
-    return true;
-  }
-  if (!$from.parent.isBlock) {
-    return false;
-  }
-  const atEnd = $to.parentOffset === $to.parent.content.size;
-  const deflt = $from.depth === 0 ? void 0 : defaultBlockAt($from.node(-1).contentMatchAt($from.indexAfter(-1)));
-  let types = atEnd && deflt ? [
-    {
-      type: deflt,
-      attrs: newAttributes
-    }
-  ] : void 0;
-  let can = (0, import_transform6.canSplit)(tr.doc, tr.mapping.map($from.pos), 1, types);
-  if (!types && !can && (0, import_transform6.canSplit)(tr.doc, tr.mapping.map($from.pos), 1, deflt ? [{ type: deflt }] : void 0)) {
-    can = true;
-    types = deflt ? [
-      {
-        type: deflt,
-        attrs: newAttributes
-      }
-    ] : void 0;
-  }
-  if (dispatch) {
-    if (can) {
-      if (selection instanceof import_state10.TextSelection) {
-        tr.deleteSelection();
-      }
-      tr.split(tr.mapping.map($from.pos), 1, types);
-      if (deflt && !atEnd && !$from.parentOffset && $from.parent.type !== deflt) {
-        const first2 = tr.mapping.map($from.before());
-        const $first = tr.doc.resolve(first2);
-        if ($from.node(-1).canReplaceWith($first.index(), $first.index() + 1, deflt)) {
-          tr.setNodeMarkup(tr.mapping.map($from.before()), deflt);
-        }
-      }
-    }
-    if (keepMarks) {
-      ensureMarks(state, editor.extensionManager.splittableMarks);
-    }
-    tr.scrollIntoView();
-  }
-  return can;
-};
-var splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr, state, dispatch, editor }) => {
-  var _a;
-  const type = getNodeType(typeOrName, state.schema);
-  const { $from, $to } = state.selection;
-  const node = state.selection.node;
-  if (node && node.isBlock || $from.depth < 2 || !$from.sameParent($to)) {
-    return false;
-  }
-  const grandParent = $from.node(-1);
-  if (grandParent.type !== type) {
-    return false;
-  }
-  const extensionAttributes = editor.extensionManager.attributes;
-  if ($from.parent.content.size === 0 && $from.node(-1).childCount === $from.indexAfter(-1)) {
-    if ($from.depth === 2 || $from.node(-3).type !== type || $from.index(-2) !== $from.node(-2).childCount - 1) {
-      return false;
-    }
-    if (dispatch) {
-      let wrap = import_model8.Fragment.empty;
-      const depthBefore = $from.index(-1) ? 1 : $from.index(-2) ? 2 : 3;
-      for (let d = $from.depth - depthBefore; d >= $from.depth - 3; d -= 1) {
-        wrap = import_model8.Fragment.from($from.node(d).copy(wrap));
-      }
-      const depthAfter = (
-        // eslint-disable-next-line no-nested-ternary
-        $from.indexAfter(-1) < $from.node(-2).childCount ? 1 : $from.indexAfter(-2) < $from.node(-3).childCount ? 2 : 3
-      );
-      const newNextTypeAttributes2 = {
-        ...getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs),
-        ...overrideAttrs
-      };
-      const nextType2 = ((_a = type.contentMatch.defaultType) == null ? void 0 : _a.createAndFill(newNextTypeAttributes2)) || void 0;
-      wrap = wrap.append(import_model8.Fragment.from(type.createAndFill(null, nextType2) || void 0));
-      const start = $from.before($from.depth - (depthBefore - 1));
-      tr.replace(start, $from.after(-depthAfter), new import_model8.Slice(wrap, 4 - depthBefore, 0));
-      let sel = -1;
-      tr.doc.nodesBetween(start, tr.doc.content.size, (n, pos) => {
-        if (sel > -1) {
-          return false;
-        }
-        if (n.isTextblock && n.content.size === 0) {
-          sel = pos + 1;
-        }
-      });
-      if (sel > -1) {
-        tr.setSelection(import_state11.TextSelection.near(tr.doc.resolve(sel)));
-      }
-      tr.scrollIntoView();
-    }
-    return true;
-  }
-  const nextType = $to.pos === $from.end() ? grandParent.contentMatchAt(0).defaultType : null;
-  const newTypeAttributes = {
-    ...getSplittedAttributes(extensionAttributes, grandParent.type.name, grandParent.attrs),
-    ...overrideAttrs
-  };
-  const newNextTypeAttributes = {
-    ...getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs),
-    ...overrideAttrs
-  };
-  tr.delete($from.pos, $to.pos);
-  const types = nextType ? [
-    { type, attrs: newTypeAttributes },
-    { type: nextType, attrs: newNextTypeAttributes }
-  ] : [{ type, attrs: newTypeAttributes }];
-  if (!(0, import_transform7.canSplit)(tr.doc, $from.pos, 2)) {
-    return false;
-  }
-  if (dispatch) {
-    const { selection, storedMarks } = state;
-    const { splittableMarks } = editor.extensionManager;
-    const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
-    tr.split($from.pos, 2, types).scrollIntoView();
-    if (!marks || !dispatch) {
-      return true;
-    }
-    const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
-    tr.ensureMarks(filteredMarks);
-  }
-  return true;
-};
-var joinListBackwards = (tr, listType) => {
-  const list = findParentNode((node) => node.type === listType)(tr.selection);
-  if (!list) {
-    return true;
-  }
-  const before = tr.doc.resolve(Math.max(0, list.pos - 1)).before(list.depth);
-  if (before === void 0) {
-    return true;
-  }
-  const nodeBefore = tr.doc.nodeAt(before);
-  const canJoinBackwards = list.node.type === (nodeBefore == null ? void 0 : nodeBefore.type) && (0, import_transform8.canJoin)(tr.doc, list.pos);
-  if (!canJoinBackwards) {
-    return true;
-  }
-  tr.join(list.pos);
-  return true;
-};
-var joinListForwards = (tr, listType) => {
-  const list = findParentNode((node) => node.type === listType)(tr.selection);
-  if (!list) {
-    return true;
-  }
-  const after = tr.doc.resolve(list.start).after(list.depth);
-  if (after === void 0) {
-    return true;
-  }
-  const nodeAfter = tr.doc.nodeAt(after);
-  const canJoinForwards = list.node.type === (nodeAfter == null ? void 0 : nodeAfter.type) && (0, import_transform8.canJoin)(tr.doc, after);
-  if (!canJoinForwards) {
-    return true;
-  }
-  tr.join(after);
-  return true;
-};
-var toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) => ({ editor, tr, state, dispatch, chain, commands, can }) => {
-  const { extensions, splittableMarks } = editor.extensionManager;
-  const listType = getNodeType(listTypeOrName, state.schema);
-  const itemType = getNodeType(itemTypeOrName, state.schema);
-  const { selection, storedMarks } = state;
-  const { $from, $to } = selection;
-  const range = $from.blockRange($to);
-  const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
-  if (!range) {
-    return false;
-  }
-  const parentList = findParentNode((node) => isList(node.type.name, extensions))(selection);
-  if (range.depth >= 1 && parentList && range.depth - parentList.depth <= 1) {
-    if (parentList.node.type === listType) {
-      return commands.liftListItem(itemType);
-    }
-    if (isList(parentList.node.type.name, extensions) && listType.validContent(parentList.node.content) && dispatch) {
-      return chain().command(() => {
-        tr.setNodeMarkup(parentList.pos, listType);
-        return true;
-      }).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
-    }
-  }
-  if (!keepMarks || !marks || !dispatch) {
-    return chain().command(() => {
-      const canWrapInList = can().wrapInList(listType, attributes);
-      if (canWrapInList) {
-        return true;
-      }
-      return commands.clearNodes();
-    }).wrapInList(listType, attributes).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
-  }
-  return chain().command(() => {
-    const canWrapInList = can().wrapInList(listType, attributes);
-    const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
-    tr.ensureMarks(filteredMarks);
-    if (canWrapInList) {
-      return true;
-    }
-    return commands.clearNodes();
-  }).wrapInList(listType, attributes).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
-};
-var toggleMark = (typeOrName, attributes = {}, options = {}) => ({ state, commands }) => {
-  const { extendEmptyMarkRange = false } = options;
-  const type = getMarkType(typeOrName, state.schema);
-  const isActive2 = isMarkActive(state, type, attributes);
-  if (isActive2) {
-    return commands.unsetMark(type, { extendEmptyMarkRange });
-  }
-  return commands.setMark(type, attributes);
-};
-var toggleNode = (typeOrName, toggleTypeOrName, attributes = {}) => ({ state, commands }) => {
-  const type = getNodeType(typeOrName, state.schema);
-  const toggleType = getNodeType(toggleTypeOrName, state.schema);
-  const isActive2 = isNodeActive(state, type, attributes);
-  let attributesToCopy;
-  if (state.selection.$anchor.sameParent(state.selection.$head)) {
-    attributesToCopy = state.selection.$anchor.parent.attrs;
-  }
-  if (isActive2) {
-    return commands.setNode(toggleType, attributesToCopy);
-  }
-  return commands.setNode(type, { ...attributesToCopy, ...attributes });
-};
-var toggleWrap = (typeOrName, attributes = {}) => ({ state, commands }) => {
-  const type = getNodeType(typeOrName, state.schema);
-  const isActive2 = isNodeActive(state, type, attributes);
-  if (isActive2) {
-    return commands.lift(type);
-  }
-  return commands.wrapIn(type, attributes);
-};
-var undoInputRule = () => ({ state, dispatch }) => {
-  const plugins = state.plugins;
-  for (let i = 0; i < plugins.length; i += 1) {
-    const plugin = plugins[i];
-    let undoable;
-    if (plugin.spec.isInputRules && (undoable = plugin.getState(state))) {
-      if (dispatch) {
-        const tr = state.tr;
-        const toUndo = undoable.transform;
-        for (let j = toUndo.steps.length - 1; j >= 0; j -= 1) {
-          tr.step(toUndo.steps[j].invert(toUndo.docs[j]));
-        }
-        if (undoable.text) {
-          const marks = tr.doc.resolve(undoable.from).marks();
-          tr.replaceWith(undoable.from, undoable.to, state.schema.text(undoable.text, marks));
-        } else {
-          tr.delete(undoable.from, undoable.to);
-        }
-      }
-      return true;
-    }
-  }
-  return false;
-};
-var unsetAllMarks = () => ({ tr, dispatch }) => {
-  const { selection } = tr;
-  const { empty, ranges } = selection;
-  if (empty) {
-    return true;
-  }
-  if (dispatch) {
-    ranges.forEach((range) => {
-      tr.removeMark(range.$from.pos, range.$to.pos);
-    });
-  }
-  return true;
-};
-var unsetMark = (typeOrName, options = {}) => ({ tr, state, dispatch }) => {
-  var _a;
-  const { extendEmptyMarkRange = false } = options;
-  const { selection } = tr;
-  const type = getMarkType(typeOrName, state.schema);
-  const { $from, empty, ranges } = selection;
-  if (!dispatch) {
-    return true;
-  }
-  if (empty && extendEmptyMarkRange) {
-    let { from, to } = selection;
-    const attrs = (_a = $from.marks().find((mark) => mark.type === type)) == null ? void 0 : _a.attrs;
-    const range = getMarkRange($from, type, attrs);
-    if (range) {
-      from = range.from;
-      to = range.to;
-    }
-    tr.removeMark(from, to, type);
-  } else {
-    ranges.forEach((range) => {
-      tr.removeMark(range.$from.pos, range.$to.pos, type);
-    });
-  }
-  tr.removeStoredMark(type);
-  return true;
-};
-var unsetTextDirection = (position) => ({ tr, state, dispatch }) => {
-  const { selection } = state;
-  let from;
-  let to;
-  if (typeof position === "number") {
-    from = position;
-    to = position;
-  } else if (position && "from" in position && "to" in position) {
-    from = position.from;
-    to = position.to;
-  } else {
-    from = selection.from;
-    to = selection.to;
-  }
-  if (dispatch) {
-    tr.doc.nodesBetween(from, to, (node, pos) => {
-      if (node.isText) {
-        return;
-      }
-      const newAttrs = { ...node.attrs };
-      delete newAttrs.dir;
-      tr.setNodeMarkup(pos, void 0, newAttrs);
-    });
-  }
-  return true;
-};
-var updateAttributes = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
-  let nodeType = null;
-  let markType = null;
-  const schemaType = getSchemaTypeNameByName(
-    typeof typeOrName === "string" ? typeOrName : typeOrName.name,
-    state.schema
-  );
-  if (!schemaType) {
-    return false;
-  }
-  if (schemaType === "node") {
-    nodeType = getNodeType(typeOrName, state.schema);
-  }
-  if (schemaType === "mark") {
-    markType = getMarkType(typeOrName, state.schema);
-  }
-  let canUpdate = false;
-  tr.selection.ranges.forEach((range) => {
-    const from = range.$from.pos;
-    const to = range.$to.pos;
-    let lastPos;
-    let lastNode;
-    let trimmedFrom;
-    let trimmedTo;
-    if (tr.selection.empty) {
-      state.doc.nodesBetween(from, to, (node, pos) => {
-        if (nodeType && nodeType === node.type) {
-          canUpdate = true;
-          trimmedFrom = Math.max(pos, from);
-          trimmedTo = Math.min(pos + node.nodeSize, to);
-          lastPos = pos;
-          lastNode = node;
-        }
-      });
-    } else {
-      state.doc.nodesBetween(from, to, (node, pos) => {
-        if (pos < from && nodeType && nodeType === node.type) {
-          canUpdate = true;
-          trimmedFrom = Math.max(pos, from);
-          trimmedTo = Math.min(pos + node.nodeSize, to);
-          lastPos = pos;
-          lastNode = node;
-        }
-        if (pos >= from && pos <= to) {
-          if (nodeType && nodeType === node.type) {
-            canUpdate = true;
-            if (dispatch) {
-              tr.setNodeMarkup(pos, void 0, {
-                ...node.attrs,
-                ...attributes
-              });
-            }
-          }
-          if (markType && node.marks.length) {
-            node.marks.forEach((mark) => {
-              if (markType === mark.type) {
-                canUpdate = true;
-                if (dispatch) {
-                  const trimmedFrom2 = Math.max(pos, from);
-                  const trimmedTo2 = Math.min(pos + node.nodeSize, to);
-                  tr.addMark(
-                    trimmedFrom2,
-                    trimmedTo2,
-                    markType.create({
-                      ...mark.attrs,
-                      ...attributes
-                    })
-                  );
-                }
-              }
-            });
-          }
-        }
-      });
-    }
-    if (lastNode) {
-      if (lastPos !== void 0 && dispatch) {
-        tr.setNodeMarkup(lastPos, void 0, {
-          ...lastNode.attrs,
-          ...attributes
-        });
-      }
-      if (markType && lastNode.marks.length) {
-        lastNode.marks.forEach((mark) => {
-          if (markType === mark.type && dispatch) {
-            tr.addMark(
-              trimmedFrom,
-              trimmedTo,
-              markType.create({
-                ...mark.attrs,
-                ...attributes
-              })
-            );
-          }
-        });
-      }
-    }
-  });
-  return canUpdate;
-};
-var wrapIn = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
-  const type = getNodeType(typeOrName, state.schema);
-  return (0, import_commands16.wrapIn)(type, attributes)(state, dispatch);
-};
-var wrapInList = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
-  const type = getNodeType(typeOrName, state.schema);
-  return (0, import_schema_list3.wrapInList)(type, attributes)(state, dispatch);
-};
-var InputRule = class {
-  constructor(config) {
-    var _a;
-    this.find = config.find;
-    this.handler = config.handler;
-    this.undoable = (_a = config.undoable) != null ? _a : true;
-  }
-};
-var inputRuleMatcherHandler = (text, find) => {
-  if (isRegExp(find)) {
-    return find.exec(text);
-  }
-  const inputRuleMatch = find(text);
-  if (!inputRuleMatch) {
-    return null;
-  }
-  const result = [inputRuleMatch.text];
-  result.index = inputRuleMatch.index;
-  result.input = text;
-  result.data = inputRuleMatch.data;
-  if (inputRuleMatch.replaceWith) {
-    if (!inputRuleMatch.text.includes(inputRuleMatch.replaceWith)) {
-      console.warn('[tiptap warn]: "inputRuleMatch.replaceWith" must be part of "inputRuleMatch.text".');
-    }
-    result.push(inputRuleMatch.replaceWith);
-  }
-  return result;
-};
 function run(config) {
   var _a;
   const { editor, from, to, text, rules, plugin } = config;
@@ -4421,131 +1794,9 @@ function mergeDeep(target, source) {
   }
   return output;
 }
-var Extendable = class {
-  constructor(config = {}) {
-    this.type = "extendable";
-    this.parent = null;
-    this.child = null;
-    this.name = "";
-    this.config = {
-      name: this.name
-    };
-    this.config = {
-      ...this.config,
-      ...config
-    };
-    this.name = this.config.name;
-  }
-  get options() {
-    return {
-      ...callOrReturn(
-        getExtensionField(this, "addOptions", {
-          name: this.name
-        })
-      ) || {}
-    };
-  }
-  get storage() {
-    return {
-      ...callOrReturn(
-        getExtensionField(this, "addStorage", {
-          name: this.name,
-          options: this.options
-        })
-      ) || {}
-    };
-  }
-  configure(options = {}) {
-    const extension = this.extend({
-      ...this.config,
-      addOptions: () => {
-        return mergeDeep(this.options, options);
-      }
-    });
-    extension.name = this.name;
-    extension.parent = this.parent;
-    return extension;
-  }
-  extend(extendedConfig = {}) {
-    const extension = new this.constructor({ ...this.config, ...extendedConfig });
-    extension.parent = this;
-    this.child = extension;
-    extension.name = "name" in extendedConfig ? extendedConfig.name : extension.parent.name;
-    return extension;
-  }
-};
-var Mark = class _Mark extends Extendable {
-  constructor() {
-    super(...arguments);
-    this.type = "mark";
-  }
-  /**
-   * Create a new Mark instance
-   * @param config - Mark configuration object or a function that returns a configuration object
-   */
-  static create(config = {}) {
-    const resolvedConfig = typeof config === "function" ? config() : config;
-    return new _Mark(resolvedConfig);
-  }
-  static handleExit({ editor, mark }) {
-    const { tr } = editor.state;
-    const currentPos = editor.state.selection.$from;
-    const isAtEnd = currentPos.pos === currentPos.end();
-    if (isAtEnd) {
-      const currentMarks = currentPos.marks();
-      const isInMark = !!currentMarks.find((m) => (m == null ? void 0 : m.type.name) === mark.name);
-      if (!isInMark) {
-        return false;
-      }
-      const removeMark = currentMarks.find((m) => (m == null ? void 0 : m.type.name) === mark.name);
-      if (removeMark) {
-        tr.removeStoredMark(removeMark);
-      }
-      tr.insertText(" ", currentPos.pos);
-      editor.view.dispatch(tr);
-      return true;
-    }
-    return false;
-  }
-  configure(options) {
-    return super.configure(options);
-  }
-  extend(extendedConfig) {
-    const resolvedConfig = typeof extendedConfig === "function" ? extendedConfig() : extendedConfig;
-    return super.extend(resolvedConfig);
-  }
-};
 function isNumber(value) {
   return typeof value === "number";
 }
-var PasteRule = class {
-  constructor(config) {
-    this.find = config.find;
-    this.handler = config.handler;
-  }
-};
-var pasteRuleMatcherHandler = (text, find, event) => {
-  if (isRegExp(find)) {
-    return [...text.matchAll(find)];
-  }
-  const matches = find(text, event);
-  if (!matches) {
-    return [];
-  }
-  return matches.map((pasteRuleMatch) => {
-    const result = [pasteRuleMatch.text];
-    result.index = pasteRuleMatch.index;
-    result.input = text;
-    result.data = pasteRuleMatch.data;
-    if (pasteRuleMatch.replaceWith) {
-      if (!pasteRuleMatch.text.includes(pasteRuleMatch.replaceWith)) {
-        console.warn('[tiptap warn]: "pasteRuleMatch.replaceWith" must be part of "pasteRuleMatch.text".');
-      }
-      result.push(pasteRuleMatch.replaceWith);
-    }
-    return result;
-  });
-};
 function run2(config) {
   const { editor, state, from, to, rule, pasteEvent, dropEvent } = config;
   const { commands, chain, can } = new CommandManager({
@@ -4592,15 +1843,6 @@ function run2(config) {
   const success = handlers.every((handler) => handler !== null);
   return success;
 }
-var tiptapDragFromOtherEditor = null;
-var createClipboardPasteEvent = (text) => {
-  var _a;
-  const event = new ClipboardEvent("paste", {
-    clipboardData: new DataTransfer()
-  });
-  (_a = event.clipboardData) == null ? void 0 : _a.setData("text/html", text);
-  return event;
-};
 function pasteRulesPlugin(props) {
   const { editor, rules } = props;
   let dragSourceElement = null;
@@ -4741,696 +1983,6 @@ function pasteRulesPlugin(props) {
   });
   return plugins;
 }
-var ExtensionManager = class {
-  constructor(extensions, editor) {
-    this.splittableMarks = [];
-    this.editor = editor;
-    this.baseExtensions = extensions;
-    this.extensions = resolveExtensions(extensions);
-    this.schema = getSchemaByResolvedExtensions(this.extensions, editor);
-    this.setupExtensions();
-  }
-  /**
-   * Get all commands from the extensions.
-   * @returns An object with all commands where the key is the command name and the value is the command function
-   */
-  get commands() {
-    return this.extensions.reduce((commands, extension) => {
-      const context = {
-        name: extension.name,
-        options: extension.options,
-        storage: this.editor.extensionStorage[extension.name],
-        editor: this.editor,
-        type: getSchemaTypeByName(extension.name, this.schema)
-      };
-      const addCommands = getExtensionField(extension, "addCommands", context);
-      if (!addCommands) {
-        return commands;
-      }
-      return {
-        ...commands,
-        ...addCommands()
-      };
-    }, {});
-  }
-  /**
-   * Get all registered Prosemirror plugins from the extensions.
-   * @returns An array of Prosemirror plugins
-   */
-  get plugins() {
-    const { editor } = this;
-    const extensions = sortExtensions([...this.extensions].reverse());
-    const allPlugins = extensions.flatMap((extension) => {
-      const context = {
-        name: extension.name,
-        options: extension.options,
-        storage: this.editor.extensionStorage[extension.name],
-        editor,
-        type: getSchemaTypeByName(extension.name, this.schema)
-      };
-      const plugins = [];
-      const addKeyboardShortcuts = getExtensionField(
-        extension,
-        "addKeyboardShortcuts",
-        context
-      );
-      let defaultBindings = {};
-      if (extension.type === "mark" && getExtensionField(extension, "exitable", context)) {
-        defaultBindings.ArrowRight = () => Mark.handleExit({ editor, mark: extension });
-      }
-      if (addKeyboardShortcuts) {
-        const bindings = Object.fromEntries(
-          Object.entries(addKeyboardShortcuts()).map(([shortcut, method]) => {
-            return [shortcut, () => method({ editor })];
-          })
-        );
-        defaultBindings = { ...defaultBindings, ...bindings };
-      }
-      const keyMapPlugin = (0, import_keymap.keymap)(defaultBindings);
-      plugins.push(keyMapPlugin);
-      const addInputRules = getExtensionField(extension, "addInputRules", context);
-      if (isExtensionRulesEnabled(extension, editor.options.enableInputRules) && addInputRules) {
-        const rules = addInputRules();
-        if (rules && rules.length) {
-          const inputResult = inputRulesPlugin({
-            editor,
-            rules
-          });
-          const inputPlugins = Array.isArray(inputResult) ? inputResult : [inputResult];
-          plugins.push(...inputPlugins);
-        }
-      }
-      const addPasteRules = getExtensionField(extension, "addPasteRules", context);
-      if (isExtensionRulesEnabled(extension, editor.options.enablePasteRules) && addPasteRules) {
-        const rules = addPasteRules();
-        if (rules && rules.length) {
-          const pasteRules = pasteRulesPlugin({ editor, rules });
-          plugins.push(...pasteRules);
-        }
-      }
-      const addProseMirrorPlugins = getExtensionField(
-        extension,
-        "addProseMirrorPlugins",
-        context
-      );
-      if (addProseMirrorPlugins) {
-        const proseMirrorPlugins = addProseMirrorPlugins();
-        plugins.push(...proseMirrorPlugins);
-      }
-      return plugins;
-    });
-    return allPlugins;
-  }
-  /**
-   * Get all attributes from the extensions.
-   * @returns An array of attributes
-   */
-  get attributes() {
-    return getAttributesFromExtensions(this.extensions);
-  }
-  /**
-   * Get all node views from the extensions.
-   * @returns An object with all node views where the key is the node name and the value is the node view function
-   */
-  get nodeViews() {
-    const { editor } = this;
-    const { nodeExtensions } = splitExtensions(this.extensions);
-    return Object.fromEntries(
-      nodeExtensions.filter((extension) => !!getExtensionField(extension, "addNodeView")).map((extension) => {
-        const extensionAttributes = this.attributes.filter((attribute) => attribute.type === extension.name);
-        const context = {
-          name: extension.name,
-          options: extension.options,
-          storage: this.editor.extensionStorage[extension.name],
-          editor,
-          type: getNodeType(extension.name, this.schema)
-        };
-        const addNodeView = getExtensionField(extension, "addNodeView", context);
-        if (!addNodeView) {
-          return [];
-        }
-        const nodeViewResult = addNodeView();
-        if (!nodeViewResult) {
-          return [];
-        }
-        const nodeview = (node, view, getPos, decorations, innerDecorations) => {
-          const HTMLAttributes = getRenderedAttributes(node, extensionAttributes);
-          return nodeViewResult({
-            // pass-through
-            node,
-            view,
-            getPos,
-            decorations,
-            innerDecorations,
-            // tiptap-specific
-            editor,
-            extension,
-            HTMLAttributes
-          });
-        };
-        return [extension.name, nodeview];
-      })
-    );
-  }
-  /**
-   * Get the composed dispatchTransaction function from all extensions.
-   * @param baseDispatch The base dispatch function (e.g. from the editor or user props)
-   * @returns A composed dispatch function
-   */
-  dispatchTransaction(baseDispatch) {
-    const { editor } = this;
-    const extensions = sortExtensions([...this.extensions].reverse());
-    return extensions.reduceRight((next, extension) => {
-      const context = {
-        name: extension.name,
-        options: extension.options,
-        storage: this.editor.extensionStorage[extension.name],
-        editor,
-        type: getSchemaTypeByName(extension.name, this.schema)
-      };
-      const dispatchTransaction = getExtensionField(
-        extension,
-        "dispatchTransaction",
-        context
-      );
-      if (!dispatchTransaction) {
-        return next;
-      }
-      return (transaction) => {
-        dispatchTransaction.call(context, { transaction, next });
-      };
-    }, baseDispatch);
-  }
-  get markViews() {
-    const { editor } = this;
-    const { markExtensions } = splitExtensions(this.extensions);
-    return Object.fromEntries(
-      markExtensions.filter((extension) => !!getExtensionField(extension, "addMarkView")).map((extension) => {
-        const extensionAttributes = this.attributes.filter((attribute) => attribute.type === extension.name);
-        const context = {
-          name: extension.name,
-          options: extension.options,
-          storage: this.editor.extensionStorage[extension.name],
-          editor,
-          type: getMarkType(extension.name, this.schema)
-        };
-        const addMarkView = getExtensionField(extension, "addMarkView", context);
-        if (!addMarkView) {
-          return [];
-        }
-        const markView = (mark, view, inline) => {
-          const HTMLAttributes = getRenderedAttributes(mark, extensionAttributes);
-          return addMarkView()({
-            // pass-through
-            mark,
-            view,
-            inline,
-            // tiptap-specific
-            editor,
-            extension,
-            HTMLAttributes,
-            updateAttributes: (attrs) => {
-              updateMarkViewAttributes(mark, editor, attrs);
-            }
-          });
-        };
-        return [extension.name, markView];
-      })
-    );
-  }
-  /**
-   * Go through all extensions, create extension storages & setup marks
-   * & bind editor event listener.
-   */
-  setupExtensions() {
-    const extensions = this.extensions;
-    this.editor.extensionStorage = Object.fromEntries(
-      extensions.map((extension) => [extension.name, extension.storage])
-    );
-    extensions.forEach((extension) => {
-      var _a;
-      const context = {
-        name: extension.name,
-        options: extension.options,
-        storage: this.editor.extensionStorage[extension.name],
-        editor: this.editor,
-        type: getSchemaTypeByName(extension.name, this.schema)
-      };
-      if (extension.type === "mark") {
-        const keepOnSplit = (_a = callOrReturn(getExtensionField(extension, "keepOnSplit", context))) != null ? _a : true;
-        if (keepOnSplit) {
-          this.splittableMarks.push(extension.name);
-        }
-      }
-      const onBeforeCreate = getExtensionField(extension, "onBeforeCreate", context);
-      const onCreate = getExtensionField(extension, "onCreate", context);
-      const onUpdate = getExtensionField(extension, "onUpdate", context);
-      const onSelectionUpdate = getExtensionField(
-        extension,
-        "onSelectionUpdate",
-        context
-      );
-      const onTransaction = getExtensionField(extension, "onTransaction", context);
-      const onFocus = getExtensionField(extension, "onFocus", context);
-      const onBlur = getExtensionField(extension, "onBlur", context);
-      const onDestroy = getExtensionField(extension, "onDestroy", context);
-      if (onBeforeCreate) {
-        this.editor.on("beforeCreate", onBeforeCreate);
-      }
-      if (onCreate) {
-        this.editor.on("create", onCreate);
-      }
-      if (onUpdate) {
-        this.editor.on("update", onUpdate);
-      }
-      if (onSelectionUpdate) {
-        this.editor.on("selectionUpdate", onSelectionUpdate);
-      }
-      if (onTransaction) {
-        this.editor.on("transaction", onTransaction);
-      }
-      if (onFocus) {
-        this.editor.on("focus", onFocus);
-      }
-      if (onBlur) {
-        this.editor.on("blur", onBlur);
-      }
-      if (onDestroy) {
-        this.editor.on("destroy", onDestroy);
-      }
-    });
-  }
-};
-ExtensionManager.resolve = resolveExtensions;
-ExtensionManager.sort = sortExtensions;
-ExtensionManager.flatten = flattenExtensions;
-var extensions_exports = {};
-__export2(extensions_exports, {
-  ClipboardTextSerializer: () => ClipboardTextSerializer,
-  Commands: () => Commands,
-  Delete: () => Delete,
-  Drop: () => Drop,
-  Editable: () => Editable,
-  FocusEvents: () => FocusEvents,
-  Keymap: () => Keymap,
-  Paste: () => Paste,
-  Tabindex: () => Tabindex,
-  TextDirection: () => TextDirection,
-  focusEventsPluginKey: () => focusEventsPluginKey
-});
-var Extension = class _Extension extends Extendable {
-  constructor() {
-    super(...arguments);
-    this.type = "extension";
-  }
-  /**
-   * Create a new Extension instance
-   * @param config - Extension configuration object or a function that returns a configuration object
-   */
-  static create(config = {}) {
-    const resolvedConfig = typeof config === "function" ? config() : config;
-    return new _Extension(resolvedConfig);
-  }
-  configure(options) {
-    return super.configure(options);
-  }
-  extend(extendedConfig) {
-    const resolvedConfig = typeof extendedConfig === "function" ? extendedConfig() : extendedConfig;
-    return super.extend(resolvedConfig);
-  }
-};
-var ClipboardTextSerializer = Extension.create({
-  name: "clipboardTextSerializer",
-  addOptions() {
-    return {
-      blockSeparator: void 0
-    };
-  },
-  addProseMirrorPlugins() {
-    return [
-      new import_state15.Plugin({
-        key: new import_state15.PluginKey("clipboardTextSerializer"),
-        props: {
-          clipboardTextSerializer: () => {
-            const { editor } = this;
-            const { state, schema } = editor;
-            const { doc, selection } = state;
-            const { ranges } = selection;
-            const from = Math.min(...ranges.map((range2) => range2.$from.pos));
-            const to = Math.max(...ranges.map((range2) => range2.$to.pos));
-            const textSerializers = getTextSerializersFromSchema(schema);
-            const range = { from, to };
-            return getTextBetween(doc, range, {
-              ...this.options.blockSeparator !== void 0 ? { blockSeparator: this.options.blockSeparator } : {},
-              textSerializers
-            });
-          }
-        }
-      })
-    ];
-  }
-});
-var Commands = Extension.create({
-  name: "commands",
-  addCommands() {
-    return {
-      ...commands_exports
-    };
-  }
-});
-var Delete = Extension.create({
-  name: "delete",
-  onUpdate({ transaction, appendedTransactions }) {
-    var _a, _b, _c;
-    const callback = () => {
-      var _a2, _b2, _c2, _d;
-      if ((_d = (_c2 = (_b2 = (_a2 = this.editor.options.coreExtensionOptions) == null ? void 0 : _a2.delete) == null ? void 0 : _b2.filterTransaction) == null ? void 0 : _c2.call(_b2, transaction)) != null ? _d : transaction.getMeta("y-sync$")) {
-        return;
-      }
-      const nextTransaction = combineTransactionSteps(transaction.before, [transaction, ...appendedTransactions]);
-      const changes = getChangedRanges(nextTransaction);
-      changes.forEach((change) => {
-        if (nextTransaction.mapping.mapResult(change.oldRange.from).deletedAfter && nextTransaction.mapping.mapResult(change.oldRange.to).deletedBefore) {
-          nextTransaction.before.nodesBetween(change.oldRange.from, change.oldRange.to, (node, from) => {
-            const to = from + node.nodeSize - 2;
-            const isFullyWithinRange = change.oldRange.from <= from && to <= change.oldRange.to;
-            this.editor.emit("delete", {
-              type: "node",
-              node,
-              from,
-              to,
-              newFrom: nextTransaction.mapping.map(from),
-              newTo: nextTransaction.mapping.map(to),
-              deletedRange: change.oldRange,
-              newRange: change.newRange,
-              partial: !isFullyWithinRange,
-              editor: this.editor,
-              transaction,
-              combinedTransform: nextTransaction
-            });
-          });
-        }
-      });
-      const mapping = nextTransaction.mapping;
-      nextTransaction.steps.forEach((step, index) => {
-        var _a3, _b3;
-        if (step instanceof import_transform9.RemoveMarkStep) {
-          const newStart = mapping.slice(index).map(step.from, -1);
-          const newEnd = mapping.slice(index).map(step.to);
-          const oldStart = mapping.invert().map(newStart, -1);
-          const oldEnd = mapping.invert().map(newEnd);
-          const foundBeforeMark = (_a3 = nextTransaction.doc.nodeAt(newStart - 1)) == null ? void 0 : _a3.marks.some((mark) => mark.eq(step.mark));
-          const foundAfterMark = (_b3 = nextTransaction.doc.nodeAt(newEnd)) == null ? void 0 : _b3.marks.some((mark) => mark.eq(step.mark));
-          this.editor.emit("delete", {
-            type: "mark",
-            mark: step.mark,
-            from: step.from,
-            to: step.to,
-            deletedRange: {
-              from: oldStart,
-              to: oldEnd
-            },
-            newRange: {
-              from: newStart,
-              to: newEnd
-            },
-            partial: Boolean(foundAfterMark || foundBeforeMark),
-            editor: this.editor,
-            transaction,
-            combinedTransform: nextTransaction
-          });
-        }
-      });
-    };
-    if ((_c = (_b = (_a = this.editor.options.coreExtensionOptions) == null ? void 0 : _a.delete) == null ? void 0 : _b.async) != null ? _c : true) {
-      setTimeout(callback, 0);
-    } else {
-      callback();
-    }
-  }
-});
-var Drop = Extension.create({
-  name: "drop",
-  addProseMirrorPlugins() {
-    return [
-      new import_state16.Plugin({
-        key: new import_state16.PluginKey("tiptapDrop"),
-        props: {
-          handleDrop: (_, e, slice, moved) => {
-            this.editor.emit("drop", {
-              editor: this.editor,
-              event: e,
-              slice,
-              moved
-            });
-          }
-        }
-      })
-    ];
-  }
-});
-var Editable = Extension.create({
-  name: "editable",
-  addProseMirrorPlugins() {
-    return [
-      new import_state17.Plugin({
-        key: new import_state17.PluginKey("editable"),
-        props: {
-          editable: () => this.editor.options.editable
-        }
-      })
-    ];
-  }
-});
-var focusEventsPluginKey = new import_state18.PluginKey("focusEvents");
-var FocusEvents = Extension.create({
-  name: "focusEvents",
-  addProseMirrorPlugins() {
-    const { editor } = this;
-    return [
-      new import_state18.Plugin({
-        key: focusEventsPluginKey,
-        props: {
-          handleDOMEvents: {
-            focus: (view, event) => {
-              editor.isFocused = true;
-              const transaction = editor.state.tr.setMeta("focus", { event }).setMeta("addToHistory", false);
-              view.dispatch(transaction);
-              return false;
-            },
-            blur: (view, event) => {
-              editor.isFocused = false;
-              const transaction = editor.state.tr.setMeta("blur", { event }).setMeta("addToHistory", false);
-              view.dispatch(transaction);
-              return false;
-            }
-          }
-        }
-      })
-    ];
-  }
-});
-var Keymap = Extension.create({
-  name: "keymap",
-  addKeyboardShortcuts() {
-    const handleBackspace2 = () => this.editor.commands.first(({ commands }) => [
-      () => commands.undoInputRule(),
-      // maybe convert first text block node to default node
-      () => commands.command(({ tr }) => {
-        const { selection, doc } = tr;
-        const { empty, $anchor } = selection;
-        const { pos, parent } = $anchor;
-        const $parentPos = $anchor.parent.isTextblock && pos > 0 ? tr.doc.resolve(pos - 1) : $anchor;
-        const parentIsIsolating = $parentPos.parent.type.spec.isolating;
-        const parentPos = $anchor.pos - $anchor.parentOffset;
-        const isAtStart = parentIsIsolating && $parentPos.parent.childCount === 1 ? parentPos === $anchor.pos : import_state19.Selection.atStart(doc).from === pos;
-        if (!empty || !parent.type.isTextblock || parent.textContent.length || !isAtStart || isAtStart && $anchor.parent.type.name === "paragraph") {
-          return false;
-        }
-        return commands.clearNodes();
-      }),
-      () => commands.deleteSelection(),
-      () => commands.joinBackward(),
-      () => commands.selectNodeBackward()
-    ]);
-    const handleDelete2 = () => this.editor.commands.first(({ commands }) => [
-      () => commands.deleteSelection(),
-      () => commands.deleteCurrentNode(),
-      () => commands.joinForward(),
-      () => commands.selectNodeForward()
-    ]);
-    const handleEnter = () => this.editor.commands.first(({ commands }) => [
-      () => commands.newlineInCode(),
-      () => commands.createParagraphNear(),
-      () => commands.liftEmptyBlock(),
-      () => commands.splitBlock()
-    ]);
-    const baseKeymap = {
-      Enter: handleEnter,
-      "Mod-Enter": () => this.editor.commands.exitCode(),
-      Backspace: handleBackspace2,
-      "Mod-Backspace": handleBackspace2,
-      "Shift-Backspace": handleBackspace2,
-      Delete: handleDelete2,
-      "Mod-Delete": handleDelete2,
-      "Mod-a": () => this.editor.commands.selectAll()
-    };
-    const pcKeymap = {
-      ...baseKeymap
-    };
-    const macKeymap = {
-      ...baseKeymap,
-      "Ctrl-h": handleBackspace2,
-      "Alt-Backspace": handleBackspace2,
-      "Ctrl-d": handleDelete2,
-      "Ctrl-Alt-Backspace": handleDelete2,
-      "Alt-Delete": handleDelete2,
-      "Alt-d": handleDelete2,
-      "Ctrl-a": () => this.editor.commands.selectTextblockStart(),
-      "Ctrl-e": () => this.editor.commands.selectTextblockEnd()
-    };
-    if (isiOS() || isMacOS()) {
-      return macKeymap;
-    }
-    return pcKeymap;
-  },
-  addProseMirrorPlugins() {
-    return [
-      // With this plugin we check if the whole document was selected and deleted.
-      // In this case we will additionally call `clearNodes()` to convert e.g. a heading
-      // to a paragraph if necessary.
-      // This is an alternative to ProseMirror's `AllSelection`, which doesn’t work well
-      // with many other commands.
-      new import_state19.Plugin({
-        key: new import_state19.PluginKey("clearDocument"),
-        appendTransaction: (transactions, oldState, newState) => {
-          if (transactions.some((tr2) => tr2.getMeta("composition"))) {
-            return;
-          }
-          const docChanges = transactions.some((transaction) => transaction.docChanged) && !oldState.doc.eq(newState.doc);
-          const ignoreTr = transactions.some((transaction) => transaction.getMeta("preventClearDocument"));
-          if (!docChanges || ignoreTr) {
-            return;
-          }
-          const { empty, from, to } = oldState.selection;
-          const allFrom = import_state19.Selection.atStart(oldState.doc).from;
-          const allEnd = import_state19.Selection.atEnd(oldState.doc).to;
-          const allWasSelected = from === allFrom && to === allEnd;
-          if (empty || !allWasSelected) {
-            return;
-          }
-          const isEmpty = isNodeEmpty(newState.doc);
-          if (!isEmpty) {
-            return;
-          }
-          const tr = newState.tr;
-          const state = createChainableState({
-            state: newState,
-            transaction: tr
-          });
-          const { commands } = new CommandManager({
-            editor: this.editor,
-            state
-          });
-          commands.clearNodes();
-          if (!tr.steps.length) {
-            return;
-          }
-          return tr;
-        }
-      })
-    ];
-  }
-});
-var Paste = Extension.create({
-  name: "paste",
-  addProseMirrorPlugins() {
-    return [
-      new import_state20.Plugin({
-        key: new import_state20.PluginKey("tiptapPaste"),
-        props: {
-          handlePaste: (_view, e, slice) => {
-            this.editor.emit("paste", {
-              editor: this.editor,
-              event: e,
-              slice
-            });
-          }
-        }
-      })
-    ];
-  }
-});
-var Tabindex = Extension.create({
-  name: "tabindex",
-  addProseMirrorPlugins() {
-    return [
-      new import_state21.Plugin({
-        key: new import_state21.PluginKey("tabindex"),
-        props: {
-          attributes: () => this.editor.isEditable ? { tabindex: "0" } : {}
-        }
-      })
-    ];
-  }
-});
-var TextDirection = Extension.create({
-  name: "textDirection",
-  addOptions() {
-    return {
-      direction: void 0
-    };
-  },
-  addGlobalAttributes() {
-    if (!this.options.direction) {
-      return [];
-    }
-    const { nodeExtensions } = splitExtensions(this.extensions);
-    return [
-      {
-        types: nodeExtensions.filter((extension) => extension.name !== "text").map((extension) => extension.name),
-        attributes: {
-          dir: {
-            default: this.options.direction,
-            parseHTML: (element) => {
-              const dir = element.getAttribute("dir");
-              if (dir && (dir === "ltr" || dir === "rtl" || dir === "auto")) {
-                return dir;
-              }
-              return this.options.direction;
-            },
-            renderHTML: (attributes) => {
-              if (!attributes.dir) {
-                return {};
-              }
-              return {
-                dir: attributes.dir
-              };
-            }
-          }
-        }
-      }
-    ];
-  },
-  addProseMirrorPlugins() {
-    return [
-      new import_state22.Plugin({
-        key: new import_state22.PluginKey("textDirection"),
-        props: {
-          attributes: () => {
-            const direction = this.options.direction;
-            if (!direction) {
-              return {};
-            }
-            return {
-              dir: direction
-            };
-          }
-        }
-      })
-    ];
-  }
-});
 function markInputRule(config) {
   return new InputRule({
     find: config.find,
@@ -5564,16 +2116,6 @@ function canInsertNode(state, nodeType) {
   }
   return false;
 }
-var markdown_exports = {};
-__export2(markdown_exports, {
-  createAtomBlockMarkdownSpec: () => createAtomBlockMarkdownSpec,
-  createBlockMarkdownSpec: () => createBlockMarkdownSpec,
-  createInlineMarkdownSpec: () => createInlineMarkdownSpec,
-  parseAttributes: () => parseAttributes,
-  parseIndentedBlocks: () => parseIndentedBlocks,
-  renderNestedMarkdownContent: () => renderNestedMarkdownContent,
-  serializeAttributes: () => serializeAttributes
-});
 function parseAttributes(attrString) {
   if (!(attrString == null ? void 0 : attrString.trim())) {
     return {};
@@ -6075,27 +2617,6 @@ function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
     editor.view.dispatch(tr);
   }
 }
-var Node3 = class _Node extends Extendable {
-  constructor() {
-    super(...arguments);
-    this.type = "node";
-  }
-  /**
-   * Create a new Node instance
-   * @param config - Node configuration object or a function that returns a configuration object
-   */
-  static create(config = {}) {
-    const resolvedConfig = typeof config === "function" ? config() : config;
-    return new _Node(resolvedConfig);
-  }
-  configure(options) {
-    return super.configure(options);
-  }
-  extend(extendedConfig) {
-    const resolvedConfig = typeof extendedConfig === "function" ? extendedConfig() : extendedConfig;
-    return super.extend(resolvedConfig);
-  }
-};
 function markPasteRule(config) {
   return new PasteRule({
     find: config.find,
@@ -6132,554 +2653,2892 @@ function markPasteRule(config) {
     }
   });
 }
-
-// node_modules/@tiptap/extension-heading/dist/index.js
-var Heading = Node3.create({
-  name: "heading",
-  addOptions() {
-    return {
-      levels: [1, 2, 3, 4, 5, 6],
-      HTMLAttributes: {}
+var import_transform, import_commands, import_state, import_commands2, import_commands3, import_state2, import_state3, import_state4, import_model, import_model2, import_state5, import_transform2, import_commands4, import_transform3, import_transform4, import_commands5, import_commands6, import_commands7, import_commands8, import_schema_list, import_commands9, import_state6, import_commands10, import_commands11, import_commands12, import_commands13, import_commands14, import_transform5, import_model3, import_model4, import_model5, import_model6, import_model7, import_state7, import_commands15, import_state8, import_state9, import_schema_list2, import_state10, import_transform6, import_model8, import_state11, import_transform7, import_transform8, import_commands16, import_schema_list3, import_state12, import_view, import_keymap, import_model9, import_state13, import_model10, import_state14, import_state15, import_transform9, import_state16, import_state17, import_state18, import_state19, import_state20, import_state21, import_state22, import_transform10, import_state23, import_state24, __defProp2, __export2, CommandManager, commands_exports, blur, clearContent, clearNodes, command, createParagraphNear, cut, deleteCurrentNode, deleteNode, deleteRange, deleteSelection, enter, exitCode, extendMarkRange, first, focus, forEach, insertContent, removeWhitespaces, isFragment, insertContentAt, joinUp, joinDown, joinBackward, joinForward, joinItemBackward, joinItemForward, joinTextblockBackward, joinTextblockForward, keyboardShortcut, lift, liftEmptyBlock, liftListItem, newlineInCode, resetAttributes, scrollIntoView, selectAll, selectNodeBackward, selectNodeForward, selectParentNode, selectTextblockEnd, selectTextblockStart, setContent, getNodeAtPosition, getTextContentFromNodes, isAtEndOfNode, isAtStartOfNode, setMark, setMeta, setNode, setNodeSelection, setTextDirection, setTextSelection, sinkListItem, splitBlock, splitListItem, joinListBackwards, joinListForwards, toggleList, toggleMark, toggleNode, toggleWrap, undoInputRule, unsetAllMarks, unsetMark, unsetTextDirection, updateAttributes, wrapIn, wrapInList, InputRule, inputRuleMatcherHandler, Extendable, Mark, PasteRule, pasteRuleMatcherHandler, tiptapDragFromOtherEditor, createClipboardPasteEvent, ExtensionManager, extensions_exports, Extension, ClipboardTextSerializer, Commands, Delete, Drop, Editable, focusEventsPluginKey, FocusEvents, Keymap, Paste, Tabindex, TextDirection, markdown_exports, Node3;
+var init_dist = __esm({
+  "node_modules/@tiptap/core/dist/index.js"() {
+    "use strict";
+    import_transform = require("@tiptap/pm/transform");
+    import_commands = require("@tiptap/pm/commands");
+    import_state = require("@tiptap/pm/state");
+    import_commands2 = require("@tiptap/pm/commands");
+    import_commands3 = require("@tiptap/pm/commands");
+    import_state2 = require("@tiptap/pm/state");
+    import_state3 = require("@tiptap/pm/state");
+    import_state4 = require("@tiptap/pm/state");
+    import_model = require("@tiptap/pm/model");
+    import_model2 = require("@tiptap/pm/model");
+    import_state5 = require("@tiptap/pm/state");
+    import_transform2 = require("@tiptap/pm/transform");
+    import_commands4 = require("@tiptap/pm/commands");
+    import_transform3 = require("@tiptap/pm/transform");
+    import_transform4 = require("@tiptap/pm/transform");
+    import_commands5 = require("@tiptap/pm/commands");
+    import_commands6 = require("@tiptap/pm/commands");
+    import_commands7 = require("@tiptap/pm/commands");
+    import_commands8 = require("@tiptap/pm/commands");
+    import_schema_list = require("@tiptap/pm/schema-list");
+    import_commands9 = require("@tiptap/pm/commands");
+    import_state6 = require("@tiptap/pm/state");
+    import_commands10 = require("@tiptap/pm/commands");
+    import_commands11 = require("@tiptap/pm/commands");
+    import_commands12 = require("@tiptap/pm/commands");
+    import_commands13 = require("@tiptap/pm/commands");
+    import_commands14 = require("@tiptap/pm/commands");
+    import_transform5 = require("@tiptap/pm/transform");
+    import_model3 = require("@tiptap/pm/model");
+    import_model4 = require("@tiptap/pm/model");
+    import_model5 = require("@tiptap/pm/model");
+    import_model6 = require("@tiptap/pm/model");
+    import_model7 = require("@tiptap/pm/model");
+    import_state7 = require("@tiptap/pm/state");
+    import_commands15 = require("@tiptap/pm/commands");
+    import_state8 = require("@tiptap/pm/state");
+    import_state9 = require("@tiptap/pm/state");
+    import_schema_list2 = require("@tiptap/pm/schema-list");
+    import_state10 = require("@tiptap/pm/state");
+    import_transform6 = require("@tiptap/pm/transform");
+    import_model8 = require("@tiptap/pm/model");
+    import_state11 = require("@tiptap/pm/state");
+    import_transform7 = require("@tiptap/pm/transform");
+    import_transform8 = require("@tiptap/pm/transform");
+    import_commands16 = require("@tiptap/pm/commands");
+    import_schema_list3 = require("@tiptap/pm/schema-list");
+    import_state12 = require("@tiptap/pm/state");
+    import_view = require("@tiptap/pm/view");
+    import_keymap = require("@tiptap/pm/keymap");
+    import_model9 = require("@tiptap/pm/model");
+    import_state13 = require("@tiptap/pm/state");
+    import_model10 = require("@tiptap/pm/model");
+    import_state14 = require("@tiptap/pm/state");
+    import_state15 = require("@tiptap/pm/state");
+    import_transform9 = require("@tiptap/pm/transform");
+    import_state16 = require("@tiptap/pm/state");
+    import_state17 = require("@tiptap/pm/state");
+    import_state18 = require("@tiptap/pm/state");
+    import_state19 = require("@tiptap/pm/state");
+    import_state20 = require("@tiptap/pm/state");
+    import_state21 = require("@tiptap/pm/state");
+    import_state22 = require("@tiptap/pm/state");
+    import_transform10 = require("@tiptap/pm/transform");
+    import_state23 = require("@tiptap/pm/state");
+    import_state24 = require("@tiptap/pm/state");
+    __defProp2 = Object.defineProperty;
+    __export2 = (target, all) => {
+      for (var name in all)
+        __defProp2(target, name, { get: all[name], enumerable: true });
     };
-  },
-  content: "inline*",
-  group: "block",
-  defining: true,
-  addAttributes() {
-    return {
-      level: {
-        default: 1,
-        rendered: false
+    CommandManager = class {
+      constructor(props) {
+        this.editor = props.editor;
+        this.rawCommands = this.editor.extensionManager.commands;
+        this.customState = props.state;
       }
-    };
-  },
-  parseHTML() {
-    return this.options.levels.map((level) => ({
-      tag: `h${level}`,
-      attrs: { level }
-    }));
-  },
-  renderHTML({ node, HTMLAttributes }) {
-    const hasLevel = this.options.levels.includes(node.attrs.level);
-    const level = hasLevel ? node.attrs.level : this.options.levels[0];
-    return [`h${level}`, mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
-  },
-  parseMarkdown: (token, helpers) => {
-    return helpers.createNode("heading", { level: token.depth || 1 }, helpers.parseInline(token.tokens || []));
-  },
-  renderMarkdown: (node, h2) => {
-    var _a;
-    const level = ((_a = node.attrs) == null ? void 0 : _a.level) ? parseInt(node.attrs.level, 10) : 1;
-    const headingChars = "#".repeat(level);
-    if (!node.content) {
-      return "";
-    }
-    return `${headingChars} ${h2.renderChildren(node.content)}`;
-  },
-  addCommands() {
-    return {
-      setHeading: (attributes) => ({ commands }) => {
-        if (!this.options.levels.includes(attributes.level)) {
-          return false;
-        }
-        return commands.setNode(this.name, attributes);
-      },
-      toggleHeading: (attributes) => ({ commands }) => {
-        if (!this.options.levels.includes(attributes.level)) {
-          return false;
-        }
-        return commands.toggleNode(this.name, "paragraph", attributes);
+      get hasCustomState() {
+        return !!this.customState;
       }
-    };
-  },
-  addKeyboardShortcuts() {
-    return this.options.levels.reduce(
-      (items, level) => ({
-        ...items,
-        ...{
-          [`Mod-Alt-${level}`]: () => this.editor.commands.toggleHeading({ level })
-        }
-      }),
-      {}
-    );
-  },
-  addInputRules() {
-    return this.options.levels.map((level) => {
-      return textblockTypeInputRule({
-        find: new RegExp(`^(#{${Math.min(...this.options.levels)},${level}})\\s$`),
-        type: this.type,
-        getAttributes: {
-          level
-        }
-      });
-    });
-  }
-});
-var index_default = Heading;
-
-// node_modules/@tiptap/extension-paragraph/dist/index.js
-var Paragraph = Node3.create({
-  name: "paragraph",
-  priority: 1e3,
-  addOptions() {
-    return {
-      HTMLAttributes: {}
-    };
-  },
-  group: "block",
-  content: "inline*",
-  parseHTML() {
-    return [{ tag: "p" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["p", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
-  },
-  parseMarkdown: (token, helpers) => {
-    const tokens = token.tokens || [];
-    if (tokens.length === 1 && tokens[0].type === "image") {
-      return helpers.parseChildren([tokens[0]]);
-    }
-    return helpers.createNode(
-      "paragraph",
-      void 0,
-      // no attributes for paragraph
-      helpers.parseInline(tokens)
-    );
-  },
-  renderMarkdown: (node, h2) => {
-    if (!node || !Array.isArray(node.content)) {
-      return "";
-    }
-    return h2.renderChildren(node.content);
-  },
-  addCommands() {
-    return {
-      setParagraph: () => ({ commands }) => {
-        return commands.setNode(this.name);
+      get state() {
+        return this.customState || this.editor.state;
       }
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Alt-0": () => this.editor.commands.setParagraph()
-    };
-  }
-});
-var index_default2 = Paragraph;
-
-// node_modules/@tiptap/extension-list/dist/index.js
-var __defProp3 = Object.defineProperty;
-var __export3 = (target, all) => {
-  for (var name in all)
-    __defProp3(target, name, { get: all[name], enumerable: true });
-};
-var ListItemName = "listItem";
-var TextStyleName = "textStyle";
-var bulletListInputRegex = /^\s*([-+*])\s$/;
-var BulletList = Node3.create({
-  name: "bulletList",
-  addOptions() {
-    return {
-      itemTypeName: "listItem",
-      HTMLAttributes: {},
-      keepMarks: false,
-      keepAttributes: false
-    };
-  },
-  group: "block list",
-  content() {
-    return `${this.options.itemTypeName}+`;
-  },
-  parseHTML() {
-    return [{ tag: "ul" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["ul", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
-  },
-  markdownTokenName: "list",
-  parseMarkdown: (token, helpers) => {
-    if (token.type !== "list" || token.ordered) {
-      return [];
-    }
-    return {
-      type: "bulletList",
-      content: token.items ? helpers.parseChildren(token.items) : []
-    };
-  },
-  renderMarkdown: (node, h2) => {
-    if (!node.content) {
-      return "";
-    }
-    return h2.renderChildren(node.content, "\n");
-  },
-  markdownOptions: {
-    indentsContent: true
-  },
-  addCommands() {
-    return {
-      toggleBulletList: () => ({ commands, chain }) => {
-        if (this.options.keepAttributes) {
-          return chain().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).updateAttributes(ListItemName, this.editor.getAttributes(TextStyleName)).run();
-        }
-        return commands.toggleList(this.name, this.options.itemTypeName, this.options.keepMarks);
+      get commands() {
+        const { rawCommands, editor, state } = this;
+        const { view } = editor;
+        const { tr } = state;
+        const props = this.buildProps(tr);
+        return Object.fromEntries(
+          Object.entries(rawCommands).map(([name, command2]) => {
+            const method = (...args) => {
+              const callback = command2(...args)(props);
+              if (!tr.getMeta("preventDispatch") && !this.hasCustomState) {
+                view.dispatch(tr);
+              }
+              return callback;
+            };
+            return [name, method];
+          })
+        );
       }
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Shift-8": () => this.editor.commands.toggleBulletList()
-    };
-  },
-  addInputRules() {
-    let inputRule = wrappingInputRule({
-      find: bulletListInputRegex,
-      type: this.type
-    });
-    if (this.options.keepMarks || this.options.keepAttributes) {
-      inputRule = wrappingInputRule({
-        find: bulletListInputRegex,
-        type: this.type,
-        keepMarks: this.options.keepMarks,
-        keepAttributes: this.options.keepAttributes,
-        getAttributes: () => {
-          return this.editor.getAttributes(TextStyleName);
-        },
-        editor: this.editor
-      });
-    }
-    return [inputRule];
-  }
-});
-var ListItem = Node3.create({
-  name: "listItem",
-  addOptions() {
-    return {
-      HTMLAttributes: {},
-      bulletListTypeName: "bulletList",
-      orderedListTypeName: "orderedList"
-    };
-  },
-  content: "paragraph block*",
-  defining: true,
-  parseHTML() {
-    return [
-      {
-        tag: "li"
+      get chain() {
+        return () => this.createChain();
       }
-    ];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["li", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
-  },
-  markdownTokenName: "list_item",
-  parseMarkdown: (token, helpers) => {
-    if (token.type !== "list_item") {
-      return [];
-    }
-    let content = [];
-    if (token.tokens && token.tokens.length > 0) {
-      const hasParagraphTokens = token.tokens.some((t) => t.type === "paragraph");
-      if (hasParagraphTokens) {
-        content = helpers.parseChildren(token.tokens);
-      } else {
-        const firstToken = token.tokens[0];
-        if (firstToken && firstToken.type === "text" && firstToken.tokens && firstToken.tokens.length > 0) {
-          const inlineContent = helpers.parseInline(firstToken.tokens);
-          content = [
-            {
-              type: "paragraph",
-              content: inlineContent
-            }
-          ];
-          if (token.tokens.length > 1) {
-            const remainingTokens = token.tokens.slice(1);
-            const additionalContent = helpers.parseChildren(remainingTokens);
-            content.push(...additionalContent);
+      get can() {
+        return () => this.createCan();
+      }
+      createChain(startTr, shouldDispatch = true) {
+        const { rawCommands, editor, state } = this;
+        const { view } = editor;
+        const callbacks = [];
+        const hasStartTransaction = !!startTr;
+        const tr = startTr || state.tr;
+        const run3 = () => {
+          if (!hasStartTransaction && shouldDispatch && !tr.getMeta("preventDispatch") && !this.hasCustomState) {
+            view.dispatch(tr);
           }
-        } else {
-          content = helpers.parseChildren(token.tokens);
+          return callbacks.every((callback) => callback === true);
+        };
+        const chain = {
+          ...Object.fromEntries(
+            Object.entries(rawCommands).map(([name, command2]) => {
+              const chainedCommand = (...args) => {
+                const props = this.buildProps(tr, shouldDispatch);
+                const callback = command2(...args)(props);
+                callbacks.push(callback);
+                return chain;
+              };
+              return [name, chainedCommand];
+            })
+          ),
+          run: run3
+        };
+        return chain;
+      }
+      createCan(startTr) {
+        const { rawCommands, state } = this;
+        const dispatch = false;
+        const tr = startTr || state.tr;
+        const props = this.buildProps(tr, dispatch);
+        const formattedCommands = Object.fromEntries(
+          Object.entries(rawCommands).map(([name, command2]) => {
+            return [name, (...args) => command2(...args)({ ...props, dispatch: void 0 })];
+          })
+        );
+        return {
+          ...formattedCommands,
+          chain: () => this.createChain(tr, dispatch)
+        };
+      }
+      buildProps(tr, shouldDispatch = true) {
+        const { rawCommands, editor, state } = this;
+        const { view } = editor;
+        const props = {
+          tr,
+          editor,
+          view,
+          state: createChainableState({
+            state,
+            transaction: tr
+          }),
+          dispatch: shouldDispatch ? () => void 0 : void 0,
+          chain: () => this.createChain(tr, shouldDispatch),
+          can: () => this.createCan(tr),
+          get commands() {
+            return Object.fromEntries(
+              Object.entries(rawCommands).map(([name, command2]) => {
+                return [name, (...args) => command2(...args)(props)];
+              })
+            );
+          }
+        };
+        return props;
+      }
+    };
+    commands_exports = {};
+    __export2(commands_exports, {
+      blur: () => blur,
+      clearContent: () => clearContent,
+      clearNodes: () => clearNodes,
+      command: () => command,
+      createParagraphNear: () => createParagraphNear,
+      cut: () => cut,
+      deleteCurrentNode: () => deleteCurrentNode,
+      deleteNode: () => deleteNode,
+      deleteRange: () => deleteRange,
+      deleteSelection: () => deleteSelection,
+      enter: () => enter,
+      exitCode: () => exitCode,
+      extendMarkRange: () => extendMarkRange,
+      first: () => first,
+      focus: () => focus,
+      forEach: () => forEach,
+      insertContent: () => insertContent,
+      insertContentAt: () => insertContentAt,
+      joinBackward: () => joinBackward,
+      joinDown: () => joinDown,
+      joinForward: () => joinForward,
+      joinItemBackward: () => joinItemBackward,
+      joinItemForward: () => joinItemForward,
+      joinTextblockBackward: () => joinTextblockBackward,
+      joinTextblockForward: () => joinTextblockForward,
+      joinUp: () => joinUp,
+      keyboardShortcut: () => keyboardShortcut,
+      lift: () => lift,
+      liftEmptyBlock: () => liftEmptyBlock,
+      liftListItem: () => liftListItem,
+      newlineInCode: () => newlineInCode,
+      resetAttributes: () => resetAttributes,
+      scrollIntoView: () => scrollIntoView,
+      selectAll: () => selectAll,
+      selectNodeBackward: () => selectNodeBackward,
+      selectNodeForward: () => selectNodeForward,
+      selectParentNode: () => selectParentNode,
+      selectTextblockEnd: () => selectTextblockEnd,
+      selectTextblockStart: () => selectTextblockStart,
+      setContent: () => setContent,
+      setMark: () => setMark,
+      setMeta: () => setMeta,
+      setNode: () => setNode,
+      setNodeSelection: () => setNodeSelection,
+      setTextDirection: () => setTextDirection,
+      setTextSelection: () => setTextSelection,
+      sinkListItem: () => sinkListItem,
+      splitBlock: () => splitBlock,
+      splitListItem: () => splitListItem,
+      toggleList: () => toggleList,
+      toggleMark: () => toggleMark,
+      toggleNode: () => toggleNode,
+      toggleWrap: () => toggleWrap,
+      undoInputRule: () => undoInputRule,
+      unsetAllMarks: () => unsetAllMarks,
+      unsetMark: () => unsetMark,
+      unsetTextDirection: () => unsetTextDirection,
+      updateAttributes: () => updateAttributes,
+      wrapIn: () => wrapIn,
+      wrapInList: () => wrapInList
+    });
+    blur = () => ({ editor, view }) => {
+      requestAnimationFrame(() => {
+        var _a;
+        if (!editor.isDestroyed) {
+          ;
+          view.dom.blur();
+          (_a = window == null ? void 0 : window.getSelection()) == null ? void 0 : _a.removeAllRanges();
+        }
+      });
+      return true;
+    };
+    clearContent = (emitUpdate = true) => ({ commands }) => {
+      return commands.setContent("", { emitUpdate });
+    };
+    clearNodes = () => ({ state, tr, dispatch }) => {
+      const { selection } = tr;
+      const { ranges } = selection;
+      if (!dispatch) {
+        return true;
+      }
+      ranges.forEach(({ $from, $to }) => {
+        state.doc.nodesBetween($from.pos, $to.pos, (node, pos) => {
+          if (node.type.isText) {
+            return;
+          }
+          const { doc, mapping } = tr;
+          const $mappedFrom = doc.resolve(mapping.map(pos));
+          const $mappedTo = doc.resolve(mapping.map(pos + node.nodeSize));
+          const nodeRange = $mappedFrom.blockRange($mappedTo);
+          if (!nodeRange) {
+            return;
+          }
+          const targetLiftDepth = (0, import_transform.liftTarget)(nodeRange);
+          if (node.type.isTextblock) {
+            const { defaultType } = $mappedFrom.parent.contentMatchAt($mappedFrom.index());
+            tr.setNodeMarkup(nodeRange.start, defaultType);
+          }
+          if (targetLiftDepth || targetLiftDepth === 0) {
+            tr.lift(nodeRange, targetLiftDepth);
+          }
+        });
+      });
+      return true;
+    };
+    command = (fn) => (props) => {
+      return fn(props);
+    };
+    createParagraphNear = () => ({ state, dispatch }) => {
+      return (0, import_commands.createParagraphNear)(state, dispatch);
+    };
+    cut = (originRange, targetPos) => ({ editor, tr }) => {
+      const { state } = editor;
+      const contentSlice = state.doc.slice(originRange.from, originRange.to);
+      tr.deleteRange(originRange.from, originRange.to);
+      const newPos = tr.mapping.map(targetPos);
+      tr.insert(newPos, contentSlice.content);
+      tr.setSelection(new import_state.TextSelection(tr.doc.resolve(Math.max(newPos - 1, 0))));
+      return true;
+    };
+    deleteCurrentNode = () => ({ tr, dispatch }) => {
+      const { selection } = tr;
+      const currentNode = selection.$anchor.node();
+      if (currentNode.content.size > 0) {
+        return false;
+      }
+      const $pos = tr.selection.$anchor;
+      for (let depth = $pos.depth; depth > 0; depth -= 1) {
+        const node = $pos.node(depth);
+        if (node.type === currentNode.type) {
+          if (dispatch) {
+            const from = $pos.before(depth);
+            const to = $pos.after(depth);
+            tr.delete(from, to).scrollIntoView();
+          }
+          return true;
         }
       }
-    }
-    if (content.length === 0) {
-      content = [
+      return false;
+    };
+    deleteNode = (typeOrName) => ({ tr, state, dispatch }) => {
+      const type = getNodeType(typeOrName, state.schema);
+      const $pos = tr.selection.$anchor;
+      for (let depth = $pos.depth; depth > 0; depth -= 1) {
+        const node = $pos.node(depth);
+        if (node.type === type) {
+          if (dispatch) {
+            const from = $pos.before(depth);
+            const to = $pos.after(depth);
+            tr.delete(from, to).scrollIntoView();
+          }
+          return true;
+        }
+      }
+      return false;
+    };
+    deleteRange = (range) => ({ tr, dispatch }) => {
+      const { from, to } = range;
+      if (dispatch) {
+        tr.delete(from, to);
+      }
+      return true;
+    };
+    deleteSelection = () => ({ state, dispatch }) => {
+      return (0, import_commands2.deleteSelection)(state, dispatch);
+    };
+    enter = () => ({ commands }) => {
+      return commands.keyboardShortcut("Enter");
+    };
+    exitCode = () => ({ state, dispatch }) => {
+      return (0, import_commands3.exitCode)(state, dispatch);
+    };
+    extendMarkRange = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
+      const type = getMarkType(typeOrName, state.schema);
+      const { doc, selection } = tr;
+      const { $from, from, to } = selection;
+      if (dispatch) {
+        const range = getMarkRange($from, type, attributes);
+        if (range && range.from <= from && range.to >= to) {
+          const newSelection = import_state2.TextSelection.create(doc, range.from, range.to);
+          tr.setSelection(newSelection);
+        }
+      }
+      return true;
+    };
+    first = (commands) => (props) => {
+      const items = typeof commands === "function" ? commands(props) : commands;
+      for (let i = 0; i < items.length; i += 1) {
+        if (items[i](props)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    focus = (position = null, options = {}) => ({ editor, view, tr, dispatch }) => {
+      options = {
+        scrollIntoView: true,
+        ...options
+      };
+      const delayedFocus = () => {
+        if (isiOS() || isAndroid()) {
+          ;
+          view.dom.focus();
+        }
+        if (isSafari() && !isiOS() && !isAndroid()) {
+          ;
+          view.dom.focus({ preventScroll: true });
+        }
+        requestAnimationFrame(() => {
+          if (!editor.isDestroyed) {
+            view.focus();
+            if (options == null ? void 0 : options.scrollIntoView) {
+              editor.commands.scrollIntoView();
+            }
+          }
+        });
+      };
+      if (view.hasFocus() && position === null || position === false) {
+        return true;
+      }
+      if (dispatch && position === null && !isTextSelection(editor.state.selection)) {
+        delayedFocus();
+        return true;
+      }
+      const selection = resolveFocusPosition(tr.doc, position) || editor.state.selection;
+      const isSameSelection = editor.state.selection.eq(selection);
+      if (dispatch) {
+        if (!isSameSelection) {
+          tr.setSelection(selection);
+        }
+        if (isSameSelection && tr.storedMarks) {
+          tr.setStoredMarks(tr.storedMarks);
+        }
+        delayedFocus();
+      }
+      return true;
+    };
+    forEach = (items, fn) => (props) => {
+      return items.every((item, index) => fn(item, { ...props, index }));
+    };
+    insertContent = (value, options) => ({ tr, commands }) => {
+      return commands.insertContentAt({ from: tr.selection.from, to: tr.selection.to }, value, options);
+    };
+    removeWhitespaces = (node) => {
+      const children = node.childNodes;
+      for (let i = children.length - 1; i >= 0; i -= 1) {
+        const child = children[i];
+        if (child.nodeType === 3 && child.nodeValue && /^(\n\s\s|\n)$/.test(child.nodeValue)) {
+          node.removeChild(child);
+        } else if (child.nodeType === 1) {
+          removeWhitespaces(child);
+        }
+      }
+      return node;
+    };
+    isFragment = (nodeOrFragment) => {
+      return !("type" in nodeOrFragment);
+    };
+    insertContentAt = (position, value, options) => ({ tr, dispatch, editor }) => {
+      var _a;
+      if (dispatch) {
+        options = {
+          parseOptions: editor.options.parseOptions,
+          updateSelection: true,
+          applyInputRules: false,
+          applyPasteRules: false,
+          ...options
+        };
+        let content;
+        const emitContentError = (error) => {
+          editor.emit("contentError", {
+            editor,
+            error,
+            disableCollaboration: () => {
+              if ("collaboration" in editor.storage && typeof editor.storage.collaboration === "object" && editor.storage.collaboration) {
+                ;
+                editor.storage.collaboration.isDisabled = true;
+              }
+            }
+          });
+        };
+        const parseOptions = {
+          preserveWhitespace: "full",
+          ...options.parseOptions
+        };
+        if (!options.errorOnInvalidContent && !editor.options.enableContentCheck && editor.options.emitContentError) {
+          try {
+            createNodeFromContent(value, editor.schema, {
+              parseOptions,
+              errorOnInvalidContent: true
+            });
+          } catch (e) {
+            emitContentError(e);
+          }
+        }
+        try {
+          content = createNodeFromContent(value, editor.schema, {
+            parseOptions,
+            errorOnInvalidContent: (_a = options.errorOnInvalidContent) != null ? _a : editor.options.enableContentCheck
+          });
+        } catch (e) {
+          emitContentError(e);
+          return false;
+        }
+        let { from, to } = typeof position === "number" ? { from: position, to: position } : { from: position.from, to: position.to };
+        let isOnlyTextContent = true;
+        let isOnlyBlockContent = true;
+        const nodes = isFragment(content) ? content : [content];
+        nodes.forEach((node) => {
+          node.check();
+          isOnlyTextContent = isOnlyTextContent ? node.isText && node.marks.length === 0 : false;
+          isOnlyBlockContent = isOnlyBlockContent ? node.isBlock : false;
+        });
+        if (from === to && isOnlyBlockContent) {
+          const { parent } = tr.doc.resolve(from);
+          const isEmptyTextBlock = parent.isTextblock && !parent.type.spec.code && !parent.childCount;
+          if (isEmptyTextBlock) {
+            from -= 1;
+            to += 1;
+          }
+        }
+        let newContent;
+        if (isOnlyTextContent) {
+          if (Array.isArray(value)) {
+            newContent = value.map((v) => v.text || "").join("");
+          } else if (value instanceof import_model.Fragment) {
+            let text = "";
+            value.forEach((node) => {
+              if (node.text) {
+                text += node.text;
+              }
+            });
+            newContent = text;
+          } else if (typeof value === "object" && !!value && !!value.text) {
+            newContent = value.text;
+          } else {
+            newContent = value;
+          }
+          tr.insertText(newContent, from, to);
+        } else {
+          newContent = content;
+          const $from = tr.doc.resolve(from);
+          const $fromNode = $from.node();
+          const fromSelectionAtStart = $from.parentOffset === 0;
+          const isTextSelection2 = $fromNode.isText || $fromNode.isTextblock;
+          const hasContent = $fromNode.content.size > 0;
+          if (fromSelectionAtStart && isTextSelection2 && hasContent) {
+            from = Math.max(0, from - 1);
+          }
+          tr.replaceWith(from, to, newContent);
+        }
+        if (options.updateSelection) {
+          selectionToInsertionEnd(tr, tr.steps.length - 1, -1);
+        }
+        if (options.applyInputRules) {
+          tr.setMeta("applyInputRules", { from, text: newContent });
+        }
+        if (options.applyPasteRules) {
+          tr.setMeta("applyPasteRules", { from, text: newContent });
+        }
+      }
+      return true;
+    };
+    joinUp = () => ({ state, dispatch }) => {
+      return (0, import_commands4.joinUp)(state, dispatch);
+    };
+    joinDown = () => ({ state, dispatch }) => {
+      return (0, import_commands4.joinDown)(state, dispatch);
+    };
+    joinBackward = () => ({ state, dispatch }) => {
+      return (0, import_commands4.joinBackward)(state, dispatch);
+    };
+    joinForward = () => ({ state, dispatch }) => {
+      return (0, import_commands4.joinForward)(state, dispatch);
+    };
+    joinItemBackward = () => ({ state, dispatch, tr }) => {
+      try {
+        const point = (0, import_transform3.joinPoint)(state.doc, state.selection.$from.pos, -1);
+        if (point === null || point === void 0) {
+          return false;
+        }
+        tr.join(point, 2);
+        if (dispatch) {
+          dispatch(tr);
+        }
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    joinItemForward = () => ({ state, dispatch, tr }) => {
+      try {
+        const point = (0, import_transform4.joinPoint)(state.doc, state.selection.$from.pos, 1);
+        if (point === null || point === void 0) {
+          return false;
+        }
+        tr.join(point, 2);
+        if (dispatch) {
+          dispatch(tr);
+        }
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    joinTextblockBackward = () => ({ state, dispatch }) => {
+      return (0, import_commands5.joinTextblockBackward)(state, dispatch);
+    };
+    joinTextblockForward = () => ({ state, dispatch }) => {
+      return (0, import_commands6.joinTextblockForward)(state, dispatch);
+    };
+    keyboardShortcut = (name) => ({ editor, view, tr, dispatch }) => {
+      const keys = normalizeKeyName(name).split(/-(?!$)/);
+      const key = keys.find((item) => !["Alt", "Ctrl", "Meta", "Shift"].includes(item));
+      const event = new KeyboardEvent("keydown", {
+        key: key === "Space" ? " " : key,
+        altKey: keys.includes("Alt"),
+        ctrlKey: keys.includes("Ctrl"),
+        metaKey: keys.includes("Meta"),
+        shiftKey: keys.includes("Shift"),
+        bubbles: true,
+        cancelable: true
+      });
+      const capturedTransaction = editor.captureTransaction(() => {
+        view.someProp("handleKeyDown", (f) => f(view, event));
+      });
+      capturedTransaction == null ? void 0 : capturedTransaction.steps.forEach((step) => {
+        const newStep = step.map(tr.mapping);
+        if (newStep && dispatch) {
+          tr.maybeStep(newStep);
+        }
+      });
+      return true;
+    };
+    lift = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
+      const type = getNodeType(typeOrName, state.schema);
+      const isActive2 = isNodeActive(state, type, attributes);
+      if (!isActive2) {
+        return false;
+      }
+      return (0, import_commands7.lift)(state, dispatch);
+    };
+    liftEmptyBlock = () => ({ state, dispatch }) => {
+      return (0, import_commands8.liftEmptyBlock)(state, dispatch);
+    };
+    liftListItem = (typeOrName) => ({ state, dispatch }) => {
+      const type = getNodeType(typeOrName, state.schema);
+      return (0, import_schema_list.liftListItem)(type)(state, dispatch);
+    };
+    newlineInCode = () => ({ state, dispatch }) => {
+      return (0, import_commands9.newlineInCode)(state, dispatch);
+    };
+    resetAttributes = (typeOrName, attributes) => ({ tr, state, dispatch }) => {
+      let nodeType = null;
+      let markType = null;
+      const schemaType = getSchemaTypeNameByName(
+        typeof typeOrName === "string" ? typeOrName : typeOrName.name,
+        state.schema
+      );
+      if (!schemaType) {
+        return false;
+      }
+      if (schemaType === "node") {
+        nodeType = getNodeType(typeOrName, state.schema);
+      }
+      if (schemaType === "mark") {
+        markType = getMarkType(typeOrName, state.schema);
+      }
+      let canReset = false;
+      tr.selection.ranges.forEach((range) => {
+        state.doc.nodesBetween(range.$from.pos, range.$to.pos, (node, pos) => {
+          if (nodeType && nodeType === node.type) {
+            canReset = true;
+            if (dispatch) {
+              tr.setNodeMarkup(pos, void 0, deleteProps(node.attrs, attributes));
+            }
+          }
+          if (markType && node.marks.length) {
+            node.marks.forEach((mark) => {
+              if (markType === mark.type) {
+                canReset = true;
+                if (dispatch) {
+                  tr.addMark(pos, pos + node.nodeSize, markType.create(deleteProps(mark.attrs, attributes)));
+                }
+              }
+            });
+          }
+        });
+      });
+      return canReset;
+    };
+    scrollIntoView = () => ({ tr, dispatch }) => {
+      if (dispatch) {
+        tr.scrollIntoView();
+      }
+      return true;
+    };
+    selectAll = () => ({ tr, dispatch }) => {
+      if (dispatch) {
+        const selection = new import_state6.AllSelection(tr.doc);
+        tr.setSelection(selection);
+      }
+      return true;
+    };
+    selectNodeBackward = () => ({ state, dispatch }) => {
+      return (0, import_commands10.selectNodeBackward)(state, dispatch);
+    };
+    selectNodeForward = () => ({ state, dispatch }) => {
+      return (0, import_commands11.selectNodeForward)(state, dispatch);
+    };
+    selectParentNode = () => ({ state, dispatch }) => {
+      return (0, import_commands12.selectParentNode)(state, dispatch);
+    };
+    selectTextblockEnd = () => ({ state, dispatch }) => {
+      return (0, import_commands13.selectTextblockEnd)(state, dispatch);
+    };
+    selectTextblockStart = () => ({ state, dispatch }) => {
+      return (0, import_commands14.selectTextblockStart)(state, dispatch);
+    };
+    setContent = (content, { errorOnInvalidContent, emitUpdate = true, parseOptions = {} } = {}) => ({ editor, tr, dispatch, commands }) => {
+      const { doc } = tr;
+      if (parseOptions.preserveWhitespace !== "full") {
+        const document2 = createDocument(content, editor.schema, parseOptions, {
+          errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor.options.enableContentCheck
+        });
+        if (dispatch) {
+          tr.replaceWith(0, doc.content.size, document2).setMeta("preventUpdate", !emitUpdate);
+        }
+        return true;
+      }
+      if (dispatch) {
+        tr.setMeta("preventUpdate", !emitUpdate);
+      }
+      return commands.insertContentAt({ from: 0, to: doc.content.size }, content, {
+        parseOptions,
+        errorOnInvalidContent: errorOnInvalidContent != null ? errorOnInvalidContent : editor.options.enableContentCheck
+      });
+    };
+    getNodeAtPosition = (state, typeOrName, pos, maxDepth = 20) => {
+      const $pos = state.doc.resolve(pos);
+      let currentDepth = maxDepth;
+      let node = null;
+      while (currentDepth > 0 && node === null) {
+        const currentNode = $pos.node(currentDepth);
+        if ((currentNode == null ? void 0 : currentNode.type.name) === typeOrName) {
+          node = currentNode;
+        } else {
+          currentDepth -= 1;
+        }
+      }
+      return [node, currentDepth];
+    };
+    getTextContentFromNodes = ($from, maxMatch = 500) => {
+      let textBefore = "";
+      const sliceEndPos = $from.parentOffset;
+      $from.parent.nodesBetween(Math.max(0, sliceEndPos - maxMatch), sliceEndPos, (node, pos, parent, index) => {
+        var _a, _b;
+        const chunk = ((_b = (_a = node.type.spec).toText) == null ? void 0 : _b.call(_a, {
+          node,
+          pos,
+          parent,
+          index
+        })) || node.textContent || "%leaf%";
+        textBefore += node.isAtom && !node.isText ? chunk : chunk.slice(0, Math.max(0, sliceEndPos - pos));
+      });
+      return textBefore;
+    };
+    isAtEndOfNode = (state, nodeType) => {
+      const { $from, $to, $anchor } = state.selection;
+      if (nodeType) {
+        const parentNode = findParentNode((node) => node.type.name === nodeType)(state.selection);
+        if (!parentNode) {
+          return false;
+        }
+        const $parentPos = state.doc.resolve(parentNode.pos + 1);
+        if ($anchor.pos + 1 === $parentPos.end()) {
+          return true;
+        }
+        return false;
+      }
+      if ($to.parentOffset < $to.parent.nodeSize - 2 || $from.pos !== $to.pos) {
+        return false;
+      }
+      return true;
+    };
+    isAtStartOfNode = (state) => {
+      const { $from, $to } = state.selection;
+      if ($from.parentOffset > 0 || $from.pos !== $to.pos) {
+        return false;
+      }
+      return true;
+    };
+    setMark = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
+      const { selection } = tr;
+      const { empty, ranges } = selection;
+      const type = getMarkType(typeOrName, state.schema);
+      if (dispatch) {
+        if (empty) {
+          const oldAttributes = getMarkAttributes(state, type);
+          tr.addStoredMark(
+            type.create({
+              ...oldAttributes,
+              ...attributes
+            })
+          );
+        } else {
+          ranges.forEach((range) => {
+            const from = range.$from.pos;
+            const to = range.$to.pos;
+            state.doc.nodesBetween(from, to, (node, pos) => {
+              const trimmedFrom = Math.max(pos, from);
+              const trimmedTo = Math.min(pos + node.nodeSize, to);
+              const someHasMark = node.marks.find((mark) => mark.type === type);
+              if (someHasMark) {
+                node.marks.forEach((mark) => {
+                  if (type === mark.type) {
+                    tr.addMark(
+                      trimmedFrom,
+                      trimmedTo,
+                      type.create({
+                        ...mark.attrs,
+                        ...attributes
+                      })
+                    );
+                  }
+                });
+              } else {
+                tr.addMark(trimmedFrom, trimmedTo, type.create(attributes));
+              }
+            });
+          });
+        }
+      }
+      return canSetMark(state, tr, type);
+    };
+    setMeta = (key, value) => ({ tr }) => {
+      tr.setMeta(key, value);
+      return true;
+    };
+    setNode = (typeOrName, attributes = {}) => ({ state, dispatch, chain }) => {
+      const type = getNodeType(typeOrName, state.schema);
+      let attributesToCopy;
+      if (state.selection.$anchor.sameParent(state.selection.$head)) {
+        attributesToCopy = state.selection.$anchor.parent.attrs;
+      }
+      if (!type.isTextblock) {
+        console.warn('[tiptap warn]: Currently "setNode()" only supports text block nodes.');
+        return false;
+      }
+      return chain().command(({ commands }) => {
+        const canSetBlock = (0, import_commands15.setBlockType)(type, { ...attributesToCopy, ...attributes })(state);
+        if (canSetBlock) {
+          return true;
+        }
+        return commands.clearNodes();
+      }).command(({ state: updatedState }) => {
+        return (0, import_commands15.setBlockType)(type, { ...attributesToCopy, ...attributes })(updatedState, dispatch);
+      }).run();
+    };
+    setNodeSelection = (position) => ({ tr, dispatch }) => {
+      if (dispatch) {
+        const { doc } = tr;
+        const from = minMax(position, 0, doc.content.size);
+        const selection = import_state8.NodeSelection.create(doc, from);
+        tr.setSelection(selection);
+      }
+      return true;
+    };
+    setTextDirection = (direction, position) => ({ tr, state, dispatch }) => {
+      const { selection } = state;
+      let from;
+      let to;
+      if (typeof position === "number") {
+        from = position;
+        to = position;
+      } else if (position && "from" in position && "to" in position) {
+        from = position.from;
+        to = position.to;
+      } else {
+        from = selection.from;
+        to = selection.to;
+      }
+      if (dispatch) {
+        tr.doc.nodesBetween(from, to, (node, pos) => {
+          if (node.isText) {
+            return;
+          }
+          tr.setNodeMarkup(pos, void 0, {
+            ...node.attrs,
+            dir: direction
+          });
+        });
+      }
+      return true;
+    };
+    setTextSelection = (position) => ({ tr, dispatch }) => {
+      if (dispatch) {
+        const { doc } = tr;
+        const { from, to } = typeof position === "number" ? { from: position, to: position } : position;
+        const minPos = import_state9.TextSelection.atStart(doc).from;
+        const maxPos = import_state9.TextSelection.atEnd(doc).to;
+        const resolvedFrom = minMax(from, minPos, maxPos);
+        const resolvedEnd = minMax(to, minPos, maxPos);
+        const selection = import_state9.TextSelection.create(doc, resolvedFrom, resolvedEnd);
+        tr.setSelection(selection);
+      }
+      return true;
+    };
+    sinkListItem = (typeOrName) => ({ state, dispatch }) => {
+      const type = getNodeType(typeOrName, state.schema);
+      return (0, import_schema_list2.sinkListItem)(type)(state, dispatch);
+    };
+    splitBlock = ({ keepMarks = true } = {}) => ({ tr, state, dispatch, editor }) => {
+      const { selection, doc } = tr;
+      const { $from, $to } = selection;
+      const extensionAttributes = editor.extensionManager.attributes;
+      const newAttributes = getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs);
+      if (selection instanceof import_state10.NodeSelection && selection.node.isBlock) {
+        if (!$from.parentOffset || !(0, import_transform6.canSplit)(doc, $from.pos)) {
+          return false;
+        }
+        if (dispatch) {
+          if (keepMarks) {
+            ensureMarks(state, editor.extensionManager.splittableMarks);
+          }
+          tr.split($from.pos).scrollIntoView();
+        }
+        return true;
+      }
+      if (!$from.parent.isBlock) {
+        return false;
+      }
+      const atEnd = $to.parentOffset === $to.parent.content.size;
+      const deflt = $from.depth === 0 ? void 0 : defaultBlockAt($from.node(-1).contentMatchAt($from.indexAfter(-1)));
+      let types = atEnd && deflt ? [
         {
-          type: "paragraph",
-          content: []
+          type: deflt,
+          attrs: newAttributes
         }
-      ];
-    }
-    return {
-      type: "listItem",
-      content
+      ] : void 0;
+      let can = (0, import_transform6.canSplit)(tr.doc, tr.mapping.map($from.pos), 1, types);
+      if (!types && !can && (0, import_transform6.canSplit)(tr.doc, tr.mapping.map($from.pos), 1, deflt ? [{ type: deflt }] : void 0)) {
+        can = true;
+        types = deflt ? [
+          {
+            type: deflt,
+            attrs: newAttributes
+          }
+        ] : void 0;
+      }
+      if (dispatch) {
+        if (can) {
+          if (selection instanceof import_state10.TextSelection) {
+            tr.deleteSelection();
+          }
+          tr.split(tr.mapping.map($from.pos), 1, types);
+          if (deflt && !atEnd && !$from.parentOffset && $from.parent.type !== deflt) {
+            const first2 = tr.mapping.map($from.before());
+            const $first = tr.doc.resolve(first2);
+            if ($from.node(-1).canReplaceWith($first.index(), $first.index() + 1, deflt)) {
+              tr.setNodeMarkup(tr.mapping.map($from.before()), deflt);
+            }
+          }
+        }
+        if (keepMarks) {
+          ensureMarks(state, editor.extensionManager.splittableMarks);
+        }
+        tr.scrollIntoView();
+      }
+      return can;
     };
-  },
-  renderMarkdown: (node, h2, ctx) => {
-    return renderNestedMarkdownContent(
-      node,
-      h2,
-      (context) => {
-        if (context.parentType === "bulletList") {
-          return "- ";
+    splitListItem = (typeOrName, overrideAttrs = {}) => ({ tr, state, dispatch, editor }) => {
+      var _a;
+      const type = getNodeType(typeOrName, state.schema);
+      const { $from, $to } = state.selection;
+      const node = state.selection.node;
+      if (node && node.isBlock || $from.depth < 2 || !$from.sameParent($to)) {
+        return false;
+      }
+      const grandParent = $from.node(-1);
+      if (grandParent.type !== type) {
+        return false;
+      }
+      const extensionAttributes = editor.extensionManager.attributes;
+      if ($from.parent.content.size === 0 && $from.node(-1).childCount === $from.indexAfter(-1)) {
+        if ($from.depth === 2 || $from.node(-3).type !== type || $from.index(-2) !== $from.node(-2).childCount - 1) {
+          return false;
         }
-        if (context.parentType === "orderedList") {
-          return `${context.index + 1}. `;
+        if (dispatch) {
+          let wrap = import_model8.Fragment.empty;
+          const depthBefore = $from.index(-1) ? 1 : $from.index(-2) ? 2 : 3;
+          for (let d = $from.depth - depthBefore; d >= $from.depth - 3; d -= 1) {
+            wrap = import_model8.Fragment.from($from.node(d).copy(wrap));
+          }
+          const depthAfter = (
+            // eslint-disable-next-line no-nested-ternary
+            $from.indexAfter(-1) < $from.node(-2).childCount ? 1 : $from.indexAfter(-2) < $from.node(-3).childCount ? 2 : 3
+          );
+          const newNextTypeAttributes2 = {
+            ...getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs),
+            ...overrideAttrs
+          };
+          const nextType2 = ((_a = type.contentMatch.defaultType) == null ? void 0 : _a.createAndFill(newNextTypeAttributes2)) || void 0;
+          wrap = wrap.append(import_model8.Fragment.from(type.createAndFill(null, nextType2) || void 0));
+          const start = $from.before($from.depth - (depthBefore - 1));
+          tr.replace(start, $from.after(-depthAfter), new import_model8.Slice(wrap, 4 - depthBefore, 0));
+          let sel = -1;
+          tr.doc.nodesBetween(start, tr.doc.content.size, (n, pos) => {
+            if (sel > -1) {
+              return false;
+            }
+            if (n.isTextblock && n.content.size === 0) {
+              sel = pos + 1;
+            }
+          });
+          if (sel > -1) {
+            tr.setSelection(import_state11.TextSelection.near(tr.doc.resolve(sel)));
+          }
+          tr.scrollIntoView();
         }
-        return "- ";
+        return true;
+      }
+      const nextType = $to.pos === $from.end() ? grandParent.contentMatchAt(0).defaultType : null;
+      const newTypeAttributes = {
+        ...getSplittedAttributes(extensionAttributes, grandParent.type.name, grandParent.attrs),
+        ...overrideAttrs
+      };
+      const newNextTypeAttributes = {
+        ...getSplittedAttributes(extensionAttributes, $from.node().type.name, $from.node().attrs),
+        ...overrideAttrs
+      };
+      tr.delete($from.pos, $to.pos);
+      const types = nextType ? [
+        { type, attrs: newTypeAttributes },
+        { type: nextType, attrs: newNextTypeAttributes }
+      ] : [{ type, attrs: newTypeAttributes }];
+      if (!(0, import_transform7.canSplit)(tr.doc, $from.pos, 2)) {
+        return false;
+      }
+      if (dispatch) {
+        const { selection, storedMarks } = state;
+        const { splittableMarks } = editor.extensionManager;
+        const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
+        tr.split($from.pos, 2, types).scrollIntoView();
+        if (!marks || !dispatch) {
+          return true;
+        }
+        const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
+        tr.ensureMarks(filteredMarks);
+      }
+      return true;
+    };
+    joinListBackwards = (tr, listType) => {
+      const list = findParentNode((node) => node.type === listType)(tr.selection);
+      if (!list) {
+        return true;
+      }
+      const before = tr.doc.resolve(Math.max(0, list.pos - 1)).before(list.depth);
+      if (before === void 0) {
+        return true;
+      }
+      const nodeBefore = tr.doc.nodeAt(before);
+      const canJoinBackwards = list.node.type === (nodeBefore == null ? void 0 : nodeBefore.type) && (0, import_transform8.canJoin)(tr.doc, list.pos);
+      if (!canJoinBackwards) {
+        return true;
+      }
+      tr.join(list.pos);
+      return true;
+    };
+    joinListForwards = (tr, listType) => {
+      const list = findParentNode((node) => node.type === listType)(tr.selection);
+      if (!list) {
+        return true;
+      }
+      const after = tr.doc.resolve(list.start).after(list.depth);
+      if (after === void 0) {
+        return true;
+      }
+      const nodeAfter = tr.doc.nodeAt(after);
+      const canJoinForwards = list.node.type === (nodeAfter == null ? void 0 : nodeAfter.type) && (0, import_transform8.canJoin)(tr.doc, after);
+      if (!canJoinForwards) {
+        return true;
+      }
+      tr.join(after);
+      return true;
+    };
+    toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) => ({ editor, tr, state, dispatch, chain, commands, can }) => {
+      const { extensions, splittableMarks } = editor.extensionManager;
+      const listType = getNodeType(listTypeOrName, state.schema);
+      const itemType = getNodeType(itemTypeOrName, state.schema);
+      const { selection, storedMarks } = state;
+      const { $from, $to } = selection;
+      const range = $from.blockRange($to);
+      const marks = storedMarks || selection.$to.parentOffset && selection.$from.marks();
+      if (!range) {
+        return false;
+      }
+      const parentList = findParentNode((node) => isList(node.type.name, extensions))(selection);
+      if (range.depth >= 1 && parentList && range.depth - parentList.depth <= 1) {
+        if (parentList.node.type === listType) {
+          return commands.liftListItem(itemType);
+        }
+        if (isList(parentList.node.type.name, extensions) && listType.validContent(parentList.node.content) && dispatch) {
+          return chain().command(() => {
+            tr.setNodeMarkup(parentList.pos, listType);
+            return true;
+          }).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
+        }
+      }
+      if (!keepMarks || !marks || !dispatch) {
+        return chain().command(() => {
+          const canWrapInList = can().wrapInList(listType, attributes);
+          if (canWrapInList) {
+            return true;
+          }
+          return commands.clearNodes();
+        }).wrapInList(listType, attributes).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
+      }
+      return chain().command(() => {
+        const canWrapInList = can().wrapInList(listType, attributes);
+        const filteredMarks = marks.filter((mark) => splittableMarks.includes(mark.type.name));
+        tr.ensureMarks(filteredMarks);
+        if (canWrapInList) {
+          return true;
+        }
+        return commands.clearNodes();
+      }).wrapInList(listType, attributes).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
+    };
+    toggleMark = (typeOrName, attributes = {}, options = {}) => ({ state, commands }) => {
+      const { extendEmptyMarkRange = false } = options;
+      const type = getMarkType(typeOrName, state.schema);
+      const isActive2 = isMarkActive(state, type, attributes);
+      if (isActive2) {
+        return commands.unsetMark(type, { extendEmptyMarkRange });
+      }
+      return commands.setMark(type, attributes);
+    };
+    toggleNode = (typeOrName, toggleTypeOrName, attributes = {}) => ({ state, commands }) => {
+      const type = getNodeType(typeOrName, state.schema);
+      const toggleType = getNodeType(toggleTypeOrName, state.schema);
+      const isActive2 = isNodeActive(state, type, attributes);
+      let attributesToCopy;
+      if (state.selection.$anchor.sameParent(state.selection.$head)) {
+        attributesToCopy = state.selection.$anchor.parent.attrs;
+      }
+      if (isActive2) {
+        return commands.setNode(toggleType, attributesToCopy);
+      }
+      return commands.setNode(type, { ...attributesToCopy, ...attributes });
+    };
+    toggleWrap = (typeOrName, attributes = {}) => ({ state, commands }) => {
+      const type = getNodeType(typeOrName, state.schema);
+      const isActive2 = isNodeActive(state, type, attributes);
+      if (isActive2) {
+        return commands.lift(type);
+      }
+      return commands.wrapIn(type, attributes);
+    };
+    undoInputRule = () => ({ state, dispatch }) => {
+      const plugins = state.plugins;
+      for (let i = 0; i < plugins.length; i += 1) {
+        const plugin = plugins[i];
+        let undoable;
+        if (plugin.spec.isInputRules && (undoable = plugin.getState(state))) {
+          if (dispatch) {
+            const tr = state.tr;
+            const toUndo = undoable.transform;
+            for (let j = toUndo.steps.length - 1; j >= 0; j -= 1) {
+              tr.step(toUndo.steps[j].invert(toUndo.docs[j]));
+            }
+            if (undoable.text) {
+              const marks = tr.doc.resolve(undoable.from).marks();
+              tr.replaceWith(undoable.from, undoable.to, state.schema.text(undoable.text, marks));
+            } else {
+              tr.delete(undoable.from, undoable.to);
+            }
+          }
+          return true;
+        }
+      }
+      return false;
+    };
+    unsetAllMarks = () => ({ tr, dispatch }) => {
+      const { selection } = tr;
+      const { empty, ranges } = selection;
+      if (empty) {
+        return true;
+      }
+      if (dispatch) {
+        ranges.forEach((range) => {
+          tr.removeMark(range.$from.pos, range.$to.pos);
+        });
+      }
+      return true;
+    };
+    unsetMark = (typeOrName, options = {}) => ({ tr, state, dispatch }) => {
+      var _a;
+      const { extendEmptyMarkRange = false } = options;
+      const { selection } = tr;
+      const type = getMarkType(typeOrName, state.schema);
+      const { $from, empty, ranges } = selection;
+      if (!dispatch) {
+        return true;
+      }
+      if (empty && extendEmptyMarkRange) {
+        let { from, to } = selection;
+        const attrs = (_a = $from.marks().find((mark) => mark.type === type)) == null ? void 0 : _a.attrs;
+        const range = getMarkRange($from, type, attrs);
+        if (range) {
+          from = range.from;
+          to = range.to;
+        }
+        tr.removeMark(from, to, type);
+      } else {
+        ranges.forEach((range) => {
+          tr.removeMark(range.$from.pos, range.$to.pos, type);
+        });
+      }
+      tr.removeStoredMark(type);
+      return true;
+    };
+    unsetTextDirection = (position) => ({ tr, state, dispatch }) => {
+      const { selection } = state;
+      let from;
+      let to;
+      if (typeof position === "number") {
+        from = position;
+        to = position;
+      } else if (position && "from" in position && "to" in position) {
+        from = position.from;
+        to = position.to;
+      } else {
+        from = selection.from;
+        to = selection.to;
+      }
+      if (dispatch) {
+        tr.doc.nodesBetween(from, to, (node, pos) => {
+          if (node.isText) {
+            return;
+          }
+          const newAttrs = { ...node.attrs };
+          delete newAttrs.dir;
+          tr.setNodeMarkup(pos, void 0, newAttrs);
+        });
+      }
+      return true;
+    };
+    updateAttributes = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
+      let nodeType = null;
+      let markType = null;
+      const schemaType = getSchemaTypeNameByName(
+        typeof typeOrName === "string" ? typeOrName : typeOrName.name,
+        state.schema
+      );
+      if (!schemaType) {
+        return false;
+      }
+      if (schemaType === "node") {
+        nodeType = getNodeType(typeOrName, state.schema);
+      }
+      if (schemaType === "mark") {
+        markType = getMarkType(typeOrName, state.schema);
+      }
+      let canUpdate = false;
+      tr.selection.ranges.forEach((range) => {
+        const from = range.$from.pos;
+        const to = range.$to.pos;
+        let lastPos;
+        let lastNode;
+        let trimmedFrom;
+        let trimmedTo;
+        if (tr.selection.empty) {
+          state.doc.nodesBetween(from, to, (node, pos) => {
+            if (nodeType && nodeType === node.type) {
+              canUpdate = true;
+              trimmedFrom = Math.max(pos, from);
+              trimmedTo = Math.min(pos + node.nodeSize, to);
+              lastPos = pos;
+              lastNode = node;
+            }
+          });
+        } else {
+          state.doc.nodesBetween(from, to, (node, pos) => {
+            if (pos < from && nodeType && nodeType === node.type) {
+              canUpdate = true;
+              trimmedFrom = Math.max(pos, from);
+              trimmedTo = Math.min(pos + node.nodeSize, to);
+              lastPos = pos;
+              lastNode = node;
+            }
+            if (pos >= from && pos <= to) {
+              if (nodeType && nodeType === node.type) {
+                canUpdate = true;
+                if (dispatch) {
+                  tr.setNodeMarkup(pos, void 0, {
+                    ...node.attrs,
+                    ...attributes
+                  });
+                }
+              }
+              if (markType && node.marks.length) {
+                node.marks.forEach((mark) => {
+                  if (markType === mark.type) {
+                    canUpdate = true;
+                    if (dispatch) {
+                      const trimmedFrom2 = Math.max(pos, from);
+                      const trimmedTo2 = Math.min(pos + node.nodeSize, to);
+                      tr.addMark(
+                        trimmedFrom2,
+                        trimmedTo2,
+                        markType.create({
+                          ...mark.attrs,
+                          ...attributes
+                        })
+                      );
+                    }
+                  }
+                });
+              }
+            }
+          });
+        }
+        if (lastNode) {
+          if (lastPos !== void 0 && dispatch) {
+            tr.setNodeMarkup(lastPos, void 0, {
+              ...lastNode.attrs,
+              ...attributes
+            });
+          }
+          if (markType && lastNode.marks.length) {
+            lastNode.marks.forEach((mark) => {
+              if (markType === mark.type && dispatch) {
+                tr.addMark(
+                  trimmedFrom,
+                  trimmedTo,
+                  markType.create({
+                    ...mark.attrs,
+                    ...attributes
+                  })
+                );
+              }
+            });
+          }
+        }
+      });
+      return canUpdate;
+    };
+    wrapIn = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
+      const type = getNodeType(typeOrName, state.schema);
+      return (0, import_commands16.wrapIn)(type, attributes)(state, dispatch);
+    };
+    wrapInList = (typeOrName, attributes = {}) => ({ state, dispatch }) => {
+      const type = getNodeType(typeOrName, state.schema);
+      return (0, import_schema_list3.wrapInList)(type, attributes)(state, dispatch);
+    };
+    InputRule = class {
+      constructor(config) {
+        var _a;
+        this.find = config.find;
+        this.handler = config.handler;
+        this.undoable = (_a = config.undoable) != null ? _a : true;
+      }
+    };
+    inputRuleMatcherHandler = (text, find) => {
+      if (isRegExp(find)) {
+        return find.exec(text);
+      }
+      const inputRuleMatch = find(text);
+      if (!inputRuleMatch) {
+        return null;
+      }
+      const result = [inputRuleMatch.text];
+      result.index = inputRuleMatch.index;
+      result.input = text;
+      result.data = inputRuleMatch.data;
+      if (inputRuleMatch.replaceWith) {
+        if (!inputRuleMatch.text.includes(inputRuleMatch.replaceWith)) {
+          console.warn('[tiptap warn]: "inputRuleMatch.replaceWith" must be part of "inputRuleMatch.text".');
+        }
+        result.push(inputRuleMatch.replaceWith);
+      }
+      return result;
+    };
+    Extendable = class {
+      constructor(config = {}) {
+        this.type = "extendable";
+        this.parent = null;
+        this.child = null;
+        this.name = "";
+        this.config = {
+          name: this.name
+        };
+        this.config = {
+          ...this.config,
+          ...config
+        };
+        this.name = this.config.name;
+      }
+      get options() {
+        return {
+          ...callOrReturn(
+            getExtensionField(this, "addOptions", {
+              name: this.name
+            })
+          ) || {}
+        };
+      }
+      get storage() {
+        return {
+          ...callOrReturn(
+            getExtensionField(this, "addStorage", {
+              name: this.name,
+              options: this.options
+            })
+          ) || {}
+        };
+      }
+      configure(options = {}) {
+        const extension = this.extend({
+          ...this.config,
+          addOptions: () => {
+            return mergeDeep(this.options, options);
+          }
+        });
+        extension.name = this.name;
+        extension.parent = this.parent;
+        return extension;
+      }
+      extend(extendedConfig = {}) {
+        const extension = new this.constructor({ ...this.config, ...extendedConfig });
+        extension.parent = this;
+        this.child = extension;
+        extension.name = "name" in extendedConfig ? extendedConfig.name : extension.parent.name;
+        return extension;
+      }
+    };
+    Mark = class _Mark extends Extendable {
+      constructor() {
+        super(...arguments);
+        this.type = "mark";
+      }
+      /**
+       * Create a new Mark instance
+       * @param config - Mark configuration object or a function that returns a configuration object
+       */
+      static create(config = {}) {
+        const resolvedConfig = typeof config === "function" ? config() : config;
+        return new _Mark(resolvedConfig);
+      }
+      static handleExit({ editor, mark }) {
+        const { tr } = editor.state;
+        const currentPos = editor.state.selection.$from;
+        const isAtEnd = currentPos.pos === currentPos.end();
+        if (isAtEnd) {
+          const currentMarks = currentPos.marks();
+          const isInMark = !!currentMarks.find((m) => (m == null ? void 0 : m.type.name) === mark.name);
+          if (!isInMark) {
+            return false;
+          }
+          const removeMark = currentMarks.find((m) => (m == null ? void 0 : m.type.name) === mark.name);
+          if (removeMark) {
+            tr.removeStoredMark(removeMark);
+          }
+          tr.insertText(" ", currentPos.pos);
+          editor.view.dispatch(tr);
+          return true;
+        }
+        return false;
+      }
+      configure(options) {
+        return super.configure(options);
+      }
+      extend(extendedConfig) {
+        const resolvedConfig = typeof extendedConfig === "function" ? extendedConfig() : extendedConfig;
+        return super.extend(resolvedConfig);
+      }
+    };
+    PasteRule = class {
+      constructor(config) {
+        this.find = config.find;
+        this.handler = config.handler;
+      }
+    };
+    pasteRuleMatcherHandler = (text, find, event) => {
+      if (isRegExp(find)) {
+        return [...text.matchAll(find)];
+      }
+      const matches = find(text, event);
+      if (!matches) {
+        return [];
+      }
+      return matches.map((pasteRuleMatch) => {
+        const result = [pasteRuleMatch.text];
+        result.index = pasteRuleMatch.index;
+        result.input = text;
+        result.data = pasteRuleMatch.data;
+        if (pasteRuleMatch.replaceWith) {
+          if (!pasteRuleMatch.text.includes(pasteRuleMatch.replaceWith)) {
+            console.warn('[tiptap warn]: "pasteRuleMatch.replaceWith" must be part of "pasteRuleMatch.text".');
+          }
+          result.push(pasteRuleMatch.replaceWith);
+        }
+        return result;
+      });
+    };
+    tiptapDragFromOtherEditor = null;
+    createClipboardPasteEvent = (text) => {
+      var _a;
+      const event = new ClipboardEvent("paste", {
+        clipboardData: new DataTransfer()
+      });
+      (_a = event.clipboardData) == null ? void 0 : _a.setData("text/html", text);
+      return event;
+    };
+    ExtensionManager = class {
+      constructor(extensions, editor) {
+        this.splittableMarks = [];
+        this.editor = editor;
+        this.baseExtensions = extensions;
+        this.extensions = resolveExtensions(extensions);
+        this.schema = getSchemaByResolvedExtensions(this.extensions, editor);
+        this.setupExtensions();
+      }
+      /**
+       * Get all commands from the extensions.
+       * @returns An object with all commands where the key is the command name and the value is the command function
+       */
+      get commands() {
+        return this.extensions.reduce((commands, extension) => {
+          const context = {
+            name: extension.name,
+            options: extension.options,
+            storage: this.editor.extensionStorage[extension.name],
+            editor: this.editor,
+            type: getSchemaTypeByName(extension.name, this.schema)
+          };
+          const addCommands = getExtensionField(extension, "addCommands", context);
+          if (!addCommands) {
+            return commands;
+          }
+          return {
+            ...commands,
+            ...addCommands()
+          };
+        }, {});
+      }
+      /**
+       * Get all registered Prosemirror plugins from the extensions.
+       * @returns An array of Prosemirror plugins
+       */
+      get plugins() {
+        const { editor } = this;
+        const extensions = sortExtensions([...this.extensions].reverse());
+        const allPlugins = extensions.flatMap((extension) => {
+          const context = {
+            name: extension.name,
+            options: extension.options,
+            storage: this.editor.extensionStorage[extension.name],
+            editor,
+            type: getSchemaTypeByName(extension.name, this.schema)
+          };
+          const plugins = [];
+          const addKeyboardShortcuts = getExtensionField(
+            extension,
+            "addKeyboardShortcuts",
+            context
+          );
+          let defaultBindings = {};
+          if (extension.type === "mark" && getExtensionField(extension, "exitable", context)) {
+            defaultBindings.ArrowRight = () => Mark.handleExit({ editor, mark: extension });
+          }
+          if (addKeyboardShortcuts) {
+            const bindings = Object.fromEntries(
+              Object.entries(addKeyboardShortcuts()).map(([shortcut, method]) => {
+                return [shortcut, () => method({ editor })];
+              })
+            );
+            defaultBindings = { ...defaultBindings, ...bindings };
+          }
+          const keyMapPlugin = (0, import_keymap.keymap)(defaultBindings);
+          plugins.push(keyMapPlugin);
+          const addInputRules = getExtensionField(extension, "addInputRules", context);
+          if (isExtensionRulesEnabled(extension, editor.options.enableInputRules) && addInputRules) {
+            const rules = addInputRules();
+            if (rules && rules.length) {
+              const inputResult = inputRulesPlugin({
+                editor,
+                rules
+              });
+              const inputPlugins = Array.isArray(inputResult) ? inputResult : [inputResult];
+              plugins.push(...inputPlugins);
+            }
+          }
+          const addPasteRules = getExtensionField(extension, "addPasteRules", context);
+          if (isExtensionRulesEnabled(extension, editor.options.enablePasteRules) && addPasteRules) {
+            const rules = addPasteRules();
+            if (rules && rules.length) {
+              const pasteRules = pasteRulesPlugin({ editor, rules });
+              plugins.push(...pasteRules);
+            }
+          }
+          const addProseMirrorPlugins = getExtensionField(
+            extension,
+            "addProseMirrorPlugins",
+            context
+          );
+          if (addProseMirrorPlugins) {
+            const proseMirrorPlugins = addProseMirrorPlugins();
+            plugins.push(...proseMirrorPlugins);
+          }
+          return plugins;
+        });
+        return allPlugins;
+      }
+      /**
+       * Get all attributes from the extensions.
+       * @returns An array of attributes
+       */
+      get attributes() {
+        return getAttributesFromExtensions(this.extensions);
+      }
+      /**
+       * Get all node views from the extensions.
+       * @returns An object with all node views where the key is the node name and the value is the node view function
+       */
+      get nodeViews() {
+        const { editor } = this;
+        const { nodeExtensions } = splitExtensions(this.extensions);
+        return Object.fromEntries(
+          nodeExtensions.filter((extension) => !!getExtensionField(extension, "addNodeView")).map((extension) => {
+            const extensionAttributes = this.attributes.filter((attribute) => attribute.type === extension.name);
+            const context = {
+              name: extension.name,
+              options: extension.options,
+              storage: this.editor.extensionStorage[extension.name],
+              editor,
+              type: getNodeType(extension.name, this.schema)
+            };
+            const addNodeView = getExtensionField(extension, "addNodeView", context);
+            if (!addNodeView) {
+              return [];
+            }
+            const nodeViewResult = addNodeView();
+            if (!nodeViewResult) {
+              return [];
+            }
+            const nodeview = (node, view, getPos, decorations, innerDecorations) => {
+              const HTMLAttributes = getRenderedAttributes(node, extensionAttributes);
+              return nodeViewResult({
+                // pass-through
+                node,
+                view,
+                getPos,
+                decorations,
+                innerDecorations,
+                // tiptap-specific
+                editor,
+                extension,
+                HTMLAttributes
+              });
+            };
+            return [extension.name, nodeview];
+          })
+        );
+      }
+      /**
+       * Get the composed dispatchTransaction function from all extensions.
+       * @param baseDispatch The base dispatch function (e.g. from the editor or user props)
+       * @returns A composed dispatch function
+       */
+      dispatchTransaction(baseDispatch) {
+        const { editor } = this;
+        const extensions = sortExtensions([...this.extensions].reverse());
+        return extensions.reduceRight((next, extension) => {
+          const context = {
+            name: extension.name,
+            options: extension.options,
+            storage: this.editor.extensionStorage[extension.name],
+            editor,
+            type: getSchemaTypeByName(extension.name, this.schema)
+          };
+          const dispatchTransaction = getExtensionField(
+            extension,
+            "dispatchTransaction",
+            context
+          );
+          if (!dispatchTransaction) {
+            return next;
+          }
+          return (transaction) => {
+            dispatchTransaction.call(context, { transaction, next });
+          };
+        }, baseDispatch);
+      }
+      get markViews() {
+        const { editor } = this;
+        const { markExtensions } = splitExtensions(this.extensions);
+        return Object.fromEntries(
+          markExtensions.filter((extension) => !!getExtensionField(extension, "addMarkView")).map((extension) => {
+            const extensionAttributes = this.attributes.filter((attribute) => attribute.type === extension.name);
+            const context = {
+              name: extension.name,
+              options: extension.options,
+              storage: this.editor.extensionStorage[extension.name],
+              editor,
+              type: getMarkType(extension.name, this.schema)
+            };
+            const addMarkView = getExtensionField(extension, "addMarkView", context);
+            if (!addMarkView) {
+              return [];
+            }
+            const markView = (mark, view, inline) => {
+              const HTMLAttributes = getRenderedAttributes(mark, extensionAttributes);
+              return addMarkView()({
+                // pass-through
+                mark,
+                view,
+                inline,
+                // tiptap-specific
+                editor,
+                extension,
+                HTMLAttributes,
+                updateAttributes: (attrs) => {
+                  updateMarkViewAttributes(mark, editor, attrs);
+                }
+              });
+            };
+            return [extension.name, markView];
+          })
+        );
+      }
+      /**
+       * Go through all extensions, create extension storages & setup marks
+       * & bind editor event listener.
+       */
+      setupExtensions() {
+        const extensions = this.extensions;
+        this.editor.extensionStorage = Object.fromEntries(
+          extensions.map((extension) => [extension.name, extension.storage])
+        );
+        extensions.forEach((extension) => {
+          var _a;
+          const context = {
+            name: extension.name,
+            options: extension.options,
+            storage: this.editor.extensionStorage[extension.name],
+            editor: this.editor,
+            type: getSchemaTypeByName(extension.name, this.schema)
+          };
+          if (extension.type === "mark") {
+            const keepOnSplit = (_a = callOrReturn(getExtensionField(extension, "keepOnSplit", context))) != null ? _a : true;
+            if (keepOnSplit) {
+              this.splittableMarks.push(extension.name);
+            }
+          }
+          const onBeforeCreate = getExtensionField(extension, "onBeforeCreate", context);
+          const onCreate = getExtensionField(extension, "onCreate", context);
+          const onUpdate = getExtensionField(extension, "onUpdate", context);
+          const onSelectionUpdate = getExtensionField(
+            extension,
+            "onSelectionUpdate",
+            context
+          );
+          const onTransaction = getExtensionField(extension, "onTransaction", context);
+          const onFocus = getExtensionField(extension, "onFocus", context);
+          const onBlur = getExtensionField(extension, "onBlur", context);
+          const onDestroy = getExtensionField(extension, "onDestroy", context);
+          if (onBeforeCreate) {
+            this.editor.on("beforeCreate", onBeforeCreate);
+          }
+          if (onCreate) {
+            this.editor.on("create", onCreate);
+          }
+          if (onUpdate) {
+            this.editor.on("update", onUpdate);
+          }
+          if (onSelectionUpdate) {
+            this.editor.on("selectionUpdate", onSelectionUpdate);
+          }
+          if (onTransaction) {
+            this.editor.on("transaction", onTransaction);
+          }
+          if (onFocus) {
+            this.editor.on("focus", onFocus);
+          }
+          if (onBlur) {
+            this.editor.on("blur", onBlur);
+          }
+          if (onDestroy) {
+            this.editor.on("destroy", onDestroy);
+          }
+        });
+      }
+    };
+    ExtensionManager.resolve = resolveExtensions;
+    ExtensionManager.sort = sortExtensions;
+    ExtensionManager.flatten = flattenExtensions;
+    extensions_exports = {};
+    __export2(extensions_exports, {
+      ClipboardTextSerializer: () => ClipboardTextSerializer,
+      Commands: () => Commands,
+      Delete: () => Delete,
+      Drop: () => Drop,
+      Editable: () => Editable,
+      FocusEvents: () => FocusEvents,
+      Keymap: () => Keymap,
+      Paste: () => Paste,
+      Tabindex: () => Tabindex,
+      TextDirection: () => TextDirection,
+      focusEventsPluginKey: () => focusEventsPluginKey
+    });
+    Extension = class _Extension extends Extendable {
+      constructor() {
+        super(...arguments);
+        this.type = "extension";
+      }
+      /**
+       * Create a new Extension instance
+       * @param config - Extension configuration object or a function that returns a configuration object
+       */
+      static create(config = {}) {
+        const resolvedConfig = typeof config === "function" ? config() : config;
+        return new _Extension(resolvedConfig);
+      }
+      configure(options) {
+        return super.configure(options);
+      }
+      extend(extendedConfig) {
+        const resolvedConfig = typeof extendedConfig === "function" ? extendedConfig() : extendedConfig;
+        return super.extend(resolvedConfig);
+      }
+    };
+    ClipboardTextSerializer = Extension.create({
+      name: "clipboardTextSerializer",
+      addOptions() {
+        return {
+          blockSeparator: void 0
+        };
       },
-      ctx
-    );
-  },
-  addKeyboardShortcuts() {
-    return {
-      Enter: () => this.editor.commands.splitListItem(this.name),
-      Tab: () => this.editor.commands.sinkListItem(this.name),
-      "Shift-Tab": () => this.editor.commands.liftListItem(this.name)
+      addProseMirrorPlugins() {
+        return [
+          new import_state15.Plugin({
+            key: new import_state15.PluginKey("clipboardTextSerializer"),
+            props: {
+              clipboardTextSerializer: () => {
+                const { editor } = this;
+                const { state, schema } = editor;
+                const { doc, selection } = state;
+                const { ranges } = selection;
+                const from = Math.min(...ranges.map((range2) => range2.$from.pos));
+                const to = Math.max(...ranges.map((range2) => range2.$to.pos));
+                const textSerializers = getTextSerializersFromSchema(schema);
+                const range = { from, to };
+                return getTextBetween(doc, range, {
+                  ...this.options.blockSeparator !== void 0 ? { blockSeparator: this.options.blockSeparator } : {},
+                  textSerializers
+                });
+              }
+            }
+          })
+        ];
+      }
+    });
+    Commands = Extension.create({
+      name: "commands",
+      addCommands() {
+        return {
+          ...commands_exports
+        };
+      }
+    });
+    Delete = Extension.create({
+      name: "delete",
+      onUpdate({ transaction, appendedTransactions }) {
+        var _a, _b, _c;
+        const callback = () => {
+          var _a2, _b2, _c2, _d;
+          if ((_d = (_c2 = (_b2 = (_a2 = this.editor.options.coreExtensionOptions) == null ? void 0 : _a2.delete) == null ? void 0 : _b2.filterTransaction) == null ? void 0 : _c2.call(_b2, transaction)) != null ? _d : transaction.getMeta("y-sync$")) {
+            return;
+          }
+          const nextTransaction = combineTransactionSteps(transaction.before, [transaction, ...appendedTransactions]);
+          const changes = getChangedRanges(nextTransaction);
+          changes.forEach((change) => {
+            if (nextTransaction.mapping.mapResult(change.oldRange.from).deletedAfter && nextTransaction.mapping.mapResult(change.oldRange.to).deletedBefore) {
+              nextTransaction.before.nodesBetween(change.oldRange.from, change.oldRange.to, (node, from) => {
+                const to = from + node.nodeSize - 2;
+                const isFullyWithinRange = change.oldRange.from <= from && to <= change.oldRange.to;
+                this.editor.emit("delete", {
+                  type: "node",
+                  node,
+                  from,
+                  to,
+                  newFrom: nextTransaction.mapping.map(from),
+                  newTo: nextTransaction.mapping.map(to),
+                  deletedRange: change.oldRange,
+                  newRange: change.newRange,
+                  partial: !isFullyWithinRange,
+                  editor: this.editor,
+                  transaction,
+                  combinedTransform: nextTransaction
+                });
+              });
+            }
+          });
+          const mapping = nextTransaction.mapping;
+          nextTransaction.steps.forEach((step, index) => {
+            var _a3, _b3;
+            if (step instanceof import_transform9.RemoveMarkStep) {
+              const newStart = mapping.slice(index).map(step.from, -1);
+              const newEnd = mapping.slice(index).map(step.to);
+              const oldStart = mapping.invert().map(newStart, -1);
+              const oldEnd = mapping.invert().map(newEnd);
+              const foundBeforeMark = (_a3 = nextTransaction.doc.nodeAt(newStart - 1)) == null ? void 0 : _a3.marks.some((mark) => mark.eq(step.mark));
+              const foundAfterMark = (_b3 = nextTransaction.doc.nodeAt(newEnd)) == null ? void 0 : _b3.marks.some((mark) => mark.eq(step.mark));
+              this.editor.emit("delete", {
+                type: "mark",
+                mark: step.mark,
+                from: step.from,
+                to: step.to,
+                deletedRange: {
+                  from: oldStart,
+                  to: oldEnd
+                },
+                newRange: {
+                  from: newStart,
+                  to: newEnd
+                },
+                partial: Boolean(foundAfterMark || foundBeforeMark),
+                editor: this.editor,
+                transaction,
+                combinedTransform: nextTransaction
+              });
+            }
+          });
+        };
+        if ((_c = (_b = (_a = this.editor.options.coreExtensionOptions) == null ? void 0 : _a.delete) == null ? void 0 : _b.async) != null ? _c : true) {
+          setTimeout(callback, 0);
+        } else {
+          callback();
+        }
+      }
+    });
+    Drop = Extension.create({
+      name: "drop",
+      addProseMirrorPlugins() {
+        return [
+          new import_state16.Plugin({
+            key: new import_state16.PluginKey("tiptapDrop"),
+            props: {
+              handleDrop: (_, e, slice, moved) => {
+                this.editor.emit("drop", {
+                  editor: this.editor,
+                  event: e,
+                  slice,
+                  moved
+                });
+              }
+            }
+          })
+        ];
+      }
+    });
+    Editable = Extension.create({
+      name: "editable",
+      addProseMirrorPlugins() {
+        return [
+          new import_state17.Plugin({
+            key: new import_state17.PluginKey("editable"),
+            props: {
+              editable: () => this.editor.options.editable
+            }
+          })
+        ];
+      }
+    });
+    focusEventsPluginKey = new import_state18.PluginKey("focusEvents");
+    FocusEvents = Extension.create({
+      name: "focusEvents",
+      addProseMirrorPlugins() {
+        const { editor } = this;
+        return [
+          new import_state18.Plugin({
+            key: focusEventsPluginKey,
+            props: {
+              handleDOMEvents: {
+                focus: (view, event) => {
+                  editor.isFocused = true;
+                  const transaction = editor.state.tr.setMeta("focus", { event }).setMeta("addToHistory", false);
+                  view.dispatch(transaction);
+                  return false;
+                },
+                blur: (view, event) => {
+                  editor.isFocused = false;
+                  const transaction = editor.state.tr.setMeta("blur", { event }).setMeta("addToHistory", false);
+                  view.dispatch(transaction);
+                  return false;
+                }
+              }
+            }
+          })
+        ];
+      }
+    });
+    Keymap = Extension.create({
+      name: "keymap",
+      addKeyboardShortcuts() {
+        const handleBackspace2 = () => this.editor.commands.first(({ commands }) => [
+          () => commands.undoInputRule(),
+          // maybe convert first text block node to default node
+          () => commands.command(({ tr }) => {
+            const { selection, doc } = tr;
+            const { empty, $anchor } = selection;
+            const { pos, parent } = $anchor;
+            const $parentPos = $anchor.parent.isTextblock && pos > 0 ? tr.doc.resolve(pos - 1) : $anchor;
+            const parentIsIsolating = $parentPos.parent.type.spec.isolating;
+            const parentPos = $anchor.pos - $anchor.parentOffset;
+            const isAtStart = parentIsIsolating && $parentPos.parent.childCount === 1 ? parentPos === $anchor.pos : import_state19.Selection.atStart(doc).from === pos;
+            if (!empty || !parent.type.isTextblock || parent.textContent.length || !isAtStart || isAtStart && $anchor.parent.type.name === "paragraph") {
+              return false;
+            }
+            return commands.clearNodes();
+          }),
+          () => commands.deleteSelection(),
+          () => commands.joinBackward(),
+          () => commands.selectNodeBackward()
+        ]);
+        const handleDelete2 = () => this.editor.commands.first(({ commands }) => [
+          () => commands.deleteSelection(),
+          () => commands.deleteCurrentNode(),
+          () => commands.joinForward(),
+          () => commands.selectNodeForward()
+        ]);
+        const handleEnter = () => this.editor.commands.first(({ commands }) => [
+          () => commands.newlineInCode(),
+          () => commands.createParagraphNear(),
+          () => commands.liftEmptyBlock(),
+          () => commands.splitBlock()
+        ]);
+        const baseKeymap = {
+          Enter: handleEnter,
+          "Mod-Enter": () => this.editor.commands.exitCode(),
+          Backspace: handleBackspace2,
+          "Mod-Backspace": handleBackspace2,
+          "Shift-Backspace": handleBackspace2,
+          Delete: handleDelete2,
+          "Mod-Delete": handleDelete2,
+          "Mod-a": () => this.editor.commands.selectAll()
+        };
+        const pcKeymap = {
+          ...baseKeymap
+        };
+        const macKeymap = {
+          ...baseKeymap,
+          "Ctrl-h": handleBackspace2,
+          "Alt-Backspace": handleBackspace2,
+          "Ctrl-d": handleDelete2,
+          "Ctrl-Alt-Backspace": handleDelete2,
+          "Alt-Delete": handleDelete2,
+          "Alt-d": handleDelete2,
+          "Ctrl-a": () => this.editor.commands.selectTextblockStart(),
+          "Ctrl-e": () => this.editor.commands.selectTextblockEnd()
+        };
+        if (isiOS() || isMacOS()) {
+          return macKeymap;
+        }
+        return pcKeymap;
+      },
+      addProseMirrorPlugins() {
+        return [
+          // With this plugin we check if the whole document was selected and deleted.
+          // In this case we will additionally call `clearNodes()` to convert e.g. a heading
+          // to a paragraph if necessary.
+          // This is an alternative to ProseMirror's `AllSelection`, which doesn’t work well
+          // with many other commands.
+          new import_state19.Plugin({
+            key: new import_state19.PluginKey("clearDocument"),
+            appendTransaction: (transactions, oldState, newState) => {
+              if (transactions.some((tr2) => tr2.getMeta("composition"))) {
+                return;
+              }
+              const docChanges = transactions.some((transaction) => transaction.docChanged) && !oldState.doc.eq(newState.doc);
+              const ignoreTr = transactions.some((transaction) => transaction.getMeta("preventClearDocument"));
+              if (!docChanges || ignoreTr) {
+                return;
+              }
+              const { empty, from, to } = oldState.selection;
+              const allFrom = import_state19.Selection.atStart(oldState.doc).from;
+              const allEnd = import_state19.Selection.atEnd(oldState.doc).to;
+              const allWasSelected = from === allFrom && to === allEnd;
+              if (empty || !allWasSelected) {
+                return;
+              }
+              const isEmpty = isNodeEmpty(newState.doc);
+              if (!isEmpty) {
+                return;
+              }
+              const tr = newState.tr;
+              const state = createChainableState({
+                state: newState,
+                transaction: tr
+              });
+              const { commands } = new CommandManager({
+                editor: this.editor,
+                state
+              });
+              commands.clearNodes();
+              if (!tr.steps.length) {
+                return;
+              }
+              return tr;
+            }
+          })
+        ];
+      }
+    });
+    Paste = Extension.create({
+      name: "paste",
+      addProseMirrorPlugins() {
+        return [
+          new import_state20.Plugin({
+            key: new import_state20.PluginKey("tiptapPaste"),
+            props: {
+              handlePaste: (_view, e, slice) => {
+                this.editor.emit("paste", {
+                  editor: this.editor,
+                  event: e,
+                  slice
+                });
+              }
+            }
+          })
+        ];
+      }
+    });
+    Tabindex = Extension.create({
+      name: "tabindex",
+      addProseMirrorPlugins() {
+        return [
+          new import_state21.Plugin({
+            key: new import_state21.PluginKey("tabindex"),
+            props: {
+              attributes: () => this.editor.isEditable ? { tabindex: "0" } : {}
+            }
+          })
+        ];
+      }
+    });
+    TextDirection = Extension.create({
+      name: "textDirection",
+      addOptions() {
+        return {
+          direction: void 0
+        };
+      },
+      addGlobalAttributes() {
+        if (!this.options.direction) {
+          return [];
+        }
+        const { nodeExtensions } = splitExtensions(this.extensions);
+        return [
+          {
+            types: nodeExtensions.filter((extension) => extension.name !== "text").map((extension) => extension.name),
+            attributes: {
+              dir: {
+                default: this.options.direction,
+                parseHTML: (element) => {
+                  const dir = element.getAttribute("dir");
+                  if (dir && (dir === "ltr" || dir === "rtl" || dir === "auto")) {
+                    return dir;
+                  }
+                  return this.options.direction;
+                },
+                renderHTML: (attributes) => {
+                  if (!attributes.dir) {
+                    return {};
+                  }
+                  return {
+                    dir: attributes.dir
+                  };
+                }
+              }
+            }
+          }
+        ];
+      },
+      addProseMirrorPlugins() {
+        return [
+          new import_state22.Plugin({
+            key: new import_state22.PluginKey("textDirection"),
+            props: {
+              attributes: () => {
+                const direction = this.options.direction;
+                if (!direction) {
+                  return {};
+                }
+                return {
+                  dir: direction
+                };
+              }
+            }
+          })
+        ];
+      }
+    });
+    markdown_exports = {};
+    __export2(markdown_exports, {
+      createAtomBlockMarkdownSpec: () => createAtomBlockMarkdownSpec,
+      createBlockMarkdownSpec: () => createBlockMarkdownSpec,
+      createInlineMarkdownSpec: () => createInlineMarkdownSpec,
+      parseAttributes: () => parseAttributes,
+      parseIndentedBlocks: () => parseIndentedBlocks,
+      renderNestedMarkdownContent: () => renderNestedMarkdownContent,
+      serializeAttributes: () => serializeAttributes
+    });
+    Node3 = class _Node extends Extendable {
+      constructor() {
+        super(...arguments);
+        this.type = "node";
+      }
+      /**
+       * Create a new Node instance
+       * @param config - Node configuration object or a function that returns a configuration object
+       */
+      static create(config = {}) {
+        const resolvedConfig = typeof config === "function" ? config() : config;
+        return new _Node(resolvedConfig);
+      }
+      configure(options) {
+        return super.configure(options);
+      }
+      extend(extendedConfig) {
+        const resolvedConfig = typeof extendedConfig === "function" ? extendedConfig() : extendedConfig;
+        return super.extend(resolvedConfig);
+      }
     };
   }
 });
-var listHelpers_exports = {};
-__export3(listHelpers_exports, {
-  findListItemPos: () => findListItemPos,
-  getNextListDepth: () => getNextListDepth,
-  handleBackspace: () => handleBackspace,
-  handleDelete: () => handleDelete,
-  hasListBefore: () => hasListBefore,
-  hasListItemAfter: () => hasListItemAfter,
-  hasListItemBefore: () => hasListItemBefore,
-  listItemHasSubList: () => listItemHasSubList,
-  nextListIsDeeper: () => nextListIsDeeper,
-  nextListIsHigher: () => nextListIsHigher
-});
-var findListItemPos = (typeOrName, state) => {
-  const { $from } = state.selection;
-  const nodeType = getNodeType(typeOrName, state.schema);
-  let currentNode = null;
-  let currentDepth = $from.depth;
-  let currentPos = $from.pos;
-  let targetDepth = null;
-  while (currentDepth > 0 && targetDepth === null) {
-    currentNode = $from.node(currentDepth);
-    if (currentNode.type === nodeType) {
-      targetDepth = currentDepth;
-    } else {
-      currentDepth -= 1;
-      currentPos -= 1;
-    }
+
+// src/lib/comment-mark.ts
+function addCommentMark(editor, commentId, from, to) {
+  if (!editor.view || editor.isDestroyed) {
+    console.warn("Cannot add comment mark: editor not ready");
+    return;
   }
-  if (targetDepth === null) {
-    return null;
-  }
-  return { $pos: state.doc.resolve(currentPos), depth: targetDepth };
-};
-var getNextListDepth = (typeOrName, state) => {
-  const listItemPos = findListItemPos(typeOrName, state);
-  if (!listItemPos) {
-    return false;
-  }
-  const [, depth] = getNodeAtPosition(state, typeOrName, listItemPos.$pos.pos + 4);
-  return depth;
-};
-var hasListBefore = (editorState, name, parentListTypes) => {
-  const { $anchor } = editorState.selection;
-  const previousNodePos = Math.max(0, $anchor.pos - 2);
-  const previousNode = editorState.doc.resolve(previousNodePos).node();
-  if (!previousNode || !parentListTypes.includes(previousNode.type.name)) {
-    return false;
-  }
-  return true;
-};
-var hasListItemBefore = (typeOrName, state) => {
-  var _a;
-  const { $anchor } = state.selection;
-  const $targetPos = state.doc.resolve($anchor.pos - 2);
-  if ($targetPos.index() === 0) {
-    return false;
-  }
-  if (((_a = $targetPos.nodeBefore) == null ? void 0 : _a.type.name) !== typeOrName) {
-    return false;
-  }
-  return true;
-};
-var listItemHasSubList = (typeOrName, state, node) => {
-  if (!node) {
-    return false;
-  }
-  const nodeType = getNodeType(typeOrName, state.schema);
-  let hasSubList = false;
-  node.descendants((child) => {
-    if (child.type === nodeType) {
-      hasSubList = true;
+  editor.chain().setTextSelection({ from, to }).setComment(commentId).run();
+}
+function removeCommentMark(editor, commentId) {
+  if (!editor.view || editor.isDestroyed) return;
+  editor.chain().unsetComment(commentId).run();
+}
+function applyCommentMarks(editor, comments) {
+  if (!editor.view || editor.isDestroyed) return;
+  const { doc } = editor.state;
+  const textContent = doc.textContent;
+  comments.forEach((comment) => {
+    if (!comment.quotedText || comment.parentId || comment.resolved) return;
+    const index = textContent.indexOf(comment.quotedText);
+    if (index === -1) return;
+    let currentPos = 0;
+    let startPos = null;
+    let endPos = null;
+    doc.descendants((node, pos) => {
+      if (startPos !== null && endPos !== null) return false;
+      if (node.isText && node.text) {
+        const nodeStart = currentPos;
+        const nodeEnd = currentPos + node.text.length;
+        if (startPos === null && nodeEnd > index) {
+          const offsetInNode = index - nodeStart;
+          startPos = pos + offsetInNode;
+        }
+        if (startPos !== null && endPos === null) {
+          const targetEnd = index + comment.quotedText.length;
+          if (nodeEnd >= targetEnd) {
+            const offsetInNode = targetEnd - nodeStart;
+            endPos = pos + offsetInNode;
+          }
+        }
+        currentPos = nodeEnd;
+      }
+      return true;
+    });
+    if (startPos !== null && endPos !== null) {
+      editor.chain().setTextSelection({ from: startPos, to: endPos }).setComment(comment.id).setTextSelection(endPos).run();
     }
   });
-  return hasSubList;
-};
-var handleBackspace = (editor, name, parentListTypes) => {
-  if (editor.commands.undoInputRule()) {
-    return true;
-  }
-  if (editor.state.selection.from !== editor.state.selection.to) {
-    return false;
-  }
-  if (!isNodeActive(editor.state, name) && hasListBefore(editor.state, name, parentListTypes)) {
-    const { $anchor } = editor.state.selection;
-    const $listPos = editor.state.doc.resolve($anchor.before() - 1);
-    const listDescendants = [];
-    $listPos.node().descendants((node, pos) => {
-      if (node.type.name === name) {
-        listDescendants.push({ node, pos });
+}
+function scrollToComment(editor, commentId) {
+  if (!editor.view || editor.isDestroyed) return;
+  const { doc } = editor.state;
+  doc.descendants((node, pos) => {
+    const commentMark = node.marks.find(
+      (mark) => mark.type.name === "comment" && mark.attrs.commentId === commentId
+    );
+    if (commentMark) {
+      editor.chain().setTextSelection(pos).run();
+      const view = editor.view;
+      const coords = view.coordsAtPos(pos);
+      const editorRect = view.dom.getBoundingClientRect();
+      if (coords.top < editorRect.top || coords.bottom > editorRect.bottom) {
+        view.dom.scrollIntoView({ behavior: "smooth", block: "center" });
       }
-    });
-    const lastItem = listDescendants.at(-1);
-    if (!lastItem) {
       return false;
     }
-    const $lastItemPos = editor.state.doc.resolve($listPos.start() + lastItem.pos + 1);
-    return editor.chain().cut({ from: $anchor.start() - 1, to: $anchor.end() + 1 }, $lastItemPos.end()).joinForward().run();
-  }
-  if (!isNodeActive(editor.state, name)) {
-    return false;
-  }
-  if (!isAtStartOfNode(editor.state)) {
-    return false;
-  }
-  const listItemPos = findListItemPos(name, editor.state);
-  if (!listItemPos) {
-    return false;
-  }
-  const $prev = editor.state.doc.resolve(listItemPos.$pos.pos - 2);
-  const prevNode = $prev.node(listItemPos.depth);
-  const previousListItemHasSubList = listItemHasSubList(name, editor.state, prevNode);
-  if (hasListItemBefore(name, editor.state) && !previousListItemHasSubList) {
-    return editor.commands.joinItemBackward();
-  }
-  return editor.chain().liftListItem(name).run();
-};
-var nextListIsDeeper = (typeOrName, state) => {
-  const listDepth = getNextListDepth(typeOrName, state);
-  const listItemPos = findListItemPos(typeOrName, state);
-  if (!listItemPos || !listDepth) {
-    return false;
-  }
-  if (listDepth > listItemPos.depth) {
     return true;
-  }
-  return false;
-};
-var nextListIsHigher = (typeOrName, state) => {
-  const listDepth = getNextListDepth(typeOrName, state);
-  const listItemPos = findListItemPos(typeOrName, state);
-  if (!listItemPos || !listDepth) {
-    return false;
-  }
-  if (listDepth < listItemPos.depth) {
-    return true;
-  }
-  return false;
-};
-var handleDelete = (editor, name) => {
-  if (!isNodeActive(editor.state, name)) {
-    return false;
-  }
-  if (!isAtEndOfNode(editor.state, name)) {
-    return false;
-  }
-  const { selection } = editor.state;
-  const { $from, $to } = selection;
-  if (!selection.empty && $from.sameParent($to)) {
-    return false;
-  }
-  if (nextListIsDeeper(name, editor.state)) {
-    return editor.chain().focus(editor.state.selection.from + 4).lift(name).joinBackward().run();
-  }
-  if (nextListIsHigher(name, editor.state)) {
-    return editor.chain().joinForward().joinBackward().run();
-  }
-  return editor.commands.joinItemForward();
-};
-var hasListItemAfter = (typeOrName, state) => {
-  var _a;
-  const { $anchor } = state.selection;
-  const $targetPos = state.doc.resolve($anchor.pos - $anchor.parentOffset - 2);
-  if ($targetPos.index() === $targetPos.parent.childCount - 1) {
-    return false;
-  }
-  if (((_a = $targetPos.nodeAfter) == null ? void 0 : _a.type.name) !== typeOrName) {
-    return false;
-  }
-  return true;
-};
-var ListKeymap = Extension.create({
-  name: "listKeymap",
-  addOptions() {
-    return {
-      listTypes: [
-        {
-          itemName: "listItem",
-          wrapperNames: ["bulletList", "orderedList"]
-        },
-        {
-          itemName: "taskItem",
-          wrapperNames: ["taskList"]
-        }
-      ]
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      Delete: ({ editor }) => {
-        let handled = false;
-        this.options.listTypes.forEach(({ itemName }) => {
-          if (editor.state.schema.nodes[itemName] === void 0) {
-            return;
-          }
-          if (handleDelete(editor, itemName)) {
-            handled = true;
-          }
-        });
-        return handled;
+  });
+}
+var import_state25, CommentMark;
+var init_comment_mark = __esm({
+  "src/lib/comment-mark.ts"() {
+    "use strict";
+    init_dist();
+    import_state25 = require("@tiptap/pm/state");
+    CommentMark = Mark.create({
+      name: "comment",
+      addOptions() {
+        return {
+          onCommentClick: void 0
+        };
       },
-      "Mod-Delete": ({ editor }) => {
-        let handled = false;
-        this.options.listTypes.forEach(({ itemName }) => {
-          if (editor.state.schema.nodes[itemName] === void 0) {
-            return;
+      addAttributes() {
+        return {
+          commentId: {
+            default: null,
+            parseHTML: (element) => element.getAttribute("data-comment-id"),
+            renderHTML: (attributes) => ({
+              "data-comment-id": attributes.commentId
+            })
           }
-          if (handleDelete(editor, itemName)) {
-            handled = true;
-          }
-        });
-        return handled;
+        };
       },
-      Backspace: ({ editor }) => {
-        let handled = false;
-        this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
-          if (editor.state.schema.nodes[itemName] === void 0) {
-            return;
-          }
-          if (handleBackspace(editor, itemName, wrapperNames)) {
-            handled = true;
-          }
-        });
-        return handled;
+      parseHTML() {
+        return [{ tag: "mark[data-comment-id]" }];
       },
-      "Mod-Backspace": ({ editor }) => {
-        let handled = false;
-        this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
-          if (editor.state.schema.nodes[itemName] === void 0) {
-            return;
+      renderHTML({ HTMLAttributes }) {
+        return [
+          "mark",
+          mergeAttributes(HTMLAttributes, {
+            class: "bg-yellow-200/50 dark:bg-yellow-500/30 dark:text-foreground cursor-pointer hover:bg-yellow-300/60 dark:hover:bg-yellow-500/40 transition-colors rounded-sm"
+          }),
+          0
+        ];
+      },
+      addCommands() {
+        return {
+          setComment: (commentId) => ({ commands }) => {
+            return commands.setMark(this.name, { commentId });
+          },
+          unsetComment: (commentId) => ({ tr, state }) => {
+            const { doc } = state;
+            let found = false;
+            doc.descendants((node, pos) => {
+              node.marks.forEach((mark) => {
+                if (mark.type.name === this.name && mark.attrs.commentId === commentId) {
+                  tr.removeMark(pos, pos + node.nodeSize, mark.type);
+                  found = true;
+                }
+              });
+            });
+            return found;
           }
-          if (handleBackspace(editor, itemName, wrapperNames)) {
-            handled = true;
-          }
-        });
-        return handled;
+        };
+      },
+      addProseMirrorPlugins() {
+        const { onCommentClick } = this.options;
+        return [
+          new import_state25.Plugin({
+            key: new import_state25.PluginKey("commentClick"),
+            props: {
+              handleClick(view, pos) {
+                if (!onCommentClick) return false;
+                const { state } = view;
+                const $pos = state.doc.resolve(pos);
+                const marks = $pos.marks();
+                const commentMark = marks.find((mark) => mark.type.name === "comment");
+                if (commentMark && commentMark.attrs.commentId) {
+                  ;
+                  view.dom.blur();
+                  onCommentClick(commentMark.attrs.commentId);
+                  return true;
+                }
+                return false;
+              }
+            }
+          })
+        ];
       }
-    };
+    });
   }
 });
-var ORDERED_LIST_ITEM_REGEX = /^(\s*)(\d+)\.\s+(.*)$/;
-var INDENTED_LINE_REGEX = /^\s/;
+
+// src/lib/sse.ts
+async function consumeSSEStream(response, onEvent, signal) {
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("No response body");
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let fullContent = "";
+  try {
+    while (true) {
+      if (signal?.aborted) break;
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6);
+        if (data === "[DONE]") continue;
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.error) {
+            onEvent({ error: parsed.error, fullContent });
+          } else {
+            if (parsed.text) {
+              fullContent += parsed.text;
+            }
+            onEvent({ ...parsed, fullContent });
+          }
+        } catch (parseError) {
+          if (parseError instanceof Error && parseError.message !== "Unexpected token") {
+            if (parseError.message && !parseError.message.includes("Unexpected")) {
+              throw parseError;
+            }
+          }
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return fullContent;
+}
+var init_sse = __esm({
+  "src/lib/sse.ts"() {
+    "use strict";
+  }
+});
+
+// src/ui/hooks/useChat.tsx
+function parseEditBlocks(content) {
+  const editRegex = /:::edit\s*([\s\S]*?)\s*:::/g;
+  const edits = [];
+  let cleanContent = content;
+  let match;
+  while ((match = editRegex.exec(content)) !== null) {
+    try {
+      const edit = JSON.parse(match[1]);
+      edits.push(edit);
+      cleanContent = cleanContent.replace(match[0], "");
+    } catch {
+      console.warn("Failed to parse edit block:", match[1]);
+    }
+  }
+  cleanContent = cleanContent.replace(/\n{3,}/g, "\n\n").trim();
+  return { edits, cleanContent };
+}
+function stripEditBlocksForDisplay(content) {
+  let cleaned = content.replace(/:::edit\s*[\s\S]*?\s*:::/g, "");
+  cleaned = cleaned.replace(/:::edit\s*[\s\S]*$/g, "");
+  cleaned = cleaned.replace(/:::[a-z]*$/gi, "");
+  cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
+  return cleaned;
+}
+function cleanPlanOutput(content) {
+  let cleaned = content;
+  const planMatch = cleaned.match(/<plan>([\s\S]*?)<\/plan>/i);
+  if (planMatch) {
+    cleaned = planMatch[1];
+  } else {
+    const openTagMatch = cleaned.match(/<plan>([\s\S]*)/i);
+    if (openTagMatch) {
+      cleaned = openTagMatch[1];
+    }
+  }
+  const lines = cleaned.split("\n");
+  let lastBulletIndex = -1;
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].trim().startsWith("- ")) {
+      lastBulletIndex = i;
+      break;
+    }
+  }
+  if (lastBulletIndex === -1) {
+    return cleaned.trim();
+  }
+  return lines.slice(0, lastBulletIndex + 1).join("\n").trim();
+}
+function ChatProvider({
+  children,
+  apiBasePath = "/api/cms",
+  chatApiPath,
+  historyApiPath = "/api/chat/history"
+}) {
+  const [messages, setMessages] = (0, import_react17.useState)([]);
+  const [essayContext, setEssayContext] = (0, import_react17.useState)(null);
+  const [isStreaming, setIsStreaming] = (0, import_react17.useState)(false);
+  const [isOpen, setIsOpen] = (0, import_react17.useState)(false);
+  const [mode, setMode] = (0, import_react17.useState)("ask");
+  const [webSearchEnabled, setWebSearchEnabled] = (0, import_react17.useState)(false);
+  const [thinkingEnabled, setThinkingEnabled] = (0, import_react17.useState)(false);
+  const [selectedModel, setSelectedModel] = (0, import_react17.useState)("claude-sonnet");
+  const editHandlerRef = (0, import_react17.useRef)(null);
+  const expandPlanHandlerRef = (0, import_react17.useRef)(null);
+  const historyLoadedRef = (0, import_react17.useRef)(false);
+  const abortControllerRef = (0, import_react17.useRef)(null);
+  const essayContextRef = (0, import_react17.useRef)(null);
+  (0, import_react17.useEffect)(() => {
+    essayContextRef.current = essayContext;
+  }, [essayContext]);
+  const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
+  const registerEditHandler = (0, import_react17.useCallback)((handler) => {
+    editHandlerRef.current = handler;
+  }, []);
+  const registerExpandPlanHandler = (0, import_react17.useCallback)((handler) => {
+    expandPlanHandlerRef.current = handler;
+  }, []);
+  const stopStreaming = (0, import_react17.useCallback)(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setIsStreaming(false);
+  }, []);
+  (0, import_react17.useEffect)(() => {
+    if (historyLoadedRef.current) return;
+    historyLoadedRef.current = true;
+    fetch(historyApiPath).then((res) => res.ok ? res.json() : []).then((data) => {
+      if (data.length > 0) {
+        setMessages(data.map((m) => ({ role: m.role, content: m.content })));
+      }
+    }).catch(() => {
+    });
+  }, [historyApiPath]);
+  const saveMessage = (0, import_react17.useCallback)((role, content) => {
+    fetch(historyApiPath, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role, content })
+    }).catch(() => {
+    });
+  }, [historyApiPath]);
+  const sendMessage = (0, import_react17.useCallback)(async (content) => {
+    if (!content.trim() || isStreaming) return;
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+    const userMessage = { role: "user", content: content.trim() };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setIsStreaming(true);
+    saveMessage("user", content.trim());
+    const assistantMessage = { role: "assistant", content: "", mode };
+    setMessages([...newMessages, assistantMessage]);
+    try {
+      const response = await fetch(resolvedChatApiPath, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: newMessages,
+          essayContext,
+          mode,
+          model: selectedModel,
+          useWebSearch: webSearchEnabled,
+          useThinking: thinkingEnabled
+        }),
+        signal
+      });
+      if (!response.ok) {
+        if (response.status === 503) {
+          throw new Error("AI service temporarily unavailable. Please try again.");
+        }
+        if (response.status === 429) {
+          throw new Error("Rate limit exceeded. Please wait before trying again.");
+        }
+        const errorText = await response.text();
+        let errorMessage = `Server error (${response.status}). Please try again.`;
+        try {
+          const errorJson = JSON.parse(errorText);
+          if (errorJson.error) {
+            errorMessage = errorJson.error;
+          }
+        } catch {
+        }
+        throw new Error(errorMessage);
+      }
+      let appliedEdits = false;
+      const assistantContent = await consumeSSEStream(response, (event) => {
+        if (event.error) {
+          throw new Error(event.error);
+        }
+        const displayContent = mode === "agent" ? stripEditBlocksForDisplay(event.fullContent) : event.fullContent;
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = { role: "assistant", content: displayContent, mode };
+          return updated;
+        });
+      }, signal);
+      if (mode === "agent" && editHandlerRef.current && essayContextRef.current) {
+        const { edits, cleanContent } = parseEditBlocks(assistantContent);
+        const previousState = {
+          title: essayContextRef.current.title,
+          subtitle: essayContextRef.current.subtitle || "",
+          markdown: essayContextRef.current.markdown
+        };
+        for (const edit of edits) {
+          const success = editHandlerRef.current(edit);
+          if (success) appliedEdits = true;
+        }
+        if (edits.length > 0) {
+          const finalContent = cleanContent || "Edit applied.";
+          setMessages((prev) => {
+            const updated = [...prev];
+            updated[updated.length - 1] = {
+              role: "assistant",
+              content: finalContent,
+              mode,
+              appliedEdits,
+              previousState: appliedEdits ? previousState : void 0
+            };
+            return updated;
+          });
+          saveMessage("assistant", finalContent);
+        } else {
+          saveMessage("assistant", assistantContent);
+        }
+      } else if (mode === "plan") {
+        const cleanedContent = cleanPlanOutput(assistantContent);
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: cleanedContent,
+            mode
+          };
+          return updated;
+        });
+        saveMessage("assistant", cleanedContent);
+      } else {
+        saveMessage("assistant", assistantContent);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
+      console.error("Chat error:", error);
+      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[updated.length - 1] = { role: "assistant", content: `Error: ${errorMessage}` };
+        return updated;
+      });
+    } finally {
+      abortControllerRef.current = null;
+      setIsStreaming(false);
+    }
+  }, [messages, isStreaming, essayContext, mode, webSearchEnabled, thinkingEnabled, selectedModel, saveMessage, resolvedChatApiPath]);
+  const clearMessages = (0, import_react17.useCallback)(() => {
+    setMessages([]);
+  }, []);
+  const addMessage = (0, import_react17.useCallback)((role, content) => {
+    const message = { role, content };
+    setMessages((prev) => [...prev, message]);
+    saveMessage(role, content);
+  }, [saveMessage]);
+  const undoEdit = (0, import_react17.useCallback)((messageIndex) => {
+    const message = messages[messageIndex];
+    if (!message?.previousState || !editHandlerRef.current) return;
+    const success = editHandlerRef.current({
+      type: "replace_all",
+      title: message.previousState.title,
+      subtitle: message.previousState.subtitle,
+      markdown: message.previousState.markdown
+    });
+    if (success) {
+      setMessages((prev) => {
+        const updated = [...prev];
+        updated[messageIndex] = {
+          ...updated[messageIndex],
+          appliedEdits: false,
+          previousState: void 0
+        };
+        return updated;
+      });
+    }
+  }, [messages]);
+  const expandPlan = (0, import_react17.useCallback)((wordCount = 800) => {
+    if (!expandPlanHandlerRef.current) return;
+    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
+    if (!lastAssistantMessage?.content) return;
+    expandPlanHandlerRef.current(lastAssistantMessage.content, wordCount);
+    setIsOpen(false);
+  }, [messages]);
+  const value = (0, import_react17.useMemo)(() => ({
+    messages,
+    essayContext,
+    isStreaming,
+    isOpen,
+    mode,
+    webSearchEnabled,
+    thinkingEnabled,
+    selectedModel,
+    setEssayContext,
+    sendMessage,
+    stopStreaming,
+    addMessage,
+    clearMessages,
+    setIsOpen,
+    setMode,
+    setWebSearchEnabled,
+    setThinkingEnabled,
+    setSelectedModel,
+    registerEditHandler,
+    undoEdit,
+    registerExpandPlanHandler,
+    expandPlan
+  }), [
+    messages,
+    essayContext,
+    isStreaming,
+    isOpen,
+    mode,
+    webSearchEnabled,
+    thinkingEnabled,
+    selectedModel,
+    sendMessage,
+    stopStreaming,
+    addMessage,
+    clearMessages,
+    registerEditHandler,
+    undoEdit,
+    registerExpandPlanHandler,
+    expandPlan
+  ]);
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(ChatContext.Provider, { value, children });
+}
+function useChatContext() {
+  const context = (0, import_react17.useContext)(ChatContext);
+  if (!context) {
+    throw new Error("useChatContext must be used within a ChatProvider");
+  }
+  return context;
+}
+function useChatContextOptional() {
+  return (0, import_react17.useContext)(ChatContext);
+}
+var import_react17, import_jsx_runtime21, ChatContext;
+var init_useChat = __esm({
+  "src/ui/hooks/useChat.tsx"() {
+    "use strict";
+    "use client";
+    import_react17 = require("react");
+    init_sse();
+    import_jsx_runtime21 = require("react/jsx-runtime");
+    ChatContext = (0, import_react17.createContext)(null);
+  }
+});
+
+// node_modules/@tiptap/extension-heading/dist/index.js
+var Heading, index_default;
+var init_dist2 = __esm({
+  "node_modules/@tiptap/extension-heading/dist/index.js"() {
+    "use strict";
+    init_dist();
+    Heading = Node3.create({
+      name: "heading",
+      addOptions() {
+        return {
+          levels: [1, 2, 3, 4, 5, 6],
+          HTMLAttributes: {}
+        };
+      },
+      content: "inline*",
+      group: "block",
+      defining: true,
+      addAttributes() {
+        return {
+          level: {
+            default: 1,
+            rendered: false
+          }
+        };
+      },
+      parseHTML() {
+        return this.options.levels.map((level) => ({
+          tag: `h${level}`,
+          attrs: { level }
+        }));
+      },
+      renderHTML({ node, HTMLAttributes }) {
+        const hasLevel = this.options.levels.includes(node.attrs.level);
+        const level = hasLevel ? node.attrs.level : this.options.levels[0];
+        return [`h${level}`, mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+      },
+      parseMarkdown: (token, helpers) => {
+        return helpers.createNode("heading", { level: token.depth || 1 }, helpers.parseInline(token.tokens || []));
+      },
+      renderMarkdown: (node, h2) => {
+        var _a;
+        const level = ((_a = node.attrs) == null ? void 0 : _a.level) ? parseInt(node.attrs.level, 10) : 1;
+        const headingChars = "#".repeat(level);
+        if (!node.content) {
+          return "";
+        }
+        return `${headingChars} ${h2.renderChildren(node.content)}`;
+      },
+      addCommands() {
+        return {
+          setHeading: (attributes) => ({ commands }) => {
+            if (!this.options.levels.includes(attributes.level)) {
+              return false;
+            }
+            return commands.setNode(this.name, attributes);
+          },
+          toggleHeading: (attributes) => ({ commands }) => {
+            if (!this.options.levels.includes(attributes.level)) {
+              return false;
+            }
+            return commands.toggleNode(this.name, "paragraph", attributes);
+          }
+        };
+      },
+      addKeyboardShortcuts() {
+        return this.options.levels.reduce(
+          (items, level) => ({
+            ...items,
+            ...{
+              [`Mod-Alt-${level}`]: () => this.editor.commands.toggleHeading({ level })
+            }
+          }),
+          {}
+        );
+      },
+      addInputRules() {
+        return this.options.levels.map((level) => {
+          return textblockTypeInputRule({
+            find: new RegExp(`^(#{${Math.min(...this.options.levels)},${level}})\\s$`),
+            type: this.type,
+            getAttributes: {
+              level
+            }
+          });
+        });
+      }
+    });
+    index_default = Heading;
+  }
+});
+
+// node_modules/@tiptap/extension-paragraph/dist/index.js
+var Paragraph, index_default2;
+var init_dist3 = __esm({
+  "node_modules/@tiptap/extension-paragraph/dist/index.js"() {
+    "use strict";
+    init_dist();
+    Paragraph = Node3.create({
+      name: "paragraph",
+      priority: 1e3,
+      addOptions() {
+        return {
+          HTMLAttributes: {}
+        };
+      },
+      group: "block",
+      content: "inline*",
+      parseHTML() {
+        return [{ tag: "p" }];
+      },
+      renderHTML({ HTMLAttributes }) {
+        return ["p", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+      },
+      parseMarkdown: (token, helpers) => {
+        const tokens = token.tokens || [];
+        if (tokens.length === 1 && tokens[0].type === "image") {
+          return helpers.parseChildren([tokens[0]]);
+        }
+        return helpers.createNode(
+          "paragraph",
+          void 0,
+          // no attributes for paragraph
+          helpers.parseInline(tokens)
+        );
+      },
+      renderMarkdown: (node, h2) => {
+        if (!node || !Array.isArray(node.content)) {
+          return "";
+        }
+        return h2.renderChildren(node.content);
+      },
+      addCommands() {
+        return {
+          setParagraph: () => ({ commands }) => {
+            return commands.setNode(this.name);
+          }
+        };
+      },
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Alt-0": () => this.editor.commands.setParagraph()
+        };
+      }
+    });
+    index_default2 = Paragraph;
+  }
+});
+
+// node_modules/@tiptap/extension-list/dist/index.js
 function collectOrderedListItems(lines) {
   const listItems = [];
   let currentLineIndex = 0;
@@ -6806,1304 +5665,1580 @@ function parseListItems(items, helpers) {
     };
   });
 }
-var ListItemName2 = "listItem";
-var TextStyleName2 = "textStyle";
-var orderedListInputRegex = /^(\d+)\.\s$/;
-var OrderedList = Node3.create({
-  name: "orderedList",
-  addOptions() {
-    return {
-      itemTypeName: "listItem",
-      HTMLAttributes: {},
-      keepMarks: false,
-      keepAttributes: false
+var __defProp3, __export3, ListItemName, TextStyleName, bulletListInputRegex, BulletList, ListItem, listHelpers_exports, findListItemPos, getNextListDepth, hasListBefore, hasListItemBefore, listItemHasSubList, handleBackspace, nextListIsDeeper, nextListIsHigher, handleDelete, hasListItemAfter, ListKeymap, ORDERED_LIST_ITEM_REGEX, INDENTED_LINE_REGEX, ListItemName2, TextStyleName2, orderedListInputRegex, OrderedList, inputRegex, TaskItem, TaskList, ListKit;
+var init_dist4 = __esm({
+  "node_modules/@tiptap/extension-list/dist/index.js"() {
+    "use strict";
+    init_dist();
+    init_dist();
+    init_dist();
+    init_dist();
+    init_dist();
+    init_dist();
+    init_dist();
+    init_dist();
+    init_dist();
+    init_dist();
+    init_dist();
+    init_dist();
+    __defProp3 = Object.defineProperty;
+    __export3 = (target, all) => {
+      for (var name in all)
+        __defProp3(target, name, { get: all[name], enumerable: true });
     };
-  },
-  group: "block list",
-  content() {
-    return `${this.options.itemTypeName}+`;
-  },
-  addAttributes() {
-    return {
-      start: {
-        default: 1,
-        parseHTML: (element) => {
-          return element.hasAttribute("start") ? parseInt(element.getAttribute("start") || "", 10) : 1;
-        }
+    ListItemName = "listItem";
+    TextStyleName = "textStyle";
+    bulletListInputRegex = /^\s*([-+*])\s$/;
+    BulletList = Node3.create({
+      name: "bulletList",
+      addOptions() {
+        return {
+          itemTypeName: "listItem",
+          HTMLAttributes: {},
+          keepMarks: false,
+          keepAttributes: false
+        };
       },
-      type: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("type")
-      }
-    };
-  },
-  parseHTML() {
-    return [
-      {
-        tag: "ol"
-      }
-    ];
-  },
-  renderHTML({ HTMLAttributes }) {
-    const { start, ...attributesWithoutStart } = HTMLAttributes;
-    return start === 1 ? ["ol", mergeAttributes(this.options.HTMLAttributes, attributesWithoutStart), 0] : ["ol", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
-  },
-  markdownTokenName: "list",
-  parseMarkdown: (token, helpers) => {
-    if (token.type !== "list" || !token.ordered) {
-      return [];
-    }
-    const startValue = token.start || 1;
-    const content = token.items ? parseListItems(token.items, helpers) : [];
-    if (startValue !== 1) {
-      return {
-        type: "orderedList",
-        attrs: { start: startValue },
-        content
-      };
-    }
-    return {
-      type: "orderedList",
-      content
-    };
-  },
-  renderMarkdown: (node, h2) => {
-    if (!node.content) {
-      return "";
-    }
-    return h2.renderChildren(node.content, "\n");
-  },
-  markdownTokenizer: {
-    name: "orderedList",
-    level: "block",
-    start: (src) => {
-      const match = src.match(/^(\s*)(\d+)\.\s+/);
-      const index = match == null ? void 0 : match.index;
-      return index !== void 0 ? index : -1;
-    },
-    tokenize: (src, _tokens, lexer) => {
-      var _a;
-      const lines = src.split("\n");
-      const [listItems, consumed] = collectOrderedListItems(lines);
-      if (listItems.length === 0) {
-        return void 0;
-      }
-      const items = buildNestedStructure(listItems, 0, lexer);
-      if (items.length === 0) {
-        return void 0;
-      }
-      const startValue = ((_a = listItems[0]) == null ? void 0 : _a.number) || 1;
-      return {
-        type: "list",
-        ordered: true,
-        start: startValue,
-        items,
-        raw: lines.slice(0, consumed).join("\n")
-      };
-    }
-  },
-  markdownOptions: {
-    indentsContent: true
-  },
-  addCommands() {
-    return {
-      toggleOrderedList: () => ({ commands, chain }) => {
-        if (this.options.keepAttributes) {
-          return chain().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).updateAttributes(ListItemName2, this.editor.getAttributes(TextStyleName2)).run();
+      group: "block list",
+      content() {
+        return `${this.options.itemTypeName}+`;
+      },
+      parseHTML() {
+        return [{ tag: "ul" }];
+      },
+      renderHTML({ HTMLAttributes }) {
+        return ["ul", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+      },
+      markdownTokenName: "list",
+      parseMarkdown: (token, helpers) => {
+        if (token.type !== "list" || token.ordered) {
+          return [];
         }
-        return commands.toggleList(this.name, this.options.itemTypeName, this.options.keepMarks);
-      }
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Shift-7": () => this.editor.commands.toggleOrderedList()
-    };
-  },
-  addInputRules() {
-    let inputRule = wrappingInputRule({
-      find: orderedListInputRegex,
-      type: this.type,
-      getAttributes: (match) => ({ start: +match[1] }),
-      joinPredicate: (match, node) => node.childCount + node.attrs.start === +match[1]
-    });
-    if (this.options.keepMarks || this.options.keepAttributes) {
-      inputRule = wrappingInputRule({
-        find: orderedListInputRegex,
-        type: this.type,
-        keepMarks: this.options.keepMarks,
-        keepAttributes: this.options.keepAttributes,
-        getAttributes: (match) => ({ start: +match[1], ...this.editor.getAttributes(TextStyleName2) }),
-        joinPredicate: (match, node) => node.childCount + node.attrs.start === +match[1],
-        editor: this.editor
-      });
-    }
-    return [inputRule];
-  }
-});
-var inputRegex = /^\s*(\[([( |x])?\])\s$/;
-var TaskItem = Node3.create({
-  name: "taskItem",
-  addOptions() {
-    return {
-      nested: false,
-      HTMLAttributes: {},
-      taskListTypeName: "taskList",
-      a11y: void 0
-    };
-  },
-  content() {
-    return this.options.nested ? "paragraph block*" : "paragraph+";
-  },
-  defining: true,
-  addAttributes() {
-    return {
-      checked: {
-        default: false,
-        keepOnSplit: false,
-        parseHTML: (element) => {
-          const dataChecked = element.getAttribute("data-checked");
-          return dataChecked === "" || dataChecked === "true";
-        },
-        renderHTML: (attributes) => ({
-          "data-checked": attributes.checked
-        })
-      }
-    };
-  },
-  parseHTML() {
-    return [
-      {
-        tag: `li[data-type="${this.name}"]`,
-        priority: 51
-      }
-    ];
-  },
-  renderHTML({ node, HTMLAttributes }) {
-    return [
-      "li",
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
-        "data-type": this.name
-      }),
-      [
-        "label",
-        [
-          "input",
-          {
-            type: "checkbox",
-            checked: node.attrs.checked ? "checked" : null
-          }
-        ],
-        ["span"]
-      ],
-      ["div", 0]
-    ];
-  },
-  parseMarkdown: (token, h2) => {
-    const content = [];
-    if (token.tokens && token.tokens.length > 0) {
-      content.push(h2.createNode("paragraph", {}, h2.parseInline(token.tokens)));
-    } else if (token.text) {
-      content.push(h2.createNode("paragraph", {}, [h2.createNode("text", { text: token.text })]));
-    } else {
-      content.push(h2.createNode("paragraph", {}, []));
-    }
-    if (token.nestedTokens && token.nestedTokens.length > 0) {
-      const nestedContent = h2.parseChildren(token.nestedTokens);
-      content.push(...nestedContent);
-    }
-    return h2.createNode("taskItem", { checked: token.checked || false }, content);
-  },
-  renderMarkdown: (node, h2) => {
-    var _a;
-    const checkedChar = ((_a = node.attrs) == null ? void 0 : _a.checked) ? "x" : " ";
-    const prefix = `- [${checkedChar}] `;
-    return renderNestedMarkdownContent(node, h2, prefix);
-  },
-  addKeyboardShortcuts() {
-    const shortcuts = {
-      Enter: () => this.editor.commands.splitListItem(this.name),
-      "Shift-Tab": () => this.editor.commands.liftListItem(this.name)
-    };
-    if (!this.options.nested) {
-      return shortcuts;
-    }
-    return {
-      ...shortcuts,
-      Tab: () => this.editor.commands.sinkListItem(this.name)
-    };
-  },
-  addNodeView() {
-    return ({ node, HTMLAttributes, getPos, editor }) => {
-      const listItem = document.createElement("li");
-      const checkboxWrapper = document.createElement("label");
-      const checkboxStyler = document.createElement("span");
-      const checkbox = document.createElement("input");
-      const content = document.createElement("div");
-      const updateA11Y = (currentNode) => {
-        var _a, _b;
-        checkbox.ariaLabel = ((_b = (_a = this.options.a11y) == null ? void 0 : _a.checkboxLabel) == null ? void 0 : _b.call(_a, currentNode, checkbox.checked)) || `Task item checkbox for ${currentNode.textContent || "empty task item"}`;
-      };
-      updateA11Y(node);
-      checkboxWrapper.contentEditable = "false";
-      checkbox.type = "checkbox";
-      checkbox.addEventListener("mousedown", (event) => event.preventDefault());
-      checkbox.addEventListener("change", (event) => {
-        if (!editor.isEditable && !this.options.onReadOnlyChecked) {
-          checkbox.checked = !checkbox.checked;
-          return;
+        return {
+          type: "bulletList",
+          content: token.items ? helpers.parseChildren(token.items) : []
+        };
+      },
+      renderMarkdown: (node, h2) => {
+        if (!node.content) {
+          return "";
         }
-        const { checked } = event.target;
-        if (editor.isEditable && typeof getPos === "function") {
-          editor.chain().focus(void 0, { scrollIntoView: false }).command(({ tr }) => {
-            const position = getPos();
-            if (typeof position !== "number") {
-              return false;
+        return h2.renderChildren(node.content, "\n");
+      },
+      markdownOptions: {
+        indentsContent: true
+      },
+      addCommands() {
+        return {
+          toggleBulletList: () => ({ commands, chain }) => {
+            if (this.options.keepAttributes) {
+              return chain().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).updateAttributes(ListItemName, this.editor.getAttributes(TextStyleName)).run();
             }
-            const currentNode = tr.doc.nodeAt(position);
-            tr.setNodeMarkup(position, void 0, {
-              ...currentNode == null ? void 0 : currentNode.attrs,
-              checked
-            });
-            return true;
-          }).run();
-        }
-        if (!editor.isEditable && this.options.onReadOnlyChecked) {
-          if (!this.options.onReadOnlyChecked(node, checked)) {
-            checkbox.checked = !checkbox.checked;
+            return commands.toggleList(this.name, this.options.itemTypeName, this.options.keepMarks);
           }
-        }
-      });
-      Object.entries(this.options.HTMLAttributes).forEach(([key, value]) => {
-        listItem.setAttribute(key, value);
-      });
-      listItem.dataset.checked = node.attrs.checked;
-      checkbox.checked = node.attrs.checked;
-      checkboxWrapper.append(checkbox, checkboxStyler);
-      listItem.append(checkboxWrapper, content);
-      Object.entries(HTMLAttributes).forEach(([key, value]) => {
-        listItem.setAttribute(key, value);
-      });
-      let prevRenderedAttributeKeys = new Set(Object.keys(HTMLAttributes));
-      return {
-        dom: listItem,
-        contentDOM: content,
-        update: (updatedNode) => {
-          if (updatedNode.type !== this.type) {
-            return false;
-          }
-          listItem.dataset.checked = updatedNode.attrs.checked;
-          checkbox.checked = updatedNode.attrs.checked;
-          updateA11Y(updatedNode);
-          const extensionAttributes = editor.extensionManager.attributes;
-          const newHTMLAttributes = getRenderedAttributes(updatedNode, extensionAttributes);
-          const newKeys = new Set(Object.keys(newHTMLAttributes));
-          const staticAttrs = this.options.HTMLAttributes;
-          prevRenderedAttributeKeys.forEach((key) => {
-            if (!newKeys.has(key)) {
-              if (key in staticAttrs) {
-                listItem.setAttribute(key, staticAttrs[key]);
-              } else {
-                listItem.removeAttribute(key);
-              }
-            }
+        };
+      },
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Shift-8": () => this.editor.commands.toggleBulletList()
+        };
+      },
+      addInputRules() {
+        let inputRule = wrappingInputRule({
+          find: bulletListInputRegex,
+          type: this.type
+        });
+        if (this.options.keepMarks || this.options.keepAttributes) {
+          inputRule = wrappingInputRule({
+            find: bulletListInputRegex,
+            type: this.type,
+            keepMarks: this.options.keepMarks,
+            keepAttributes: this.options.keepAttributes,
+            getAttributes: () => {
+              return this.editor.getAttributes(TextStyleName);
+            },
+            editor: this.editor
           });
-          Object.entries(newHTMLAttributes).forEach(([key, value]) => {
-            if (value === null || value === void 0) {
-              if (key in staticAttrs) {
-                listItem.setAttribute(key, staticAttrs[key]);
-              } else {
-                listItem.removeAttribute(key);
+        }
+        return [inputRule];
+      }
+    });
+    ListItem = Node3.create({
+      name: "listItem",
+      addOptions() {
+        return {
+          HTMLAttributes: {},
+          bulletListTypeName: "bulletList",
+          orderedListTypeName: "orderedList"
+        };
+      },
+      content: "paragraph block*",
+      defining: true,
+      parseHTML() {
+        return [
+          {
+            tag: "li"
+          }
+        ];
+      },
+      renderHTML({ HTMLAttributes }) {
+        return ["li", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+      },
+      markdownTokenName: "list_item",
+      parseMarkdown: (token, helpers) => {
+        if (token.type !== "list_item") {
+          return [];
+        }
+        let content = [];
+        if (token.tokens && token.tokens.length > 0) {
+          const hasParagraphTokens = token.tokens.some((t) => t.type === "paragraph");
+          if (hasParagraphTokens) {
+            content = helpers.parseChildren(token.tokens);
+          } else {
+            const firstToken = token.tokens[0];
+            if (firstToken && firstToken.type === "text" && firstToken.tokens && firstToken.tokens.length > 0) {
+              const inlineContent = helpers.parseInline(firstToken.tokens);
+              content = [
+                {
+                  type: "paragraph",
+                  content: inlineContent
+                }
+              ];
+              if (token.tokens.length > 1) {
+                const remainingTokens = token.tokens.slice(1);
+                const additionalContent = helpers.parseChildren(remainingTokens);
+                content.push(...additionalContent);
               }
             } else {
-              listItem.setAttribute(key, value);
+              content = helpers.parseChildren(token.tokens);
             }
-          });
-          prevRenderedAttributeKeys = newKeys;
-          return true;
+          }
         }
-      };
-    };
-  },
-  addInputRules() {
-    return [
-      wrappingInputRule({
-        find: inputRegex,
-        type: this.type,
-        getAttributes: (match) => ({
-          checked: match[match.length - 1] === "x"
-        })
-      })
-    ];
-  }
-});
-var TaskList = Node3.create({
-  name: "taskList",
-  addOptions() {
-    return {
-      itemTypeName: "taskItem",
-      HTMLAttributes: {}
-    };
-  },
-  group: "block list",
-  content() {
-    return `${this.options.itemTypeName}+`;
-  },
-  parseHTML() {
-    return [
-      {
-        tag: `ul[data-type="${this.name}"]`,
-        priority: 51
-      }
-    ];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["ul", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { "data-type": this.name }), 0];
-  },
-  parseMarkdown: (token, h2) => {
-    return h2.createNode("taskList", {}, h2.parseChildren(token.items || []));
-  },
-  renderMarkdown: (node, h2) => {
-    if (!node.content) {
-      return "";
-    }
-    return h2.renderChildren(node.content, "\n");
-  },
-  markdownTokenizer: {
-    name: "taskList",
-    level: "block",
-    start(src) {
-      var _a;
-      const index = (_a = src.match(/^\s*[-+*]\s+\[([ xX])\]\s+/)) == null ? void 0 : _a.index;
-      return index !== void 0 ? index : -1;
-    },
-    tokenize(src, tokens, lexer) {
-      const parseTaskListContent = (content) => {
-        const nestedResult = parseIndentedBlocks(
-          content,
-          {
-            itemPattern: /^(\s*)([-+*])\s+\[([ xX])\]\s+(.*)$/,
-            extractItemData: (match) => ({
-              indentLevel: match[1].length,
-              mainContent: match[4],
-              checked: match[3].toLowerCase() === "x"
-            }),
-            createToken: (data, nestedTokens) => ({
-              type: "taskItem",
-              raw: "",
-              mainContent: data.mainContent,
-              indentLevel: data.indentLevel,
-              checked: data.checked,
-              text: data.mainContent,
-              tokens: lexer.inlineTokens(data.mainContent),
-              nestedTokens
-            }),
-            // Allow recursive nesting
-            customNestedParser: parseTaskListContent
-          },
-          lexer
-        );
-        if (nestedResult) {
-          return [
+        if (content.length === 0) {
+          content = [
             {
-              type: "taskList",
-              raw: nestedResult.raw,
-              items: nestedResult.items
+              type: "paragraph",
+              content: []
             }
           ];
         }
-        return lexer.blockTokens(content);
-      };
-      const result = parseIndentedBlocks(
-        src,
-        {
-          itemPattern: /^(\s*)([-+*])\s+\[([ xX])\]\s+(.*)$/,
-          extractItemData: (match) => ({
-            indentLevel: match[1].length,
-            mainContent: match[4],
-            checked: match[3].toLowerCase() === "x"
-          }),
-          createToken: (data, nestedTokens) => ({
-            type: "taskItem",
-            raw: "",
-            mainContent: data.mainContent,
-            indentLevel: data.indentLevel,
-            checked: data.checked,
-            text: data.mainContent,
-            tokens: lexer.inlineTokens(data.mainContent),
-            nestedTokens
-          }),
-          // Use the recursive parser for nested content
-          customNestedParser: parseTaskListContent
+        return {
+          type: "listItem",
+          content
+        };
+      },
+      renderMarkdown: (node, h2, ctx) => {
+        return renderNestedMarkdownContent(
+          node,
+          h2,
+          (context) => {
+            if (context.parentType === "bulletList") {
+              return "- ";
+            }
+            if (context.parentType === "orderedList") {
+              return `${context.index + 1}. `;
+            }
+            return "- ";
+          },
+          ctx
+        );
+      },
+      addKeyboardShortcuts() {
+        return {
+          Enter: () => this.editor.commands.splitListItem(this.name),
+          Tab: () => this.editor.commands.sinkListItem(this.name),
+          "Shift-Tab": () => this.editor.commands.liftListItem(this.name)
+        };
+      }
+    });
+    listHelpers_exports = {};
+    __export3(listHelpers_exports, {
+      findListItemPos: () => findListItemPos,
+      getNextListDepth: () => getNextListDepth,
+      handleBackspace: () => handleBackspace,
+      handleDelete: () => handleDelete,
+      hasListBefore: () => hasListBefore,
+      hasListItemAfter: () => hasListItemAfter,
+      hasListItemBefore: () => hasListItemBefore,
+      listItemHasSubList: () => listItemHasSubList,
+      nextListIsDeeper: () => nextListIsDeeper,
+      nextListIsHigher: () => nextListIsHigher
+    });
+    findListItemPos = (typeOrName, state) => {
+      const { $from } = state.selection;
+      const nodeType = getNodeType(typeOrName, state.schema);
+      let currentNode = null;
+      let currentDepth = $from.depth;
+      let currentPos = $from.pos;
+      let targetDepth = null;
+      while (currentDepth > 0 && targetDepth === null) {
+        currentNode = $from.node(currentDepth);
+        if (currentNode.type === nodeType) {
+          targetDepth = currentDepth;
+        } else {
+          currentDepth -= 1;
+          currentPos -= 1;
+        }
+      }
+      if (targetDepth === null) {
+        return null;
+      }
+      return { $pos: state.doc.resolve(currentPos), depth: targetDepth };
+    };
+    getNextListDepth = (typeOrName, state) => {
+      const listItemPos = findListItemPos(typeOrName, state);
+      if (!listItemPos) {
+        return false;
+      }
+      const [, depth] = getNodeAtPosition(state, typeOrName, listItemPos.$pos.pos + 4);
+      return depth;
+    };
+    hasListBefore = (editorState, name, parentListTypes) => {
+      const { $anchor } = editorState.selection;
+      const previousNodePos = Math.max(0, $anchor.pos - 2);
+      const previousNode = editorState.doc.resolve(previousNodePos).node();
+      if (!previousNode || !parentListTypes.includes(previousNode.type.name)) {
+        return false;
+      }
+      return true;
+    };
+    hasListItemBefore = (typeOrName, state) => {
+      var _a;
+      const { $anchor } = state.selection;
+      const $targetPos = state.doc.resolve($anchor.pos - 2);
+      if ($targetPos.index() === 0) {
+        return false;
+      }
+      if (((_a = $targetPos.nodeBefore) == null ? void 0 : _a.type.name) !== typeOrName) {
+        return false;
+      }
+      return true;
+    };
+    listItemHasSubList = (typeOrName, state, node) => {
+      if (!node) {
+        return false;
+      }
+      const nodeType = getNodeType(typeOrName, state.schema);
+      let hasSubList = false;
+      node.descendants((child) => {
+        if (child.type === nodeType) {
+          hasSubList = true;
+        }
+      });
+      return hasSubList;
+    };
+    handleBackspace = (editor, name, parentListTypes) => {
+      if (editor.commands.undoInputRule()) {
+        return true;
+      }
+      if (editor.state.selection.from !== editor.state.selection.to) {
+        return false;
+      }
+      if (!isNodeActive(editor.state, name) && hasListBefore(editor.state, name, parentListTypes)) {
+        const { $anchor } = editor.state.selection;
+        const $listPos = editor.state.doc.resolve($anchor.before() - 1);
+        const listDescendants = [];
+        $listPos.node().descendants((node, pos) => {
+          if (node.type.name === name) {
+            listDescendants.push({ node, pos });
+          }
+        });
+        const lastItem = listDescendants.at(-1);
+        if (!lastItem) {
+          return false;
+        }
+        const $lastItemPos = editor.state.doc.resolve($listPos.start() + lastItem.pos + 1);
+        return editor.chain().cut({ from: $anchor.start() - 1, to: $anchor.end() + 1 }, $lastItemPos.end()).joinForward().run();
+      }
+      if (!isNodeActive(editor.state, name)) {
+        return false;
+      }
+      if (!isAtStartOfNode(editor.state)) {
+        return false;
+      }
+      const listItemPos = findListItemPos(name, editor.state);
+      if (!listItemPos) {
+        return false;
+      }
+      const $prev = editor.state.doc.resolve(listItemPos.$pos.pos - 2);
+      const prevNode = $prev.node(listItemPos.depth);
+      const previousListItemHasSubList = listItemHasSubList(name, editor.state, prevNode);
+      if (hasListItemBefore(name, editor.state) && !previousListItemHasSubList) {
+        return editor.commands.joinItemBackward();
+      }
+      return editor.chain().liftListItem(name).run();
+    };
+    nextListIsDeeper = (typeOrName, state) => {
+      const listDepth = getNextListDepth(typeOrName, state);
+      const listItemPos = findListItemPos(typeOrName, state);
+      if (!listItemPos || !listDepth) {
+        return false;
+      }
+      if (listDepth > listItemPos.depth) {
+        return true;
+      }
+      return false;
+    };
+    nextListIsHigher = (typeOrName, state) => {
+      const listDepth = getNextListDepth(typeOrName, state);
+      const listItemPos = findListItemPos(typeOrName, state);
+      if (!listItemPos || !listDepth) {
+        return false;
+      }
+      if (listDepth < listItemPos.depth) {
+        return true;
+      }
+      return false;
+    };
+    handleDelete = (editor, name) => {
+      if (!isNodeActive(editor.state, name)) {
+        return false;
+      }
+      if (!isAtEndOfNode(editor.state, name)) {
+        return false;
+      }
+      const { selection } = editor.state;
+      const { $from, $to } = selection;
+      if (!selection.empty && $from.sameParent($to)) {
+        return false;
+      }
+      if (nextListIsDeeper(name, editor.state)) {
+        return editor.chain().focus(editor.state.selection.from + 4).lift(name).joinBackward().run();
+      }
+      if (nextListIsHigher(name, editor.state)) {
+        return editor.chain().joinForward().joinBackward().run();
+      }
+      return editor.commands.joinItemForward();
+    };
+    hasListItemAfter = (typeOrName, state) => {
+      var _a;
+      const { $anchor } = state.selection;
+      const $targetPos = state.doc.resolve($anchor.pos - $anchor.parentOffset - 2);
+      if ($targetPos.index() === $targetPos.parent.childCount - 1) {
+        return false;
+      }
+      if (((_a = $targetPos.nodeAfter) == null ? void 0 : _a.type.name) !== typeOrName) {
+        return false;
+      }
+      return true;
+    };
+    ListKeymap = Extension.create({
+      name: "listKeymap",
+      addOptions() {
+        return {
+          listTypes: [
+            {
+              itemName: "listItem",
+              wrapperNames: ["bulletList", "orderedList"]
+            },
+            {
+              itemName: "taskItem",
+              wrapperNames: ["taskList"]
+            }
+          ]
+        };
+      },
+      addKeyboardShortcuts() {
+        return {
+          Delete: ({ editor }) => {
+            let handled = false;
+            this.options.listTypes.forEach(({ itemName }) => {
+              if (editor.state.schema.nodes[itemName] === void 0) {
+                return;
+              }
+              if (handleDelete(editor, itemName)) {
+                handled = true;
+              }
+            });
+            return handled;
+          },
+          "Mod-Delete": ({ editor }) => {
+            let handled = false;
+            this.options.listTypes.forEach(({ itemName }) => {
+              if (editor.state.schema.nodes[itemName] === void 0) {
+                return;
+              }
+              if (handleDelete(editor, itemName)) {
+                handled = true;
+              }
+            });
+            return handled;
+          },
+          Backspace: ({ editor }) => {
+            let handled = false;
+            this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
+              if (editor.state.schema.nodes[itemName] === void 0) {
+                return;
+              }
+              if (handleBackspace(editor, itemName, wrapperNames)) {
+                handled = true;
+              }
+            });
+            return handled;
+          },
+          "Mod-Backspace": ({ editor }) => {
+            let handled = false;
+            this.options.listTypes.forEach(({ itemName, wrapperNames }) => {
+              if (editor.state.schema.nodes[itemName] === void 0) {
+                return;
+              }
+              if (handleBackspace(editor, itemName, wrapperNames)) {
+                handled = true;
+              }
+            });
+            return handled;
+          }
+        };
+      }
+    });
+    ORDERED_LIST_ITEM_REGEX = /^(\s*)(\d+)\.\s+(.*)$/;
+    INDENTED_LINE_REGEX = /^\s/;
+    ListItemName2 = "listItem";
+    TextStyleName2 = "textStyle";
+    orderedListInputRegex = /^(\d+)\.\s$/;
+    OrderedList = Node3.create({
+      name: "orderedList",
+      addOptions() {
+        return {
+          itemTypeName: "listItem",
+          HTMLAttributes: {},
+          keepMarks: false,
+          keepAttributes: false
+        };
+      },
+      group: "block list",
+      content() {
+        return `${this.options.itemTypeName}+`;
+      },
+      addAttributes() {
+        return {
+          start: {
+            default: 1,
+            parseHTML: (element) => {
+              return element.hasAttribute("start") ? parseInt(element.getAttribute("start") || "", 10) : 1;
+            }
+          },
+          type: {
+            default: null,
+            parseHTML: (element) => element.getAttribute("type")
+          }
+        };
+      },
+      parseHTML() {
+        return [
+          {
+            tag: "ol"
+          }
+        ];
+      },
+      renderHTML({ HTMLAttributes }) {
+        const { start, ...attributesWithoutStart } = HTMLAttributes;
+        return start === 1 ? ["ol", mergeAttributes(this.options.HTMLAttributes, attributesWithoutStart), 0] : ["ol", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+      },
+      markdownTokenName: "list",
+      parseMarkdown: (token, helpers) => {
+        if (token.type !== "list" || !token.ordered) {
+          return [];
+        }
+        const startValue = token.start || 1;
+        const content = token.items ? parseListItems(token.items, helpers) : [];
+        if (startValue !== 1) {
+          return {
+            type: "orderedList",
+            attrs: { start: startValue },
+            content
+          };
+        }
+        return {
+          type: "orderedList",
+          content
+        };
+      },
+      renderMarkdown: (node, h2) => {
+        if (!node.content) {
+          return "";
+        }
+        return h2.renderChildren(node.content, "\n");
+      },
+      markdownTokenizer: {
+        name: "orderedList",
+        level: "block",
+        start: (src) => {
+          const match = src.match(/^(\s*)(\d+)\.\s+/);
+          const index = match == null ? void 0 : match.index;
+          return index !== void 0 ? index : -1;
         },
-        lexer
-      );
-      if (!result) {
-        return void 0;
+        tokenize: (src, _tokens, lexer) => {
+          var _a;
+          const lines = src.split("\n");
+          const [listItems, consumed] = collectOrderedListItems(lines);
+          if (listItems.length === 0) {
+            return void 0;
+          }
+          const items = buildNestedStructure(listItems, 0, lexer);
+          if (items.length === 0) {
+            return void 0;
+          }
+          const startValue = ((_a = listItems[0]) == null ? void 0 : _a.number) || 1;
+          return {
+            type: "list",
+            ordered: true,
+            start: startValue,
+            items,
+            raw: lines.slice(0, consumed).join("\n")
+          };
+        }
+      },
+      markdownOptions: {
+        indentsContent: true
+      },
+      addCommands() {
+        return {
+          toggleOrderedList: () => ({ commands, chain }) => {
+            if (this.options.keepAttributes) {
+              return chain().toggleList(this.name, this.options.itemTypeName, this.options.keepMarks).updateAttributes(ListItemName2, this.editor.getAttributes(TextStyleName2)).run();
+            }
+            return commands.toggleList(this.name, this.options.itemTypeName, this.options.keepMarks);
+          }
+        };
+      },
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Shift-7": () => this.editor.commands.toggleOrderedList()
+        };
+      },
+      addInputRules() {
+        let inputRule = wrappingInputRule({
+          find: orderedListInputRegex,
+          type: this.type,
+          getAttributes: (match) => ({ start: +match[1] }),
+          joinPredicate: (match, node) => node.childCount + node.attrs.start === +match[1]
+        });
+        if (this.options.keepMarks || this.options.keepAttributes) {
+          inputRule = wrappingInputRule({
+            find: orderedListInputRegex,
+            type: this.type,
+            keepMarks: this.options.keepMarks,
+            keepAttributes: this.options.keepAttributes,
+            getAttributes: (match) => ({ start: +match[1], ...this.editor.getAttributes(TextStyleName2) }),
+            joinPredicate: (match, node) => node.childCount + node.attrs.start === +match[1],
+            editor: this.editor
+          });
+        }
+        return [inputRule];
       }
-      return {
-        type: "taskList",
-        raw: result.raw,
-        items: result.items
-      };
-    }
-  },
-  markdownOptions: {
-    indentsContent: true
-  },
-  addCommands() {
-    return {
-      toggleTaskList: () => ({ commands }) => {
-        return commands.toggleList(this.name, this.options.itemTypeName);
+    });
+    inputRegex = /^\s*(\[([( |x])?\])\s$/;
+    TaskItem = Node3.create({
+      name: "taskItem",
+      addOptions() {
+        return {
+          nested: false,
+          HTMLAttributes: {},
+          taskListTypeName: "taskList",
+          a11y: void 0
+        };
+      },
+      content() {
+        return this.options.nested ? "paragraph block*" : "paragraph+";
+      },
+      defining: true,
+      addAttributes() {
+        return {
+          checked: {
+            default: false,
+            keepOnSplit: false,
+            parseHTML: (element) => {
+              const dataChecked = element.getAttribute("data-checked");
+              return dataChecked === "" || dataChecked === "true";
+            },
+            renderHTML: (attributes) => ({
+              "data-checked": attributes.checked
+            })
+          }
+        };
+      },
+      parseHTML() {
+        return [
+          {
+            tag: `li[data-type="${this.name}"]`,
+            priority: 51
+          }
+        ];
+      },
+      renderHTML({ node, HTMLAttributes }) {
+        return [
+          "li",
+          mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, {
+            "data-type": this.name
+          }),
+          [
+            "label",
+            [
+              "input",
+              {
+                type: "checkbox",
+                checked: node.attrs.checked ? "checked" : null
+              }
+            ],
+            ["span"]
+          ],
+          ["div", 0]
+        ];
+      },
+      parseMarkdown: (token, h2) => {
+        const content = [];
+        if (token.tokens && token.tokens.length > 0) {
+          content.push(h2.createNode("paragraph", {}, h2.parseInline(token.tokens)));
+        } else if (token.text) {
+          content.push(h2.createNode("paragraph", {}, [h2.createNode("text", { text: token.text })]));
+        } else {
+          content.push(h2.createNode("paragraph", {}, []));
+        }
+        if (token.nestedTokens && token.nestedTokens.length > 0) {
+          const nestedContent = h2.parseChildren(token.nestedTokens);
+          content.push(...nestedContent);
+        }
+        return h2.createNode("taskItem", { checked: token.checked || false }, content);
+      },
+      renderMarkdown: (node, h2) => {
+        var _a;
+        const checkedChar = ((_a = node.attrs) == null ? void 0 : _a.checked) ? "x" : " ";
+        const prefix = `- [${checkedChar}] `;
+        return renderNestedMarkdownContent(node, h2, prefix);
+      },
+      addKeyboardShortcuts() {
+        const shortcuts = {
+          Enter: () => this.editor.commands.splitListItem(this.name),
+          "Shift-Tab": () => this.editor.commands.liftListItem(this.name)
+        };
+        if (!this.options.nested) {
+          return shortcuts;
+        }
+        return {
+          ...shortcuts,
+          Tab: () => this.editor.commands.sinkListItem(this.name)
+        };
+      },
+      addNodeView() {
+        return ({ node, HTMLAttributes, getPos, editor }) => {
+          const listItem = document.createElement("li");
+          const checkboxWrapper = document.createElement("label");
+          const checkboxStyler = document.createElement("span");
+          const checkbox = document.createElement("input");
+          const content = document.createElement("div");
+          const updateA11Y = (currentNode) => {
+            var _a, _b;
+            checkbox.ariaLabel = ((_b = (_a = this.options.a11y) == null ? void 0 : _a.checkboxLabel) == null ? void 0 : _b.call(_a, currentNode, checkbox.checked)) || `Task item checkbox for ${currentNode.textContent || "empty task item"}`;
+          };
+          updateA11Y(node);
+          checkboxWrapper.contentEditable = "false";
+          checkbox.type = "checkbox";
+          checkbox.addEventListener("mousedown", (event) => event.preventDefault());
+          checkbox.addEventListener("change", (event) => {
+            if (!editor.isEditable && !this.options.onReadOnlyChecked) {
+              checkbox.checked = !checkbox.checked;
+              return;
+            }
+            const { checked } = event.target;
+            if (editor.isEditable && typeof getPos === "function") {
+              editor.chain().focus(void 0, { scrollIntoView: false }).command(({ tr }) => {
+                const position = getPos();
+                if (typeof position !== "number") {
+                  return false;
+                }
+                const currentNode = tr.doc.nodeAt(position);
+                tr.setNodeMarkup(position, void 0, {
+                  ...currentNode == null ? void 0 : currentNode.attrs,
+                  checked
+                });
+                return true;
+              }).run();
+            }
+            if (!editor.isEditable && this.options.onReadOnlyChecked) {
+              if (!this.options.onReadOnlyChecked(node, checked)) {
+                checkbox.checked = !checkbox.checked;
+              }
+            }
+          });
+          Object.entries(this.options.HTMLAttributes).forEach(([key, value]) => {
+            listItem.setAttribute(key, value);
+          });
+          listItem.dataset.checked = node.attrs.checked;
+          checkbox.checked = node.attrs.checked;
+          checkboxWrapper.append(checkbox, checkboxStyler);
+          listItem.append(checkboxWrapper, content);
+          Object.entries(HTMLAttributes).forEach(([key, value]) => {
+            listItem.setAttribute(key, value);
+          });
+          let prevRenderedAttributeKeys = new Set(Object.keys(HTMLAttributes));
+          return {
+            dom: listItem,
+            contentDOM: content,
+            update: (updatedNode) => {
+              if (updatedNode.type !== this.type) {
+                return false;
+              }
+              listItem.dataset.checked = updatedNode.attrs.checked;
+              checkbox.checked = updatedNode.attrs.checked;
+              updateA11Y(updatedNode);
+              const extensionAttributes = editor.extensionManager.attributes;
+              const newHTMLAttributes = getRenderedAttributes(updatedNode, extensionAttributes);
+              const newKeys = new Set(Object.keys(newHTMLAttributes));
+              const staticAttrs = this.options.HTMLAttributes;
+              prevRenderedAttributeKeys.forEach((key) => {
+                if (!newKeys.has(key)) {
+                  if (key in staticAttrs) {
+                    listItem.setAttribute(key, staticAttrs[key]);
+                  } else {
+                    listItem.removeAttribute(key);
+                  }
+                }
+              });
+              Object.entries(newHTMLAttributes).forEach(([key, value]) => {
+                if (value === null || value === void 0) {
+                  if (key in staticAttrs) {
+                    listItem.setAttribute(key, staticAttrs[key]);
+                  } else {
+                    listItem.removeAttribute(key);
+                  }
+                } else {
+                  listItem.setAttribute(key, value);
+                }
+              });
+              prevRenderedAttributeKeys = newKeys;
+              return true;
+            }
+          };
+        };
+      },
+      addInputRules() {
+        return [
+          wrappingInputRule({
+            find: inputRegex,
+            type: this.type,
+            getAttributes: (match) => ({
+              checked: match[match.length - 1] === "x"
+            })
+          })
+        ];
       }
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Shift-9": () => this.editor.commands.toggleTaskList()
-    };
-  }
-});
-var ListKit = Extension.create({
-  name: "listKit",
-  addExtensions() {
-    const extensions = [];
-    if (this.options.bulletList !== false) {
-      extensions.push(BulletList.configure(this.options.bulletList));
-    }
-    if (this.options.listItem !== false) {
-      extensions.push(ListItem.configure(this.options.listItem));
-    }
-    if (this.options.listKeymap !== false) {
-      extensions.push(ListKeymap.configure(this.options.listKeymap));
-    }
-    if (this.options.orderedList !== false) {
-      extensions.push(OrderedList.configure(this.options.orderedList));
-    }
-    if (this.options.taskItem !== false) {
-      extensions.push(TaskItem.configure(this.options.taskItem));
-    }
-    if (this.options.taskList !== false) {
-      extensions.push(TaskList.configure(this.options.taskList));
-    }
-    return extensions;
+    });
+    TaskList = Node3.create({
+      name: "taskList",
+      addOptions() {
+        return {
+          itemTypeName: "taskItem",
+          HTMLAttributes: {}
+        };
+      },
+      group: "block list",
+      content() {
+        return `${this.options.itemTypeName}+`;
+      },
+      parseHTML() {
+        return [
+          {
+            tag: `ul[data-type="${this.name}"]`,
+            priority: 51
+          }
+        ];
+      },
+      renderHTML({ HTMLAttributes }) {
+        return ["ul", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes, { "data-type": this.name }), 0];
+      },
+      parseMarkdown: (token, h2) => {
+        return h2.createNode("taskList", {}, h2.parseChildren(token.items || []));
+      },
+      renderMarkdown: (node, h2) => {
+        if (!node.content) {
+          return "";
+        }
+        return h2.renderChildren(node.content, "\n");
+      },
+      markdownTokenizer: {
+        name: "taskList",
+        level: "block",
+        start(src) {
+          var _a;
+          const index = (_a = src.match(/^\s*[-+*]\s+\[([ xX])\]\s+/)) == null ? void 0 : _a.index;
+          return index !== void 0 ? index : -1;
+        },
+        tokenize(src, tokens, lexer) {
+          const parseTaskListContent = (content) => {
+            const nestedResult = parseIndentedBlocks(
+              content,
+              {
+                itemPattern: /^(\s*)([-+*])\s+\[([ xX])\]\s+(.*)$/,
+                extractItemData: (match) => ({
+                  indentLevel: match[1].length,
+                  mainContent: match[4],
+                  checked: match[3].toLowerCase() === "x"
+                }),
+                createToken: (data, nestedTokens) => ({
+                  type: "taskItem",
+                  raw: "",
+                  mainContent: data.mainContent,
+                  indentLevel: data.indentLevel,
+                  checked: data.checked,
+                  text: data.mainContent,
+                  tokens: lexer.inlineTokens(data.mainContent),
+                  nestedTokens
+                }),
+                // Allow recursive nesting
+                customNestedParser: parseTaskListContent
+              },
+              lexer
+            );
+            if (nestedResult) {
+              return [
+                {
+                  type: "taskList",
+                  raw: nestedResult.raw,
+                  items: nestedResult.items
+                }
+              ];
+            }
+            return lexer.blockTokens(content);
+          };
+          const result = parseIndentedBlocks(
+            src,
+            {
+              itemPattern: /^(\s*)([-+*])\s+\[([ xX])\]\s+(.*)$/,
+              extractItemData: (match) => ({
+                indentLevel: match[1].length,
+                mainContent: match[4],
+                checked: match[3].toLowerCase() === "x"
+              }),
+              createToken: (data, nestedTokens) => ({
+                type: "taskItem",
+                raw: "",
+                mainContent: data.mainContent,
+                indentLevel: data.indentLevel,
+                checked: data.checked,
+                text: data.mainContent,
+                tokens: lexer.inlineTokens(data.mainContent),
+                nestedTokens
+              }),
+              // Use the recursive parser for nested content
+              customNestedParser: parseTaskListContent
+            },
+            lexer
+          );
+          if (!result) {
+            return void 0;
+          }
+          return {
+            type: "taskList",
+            raw: result.raw,
+            items: result.items
+          };
+        }
+      },
+      markdownOptions: {
+        indentsContent: true
+      },
+      addCommands() {
+        return {
+          toggleTaskList: () => ({ commands }) => {
+            return commands.toggleList(this.name, this.options.itemTypeName);
+          }
+        };
+      },
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Shift-9": () => this.editor.commands.toggleTaskList()
+        };
+      }
+    });
+    ListKit = Extension.create({
+      name: "listKit",
+      addExtensions() {
+        const extensions = [];
+        if (this.options.bulletList !== false) {
+          extensions.push(BulletList.configure(this.options.bulletList));
+        }
+        if (this.options.listItem !== false) {
+          extensions.push(ListItem.configure(this.options.listItem));
+        }
+        if (this.options.listKeymap !== false) {
+          extensions.push(ListKeymap.configure(this.options.listKeymap));
+        }
+        if (this.options.orderedList !== false) {
+          extensions.push(OrderedList.configure(this.options.orderedList));
+        }
+        if (this.options.taskItem !== false) {
+          extensions.push(TaskItem.configure(this.options.taskItem));
+        }
+        if (this.options.taskList !== false) {
+          extensions.push(TaskList.configure(this.options.taskList));
+        }
+        return extensions;
+      }
+    });
   }
 });
 
 // node_modules/@tiptap/extension-bullet-list/dist/index.js
-var index_default3 = BulletList;
+var index_default3;
+var init_dist5 = __esm({
+  "node_modules/@tiptap/extension-bullet-list/dist/index.js"() {
+    "use strict";
+    init_dist4();
+    init_dist4();
+    index_default3 = BulletList;
+  }
+});
 
 // node_modules/@tiptap/extension-ordered-list/dist/index.js
-var index_default4 = OrderedList;
+var index_default4;
+var init_dist6 = __esm({
+  "node_modules/@tiptap/extension-ordered-list/dist/index.js"() {
+    "use strict";
+    init_dist4();
+    init_dist4();
+    index_default4 = OrderedList;
+  }
+});
 
 // node_modules/@tiptap/extension-list-item/dist/index.js
-var index_default5 = ListItem;
+var index_default5;
+var init_dist7 = __esm({
+  "node_modules/@tiptap/extension-list-item/dist/index.js"() {
+    "use strict";
+    init_dist4();
+    init_dist4();
+    index_default5 = ListItem;
+  }
+});
 
 // node_modules/@tiptap/extension-code/dist/index.js
-var inputRegex2 = /(^|[^`])`([^`]+)`(?!`)$/;
-var pasteRegex = /(^|[^`])`([^`]+)`(?!`)/g;
-var Code = Mark.create({
-  name: "code",
-  addOptions() {
-    return {
-      HTMLAttributes: {}
-    };
-  },
-  excludes: "_",
-  code: true,
-  exitable: true,
-  parseHTML() {
-    return [{ tag: "code" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["code", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
-  },
-  markdownTokenName: "codespan",
-  parseMarkdown: (token, helpers) => {
-    return helpers.applyMark("code", [{ type: "text", text: token.text || "" }]);
-  },
-  renderMarkdown: (node, h2) => {
-    if (!node.content) {
-      return "";
-    }
-    return `\`${h2.renderChildren(node.content)}\``;
-  },
-  addCommands() {
-    return {
-      setCode: () => ({ commands }) => {
-        return commands.setMark(this.name);
+var inputRegex2, pasteRegex, Code, index_default6;
+var init_dist8 = __esm({
+  "node_modules/@tiptap/extension-code/dist/index.js"() {
+    "use strict";
+    init_dist();
+    inputRegex2 = /(^|[^`])`([^`]+)`(?!`)$/;
+    pasteRegex = /(^|[^`])`([^`]+)`(?!`)/g;
+    Code = Mark.create({
+      name: "code",
+      addOptions() {
+        return {
+          HTMLAttributes: {}
+        };
       },
-      toggleCode: () => ({ commands }) => {
-        return commands.toggleMark(this.name);
+      excludes: "_",
+      code: true,
+      exitable: true,
+      parseHTML() {
+        return [{ tag: "code" }];
       },
-      unsetCode: () => ({ commands }) => {
-        return commands.unsetMark(this.name);
+      renderHTML({ HTMLAttributes }) {
+        return ["code", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), 0];
+      },
+      markdownTokenName: "codespan",
+      parseMarkdown: (token, helpers) => {
+        return helpers.applyMark("code", [{ type: "text", text: token.text || "" }]);
+      },
+      renderMarkdown: (node, h2) => {
+        if (!node.content) {
+          return "";
+        }
+        return `\`${h2.renderChildren(node.content)}\``;
+      },
+      addCommands() {
+        return {
+          setCode: () => ({ commands }) => {
+            return commands.setMark(this.name);
+          },
+          toggleCode: () => ({ commands }) => {
+            return commands.toggleMark(this.name);
+          },
+          unsetCode: () => ({ commands }) => {
+            return commands.unsetMark(this.name);
+          }
+        };
+      },
+      addKeyboardShortcuts() {
+        return {
+          "Mod-e": () => this.editor.commands.toggleCode()
+        };
+      },
+      addInputRules() {
+        return [
+          markInputRule({
+            find: inputRegex2,
+            type: this.type
+          })
+        ];
+      },
+      addPasteRules() {
+        return [
+          markPasteRule({
+            find: pasteRegex,
+            type: this.type
+          })
+        ];
       }
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      "Mod-e": () => this.editor.commands.toggleCode()
-    };
-  },
-  addInputRules() {
-    return [
-      markInputRule({
-        find: inputRegex2,
-        type: this.type
-      })
-    ];
-  },
-  addPasteRules() {
-    return [
-      markPasteRule({
-        find: pasteRegex,
-        type: this.type
-      })
-    ];
+    });
+    index_default6 = Code;
   }
 });
-var index_default6 = Code;
 
 // node_modules/@tiptap/extension-code-block/dist/index.js
-var import_state25 = require("@tiptap/pm/state");
-var DEFAULT_TAB_SIZE = 4;
-var backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
-var tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
-var CodeBlock = Node3.create({
-  name: "codeBlock",
-  addOptions() {
-    return {
-      languageClassPrefix: "language-",
-      exitOnTripleEnter: true,
-      exitOnArrowDown: true,
-      defaultLanguage: null,
-      enableTabIndentation: false,
-      tabSize: DEFAULT_TAB_SIZE,
-      HTMLAttributes: {}
-    };
-  },
-  content: "text*",
-  marks: "",
-  group: "block",
-  code: true,
-  defining: true,
-  addAttributes() {
-    return {
-      language: {
-        default: this.options.defaultLanguage,
-        parseHTML: (element) => {
-          var _a;
-          const { languageClassPrefix } = this.options;
-          if (!languageClassPrefix) {
-            return null;
+var import_state26, DEFAULT_TAB_SIZE, backtickInputRegex, tildeInputRegex, CodeBlock, index_default7;
+var init_dist9 = __esm({
+  "node_modules/@tiptap/extension-code-block/dist/index.js"() {
+    "use strict";
+    init_dist();
+    import_state26 = require("@tiptap/pm/state");
+    DEFAULT_TAB_SIZE = 4;
+    backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
+    tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
+    CodeBlock = Node3.create({
+      name: "codeBlock",
+      addOptions() {
+        return {
+          languageClassPrefix: "language-",
+          exitOnTripleEnter: true,
+          exitOnArrowDown: true,
+          defaultLanguage: null,
+          enableTabIndentation: false,
+          tabSize: DEFAULT_TAB_SIZE,
+          HTMLAttributes: {}
+        };
+      },
+      content: "text*",
+      marks: "",
+      group: "block",
+      code: true,
+      defining: true,
+      addAttributes() {
+        return {
+          language: {
+            default: this.options.defaultLanguage,
+            parseHTML: (element) => {
+              var _a;
+              const { languageClassPrefix } = this.options;
+              if (!languageClassPrefix) {
+                return null;
+              }
+              const classNames = [...((_a = element.firstElementChild) == null ? void 0 : _a.classList) || []];
+              const languages = classNames.filter((className) => className.startsWith(languageClassPrefix)).map((className) => className.replace(languageClassPrefix, ""));
+              const language = languages[0];
+              if (!language) {
+                return null;
+              }
+              return language;
+            },
+            rendered: false
           }
-          const classNames = [...((_a = element.firstElementChild) == null ? void 0 : _a.classList) || []];
-          const languages = classNames.filter((className) => className.startsWith(languageClassPrefix)).map((className) => className.replace(languageClassPrefix, ""));
-          const language = languages[0];
-          if (!language) {
-            return null;
+        };
+      },
+      parseHTML() {
+        return [
+          {
+            tag: "pre",
+            preserveWhitespace: "full"
           }
-          return language;
-        },
-        rendered: false
-      }
-    };
-  },
-  parseHTML() {
-    return [
-      {
-        tag: "pre",
-        preserveWhitespace: "full"
-      }
-    ];
-  },
-  renderHTML({ node, HTMLAttributes }) {
-    return [
-      "pre",
-      mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
-      [
-        "code",
-        {
-          class: node.attrs.language ? this.options.languageClassPrefix + node.attrs.language : null
-        },
-        0
-      ]
-    ];
-  },
-  markdownTokenName: "code",
-  parseMarkdown: (token, helpers) => {
-    var _a;
-    if (((_a = token.raw) == null ? void 0 : _a.startsWith("```")) === false && token.codeBlockStyle !== "indented") {
-      return [];
-    }
-    return helpers.createNode(
-      "codeBlock",
-      { language: token.lang || null },
-      token.text ? [helpers.createTextNode(token.text)] : []
-    );
-  },
-  renderMarkdown: (node, h2) => {
-    var _a;
-    let output = "";
-    const language = ((_a = node.attrs) == null ? void 0 : _a.language) || "";
-    if (!node.content) {
-      output = `\`\`\`${language}
+        ];
+      },
+      renderHTML({ node, HTMLAttributes }) {
+        return [
+          "pre",
+          mergeAttributes(this.options.HTMLAttributes, HTMLAttributes),
+          [
+            "code",
+            {
+              class: node.attrs.language ? this.options.languageClassPrefix + node.attrs.language : null
+            },
+            0
+          ]
+        ];
+      },
+      markdownTokenName: "code",
+      parseMarkdown: (token, helpers) => {
+        var _a;
+        if (((_a = token.raw) == null ? void 0 : _a.startsWith("```")) === false && token.codeBlockStyle !== "indented") {
+          return [];
+        }
+        return helpers.createNode(
+          "codeBlock",
+          { language: token.lang || null },
+          token.text ? [helpers.createTextNode(token.text)] : []
+        );
+      },
+      renderMarkdown: (node, h2) => {
+        var _a;
+        let output = "";
+        const language = ((_a = node.attrs) == null ? void 0 : _a.language) || "";
+        if (!node.content) {
+          output = `\`\`\`${language}
 
 \`\`\``;
-    } else {
-      const lines = [`\`\`\`${language}`, h2.renderChildren(node.content), "```"];
-      output = lines.join("\n");
-    }
-    return output;
-  },
-  addCommands() {
-    return {
-      setCodeBlock: (attributes) => ({ commands }) => {
-        return commands.setNode(this.name, attributes);
+        } else {
+          const lines = [`\`\`\`${language}`, h2.renderChildren(node.content), "```"];
+          output = lines.join("\n");
+        }
+        return output;
       },
-      toggleCodeBlock: (attributes) => ({ commands }) => {
-        return commands.toggleNode(this.name, "paragraph", attributes);
-      }
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Alt-c": () => this.editor.commands.toggleCodeBlock(),
-      // remove code block when at start of document or code block is empty
-      Backspace: () => {
-        const { empty, $anchor } = this.editor.state.selection;
-        const isAtStart = $anchor.pos === 1;
-        if (!empty || $anchor.parent.type.name !== this.name) {
-          return false;
-        }
-        if (isAtStart || !$anchor.parent.textContent.length) {
-          return this.editor.commands.clearNodes();
-        }
-        return false;
-      },
-      // handle tab indentation
-      Tab: ({ editor }) => {
-        var _a;
-        if (!this.options.enableTabIndentation) {
-          return false;
-        }
-        const tabSize = (_a = this.options.tabSize) != null ? _a : DEFAULT_TAB_SIZE;
-        const { state } = editor;
-        const { selection } = state;
-        const { $from, empty } = selection;
-        if ($from.parent.type !== this.type) {
-          return false;
-        }
-        const indent = " ".repeat(tabSize);
-        if (empty) {
-          return editor.commands.insertContent(indent);
-        }
-        return editor.commands.command(({ tr }) => {
-          const { from, to } = selection;
-          const text = state.doc.textBetween(from, to, "\n", "\n");
-          const lines = text.split("\n");
-          const indentedText = lines.map((line) => indent + line).join("\n");
-          tr.replaceWith(from, to, state.schema.text(indentedText));
-          return true;
-        });
-      },
-      // handle shift+tab reverse indentation
-      "Shift-Tab": ({ editor }) => {
-        var _a;
-        if (!this.options.enableTabIndentation) {
-          return false;
-        }
-        const tabSize = (_a = this.options.tabSize) != null ? _a : DEFAULT_TAB_SIZE;
-        const { state } = editor;
-        const { selection } = state;
-        const { $from, empty } = selection;
-        if ($from.parent.type !== this.type) {
-          return false;
-        }
-        if (empty) {
-          return editor.commands.command(({ tr }) => {
-            var _a2;
-            const { pos } = $from;
-            const codeBlockStart = $from.start();
-            const codeBlockEnd = $from.end();
-            const allText = state.doc.textBetween(codeBlockStart, codeBlockEnd, "\n", "\n");
-            const lines = allText.split("\n");
-            let currentLineIndex = 0;
-            let charCount = 0;
-            const relativeCursorPos = pos - codeBlockStart;
-            for (let i = 0; i < lines.length; i += 1) {
-              if (charCount + lines[i].length >= relativeCursorPos) {
-                currentLineIndex = i;
-                break;
-              }
-              charCount += lines[i].length + 1;
-            }
-            const currentLine = lines[currentLineIndex];
-            const leadingSpaces = ((_a2 = currentLine.match(/^ */)) == null ? void 0 : _a2[0]) || "";
-            const spacesToRemove = Math.min(leadingSpaces.length, tabSize);
-            if (spacesToRemove === 0) {
-              return true;
-            }
-            let lineStartPos = codeBlockStart;
-            for (let i = 0; i < currentLineIndex; i += 1) {
-              lineStartPos += lines[i].length + 1;
-            }
-            tr.delete(lineStartPos, lineStartPos + spacesToRemove);
-            const cursorPosInLine = pos - lineStartPos;
-            if (cursorPosInLine <= spacesToRemove) {
-              tr.setSelection(import_state25.TextSelection.create(tr.doc, lineStartPos));
-            }
-            return true;
-          });
-        }
-        return editor.commands.command(({ tr }) => {
-          const { from, to } = selection;
-          const text = state.doc.textBetween(from, to, "\n", "\n");
-          const lines = text.split("\n");
-          const reverseIndentText = lines.map((line) => {
-            var _a2;
-            const leadingSpaces = ((_a2 = line.match(/^ */)) == null ? void 0 : _a2[0]) || "";
-            const spacesToRemove = Math.min(leadingSpaces.length, tabSize);
-            return line.slice(spacesToRemove);
-          }).join("\n");
-          tr.replaceWith(from, to, state.schema.text(reverseIndentText));
-          return true;
-        });
-      },
-      // exit node on triple enter
-      Enter: ({ editor }) => {
-        if (!this.options.exitOnTripleEnter) {
-          return false;
-        }
-        const { state } = editor;
-        const { selection } = state;
-        const { $from, empty } = selection;
-        if (!empty || $from.parent.type !== this.type) {
-          return false;
-        }
-        const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2;
-        const endsWithDoubleNewline = $from.parent.textContent.endsWith("\n\n");
-        if (!isAtEnd || !endsWithDoubleNewline) {
-          return false;
-        }
-        return editor.chain().command(({ tr }) => {
-          tr.delete($from.pos - 2, $from.pos);
-          return true;
-        }).exitCode().run();
-      },
-      // exit node on arrow down
-      ArrowDown: ({ editor }) => {
-        if (!this.options.exitOnArrowDown) {
-          return false;
-        }
-        const { state } = editor;
-        const { selection, doc } = state;
-        const { $from, empty } = selection;
-        if (!empty || $from.parent.type !== this.type) {
-          return false;
-        }
-        const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2;
-        if (!isAtEnd) {
-          return false;
-        }
-        const after = $from.after();
-        if (after === void 0) {
-          return false;
-        }
-        const nodeAfter = doc.nodeAt(after);
-        if (nodeAfter) {
-          return editor.commands.command(({ tr }) => {
-            tr.setSelection(import_state25.Selection.near(doc.resolve(after)));
-            return true;
-          });
-        }
-        return editor.commands.exitCode();
-      }
-    };
-  },
-  addInputRules() {
-    return [
-      textblockTypeInputRule({
-        find: backtickInputRegex,
-        type: this.type,
-        getAttributes: (match) => ({
-          language: match[1]
-        })
-      }),
-      textblockTypeInputRule({
-        find: tildeInputRegex,
-        type: this.type,
-        getAttributes: (match) => ({
-          language: match[1]
-        })
-      })
-    ];
-  },
-  addProseMirrorPlugins() {
-    return [
-      // this plugin creates a code block for pasted content from VS Code
-      // we can also detect the copied code language
-      new import_state25.Plugin({
-        key: new import_state25.PluginKey("codeBlockVSCodeHandler"),
-        props: {
-          handlePaste: (view, event) => {
-            if (!event.clipboardData) {
-              return false;
-            }
-            if (this.editor.isActive(this.type.name)) {
-              return false;
-            }
-            const text = event.clipboardData.getData("text/plain");
-            const vscode = event.clipboardData.getData("vscode-editor-data");
-            const vscodeData = vscode ? JSON.parse(vscode) : void 0;
-            const language = vscodeData == null ? void 0 : vscodeData.mode;
-            if (!text || !language) {
-              return false;
-            }
-            const { tr, schema } = view.state;
-            const textNode = schema.text(text.replace(/\r\n?/g, "\n"));
-            tr.replaceSelectionWith(this.type.create({ language }, textNode));
-            if (tr.selection.$from.parent.type !== this.type) {
-              tr.setSelection(import_state25.TextSelection.near(tr.doc.resolve(Math.max(0, tr.selection.from - 2))));
-            }
-            tr.setMeta("paste", true);
-            view.dispatch(tr);
-            return true;
+      addCommands() {
+        return {
+          setCodeBlock: (attributes) => ({ commands }) => {
+            return commands.setNode(this.name, attributes);
+          },
+          toggleCodeBlock: (attributes) => ({ commands }) => {
+            return commands.toggleNode(this.name, "paragraph", attributes);
           }
-        }
-      })
-    ];
+        };
+      },
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Alt-c": () => this.editor.commands.toggleCodeBlock(),
+          // remove code block when at start of document or code block is empty
+          Backspace: () => {
+            const { empty, $anchor } = this.editor.state.selection;
+            const isAtStart = $anchor.pos === 1;
+            if (!empty || $anchor.parent.type.name !== this.name) {
+              return false;
+            }
+            if (isAtStart || !$anchor.parent.textContent.length) {
+              return this.editor.commands.clearNodes();
+            }
+            return false;
+          },
+          // handle tab indentation
+          Tab: ({ editor }) => {
+            var _a;
+            if (!this.options.enableTabIndentation) {
+              return false;
+            }
+            const tabSize = (_a = this.options.tabSize) != null ? _a : DEFAULT_TAB_SIZE;
+            const { state } = editor;
+            const { selection } = state;
+            const { $from, empty } = selection;
+            if ($from.parent.type !== this.type) {
+              return false;
+            }
+            const indent = " ".repeat(tabSize);
+            if (empty) {
+              return editor.commands.insertContent(indent);
+            }
+            return editor.commands.command(({ tr }) => {
+              const { from, to } = selection;
+              const text = state.doc.textBetween(from, to, "\n", "\n");
+              const lines = text.split("\n");
+              const indentedText = lines.map((line) => indent + line).join("\n");
+              tr.replaceWith(from, to, state.schema.text(indentedText));
+              return true;
+            });
+          },
+          // handle shift+tab reverse indentation
+          "Shift-Tab": ({ editor }) => {
+            var _a;
+            if (!this.options.enableTabIndentation) {
+              return false;
+            }
+            const tabSize = (_a = this.options.tabSize) != null ? _a : DEFAULT_TAB_SIZE;
+            const { state } = editor;
+            const { selection } = state;
+            const { $from, empty } = selection;
+            if ($from.parent.type !== this.type) {
+              return false;
+            }
+            if (empty) {
+              return editor.commands.command(({ tr }) => {
+                var _a2;
+                const { pos } = $from;
+                const codeBlockStart = $from.start();
+                const codeBlockEnd = $from.end();
+                const allText = state.doc.textBetween(codeBlockStart, codeBlockEnd, "\n", "\n");
+                const lines = allText.split("\n");
+                let currentLineIndex = 0;
+                let charCount = 0;
+                const relativeCursorPos = pos - codeBlockStart;
+                for (let i = 0; i < lines.length; i += 1) {
+                  if (charCount + lines[i].length >= relativeCursorPos) {
+                    currentLineIndex = i;
+                    break;
+                  }
+                  charCount += lines[i].length + 1;
+                }
+                const currentLine = lines[currentLineIndex];
+                const leadingSpaces = ((_a2 = currentLine.match(/^ */)) == null ? void 0 : _a2[0]) || "";
+                const spacesToRemove = Math.min(leadingSpaces.length, tabSize);
+                if (spacesToRemove === 0) {
+                  return true;
+                }
+                let lineStartPos = codeBlockStart;
+                for (let i = 0; i < currentLineIndex; i += 1) {
+                  lineStartPos += lines[i].length + 1;
+                }
+                tr.delete(lineStartPos, lineStartPos + spacesToRemove);
+                const cursorPosInLine = pos - lineStartPos;
+                if (cursorPosInLine <= spacesToRemove) {
+                  tr.setSelection(import_state26.TextSelection.create(tr.doc, lineStartPos));
+                }
+                return true;
+              });
+            }
+            return editor.commands.command(({ tr }) => {
+              const { from, to } = selection;
+              const text = state.doc.textBetween(from, to, "\n", "\n");
+              const lines = text.split("\n");
+              const reverseIndentText = lines.map((line) => {
+                var _a2;
+                const leadingSpaces = ((_a2 = line.match(/^ */)) == null ? void 0 : _a2[0]) || "";
+                const spacesToRemove = Math.min(leadingSpaces.length, tabSize);
+                return line.slice(spacesToRemove);
+              }).join("\n");
+              tr.replaceWith(from, to, state.schema.text(reverseIndentText));
+              return true;
+            });
+          },
+          // exit node on triple enter
+          Enter: ({ editor }) => {
+            if (!this.options.exitOnTripleEnter) {
+              return false;
+            }
+            const { state } = editor;
+            const { selection } = state;
+            const { $from, empty } = selection;
+            if (!empty || $from.parent.type !== this.type) {
+              return false;
+            }
+            const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2;
+            const endsWithDoubleNewline = $from.parent.textContent.endsWith("\n\n");
+            if (!isAtEnd || !endsWithDoubleNewline) {
+              return false;
+            }
+            return editor.chain().command(({ tr }) => {
+              tr.delete($from.pos - 2, $from.pos);
+              return true;
+            }).exitCode().run();
+          },
+          // exit node on arrow down
+          ArrowDown: ({ editor }) => {
+            if (!this.options.exitOnArrowDown) {
+              return false;
+            }
+            const { state } = editor;
+            const { selection, doc } = state;
+            const { $from, empty } = selection;
+            if (!empty || $from.parent.type !== this.type) {
+              return false;
+            }
+            const isAtEnd = $from.parentOffset === $from.parent.nodeSize - 2;
+            if (!isAtEnd) {
+              return false;
+            }
+            const after = $from.after();
+            if (after === void 0) {
+              return false;
+            }
+            const nodeAfter = doc.nodeAt(after);
+            if (nodeAfter) {
+              return editor.commands.command(({ tr }) => {
+                tr.setSelection(import_state26.Selection.near(doc.resolve(after)));
+                return true;
+              });
+            }
+            return editor.commands.exitCode();
+          }
+        };
+      },
+      addInputRules() {
+        return [
+          textblockTypeInputRule({
+            find: backtickInputRegex,
+            type: this.type,
+            getAttributes: (match) => ({
+              language: match[1]
+            })
+          }),
+          textblockTypeInputRule({
+            find: tildeInputRegex,
+            type: this.type,
+            getAttributes: (match) => ({
+              language: match[1]
+            })
+          })
+        ];
+      },
+      addProseMirrorPlugins() {
+        return [
+          // this plugin creates a code block for pasted content from VS Code
+          // we can also detect the copied code language
+          new import_state26.Plugin({
+            key: new import_state26.PluginKey("codeBlockVSCodeHandler"),
+            props: {
+              handlePaste: (view, event) => {
+                if (!event.clipboardData) {
+                  return false;
+                }
+                if (this.editor.isActive(this.type.name)) {
+                  return false;
+                }
+                const text = event.clipboardData.getData("text/plain");
+                const vscode = event.clipboardData.getData("vscode-editor-data");
+                const vscodeData = vscode ? JSON.parse(vscode) : void 0;
+                const language = vscodeData == null ? void 0 : vscodeData.mode;
+                if (!text || !language) {
+                  return false;
+                }
+                const { tr, schema } = view.state;
+                const textNode = schema.text(text.replace(/\r\n?/g, "\n"));
+                tr.replaceSelectionWith(this.type.create({ language }, textNode));
+                if (tr.selection.$from.parent.type !== this.type) {
+                  tr.setSelection(import_state26.TextSelection.near(tr.doc.resolve(Math.max(0, tr.selection.from - 2))));
+                }
+                tr.setMeta("paste", true);
+                view.dispatch(tr);
+                return true;
+              }
+            }
+          })
+        ];
+      }
+    });
+    index_default7 = CodeBlock;
   }
 });
-var index_default7 = CodeBlock;
 
 // node_modules/@tiptap/core/dist/jsx-runtime/jsx-runtime.js
-var h = (tag, attributes) => {
-  if (tag === "slot") {
-    return 0;
+var h;
+var init_jsx_runtime = __esm({
+  "node_modules/@tiptap/core/dist/jsx-runtime/jsx-runtime.js"() {
+    "use strict";
+    h = (tag, attributes) => {
+      if (tag === "slot") {
+        return 0;
+      }
+      if (tag instanceof Function) {
+        return tag(attributes);
+      }
+      const { children, ...rest } = attributes != null ? attributes : {};
+      if (tag === "svg") {
+        throw new Error("SVG elements are not supported in the JSX syntax, use the array syntax instead");
+      }
+      return [tag, rest, children];
+    };
   }
-  if (tag instanceof Function) {
-    return tag(attributes);
+});
+
+// node_modules/@tiptap/core/jsx-runtime/index.js
+var init_jsx_runtime2 = __esm({
+  "node_modules/@tiptap/core/jsx-runtime/index.js"() {
+    "use strict";
+    init_jsx_runtime();
   }
-  const { children, ...rest } = attributes != null ? attributes : {};
-  if (tag === "svg") {
-    throw new Error("SVG elements are not supported in the JSX syntax, use the array syntax instead");
-  }
-  return [tag, rest, children];
-};
+});
 
 // node_modules/@tiptap/extension-blockquote/dist/index.js
-var inputRegex3 = /^\s*>\s$/;
-var Blockquote = Node3.create({
-  name: "blockquote",
-  addOptions() {
-    return {
-      HTMLAttributes: {}
-    };
-  },
-  content: "block+",
-  group: "block",
-  defining: true,
-  parseHTML() {
-    return [{ tag: "blockquote" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return /* @__PURE__ */ h("blockquote", { ...mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), children: /* @__PURE__ */ h("slot", {}) });
-  },
-  parseMarkdown: (token, helpers) => {
-    return helpers.createNode("blockquote", void 0, helpers.parseChildren(token.tokens || []));
-  },
-  renderMarkdown: (node, h2) => {
-    if (!node.content) {
-      return "";
-    }
-    const prefix = ">";
-    const result = [];
-    node.content.forEach((child) => {
-      const childContent = h2.renderChildren([child]);
-      const lines = childContent.split("\n");
-      const linesWithPrefix = lines.map((line) => {
-        if (line.trim() === "") {
-          return prefix;
+var inputRegex3, Blockquote, index_default8;
+var init_dist10 = __esm({
+  "node_modules/@tiptap/extension-blockquote/dist/index.js"() {
+    "use strict";
+    init_dist();
+    init_jsx_runtime2();
+    inputRegex3 = /^\s*>\s$/;
+    Blockquote = Node3.create({
+      name: "blockquote",
+      addOptions() {
+        return {
+          HTMLAttributes: {}
+        };
+      },
+      content: "block+",
+      group: "block",
+      defining: true,
+      parseHTML() {
+        return [{ tag: "blockquote" }];
+      },
+      renderHTML({ HTMLAttributes }) {
+        return /* @__PURE__ */ h("blockquote", { ...mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), children: /* @__PURE__ */ h("slot", {}) });
+      },
+      parseMarkdown: (token, helpers) => {
+        return helpers.createNode("blockquote", void 0, helpers.parseChildren(token.tokens || []));
+      },
+      renderMarkdown: (node, h2) => {
+        if (!node.content) {
+          return "";
         }
-        return `${prefix} ${line}`;
-      });
-      result.push(linesWithPrefix.join("\n"));
-    });
-    return result.join(`
+        const prefix = ">";
+        const result = [];
+        node.content.forEach((child) => {
+          const childContent = h2.renderChildren([child]);
+          const lines = childContent.split("\n");
+          const linesWithPrefix = lines.map((line) => {
+            if (line.trim() === "") {
+              return prefix;
+            }
+            return `${prefix} ${line}`;
+          });
+          result.push(linesWithPrefix.join("\n"));
+        });
+        return result.join(`
 ${prefix}
 `);
-  },
-  addCommands() {
-    return {
-      setBlockquote: () => ({ commands }) => {
-        return commands.wrapIn(this.name);
       },
-      toggleBlockquote: () => ({ commands }) => {
-        return commands.toggleWrap(this.name);
+      addCommands() {
+        return {
+          setBlockquote: () => ({ commands }) => {
+            return commands.wrapIn(this.name);
+          },
+          toggleBlockquote: () => ({ commands }) => {
+            return commands.toggleWrap(this.name);
+          },
+          unsetBlockquote: () => ({ commands }) => {
+            return commands.lift(this.name);
+          }
+        };
       },
-      unsetBlockquote: () => ({ commands }) => {
-        return commands.lift(this.name);
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Shift-b": () => this.editor.commands.toggleBlockquote()
+        };
+      },
+      addInputRules() {
+        return [
+          wrappingInputRule({
+            find: inputRegex3,
+            type: this.type
+          })
+        ];
       }
-    };
-  },
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Shift-b": () => this.editor.commands.toggleBlockquote()
-    };
-  },
-  addInputRules() {
-    return [
-      wrappingInputRule({
-        find: inputRegex3,
-        type: this.type
-      })
-    ];
+    });
+    index_default8 = Blockquote;
   }
 });
-var index_default8 = Blockquote;
 
 // node_modules/@tiptap/extension-horizontal-rule/dist/index.js
-var import_state26 = require("@tiptap/pm/state");
-var HorizontalRule = Node3.create({
-  name: "horizontalRule",
-  addOptions() {
-    return {
-      HTMLAttributes: {},
-      nextNodeType: "paragraph"
-    };
-  },
-  group: "block",
-  parseHTML() {
-    return [{ tag: "hr" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return ["hr", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)];
-  },
-  markdownTokenName: "hr",
-  parseMarkdown: (token, helpers) => {
-    return helpers.createNode("horizontalRule");
-  },
-  renderMarkdown: () => {
-    return "---";
-  },
-  addCommands() {
-    return {
-      setHorizontalRule: () => ({ chain, state }) => {
-        if (!canInsertNode(state, state.schema.nodes[this.name])) {
-          return false;
-        }
-        const { selection } = state;
-        const { $to: $originTo } = selection;
-        const currentChain = chain();
-        if (isNodeSelection(selection)) {
-          currentChain.insertContentAt($originTo.pos, {
-            type: this.name
-          });
-        } else {
-          currentChain.insertContent({ type: this.name });
-        }
-        return currentChain.command(({ state: chainState, tr, dispatch }) => {
-          if (dispatch) {
-            const { $to } = tr.selection;
-            const posAfter = $to.end();
-            if ($to.nodeAfter) {
-              if ($to.nodeAfter.isTextblock) {
-                tr.setSelection(import_state26.TextSelection.create(tr.doc, $to.pos + 1));
-              } else if ($to.nodeAfter.isBlock) {
-                tr.setSelection(import_state26.NodeSelection.create(tr.doc, $to.pos));
-              } else {
-                tr.setSelection(import_state26.TextSelection.create(tr.doc, $to.pos));
-              }
-            } else {
-              const nodeType = chainState.schema.nodes[this.options.nextNodeType] || $to.parent.type.contentMatch.defaultType;
-              const node = nodeType == null ? void 0 : nodeType.create();
-              if (node) {
-                tr.insert(posAfter, node);
-                tr.setSelection(import_state26.TextSelection.create(tr.doc, posAfter + 1));
-              }
+var import_state27, HorizontalRule, index_default9;
+var init_dist11 = __esm({
+  "node_modules/@tiptap/extension-horizontal-rule/dist/index.js"() {
+    "use strict";
+    init_dist();
+    import_state27 = require("@tiptap/pm/state");
+    HorizontalRule = Node3.create({
+      name: "horizontalRule",
+      addOptions() {
+        return {
+          HTMLAttributes: {},
+          nextNodeType: "paragraph"
+        };
+      },
+      group: "block",
+      parseHTML() {
+        return [{ tag: "hr" }];
+      },
+      renderHTML({ HTMLAttributes }) {
+        return ["hr", mergeAttributes(this.options.HTMLAttributes, HTMLAttributes)];
+      },
+      markdownTokenName: "hr",
+      parseMarkdown: (token, helpers) => {
+        return helpers.createNode("horizontalRule");
+      },
+      renderMarkdown: () => {
+        return "---";
+      },
+      addCommands() {
+        return {
+          setHorizontalRule: () => ({ chain, state }) => {
+            if (!canInsertNode(state, state.schema.nodes[this.name])) {
+              return false;
             }
-            tr.scrollIntoView();
+            const { selection } = state;
+            const { $to: $originTo } = selection;
+            const currentChain = chain();
+            if (isNodeSelection(selection)) {
+              currentChain.insertContentAt($originTo.pos, {
+                type: this.name
+              });
+            } else {
+              currentChain.insertContent({ type: this.name });
+            }
+            return currentChain.command(({ state: chainState, tr, dispatch }) => {
+              if (dispatch) {
+                const { $to } = tr.selection;
+                const posAfter = $to.end();
+                if ($to.nodeAfter) {
+                  if ($to.nodeAfter.isTextblock) {
+                    tr.setSelection(import_state27.TextSelection.create(tr.doc, $to.pos + 1));
+                  } else if ($to.nodeAfter.isBlock) {
+                    tr.setSelection(import_state27.NodeSelection.create(tr.doc, $to.pos));
+                  } else {
+                    tr.setSelection(import_state27.TextSelection.create(tr.doc, $to.pos));
+                  }
+                } else {
+                  const nodeType = chainState.schema.nodes[this.options.nextNodeType] || $to.parent.type.contentMatch.defaultType;
+                  const node = nodeType == null ? void 0 : nodeType.create();
+                  if (node) {
+                    tr.insert(posAfter, node);
+                    tr.setSelection(import_state27.TextSelection.create(tr.doc, posAfter + 1));
+                  }
+                }
+                tr.scrollIntoView();
+              }
+              return true;
+            }).run();
           }
-          return true;
-        }).run();
+        };
+      },
+      addInputRules() {
+        return [
+          nodeInputRule({
+            find: /^(?:---|—-|___\s|\*\*\*\s)$/,
+            type: this.type
+          })
+        ];
       }
-    };
-  },
-  addInputRules() {
-    return [
-      nodeInputRule({
-        find: /^(?:---|—-|___\s|\*\*\*\s)$/,
-        type: this.type
-      })
-    ];
+    });
+    index_default9 = HorizontalRule;
   }
 });
-var index_default9 = HorizontalRule;
-
-// src/ui/components/TiptapEditor.tsx
-var import_extension_placeholder = __toESM(require("@tiptap/extension-placeholder"));
-var import_extension_link = __toESM(require("@tiptap/extension-link"));
-var import_extension_image = __toESM(require("@tiptap/extension-image"));
-var import_extension_strike = __toESM(require("@tiptap/extension-strike"));
-var import_extension_underline = __toESM(require("@tiptap/extension-underline"));
 
 // src/lib/markdown.ts
-var import_marked = require("marked");
-var import_turndown = __toESM(require("turndown"));
-var import_sanitize_html = __toESM(require("sanitize-html"));
-import_marked.marked.setOptions({
-  gfm: true,
-  breaks: false
-});
 function renderMarkdown(markdown) {
   return import_marked.marked.parse(markdown);
 }
-function createStyledRenderer() {
-  const renderer = new import_marked.Renderer();
-  renderer.heading = function(text, level) {
-    const classes = {
-      1: "text-[22px] leading-tight font-bold mb-4",
-      2: "text-lg leading-snug font-bold mt-6 mb-3",
-      3: "text-base leading-snug font-bold mt-4 mb-2",
-      4: "text-sm leading-snug font-semibold mt-3 mb-1",
-      5: "text-sm leading-snug font-semibold mt-2 mb-1",
-      6: "text-sm leading-snug font-medium mt-2 mb-1"
-    };
-    return `<h${level} class="${classes[level] || ""}">${text}</h${level}>
-`;
-  };
-  renderer.paragraph = function(text) {
-    return `<p class="mb-3 leading-relaxed">${text}</p>
-`;
-  };
-  renderer.list = function(body, ordered) {
-    const tag = ordered ? "ol" : "ul";
-    const listClass = ordered ? "list-decimal" : "list-disc";
-    return `<${tag} class="${listClass} pl-5 mb-3 space-y-1">${body}</${tag}>
-`;
-  };
-  renderer.listitem = function(text) {
-    return `<li>${text}</li>
-`;
-  };
-  renderer.code = function(code, language) {
-    const escaped = code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    return `<pre class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg overflow-x-auto mb-3 text-sm font-mono"><code class="language-${language || ""}">${escaped}</code></pre>
-`;
-  };
-  renderer.codespan = function(text) {
-    return `<code class="bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-sm font-mono">${text}</code>`;
-  };
-  renderer.blockquote = function(quote) {
-    return `<blockquote class="border-l-4 border-gray-300 dark:border-gray-600 pl-4 italic text-gray-600 dark:text-gray-400 my-3">${quote}</blockquote>
-`;
-  };
-  renderer.hr = function() {
-    return `<hr class="my-6 border-t border-gray-200 dark:border-gray-700" />
-`;
-  };
-  renderer.link = function(href, _title, text) {
-    return `<a href="${href}" class="text-blue-600 dark:text-blue-400 underline">${text}</a>`;
-  };
-  renderer.image = function(href, _title, text) {
-    return `<img src="${href}" alt="${text}" class="rounded-lg max-w-full my-3" />`;
-  };
-  renderer.strong = function(text) {
-    return `<strong class="font-semibold">${text}</strong>`;
-  };
-  renderer.em = function(text) {
-    return `<em class="italic">${text}</em>`;
-  };
-  renderer.table = function(header, body) {
-    return `<table class="w-full border-collapse mb-3"><thead>${header}</thead><tbody>${body}</tbody></table>
-`;
-  };
-  renderer.tablerow = function(content) {
-    return `<tr>${content}</tr>
-`;
-  };
-  renderer.tablecell = function(content, flags) {
-    const tag = flags.header ? "th" : "td";
-    const headerClass = flags.header ? " font-semibold bg-gray-50 dark:bg-gray-800" : "";
-    const alignClass = flags.align ? ` text-${flags.align}` : " text-left";
-    return `<${tag} class="border border-gray-200 dark:border-gray-700 px-3 py-2${alignClass}${headerClass}">${content}</${tag}>`;
-  };
-  return renderer;
+function markdownToHtml(markdown) {
+  return import_marked.marked.parse(markdown, { gfm: true, breaks: true });
 }
-var styledRenderer = createStyledRenderer();
-function markdownToStyledHtml(markdown) {
-  return import_marked.marked.parse(markdown, {
-    gfm: true,
-    breaks: true,
-    renderer: styledRenderer
-  });
-}
-var turndownService = new import_turndown.default({
-  headingStyle: "atx",
-  codeBlockStyle: "fenced",
-  bulletListMarker: "-"
-});
-turndownService.addRule("strikethrough", {
-  filter: (node) => {
-    const tagName = node.nodeName.toLowerCase();
-    return tagName === "del" || tagName === "s" || tagName === "strike";
-  },
-  replacement: (content) => `~~${content}~~`
-});
 function htmlToMarkdown(html) {
   return turndownService.turndown(html);
 }
-
-// src/lib/comment-mark.ts
-var import_state27 = require("@tiptap/pm/state");
-var CommentMark = Mark.create({
-  name: "comment",
-  addOptions() {
-    return {
-      onCommentClick: void 0
-    };
-  },
-  addAttributes() {
-    return {
-      commentId: {
-        default: null,
-        parseHTML: (element) => element.getAttribute("data-comment-id"),
-        renderHTML: (attributes) => ({
-          "data-comment-id": attributes.commentId
-        })
-      }
-    };
-  },
-  parseHTML() {
-    return [{ tag: "mark[data-comment-id]" }];
-  },
-  renderHTML({ HTMLAttributes }) {
-    return [
-      "mark",
-      mergeAttributes(HTMLAttributes, {
-        class: "bg-yellow-200/50 dark:bg-yellow-500/30 dark:text-foreground cursor-pointer hover:bg-yellow-300/60 dark:hover:bg-yellow-500/40 transition-colors rounded-sm"
-      }),
-      0
-    ];
-  },
-  addCommands() {
-    return {
-      setComment: (commentId) => ({ commands }) => {
-        return commands.setMark(this.name, { commentId });
+var import_marked, import_turndown, import_sanitize_html, turndownService;
+var init_markdown = __esm({
+  "src/lib/markdown.ts"() {
+    "use strict";
+    import_marked = require("marked");
+    import_turndown = __toESM(require("turndown"));
+    import_sanitize_html = __toESM(require("sanitize-html"));
+    import_marked.marked.setOptions({
+      gfm: true,
+      breaks: false
+    });
+    turndownService = new import_turndown.default({
+      headingStyle: "atx",
+      codeBlockStyle: "fenced",
+      bulletListMarker: "-"
+    });
+    turndownService.addRule("strikethrough", {
+      filter: (node) => {
+        const tagName = node.nodeName.toLowerCase();
+        return tagName === "del" || tagName === "s" || tagName === "strike";
       },
-      unsetComment: (commentId) => ({ tr, state }) => {
-        const { doc } = state;
-        let found = false;
-        doc.descendants((node, pos) => {
-          node.marks.forEach((mark) => {
-            if (mark.type.name === this.name && mark.attrs.commentId === commentId) {
-              tr.removeMark(pos, pos + node.nodeSize, mark.type);
-              found = true;
-            }
-          });
-        });
-        return found;
-      }
-    };
-  },
-  addProseMirrorPlugins() {
-    const { onCommentClick } = this.options;
-    return [
-      new import_state27.Plugin({
-        key: new import_state27.PluginKey("commentClick"),
-        props: {
-          handleClick(view, pos) {
-            if (!onCommentClick) return false;
-            const { state } = view;
-            const $pos = state.doc.resolve(pos);
-            const marks = $pos.marks();
-            const commentMark = marks.find((mark) => mark.type.name === "comment");
-            if (commentMark && commentMark.attrs.commentId) {
-              ;
-              view.dom.blur();
-              onCommentClick(commentMark.attrs.commentId);
-              return true;
-            }
-            return false;
-          }
-        }
-      })
-    ];
+      replacement: (content) => `~~${content}~~`
+    });
   }
 });
-function addCommentMark(editor, commentId, from, to) {
-  if (!editor.view || editor.isDestroyed) {
-    console.warn("Cannot add comment mark: editor not ready");
-    return;
-  }
-  editor.chain().setTextSelection({ from, to }).setComment(commentId).run();
-}
-function removeCommentMark(editor, commentId) {
-  if (!editor.view || editor.isDestroyed) return;
-  editor.chain().unsetComment(commentId).run();
-}
-function applyCommentMarks(editor, comments) {
-  if (!editor.view || editor.isDestroyed) return;
-  const { doc } = editor.state;
-  const textContent = doc.textContent;
-  comments.forEach((comment) => {
-    if (!comment.quotedText || comment.parentId || comment.resolved) return;
-    const index = textContent.indexOf(comment.quotedText);
-    if (index === -1) return;
-    let currentPos = 0;
-    let startPos = null;
-    let endPos = null;
-    doc.descendants((node, pos) => {
-      if (startPos !== null && endPos !== null) return false;
-      if (node.isText && node.text) {
-        const nodeStart = currentPos;
-        const nodeEnd = currentPos + node.text.length;
-        if (startPos === null && nodeEnd > index) {
-          const offsetInNode = index - nodeStart;
-          startPos = pos + offsetInNode;
-        }
-        if (startPos !== null && endPos === null) {
-          const targetEnd = index + comment.quotedText.length;
-          if (nodeEnd >= targetEnd) {
-            const offsetInNode = targetEnd - nodeStart;
-            endPos = pos + offsetInNode;
-          }
-        }
-        currentPos = nodeEnd;
-      }
-      return true;
-    });
-    if (startPos !== null && endPos !== null) {
-      editor.chain().setTextSelection({ from: startPos, to: endPos }).setComment(comment.id).setTextSelection(endPos).run();
-    }
-  });
-}
-function scrollToComment(editor, commentId) {
-  if (!editor.view || editor.isDestroyed) return;
-  const { doc } = editor.state;
-  doc.descendants((node, pos) => {
-    const commentMark = node.marks.find(
-      (mark) => mark.type.name === "comment" && mark.attrs.commentId === commentId
-    );
-    if (commentMark) {
-      editor.chain().setTextSelection(pos).run();
-      const view = editor.view;
-      const coords = view.coordsAtPos(pos);
-      const editorRect = view.dom.getBoundingClientRect();
-      if (coords.top < editorRect.top || coords.bottom > editorRect.bottom) {
-        view.dom.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-      return false;
-    }
-    return true;
-  });
-}
 
 // src/ui/components/TiptapEditor.tsx
-var import_jsx_runtime17 = require("react/jsx-runtime");
-var PLACEHOLDER_STYLE_ID = "tiptap-placeholder-css";
+var TiptapEditor_exports = {};
+__export(TiptapEditor_exports, {
+  TiptapEditor: () => TiptapEditor
+});
 function injectPlaceholderStyles() {
   if (typeof document === "undefined") return;
   if (document.getElementById(PLACEHOLDER_STYLE_ID)) return;
@@ -8123,64 +7258,6 @@ function injectPlaceholderStyles() {
   `;
   document.head.appendChild(style);
 }
-var DEFAULT_PROSE_CLASSES = "prose";
-var StyledHeading = index_default.extend({
-  renderHTML({ node, HTMLAttributes }) {
-    const level = node.attrs.level;
-    const classes = {
-      1: "text-[22px] leading-tight font-bold mb-6",
-      2: "text-lg leading-snug font-bold mt-8 mb-4",
-      3: "text-base leading-snug font-bold mt-6 mb-3"
-    };
-    return [`h${level}`, { ...HTMLAttributes, class: classes[level] || "" }, 0];
-  }
-});
-var CustomStrike = import_extension_strike.default.extend({
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Shift-x": () => this.editor.commands.toggleStrike(),
-      "Mod-Shift-X": () => this.editor.commands.toggleStrike()
-    };
-  }
-});
-var CustomBulletList = index_default3.extend({
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Shift-8": () => this.editor.commands.toggleBulletList()
-    };
-  }
-});
-var CustomOrderedList = index_default4.extend({
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Shift-7": () => this.editor.commands.toggleOrderedList()
-    };
-  }
-});
-var CustomCode = index_default6.extend({
-  addKeyboardShortcuts() {
-    return {
-      "Mod-e": () => this.editor.commands.toggleCode(),
-      "Mod-E": () => this.editor.commands.toggleCode()
-    };
-  }
-});
-var CustomBlockquote = index_default8.extend({
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Shift-b": () => this.editor.commands.toggleBlockquote(),
-      "Mod-Shift-B": () => this.editor.commands.toggleBlockquote()
-    };
-  }
-});
-var CustomCodeBlock = index_default7.extend({
-  addKeyboardShortcuts() {
-    return {
-      "Mod-Alt-c": () => this.editor.commands.toggleCodeBlock(),
-      "Mod-Alt-C": () => this.editor.commands.toggleCodeBlock()
-    };
-  }
-});
 function TiptapEditor({
   content,
   onChange,
@@ -8191,11 +7268,11 @@ function TiptapEditor({
   onCommentClick,
   proseClasses = DEFAULT_PROSE_CLASSES
 }) {
-  (0, import_react12.useEffect)(() => {
+  (0, import_react18.useEffect)(() => {
     injectPlaceholderStyles();
   }, []);
-  const initialHtml = (0, import_react12.useMemo)(() => content ? renderMarkdown(content) : "", [content]);
-  const extensions = (0, import_react12.useMemo)(() => [
+  const initialHtml = (0, import_react18.useMemo)(() => content ? renderMarkdown(content) : "", [content]);
+  const extensions = (0, import_react18.useMemo)(() => [
     import_starter_kit.default.configure({
       // Disable extensions we're replacing with styled or custom versions
       heading: false,
@@ -8268,7 +7345,7 @@ function TiptapEditor({
       onCommentClick
     })
   ], [placeholder, onCommentClick]);
-  const editor = (0, import_react13.useEditor)({
+  const editor = (0, import_react19.useEditor)({
     immediatelyRender: false,
     // Prevent SSR hydration mismatch
     extensions,
@@ -8320,7 +7397,7 @@ function TiptapEditor({
       }
     }
   });
-  (0, import_react12.useEffect)(() => {
+  (0, import_react18.useEffect)(() => {
     if (editor) {
       if (onEditorReady) {
         onEditorReady(editor);
@@ -8330,7 +7407,7 @@ function TiptapEditor({
       }
     }
   }, [editor, onEditorReady, autoFocus]);
-  (0, import_react12.useEffect)(() => {
+  (0, import_react18.useEffect)(() => {
     if (editor && content !== void 0) {
       const currentMarkdown = htmlToMarkdown(editor.getHTML());
       if (currentMarkdown !== content) {
@@ -8339,16 +7416,1991 @@ function TiptapEditor({
       }
     }
   }, [editor, content]);
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_react13.EditorContent, { editor });
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_react19.EditorContent, { editor });
+}
+var import_react18, import_react19, import_starter_kit, import_extension_placeholder, import_extension_link, import_extension_image, import_extension_strike, import_extension_underline, import_jsx_runtime23, PLACEHOLDER_STYLE_ID, DEFAULT_PROSE_CLASSES, StyledHeading, CustomStrike, CustomBulletList, CustomOrderedList, CustomCode, CustomBlockquote, CustomCodeBlock;
+var init_TiptapEditor = __esm({
+  "src/ui/components/TiptapEditor.tsx"() {
+    "use strict";
+    "use client";
+    import_react18 = require("react");
+    import_react19 = require("@tiptap/react");
+    import_starter_kit = __toESM(require("@tiptap/starter-kit"));
+    init_dist2();
+    init_dist3();
+    init_dist5();
+    init_dist6();
+    init_dist7();
+    init_dist8();
+    init_dist9();
+    init_dist10();
+    init_dist11();
+    import_extension_placeholder = __toESM(require("@tiptap/extension-placeholder"));
+    import_extension_link = __toESM(require("@tiptap/extension-link"));
+    import_extension_image = __toESM(require("@tiptap/extension-image"));
+    import_extension_strike = __toESM(require("@tiptap/extension-strike"));
+    import_extension_underline = __toESM(require("@tiptap/extension-underline"));
+    init_markdown();
+    init_comment_mark();
+    import_jsx_runtime23 = require("react/jsx-runtime");
+    PLACEHOLDER_STYLE_ID = "tiptap-placeholder-css";
+    DEFAULT_PROSE_CLASSES = "prose";
+    StyledHeading = index_default.extend({
+      renderHTML({ node, HTMLAttributes }) {
+        const level = node.attrs.level;
+        const classes = {
+          1: "text-[22px] leading-tight font-bold mb-6",
+          2: "text-lg leading-snug font-bold mt-8 mb-4",
+          3: "text-base leading-snug font-bold mt-6 mb-3"
+        };
+        return [`h${level}`, { ...HTMLAttributes, class: classes[level] || "" }, 0];
+      }
+    });
+    CustomStrike = import_extension_strike.default.extend({
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Shift-x": () => this.editor.commands.toggleStrike(),
+          "Mod-Shift-X": () => this.editor.commands.toggleStrike()
+        };
+      }
+    });
+    CustomBulletList = index_default3.extend({
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Shift-8": () => this.editor.commands.toggleBulletList()
+        };
+      }
+    });
+    CustomOrderedList = index_default4.extend({
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Shift-7": () => this.editor.commands.toggleOrderedList()
+        };
+      }
+    });
+    CustomCode = index_default6.extend({
+      addKeyboardShortcuts() {
+        return {
+          "Mod-e": () => this.editor.commands.toggleCode(),
+          "Mod-E": () => this.editor.commands.toggleCode()
+        };
+      }
+    });
+    CustomBlockquote = index_default8.extend({
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Shift-b": () => this.editor.commands.toggleBlockquote(),
+          "Mod-Shift-B": () => this.editor.commands.toggleBlockquote()
+        };
+      }
+    });
+    CustomCodeBlock = index_default7.extend({
+      addKeyboardShortcuts() {
+        return {
+          "Mod-Alt-c": () => this.editor.commands.toggleCodeBlock(),
+          "Mod-Alt-C": () => this.editor.commands.toggleCodeBlock()
+        };
+      }
+    });
+  }
+});
+
+// src/ui/components/ChatPanel.tsx
+var ChatPanel_exports = {};
+__export(ChatPanel_exports, {
+  ChatPanel: () => ChatPanel
+});
+function stripPlanTags(content) {
+  return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
+}
+function ChatPanel({
+  proseClasses = DEFAULT_PROSE_CLASSES2,
+  onNavigate: onNavigateProp,
+  isOnEditor: isOnEditorProp
+}) {
+  const {
+    messages,
+    isStreaming,
+    isOpen: open,
+    setIsOpen,
+    sendMessage: contextSendMessage,
+    stopStreaming,
+    essayContext,
+    mode,
+    setMode,
+    undoEdit,
+    webSearchEnabled,
+    setWebSearchEnabled,
+    thinkingEnabled,
+    setThinkingEnabled,
+    selectedModel,
+    setSelectedModel,
+    expandPlan
+  } = useChatContext();
+  const dashboardContext = (0, import_react33.useContext)(DashboardContext);
+  const onNavigate = onNavigateProp ?? dashboardContext?.navigate;
+  const isOnEditor = isOnEditorProp ?? !!essayContext;
+  const [input, setInput] = (0, import_react33.useState)("");
+  const [isAnimating, setIsAnimating] = (0, import_react33.useState)(false);
+  const [isVisible, setIsVisible] = (0, import_react33.useState)(false);
+  const [mounted, setMounted] = (0, import_react33.useState)(typeof window !== "undefined");
+  const [copiedIndex, setCopiedIndex] = (0, import_react33.useState)(null);
+  const [modeMenuOpen, setModeMenuOpen] = (0, import_react33.useState)(false);
+  const modeMenuRef = (0, import_react33.useRef)(null);
+  const messagesEndRef = (0, import_react33.useRef)(null);
+  const messagesContainerRef = (0, import_react33.useRef)(null);
+  const textareaRef = (0, import_react33.useRef)(null);
+  const prevMessageCountRef = (0, import_react33.useRef)(0);
+  const savedScrollPositionRef = (0, import_react33.useRef)(null);
+  const hasOpenedBeforeRef = (0, import_react33.useRef)(false);
+  const lastUserMessageRef = (0, import_react33.useRef)(null);
+  const contextModels = dashboardContext?.sharedData?.aiSettings?.availableModels;
+  const models = contextModels && contextModels.length > 0 ? contextModels : DEFAULT_MODELS;
+  const currentModel = models.find((m) => m.id === selectedModel);
+  const onClose = (0, import_react33.useCallback)(() => setIsOpen(false), [setIsOpen]);
+  const copyToClipboard = (0, import_react33.useCallback)(async (text, index) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 2e3);
+  }, []);
+  const handleDraftEssay = (0, import_react33.useCallback)(() => {
+    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
+    if (!lastAssistantMessage?.content) return;
+    if (isOnEditor) {
+      expandPlan();
+      setMode("agent");
+    } else if (onNavigate) {
+      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
+      setIsOpen(false);
+      onNavigate("/editor?fromPlan=1");
+    } else {
+      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
+      setIsOpen(false);
+      window.location.href = "/writer/editor?fromPlan=1";
+    }
+  }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate]);
+  (0, import_react33.useEffect)(() => {
+    function handleClick(e) {
+      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
+        setModeMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+  (0, import_react33.useEffect)(() => {
+    if (!mounted) setMounted(true);
+  }, [mounted]);
+  (0, import_react33.useEffect)(() => {
+    if (open) {
+      setIsVisible(true);
+      document.body.style.overflow = "hidden";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      document.body.style.top = `-${window.scrollY}px`;
+    } else {
+      setIsAnimating(false);
+      const scrollY = document.body.style.top;
+      document.body.style.overflow = "";
+      document.body.style.position = "";
+      document.body.style.width = "";
+      document.body.style.top = "";
+      window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+  (0, import_react33.useEffect)(() => {
+    if (isVisible && open && !isAnimating) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsAnimating(true);
+        });
+      });
+    }
+  }, [isVisible, open, isAnimating]);
+  (0, import_react33.useEffect)(() => {
+    if (!open && messagesContainerRef.current) {
+      savedScrollPositionRef.current = messagesContainerRef.current.scrollTop;
+    }
+  }, [open]);
+  (0, import_react33.useEffect)(() => {
+    if (!open || !isVisible) return;
+    if (!hasOpenedBeforeRef.current) {
+      hasOpenedBeforeRef.current = true;
+      return;
+    }
+    const container = messagesContainerRef.current;
+    if (container && savedScrollPositionRef.current !== null) {
+      setTimeout(() => {
+        container.scrollTop = savedScrollPositionRef.current;
+      }, 50);
+    }
+  }, [open, isVisible]);
+  (0, import_react33.useEffect)(() => {
+    if (!open || !isVisible) return;
+    const prevCount = prevMessageCountRef.current;
+    const currentCount = messages.length;
+    if (currentCount > prevCount && prevCount > 0) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+      }, 50);
+    }
+    prevMessageCountRef.current = currentCount;
+  }, [messages.length, open, isVisible]);
+  (0, import_react33.useEffect)(() => {
+    if (!isStreaming) return;
+    const container = messagesContainerRef.current;
+    const userMessage = lastUserMessageRef.current;
+    if (!container || !userMessage) return;
+    const containerRect = container.getBoundingClientRect();
+    const messageRect = userMessage.getBoundingClientRect();
+    const distanceFromTop = messageRect.top - containerRect.top;
+    if (distanceFromTop > 10) {
+      container.scrollTop += Math.min(distanceFromTop * 0.3, 30);
+    }
+  }, [messages, isStreaming]);
+  (0, import_react33.useEffect)(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
+    }
+  }, [input]);
+  const sendMessage = (0, import_react33.useCallback)(async () => {
+    if (!input.trim() || isStreaming) return;
+    const content = input.trim();
+    setInput("");
+    await contextSendMessage(content);
+  }, [input, isStreaming, contextSendMessage]);
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      onClose();
+    }
+  };
+  (0, import_react33.useEffect)(() => {
+    const handleGlobalKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
+        e.preventDefault();
+        if (essayContext) {
+          if (!open) {
+            setIsOpen(true);
+          }
+          setMode(mode === "agent" ? "ask" : "agent");
+        } else {
+          setIsOpen(!open);
+          setMode("ask");
+        }
+      }
+    };
+    document.addEventListener("keydown", handleGlobalKeyDown);
+    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [open, setIsOpen, setMode, essayContext, mode]);
+  if (!isVisible || !mounted) return null;
+  return /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(AutobloggerPortal, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+      "div",
+      {
+        className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
+        onClick: onClose
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+      "div",
+      {
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": "Chat",
+        className: `fixed z-[70] flex flex-col bg-background text-foreground shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("h2", { className: "font-medium", children: "Chat" }),
+              essayContext && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground truncate max-w-[140px]", children: essayContext.title || "Untitled" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+              "button",
+              {
+                onClick: onClose,
+                className: "w-9 h-9 md:w-8 md:h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
+                "aria-label": "Close chat",
+                children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.X, { className: "w-5 h-5 md:w-4 md:h-4" })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto flex flex-col-reverse", children: messages.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "px-4 py-4 space-y-4", children: [
+            messages.map((message, index) => {
+              const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
+              return /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                "div",
+                {
+                  ref: isLastUserMessage ? lastUserMessageRef : void 0,
+                  className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
+                  children: /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+                    "div",
+                    {
+                      className: `max-w-[85%] rounded-2xl px-3 py-2 text-base relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
+                      children: [
+                        message.role === "assistant" ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                          "div",
+                          {
+                            className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
+                            dangerouslySetInnerHTML: { __html: markdownToHtml(stripPlanTags(message.content)) }
+                          }
+                        ) : /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
+                        isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
+                        message.role === "assistant" && !isStreaming && /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                            "button",
+                            {
+                              onClick: () => copyToClipboard(message.content, index),
+                              className: "text-muted-foreground hover:text-foreground p-1 rounded",
+                              "aria-label": "Copy message",
+                              children: copiedIndex === index ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Check, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Copy, { className: "w-3.5 h-3.5" })
+                            }
+                          ),
+                          message.appliedEdits && message.previousState && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                            "button",
+                            {
+                              onClick: () => undoEdit(index),
+                              className: "text-muted-foreground hover:text-foreground p-1 rounded",
+                              "aria-label": "Undo edit",
+                              children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Undo2, { className: "w-3.5 h-3.5" })
+                            }
+                          ),
+                          message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                            "button",
+                            {
+                              onClick: handleDraftEssay,
+                              className: "text-xs text-muted-foreground hover:text-foreground px-1 rounded",
+                              children: "Draft Essay"
+                            }
+                          )
+                        ] })
+                      ]
+                    }
+                  )
+                },
+                index
+              );
+            }),
+            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("div", { ref: messagesEndRef })
+          ] }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+            "form",
+            {
+              onSubmit: (e) => {
+                e.preventDefault();
+                sendMessage();
+              },
+              className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "pb-3 flex items-center gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { ref: modeMenuRef, className: "relative", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: () => setModeMenuOpen(!modeMenuOpen),
+                        title: "Switch mode (\u2318\u21E7A)",
+                        className: `inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium rounded-full transition-colors ${mode === "ask" ? "bg-ab-success/15 text-ab-success" : mode === "agent" ? "bg-muted text-muted-foreground" : "bg-ab-warning/15 text-ab-warning"}`,
+                        children: [
+                          mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.MessageSquare, { className: "w-3.5 h-3.5" }),
+                          mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Pencil, { className: "w-3.5 h-3.5" }),
+                          mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.List, { className: "w-3.5 h-3.5" }),
+                          mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
+                          /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.ChevronDown, { className: "w-3 h-3 opacity-60" })
+                        ]
+                      }
+                    ),
+                    modeMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => {
+                            setMode("agent");
+                            setModeMenuOpen(false);
+                            textareaRef.current?.focus();
+                          },
+                          disabled: !essayContext,
+                          className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Pencil, { className: "w-4 h-4" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "flex-1", children: "Agent" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
+                            mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Check, { className: "w-4 h-4" })
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => {
+                            setMode("plan");
+                            setModeMenuOpen(false);
+                            textareaRef.current?.focus();
+                          },
+                          className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.List, { className: "w-4 h-4" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "flex-1", children: "Plan" }),
+                            mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Check, { className: "w-4 h-4" })
+                          ]
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => {
+                            setMode("ask");
+                            setModeMenuOpen(false);
+                            textareaRef.current?.focus();
+                          },
+                          className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.MessageSquare, { className: "w-4 h-4" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime42.jsx)("span", { className: "flex-1", children: "Ask" }),
+                            mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Check, { className: "w-4 h-4" })
+                          ]
+                        }
+                      )
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                    ControlButton,
+                    {
+                      onClick: () => {
+                        setWebSearchEnabled(!webSearchEnabled);
+                        textareaRef.current?.focus();
+                      },
+                      active: webSearchEnabled,
+                      title: webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)",
+                      tabIndex: -1,
+                      children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Globe, { className: "w-[18px] h-[18px]" })
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                    ControlButton,
+                    {
+                      onClick: () => {
+                        setThinkingEnabled(!thinkingEnabled);
+                        textareaRef.current?.focus();
+                      },
+                      active: thinkingEnabled,
+                      title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
+                      tabIndex: -1,
+                      children: /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Brain, { className: "w-[18px] h-[18px]" })
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                    ModelSelector,
+                    {
+                      models,
+                      selectedModel,
+                      onModelChange: (id) => {
+                        setSelectedModel(id);
+                        textareaRef.current?.focus();
+                      },
+                      currentModel
+                    }
+                  )
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime42.jsxs)("div", { className: "flex items-end gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                    "textarea",
+                    {
+                      ref: textareaRef,
+                      value: input,
+                      onChange: (e) => setInput(e.target.value),
+                      onKeyDown: handleKeyDown,
+                      placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
+                      className: "flex-1 min-h-[44px] max-h-[120px] resize-none px-3 py-2.5 border border-input rounded-md bg-transparent text-base focus:outline-none",
+                      rows: 1,
+                      autoFocus: true
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(
+                    "button",
+                    {
+                      type: isStreaming ? "button" : "submit",
+                      onClick: isStreaming ? stopStreaming : void 0,
+                      disabled: !isStreaming && !input.trim(),
+                      className: "rounded-full w-11 h-11 md:w-10 md:h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
+                      children: isStreaming ? /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.Square, { className: "h-5 w-5 md:h-4 md:w-4 fill-current" }) : /* @__PURE__ */ (0, import_jsx_runtime42.jsx)(import_lucide_react21.ArrowUp, { className: "h-6 w-6 md:h-5 md:w-5" })
+                    }
+                  )
+                ] })
+              ]
+            }
+          )
+        ]
+      }
+    )
+  ] });
+}
+var import_react33, import_lucide_react21, import_jsx_runtime42, DEFAULT_PROSE_CLASSES2;
+var init_ChatPanel = __esm({
+  "src/ui/components/ChatPanel.tsx"() {
+    "use strict";
+    "use client";
+    import_react33 = require("react");
+    init_Portal();
+    import_lucide_react21 = require("lucide-react");
+    init_useChat();
+    init_models();
+    init_ControlButton();
+    init_ModelSelector();
+    init_markdown();
+    init_context();
+    import_jsx_runtime42 = require("react/jsx-runtime");
+    DEFAULT_PROSE_CLASSES2 = "prose prose-chat dark:prose-invert";
+  }
+});
+
+// src/ui/index.ts
+var ui_exports = {};
+__export(ui_exports, {
+  AutobloggerDashboard: () => AutobloggerDashboard,
+  ChatButton: () => ChatButton,
+  ChatContext: () => ChatContext,
+  ChatIcon: () => ChatIcon,
+  ChatPanel: () => ChatPanel,
+  ChatProvider: () => ChatProvider,
+  ChevronLeftIcon: () => ChevronLeftIcon,
+  CommentThread: () => CommentThread,
+  CommentsPanel: () => CommentsPanel,
+  ControlButton: () => ControlButton,
+  ExpandableSection: () => ExpandableSection,
+  GlobalShortcuts: () => GlobalShortcuts,
+  ModelSelector: () => ModelSelector,
+  MoonIcon: () => MoonIcon,
+  Navbar: () => Navbar,
+  PageContainer: () => PageContainer,
+  SHORTCUTS: () => SHORTCUTS,
+  SeoSection: () => SeoSection,
+  SunIcon: () => SunIcon,
+  ThemeProvider: () => ThemeProvider,
+  ThemeToggle: () => ThemeToggle,
+  useAIModels: () => useAIModels,
+  useAutobloggerTheme: () => useAutobloggerTheme,
+  useChatContext: () => useChatContext,
+  useChatContextOptional: () => useChatContextOptional,
+  useComments: () => useComments,
+  useDashboardContext: () => useDashboardContext,
+  useDashboardKeyboard: () => useDashboardKeyboard,
+  useKeyboard: () => useKeyboard,
+  useTheme: () => useTheme
+});
+module.exports = __toCommonJS(ui_exports);
+
+// src/ui/dashboard.tsx
+var import_react34 = require("react");
+var import_lucide_react22 = require("lucide-react");
+init_context();
+
+// src/ui/pages/WriterDashboard.tsx
+var import_react4 = require("react");
+var import_lucide_react2 = require("lucide-react");
+init_context();
+
+// src/ui/components/Skeleton.tsx
+init_cn();
+var import_jsx_runtime2 = require("react/jsx-runtime");
+function Skeleton({ className }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: cn("animate-pulse bg-muted rounded", className) });
+}
+
+// src/ui/pages/WriterDashboard.tsx
+init_ControlButton();
+init_ModelSelector();
+
+// src/ui/components/PageContainer.tsx
+init_cn();
+var import_jsx_runtime5 = require("react/jsx-runtime");
+function PageContainer({ children, className }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime5.jsx)("div", { className: cn("max-w-5xl mx-auto px-6 py-8", className), children });
+}
+
+// src/ui/pages/WriterDashboard.tsx
+init_models();
+
+// src/lib/format.ts
+var MINUTE = 6e4;
+var HOUR = 36e5;
+var DAY = 864e5;
+function formatRelativeTime(isoDate) {
+  const date = new Date(isoDate);
+  const diffMs = Date.now() - date.getTime();
+  const mins = Math.floor(diffMs / MINUTE);
+  const hours = Math.floor(diffMs / HOUR);
+  const days = Math.floor(diffMs / DAY);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days}d ago`;
+  return date.toLocaleDateString();
+}
+function formatSavedTime(date) {
+  const now = /* @__PURE__ */ new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1e3);
+  const diffMins = Math.floor(diffMs / MINUTE);
+  if (diffSecs < 10) return "just now";
+  if (diffSecs < 60) return `${diffSecs}s ago`;
+  if (diffMins < 60) return `${diffMins}m ago`;
+  const isToday = date.toDateString() === now.toDateString();
+  if (isToday) {
+    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  }
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+function countWords(text) {
+  if (!text) return 0;
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+// src/ui/pages/WriterDashboard.tsx
+var import_jsx_runtime6 = require("react/jsx-runtime");
+function WriterDashboard() {
+  const { apiBasePath, navigate, sharedData, sharedDataLoading, removeSharedPost } = useDashboardContext();
+  const [posts, setPosts] = (0, import_react4.useState)(() => sharedData?.posts || []);
+  const [loading, setLoading] = (0, import_react4.useState)(() => !sharedData && sharedDataLoading);
+  const [searchQuery, setSearchQuery] = (0, import_react4.useState)("");
+  const [searchOpen, setSearchOpen] = (0, import_react4.useState)(false);
+  const [activeTab, setActiveTab] = (0, import_react4.useState)("all");
+  const [suggestedPosts, setSuggestedPosts] = (0, import_react4.useState)(() => sharedData?.suggestedPosts || []);
+  const [autoDraftEnabled, setAutoDraftEnabled] = (0, import_react4.useState)(() => sharedData?.settings.autoDraftEnabled || false);
+  const [suggestedOpen, setSuggestedOpen] = (0, import_react4.useState)(false);
+  const [actionLoading, setActionLoading] = (0, import_react4.useState)(null);
+  const [models, setModels] = (0, import_react4.useState)(
+    () => sharedData?.aiSettings.availableModels?.length > 0 ? sharedData?.aiSettings.availableModels : DEFAULT_MODELS
+  );
+  const [modelId, setModelId] = (0, import_react4.useState)(() => sharedData?.aiSettings.defaultModel || "claude-sonnet");
+  const [length, setLength] = (0, import_react4.useState)(500);
+  const [webEnabled, setWebEnabled] = (0, import_react4.useState)(false);
+  const [thinkingEnabled, setThinkingEnabled] = (0, import_react4.useState)(false);
+  const [lengthOpen, setLengthOpen] = (0, import_react4.useState)(false);
+  (0, import_react4.useEffect)(() => {
+    if (sharedData) {
+      setPosts(sharedData.posts);
+      setSuggestedPosts(sharedData.suggestedPosts);
+      setAutoDraftEnabled(sharedData.settings.autoDraftEnabled);
+      if (sharedData.aiSettings.availableModels.length > 0) {
+        setModels(sharedData.aiSettings.availableModels);
+      }
+      if (sharedData.aiSettings.defaultModel) {
+        setModelId(sharedData.aiSettings.defaultModel);
+      }
+      setLoading(false);
+    }
+  }, [sharedData]);
+  (0, import_react4.useEffect)(() => {
+    if (!sharedDataLoading) {
+      setLoading(false);
+    }
+  }, [sharedDataLoading]);
+  const currentModel = models.find((m) => m.id === modelId);
+  const draftCount = (0, import_react4.useMemo)(() => posts.filter((p) => p.status === "draft").length, [posts]);
+  const publishedCount = (0, import_react4.useMemo)(() => posts.filter((p) => p.status === "published").length, [posts]);
+  const filteredPosts = (0, import_react4.useMemo)(() => {
+    let result = posts.filter((p) => p.status !== "suggested" && p.status !== "deleted");
+    if (searchQuery) {
+      result = result.filter((p) => p.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+    if (activeTab === "drafts") result = result.filter((p) => p.status === "draft");
+    else if (activeTab === "published") result = result.filter((p) => p.status === "published");
+    return result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+  }, [posts, searchQuery, activeTab]);
+  async function handleDelete2(id) {
+    if (!confirm("Delete this post?")) return;
+    await fetch(`${apiBasePath}/posts/${id}`, { method: "DELETE" });
+    setPosts(posts.filter((p) => p.id !== id));
+    removeSharedPost(id);
+  }
+  async function handlePublish(id) {
+    await fetch(`${apiBasePath}/posts/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "published" })
+    });
+    setPosts(posts.map((p) => p.id === id ? { ...p, status: "published" } : p));
+  }
+  async function handleUnpublish(id) {
+    await fetch(`${apiBasePath}/posts/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "draft" })
+    });
+    setPosts(posts.map((p) => p.id === id ? { ...p, status: "draft" } : p));
+  }
+  async function handleAcceptSuggested(post) {
+    setActionLoading(post.id);
+    try {
+      const res = await fetch(`${apiBasePath}/posts/${post.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "draft" })
+      });
+      if (res.ok) navigate(`/editor/${post.slug}`);
+    } finally {
+      setActionLoading(null);
+    }
+  }
+  async function handleRejectSuggested(post) {
+    if (!confirm(`Reject "${post.title}"?`)) return;
+    setActionLoading(post.id);
+    try {
+      const res = await fetch(`${apiBasePath}/posts/${post.id}`, { method: "DELETE" });
+      if (res.ok) setSuggestedPosts(suggestedPosts.filter((p) => p.id !== post.id));
+    } finally {
+      setActionLoading(null);
+    }
+  }
+  function handleIdeaSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const idea = formData.get("idea")?.trim();
+    if (idea) {
+      const params = new URLSearchParams({
+        idea,
+        model: modelId,
+        length: String(length),
+        ...webEnabled && { web: "1" },
+        ...thinkingEnabled && { thinking: "1" }
+      });
+      navigate(`/editor?${params}`);
+    }
+  }
+  if (loading) {
+    return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(PageContainer, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "mt-4 mb-8", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-6 w-48 mb-4" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-24 w-full" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex border-b border-border mb-6 gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-10 w-16" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-10 w-20" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-10 w-24" })
+      ] }),
+      [1, 2, 3, 4, 5].map((i) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(Skeleton, { className: "h-16 mb-2" }, i))
+    ] });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(PageContainer, { className: "pb-16", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+      "button",
+      {
+        onClick: () => navigate("/editor"),
+        className: "sm:hidden fixed right-6 w-14 h-14 rounded-full shadow-lg z-50 bg-primary text-primary-foreground flex items-center justify-center",
+        style: { bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))" },
+        children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.Plus, { className: "w-6 h-6" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "mt-4 mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h2", { className: "text-lg font-semibold mb-4", children: "What's on your mind?" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("form", { onSubmit: handleIdeaSubmit, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+            "textarea",
+            {
+              name: "idea",
+              placeholder: "Describe your idea...",
+              rows: 3,
+              className: "w-full min-h-[100px] px-3 py-2 pr-14 border border-input rounded-md bg-transparent resize-none text-base focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring placeholder:text-muted-foreground",
+              onKeyDown: (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  e.currentTarget.form?.requestSubmit();
+                }
+              }
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+            "button",
+            {
+              type: "submit",
+              className: "absolute bottom-3 right-3 rounded-full w-10 h-10 bg-secondary text-secondary-foreground flex items-center justify-center hover:bg-secondary/80",
+              children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.ArrowUp, { className: "w-5 h-5" })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "relative", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(ControlButton, { onClick: () => setLengthOpen(!lengthOpen), children: [
+              length,
+              " words",
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.ChevronDown, { className: "w-3 h-3 opacity-60" })
+            ] }),
+            lengthOpen && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "absolute top-full left-0 mt-1 bg-popover border border-border rounded-md shadow-md z-50", children: LENGTH_OPTIONS.map((len) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+              "button",
+              {
+                onClick: () => {
+                  setLength(len);
+                  setLengthOpen(false);
+                },
+                className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center justify-between min-w-[120px]",
+                children: [
+                  len,
+                  " words",
+                  length === len && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.Check, { className: "w-4 h-4" })
+                ]
+              },
+              len
+            )) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(ControlButton, { onClick: () => setWebEnabled(!webEnabled), active: webEnabled, title: "Search the web (works with all models)", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.Globe, { className: "w-[18px] h-[18px]" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(ControlButton, { onClick: () => setThinkingEnabled(!thinkingEnabled), active: thinkingEnabled, title: "Enable thinking mode", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.Brain, { className: "w-[18px] h-[18px]" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(ModelSelector, { models, selectedModel: modelId, onModelChange: setModelId, currentModel })
+        ] })
+      ] })
+    ] }),
+    autoDraftEnabled && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("section", { className: "mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { onClick: () => setSuggestedOpen(!suggestedOpen), className: "flex items-center gap-2 text-lg font-semibold mb-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.ChevronDown, { className: `h-4 w-4 text-muted-foreground transition-transform ${suggestedOpen ? "" : "-rotate-90"}` }),
+        "Suggested",
+        suggestedPosts.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center", children: suggestedPosts.length })
+      ] }),
+      suggestedOpen && (suggestedPosts.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "space-y-2", children: suggestedPosts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex items-center justify-between gap-4 py-3 border-b border-border", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex-1 min-w-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "font-medium truncate", children: post.title }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex items-center gap-3 text-sm text-muted-foreground", children: [
+            post.topic && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "bg-muted px-2 py-0.5 rounded text-xs", children: post.topic.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { children: new Date(post.createdAt).toLocaleDateString() }),
+            post.sourceUrl && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+              "a",
+              {
+                href: post.sourceUrl,
+                target: "_blank",
+                rel: "noopener noreferrer",
+                className: "flex items-center gap-1 hover:text-foreground",
+                onClick: (e) => e.stopPropagation(),
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.ExternalLink, { className: "h-3 w-3" }),
+                  "Source"
+                ]
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex items-center gap-2 flex-shrink-0", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+            "button",
+            {
+              onClick: () => handleRejectSuggested(post),
+              disabled: actionLoading === post.id,
+              className: "p-2 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md",
+              children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.X, { className: "h-4 w-4" })
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+            "button",
+            {
+              onClick: () => handleAcceptSuggested(post),
+              disabled: actionLoading === post.id,
+              className: "px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm flex items-center gap-1",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.Check, { className: "h-4 w-4" }),
+                "Accept"
+              ]
+            }
+          )
+        ] })
+      ] }, post.id)) }) : /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { className: "text-muted-foreground text-sm", children: [
+        "No suggested essays \u2014",
+        " ",
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+          "button",
+          {
+            onClick: () => navigate("/settings/topics"),
+            className: "text-primary hover:underline",
+            children: "configure topics"
+          }
+        ),
+        " ",
+        "to generate drafts"
+      ] }))
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "relative flex items-center justify-between border-b border-border", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: `flex ${searchOpen ? "invisible sm:visible" : ""}`, children: ["all", "drafts", "published"].map((tab) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)(
+        "button",
+        {
+          onClick: () => setActiveTab(tab),
+          className: `px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-colors ${activeTab === tab ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`,
+          children: [
+            tab.charAt(0).toUpperCase() + tab.slice(1),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("span", { className: "text-muted-foreground ml-1", children: [
+              "(",
+              tab === "all" ? posts.filter((p) => p.status !== "suggested" && p.status !== "deleted").length : tab === "drafts" ? draftCount : publishedCount,
+              ")"
+            ] })
+          ]
+        },
+        tab
+      )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: `flex items-center gap-2 pb-2 ${searchOpen ? "absolute inset-x-0 sm:relative" : ""}`, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { onClick: () => navigate("/editor"), className: "hidden sm:flex p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.Plus, { className: "w-4 h-4" }) }),
+        searchOpen ? /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex items-center gap-2 flex-1 sm:flex-initial", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+            "input",
+            {
+              type: "search",
+              placeholder: "Search...",
+              value: searchQuery,
+              onChange: (e) => setSearchQuery(e.target.value),
+              autoFocus: true,
+              className: "flex-1 sm:w-48 px-3 py-1.5 text-base bg-background border border-border rounded-md outline-none focus-visible:border-ring"
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { onClick: () => {
+            setSearchOpen(false);
+            setSearchQuery("");
+          }, className: "p-2 text-muted-foreground hover:text-foreground sm:hidden", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.X, { className: "w-4 h-4" }) })
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { onClick: () => setSearchOpen(true), className: "p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.Search, { className: "w-4 h-4" }) })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("section", { children: filteredPosts.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "space-y-0", children: filteredPosts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+      PostItem,
+      {
+        post,
+        onNavigate: () => navigate(`/editor/${post.slug}`),
+        onDelete: () => handleDelete2(post.id),
+        onPublish: () => handlePublish(post.id),
+        onUnpublish: () => handleUnpublish(post.id),
+        showStatus: activeTab === "all"
+      },
+      post.id
+    )) }) : /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "text-muted-foreground py-8 text-center", children: searchQuery ? "No matching articles" : "No articles yet" }) })
+  ] });
+}
+function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStatus }) {
+  const [menuOpen, setMenuOpen] = (0, import_react4.useState)(false);
+  const menuRef = (0, import_react4.useRef)(null);
+  (0, import_react4.useEffect)(() => {
+    if (!menuOpen) return;
+    function handleClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [menuOpen]);
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "flex items-center justify-between py-4 border-b border-border group", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "flex-1 min-w-0", children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { onClick: onNavigate, className: "block text-left w-full", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { className: "font-medium truncate group-hover:text-muted-foreground", children: post.title || "Untitled" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { className: "text-sm text-muted-foreground mt-1 flex items-center gap-2", children: [
+        showStatus && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: `text-xs px-1.5 py-0.5 rounded uppercase font-medium ${post.status === "draft" ? "bg-ab-warning/20 text-ab-warning" : "bg-ab-success/20 text-ab-success"}`, children: post.status }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("span", { children: [
+          formatRelativeTime(post.updatedAt),
+          post.wordCount ? ` \xB7 ${post.wordCount} words` : ""
+        ] })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "relative", ref: menuRef, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "button",
+        {
+          onClick: () => setMenuOpen(!menuOpen),
+          className: "p-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-accent",
+          children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(import_lucide_react2.MoreVertical, { className: "w-4 h-4" })
+        }
+      ),
+      menuOpen && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-lg z-50 min-w-[12rem] md:min-w-[8rem] p-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+          "button",
+          {
+            onClick: () => {
+              onNavigate();
+              setMenuOpen(false);
+            },
+            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+            children: "Edit"
+          }
+        ),
+        post.status === "draft" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+          "button",
+          {
+            onClick: () => {
+              onPublish();
+              setMenuOpen(false);
+            },
+            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+            children: "Publish"
+          }
+        ),
+        post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+          "button",
+          {
+            onClick: () => {
+              onUnpublish();
+              setMenuOpen(false);
+            },
+            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm hover:bg-accent cursor-default",
+            children: "Unpublish"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "h-px bg-border my-1" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+          "button",
+          {
+            onClick: () => {
+              onDelete();
+              setMenuOpen(false);
+            },
+            className: "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0 text-left text-sm rounded-sm text-destructive hover:bg-accent cursor-default",
+            children: "Delete"
+          }
+        )
+      ] })
+    ] })
+  ] });
+}
+
+// src/ui/pages/EditorPage.tsx
+var import_react20 = require("react");
+var import_sonner = require("sonner");
+init_context();
+
+// src/ui/components/EditorToolbar.tsx
+var import_lucide_react8 = require("lucide-react");
+
+// src/ui/components/toolbar/ToolbarButton.tsx
+init_cn();
+var import_jsx_runtime7 = require("react/jsx-runtime");
+var toolbarButtonStyles = {
+  base: "px-3 py-2 text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center",
+  interactive: "active:bg-accent md:hover:bg-accent",
+  disabled: "disabled:opacity-50 disabled:cursor-not-allowed",
+  active: "bg-accent text-accent-foreground",
+  inactive: "text-muted-foreground",
+  /** Icon size for toolbar icons */
+  iconSize: "w-5 h-5"
+};
+function getToolbarButtonClass(active, disabled) {
+  return cn(
+    toolbarButtonStyles.base,
+    toolbarButtonStyles.interactive,
+    toolbarButtonStyles.disabled,
+    active && toolbarButtonStyles.active,
+    !active && toolbarButtonStyles.inactive
+  );
+}
+function ToolbarButton({ onClick, active, disabled, children, title }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(
+    "button",
+    {
+      type: "button",
+      onClick,
+      disabled,
+      title,
+      tabIndex: -1,
+      className: getToolbarButtonClass(active, disabled),
+      children
+    }
+  );
+}
+function Divider() {
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "w-px h-7 bg-border mx-1.5 shrink-0" });
+}
+function SkeletonButton() {
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Skeleton, { className: "h-9 w-9 shrink-0" });
+}
+
+// src/ui/components/toolbar/FormatButtons.tsx
+var import_react5 = require("react");
+var import_lucide_react3 = require("lucide-react");
+
+// src/lib/markdown-helpers.ts
+function insertAtCursor(textarea, before, after, markdown, onMarkdownChange) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selected = markdown.substring(start, end);
+  const newText = markdown.substring(0, start) + before + selected + after + markdown.substring(end);
+  onMarkdownChange(newText);
+  requestAnimationFrame(() => {
+    textarea.focus();
+    const newCursorPos = start + before.length + selected.length;
+    textarea.setSelectionRange(newCursorPos, newCursorPos);
+  });
+}
+function insertBlockAtCursor(textarea, prefix, markdown, onMarkdownChange) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  let lineStart = start;
+  while (lineStart > 0 && markdown[lineStart - 1] !== "\n") {
+    lineStart--;
+  }
+  let lineEnd = end;
+  while (lineEnd < markdown.length && markdown[lineEnd] !== "\n") {
+    lineEnd++;
+  }
+  const lineContent = markdown.substring(lineStart, lineEnd);
+  if (lineContent.startsWith(prefix)) {
+    const newText = markdown.substring(0, lineStart) + lineContent.substring(prefix.length) + markdown.substring(lineEnd);
+    onMarkdownChange(newText);
+  } else {
+    const newText = markdown.substring(0, lineStart) + prefix + lineContent + markdown.substring(lineEnd);
+    onMarkdownChange(newText);
+  }
+  requestAnimationFrame(() => {
+    textarea.focus();
+  });
+}
+function setHeadingAtCursor(textarea, level, markdown, onMarkdownChange) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  let lineStart = start;
+  while (lineStart > 0 && markdown[lineStart - 1] !== "\n") {
+    lineStart--;
+  }
+  let lineEnd = end;
+  while (lineEnd < markdown.length && markdown[lineEnd] !== "\n") {
+    lineEnd++;
+  }
+  const lineContent = markdown.substring(lineStart, lineEnd);
+  const withoutHeading = lineContent.replace(/^#{1,6}\s*/, "");
+  const newPrefix = "#".repeat(level) + " ";
+  const currentHeadingMatch = lineContent.match(/^(#{1,6})\s/);
+  if (currentHeadingMatch && currentHeadingMatch[1].length === level) {
+    const newText = markdown.substring(0, lineStart) + withoutHeading + markdown.substring(lineEnd);
+    onMarkdownChange(newText);
+  } else {
+    const newText = markdown.substring(0, lineStart) + newPrefix + withoutHeading + markdown.substring(lineEnd);
+    onMarkdownChange(newText);
+  }
+  requestAnimationFrame(() => {
+    textarea.focus();
+  });
+}
+function clearMarkdownFormatting(textarea, markdown, onMarkdownChange) {
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  if (start === end) return;
+  const selected = markdown.substring(start, end);
+  const cleaned = selected.replace(/\*\*(.+?)\*\*/g, "$1").replace(/\*(.+?)\*/g, "$1").replace(/~~(.+?)~~/g, "$1").replace(/`(.+?)`/g, "$1").replace(/\[(.+?)\]\(.+?\)/g, "$1");
+  const newText = markdown.substring(0, start) + cleaned + markdown.substring(end);
+  onMarkdownChange(newText);
+  requestAnimationFrame(() => {
+    textarea.focus();
+    textarea.setSelectionRange(start, start + cleaned.length);
+  });
+}
+
+// src/ui/components/toolbar/FormatButtons.tsx
+var import_jsx_runtime8 = require("react/jsx-runtime");
+function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownChange, aiGenerating, loading, apiBasePath = "/api/cms" }) {
+  const editor = editorProp;
+  const isMarkdownMode = !editor && textareaRef && markdown !== void 0 && onMarkdownChange;
+  const [hasSelection, setHasSelection] = (0, import_react5.useState)(false);
+  const [isRewriting, setIsRewriting] = (0, import_react5.useState)(false);
+  (0, import_react5.useEffect)(() => {
+    if (!editor) {
+      setHasSelection(false);
+      return;
+    }
+    const updateSelection = () => {
+      const { from, to } = editor.state.selection;
+      setHasSelection(from !== to);
+    };
+    editor.on("selectionUpdate", updateSelection);
+    editor.on("transaction", updateSelection);
+    return () => {
+      editor.off("selectionUpdate", updateSelection);
+      editor.off("transaction", updateSelection);
+    };
+  }, [editor]);
+  const handleRewrite = (0, import_react5.useCallback)(async () => {
+    if (!editor || isRewriting) return;
+    const { from, to } = editor.state.selection;
+    if (from === to) return;
+    const selectedText = editor.state.doc.textBetween(from, to, " ");
+    if (!selectedText.trim()) return;
+    setIsRewriting(true);
+    try {
+      const res = await fetch(`${apiBasePath}/ai/rewrite`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: selectedText })
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Rewrite failed");
+      }
+      const result = await res.json();
+      editor.chain().focus().deleteSelection().insertContent(result.text).run();
+    } catch (err) {
+      console.error("Rewrite error:", err);
+      alert(err instanceof Error ? err.message : "Failed to rewrite text");
+    } finally {
+      setIsRewriting(false);
+    }
+  }, [editor, isRewriting, apiBasePath]);
+  const setHeading = (level) => {
+    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
+      setHeadingAtCursor(textareaRef.current, level, markdown, onMarkdownChange);
+    }
+  };
+  const wrapSelection = (before, after) => {
+    if (editor) return;
+    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
+      insertAtCursor(textareaRef.current, before, after, markdown, onMarkdownChange);
+    }
+  };
+  if (loading) {
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(SkeletonButton, {})
+    ] });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleHeading({ level: 1 }).run() : setHeading(1),
+        active: editor?.isActive("heading", { level: 1 }),
+        disabled: aiGenerating,
+        title: "Heading 1",
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Heading1, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleHeading({ level: 2 }).run() : setHeading(2),
+        active: editor?.isActive("heading", { level: 2 }),
+        disabled: aiGenerating,
+        title: "Heading 2",
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Heading2, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleHeading({ level: 3 }).run() : setHeading(3),
+        active: editor?.isActive("heading", { level: 3 }),
+        disabled: aiGenerating,
+        title: "Heading 3",
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Heading3, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleBold().run() : wrapSelection("**", "**"),
+        active: editor?.isActive("bold"),
+        disabled: aiGenerating,
+        title: "Bold (\u2318B)",
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Bold, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleItalic().run() : wrapSelection("*", "*"),
+        active: editor?.isActive("italic"),
+        disabled: aiGenerating,
+        title: "Italic (\u2318I)",
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Italic, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleUnderline?.().run() : null,
+        active: editor?.isActive("underline"),
+        disabled: aiGenerating || !!isMarkdownMode,
+        title: "Underline (\u2318U)",
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Underline, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleStrike().run() : wrapSelection("~~", "~~"),
+        active: editor?.isActive("strike"),
+        disabled: aiGenerating,
+        title: "Strikethrough (\u2318\u21E7X)",
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Strikethrough, { className: "w-5 h-5" })
+      }
+    ),
+    !isMarkdownMode && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        ToolbarButton,
+        {
+          onClick: handleRewrite,
+          disabled: !editor || !hasSelection || isRewriting || aiGenerating,
+          title: !editor ? "Editor loading..." : hasSelection ? "Rewrite selection with AI" : "Select text to rewrite",
+          children: isRewriting ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Loader2, { className: "w-5 h-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Wand2, { className: "w-5 h-5" })
+        }
+      )
+    ] })
+  ] });
+}
+
+// src/ui/components/toolbar/BlockButtons.tsx
+var import_lucide_react4 = require("lucide-react");
+var import_jsx_runtime9 = require("react/jsx-runtime");
+function BlockButtons({ editor: editorProp, textareaRef, markdown, onMarkdownChange, aiGenerating, loading }) {
+  const editor = editorProp;
+  if (loading) {
+    return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(SkeletonButton, {})
+    ] });
+  }
+  const isMarkdownMode = !editor && textareaRef && markdown !== void 0 && onMarkdownChange;
+  const insertBlock = (prefix) => {
+    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
+      insertBlockAtCursor(textareaRef.current, prefix, markdown, onMarkdownChange);
+    }
+  };
+  const wrapSelection = (before, after) => {
+    if (editor) return;
+    if (textareaRef?.current && markdown !== void 0 && onMarkdownChange) {
+      insertAtCursor(textareaRef.current, before, after, markdown, onMarkdownChange);
+    }
+  };
+  const handleHorizontalRule = () => {
+    if (editor) {
+      editor.chain().focus().setHorizontalRule().run();
+    } else if (isMarkdownMode && textareaRef?.current) {
+      const textarea = textareaRef.current;
+      const start = textarea.selectionStart;
+      const newText = markdown.substring(0, start) + "\n---\n" + markdown.substring(start);
+      onMarkdownChange(newText);
+      requestAnimationFrame(() => textarea.focus());
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleBulletList().run() : insertBlock("- "),
+        active: editor?.isActive("bulletList"),
+        disabled: aiGenerating,
+        title: "Bullet list",
+        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.List, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleOrderedList().run() : insertBlock("1. "),
+        active: editor?.isActive("orderedList"),
+        disabled: aiGenerating,
+        title: "Numbered list",
+        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.ListOrdered, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleBlockquote().run() : insertBlock("> "),
+        active: editor?.isActive("blockquote"),
+        disabled: aiGenerating,
+        title: "Blockquote",
+        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.Quote, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
+      ToolbarButton,
+      {
+        onClick: () => editor ? editor.chain().focus().toggleCodeBlock().run() : wrapSelection("```\n", "\n```"),
+        active: editor?.isActive("codeBlock"),
+        disabled: aiGenerating,
+        title: "Code block",
+        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.Code2, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(ToolbarButton, { onClick: handleHorizontalRule, disabled: aiGenerating, title: "Horizontal rule", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.Minus, { className: "w-5 h-5" }) })
+  ] });
+}
+
+// src/ui/components/toolbar/MediaButtons.tsx
+var import_react6 = require("react");
+var import_lucide_react5 = require("lucide-react");
+var import_jsx_runtime10 = require("react/jsx-runtime");
+function MediaButtons({ editor: editorProp, textareaRef, markdown, onMarkdownChange, aiGenerating, loading, apiBasePath = "/api/cms" }) {
+  const editor = editorProp;
+  const fileInputRef = (0, import_react6.useRef)(null);
+  const isMarkdownMode = !editor && textareaRef && markdown !== void 0 && onMarkdownChange;
+  const handleLinkClick = (0, import_react6.useCallback)(() => {
+    if (editor) {
+      if (editor.isActive("link")) {
+        editor.chain().focus().unsetLink().run();
+        return;
+      }
+      const url = window.prompt("Enter URL:");
+      if (url) {
+        editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
+      }
+    } else if (isMarkdownMode) {
+      const url = window.prompt("Enter URL:");
+      if (url && textareaRef?.current) {
+        const textarea = textareaRef.current;
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const selected = markdown.substring(start, end) || "link text";
+        const newText = markdown.substring(0, start) + `[${selected}](${url})` + markdown.substring(end);
+        onMarkdownChange(newText);
+        requestAnimationFrame(() => textarea.focus());
+      }
+    }
+  }, [editor, isMarkdownMode, textareaRef, markdown, onMarkdownChange]);
+  const handleImageUpload = (0, import_react6.useCallback)(async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const maxSize = 4 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 4MB.`);
+      e.target.value = "";
+      return;
+    }
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      alert(`Invalid file type: ${file.type}. Supported types: JPEG, PNG, GIF, WebP.`);
+      e.target.value = "";
+      return;
+    }
+    const formData = new FormData();
+    formData.append("image", file);
+    try {
+      const res = await fetch(`${apiBasePath}/upload`, {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to upload image");
+        e.target.value = "";
+        return;
+      }
+      const url = data.url || data.data?.url;
+      if (url) {
+        if (editor) {
+          editor.chain().focus().setImage({ src: url }).run();
+        } else if (isMarkdownMode && textareaRef?.current) {
+          const textarea = textareaRef.current;
+          const start = textarea.selectionStart;
+          const newText = markdown.substring(0, start) + `![image](${url})` + markdown.substring(start);
+          onMarkdownChange(newText);
+          requestAnimationFrame(() => textarea.focus());
+        }
+      } else {
+        alert("Upload succeeded but no URL returned");
+      }
+    } catch (err) {
+      alert("Failed to upload image. Please try again.");
+      console.error("Image upload error:", err);
+    }
+    e.target.value = "";
+  }, [editor, isMarkdownMode, textareaRef, markdown, onMarkdownChange, apiBasePath]);
+  const handleClearFormatting = (0, import_react6.useCallback)(() => {
+    if (editor) {
+      editor.chain().focus().unsetAllMarks().clearNodes().run();
+    } else if (isMarkdownMode && textareaRef?.current && markdown && onMarkdownChange) {
+      clearMarkdownFormatting(textareaRef.current, markdown, onMarkdownChange);
+    }
+  }, [editor, isMarkdownMode, textareaRef, markdown, onMarkdownChange]);
+  if (loading) {
+    return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(SkeletonButton, {})
+    ] });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+      ToolbarButton,
+      {
+        onClick: handleLinkClick,
+        active: editor?.isActive("link"),
+        disabled: aiGenerating,
+        title: "Insert link",
+        children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react5.Link2, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(ToolbarButton, { onClick: () => fileInputRef.current?.click(), disabled: aiGenerating, title: "Insert image", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react5.Image, { className: "w-5 h-5" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+      "input",
+      {
+        ref: fileInputRef,
+        type: "file",
+        accept: "image/*",
+        onChange: handleImageUpload,
+        className: "hidden"
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(ToolbarButton, { onClick: handleClearFormatting, disabled: aiGenerating, title: "Clear formatting", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react5.RemoveFormatting, { className: "w-5 h-5" }) })
+  ] });
+}
+
+// src/ui/components/toolbar/HistoryButtons.tsx
+var import_react11 = require("react");
+var import_lucide_react7 = require("lucide-react");
+
+// src/ui/components/RevisionHistoryDropdown.tsx
+var import_react10 = require("react");
+var import_lucide_react6 = require("lucide-react");
+
+// src/ui/components/Dropdown.tsx
+var import_react9 = require("react");
+init_Portal();
+init_cn();
+var import_jsx_runtime13 = require("react/jsx-runtime");
+var DropdownContext = (0, import_react9.createContext)(null);
+function Dropdown({
+  trigger,
+  children,
+  align = "right",
+  className,
+  open: controlledOpen,
+  onOpenChange,
+  disabled
+}) {
+  const [internalOpen, setInternalOpen] = (0, import_react9.useState)(false);
+  const [position, setPosition] = (0, import_react9.useState)(null);
+  const [mounted, setMounted] = (0, import_react9.useState)(false);
+  const triggerRef = (0, import_react9.useRef)(null);
+  const menuRef = (0, import_react9.useRef)(null);
+  const isControlled = controlledOpen !== void 0;
+  const isOpen = isControlled ? controlledOpen : internalOpen;
+  const updatePosition = (0, import_react9.useCallback)(() => {
+    if (triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPosition({
+        top: rect.bottom + 4,
+        // 4px gap
+        left: rect.left,
+        right: window.innerWidth - rect.right
+      });
+    }
+  }, []);
+  const setOpen = (0, import_react9.useCallback)((value) => {
+    if (value) {
+      updatePosition();
+    } else {
+      setPosition(null);
+    }
+    if (!isControlled) {
+      setInternalOpen(value);
+    }
+    onOpenChange?.(value);
+  }, [isControlled, onOpenChange, updatePosition]);
+  (0, import_react9.useEffect)(() => {
+    setMounted(true);
+  }, []);
+  (0, import_react9.useEffect)(() => {
+    if (isControlled && controlledOpen && !position) {
+      updatePosition();
+    }
+    if (isControlled && !controlledOpen) {
+      setPosition(null);
+    }
+  }, [isControlled, controlledOpen, position, updatePosition]);
+  (0, import_react9.useEffect)(() => {
+    if (!isOpen) return;
+    const scrollY = window.scrollY;
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      document.body.style.overflow = "";
+      window.scrollTo(0, scrollY);
+    };
+  }, [isOpen]);
+  (0, import_react9.useEffect)(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, setOpen]);
+  (0, import_react9.useEffect)(() => {
+    if (!isOpen) return;
+    const handleUpdate = () => updatePosition();
+    window.addEventListener("scroll", handleUpdate, true);
+    window.addEventListener("resize", handleUpdate);
+    return () => {
+      window.removeEventListener("scroll", handleUpdate, true);
+      window.removeEventListener("resize", handleUpdate);
+    };
+  }, [isOpen, updatePosition]);
+  const handleTriggerClick = () => {
+    if (disabled) return;
+    setOpen(!isOpen);
+  };
+  const close = (0, import_react9.useCallback)(() => setOpen(false), [setOpen]);
+  const handleBackdropClick = (0, import_react9.useCallback)((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpen(false);
+  }, [setOpen]);
+  const menu = isOpen && mounted && position ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(AutobloggerPortal, { children: /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(DropdownContext.Provider, { value: { close }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+      "div",
+      {
+        className: "ab-dropdown-backdrop",
+        onClick: handleBackdropClick,
+        onMouseDown: handleBackdropClick
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+      "div",
+      {
+        ref: menuRef,
+        style: {
+          position: "fixed",
+          top: position.top,
+          ...align === "right" ? { right: position.right } : { left: position.left }
+        },
+        className: cn(
+          "z-[80] min-w-[160px] bg-popover text-popover-foreground border border-border rounded-md shadow-lg p-1 overscroll-contain",
+          className
+        ),
+        onWheel: (e) => e.stopPropagation(),
+        children
+      }
+    )
+  ] }) }) : null;
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_jsx_runtime13.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { ref: triggerRef, onClick: handleTriggerClick, className: "shrink-0", children: trigger }),
+    menu
+  ] });
+}
+function DropdownItem({
+  onClick,
+  destructive,
+  disabled,
+  children,
+  className
+}) {
+  const context = (0, import_react9.useContext)(DropdownContext);
+  const handleClick = () => {
+    if (!disabled) {
+      onClick?.();
+      context?.close();
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    "button",
+    {
+      type: "button",
+      onClick: handleClick,
+      disabled,
+      className: cn(
+        "w-full px-3 py-2.5 md:px-2 md:py-1.5 min-h-[44px] md:min-h-0",
+        "text-left text-sm rounded-sm cursor-default",
+        "active:bg-accent md:hover:bg-accent focus:bg-accent focus:outline-none",
+        destructive && "text-destructive",
+        disabled && "opacity-50 cursor-not-allowed",
+        className
+      ),
+      children
+    }
+  );
+}
+function DropdownDivider() {
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "h-px bg-border my-1" });
+}
+function DropdownLabel({ children }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "px-3 py-1.5 md:px-2 md:py-1 text-xs font-medium text-muted-foreground", children });
+}
+
+// src/ui/components/RevisionHistoryDropdown.tsx
+var import_jsx_runtime14 = require("react/jsx-runtime");
+function RevisionHistoryDropdown({
+  revisions,
+  loading,
+  previewLoading,
+  disabled,
+  isPreviewMode,
+  onOpen,
+  onSelect
+}) {
+  const [open, setOpen] = (0, import_react10.useState)(false);
+  const handleOpenChange = (isOpen) => {
+    if (isOpen && !open) {
+      onOpen();
+    }
+    setOpen(isOpen);
+  };
+  const trigger = /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(
+    "button",
+    {
+      type: "button",
+      disabled: disabled || isPreviewMode || previewLoading,
+      title: disabled ? "Save post to enable history" : "Revision history",
+      className: getToolbarButtonClass(false, disabled || isPreviewMode || previewLoading),
+      children: previewLoading ? /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(import_lucide_react6.Loader2, { className: `${toolbarButtonStyles.iconSize} animate-spin` }) : /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(import_lucide_react6.History, { className: toolbarButtonStyles.iconSize })
+    }
+  );
+  return /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)(
+    Dropdown,
+    {
+      trigger,
+      open,
+      onOpenChange: handleOpenChange,
+      disabled: disabled || isPreviewMode || previewLoading,
+      align: "right",
+      className: "w-64 max-h-80 overflow-y-auto p-0",
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(DropdownLabel, { children: "Revision History" }),
+        /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: "border-t border-border" }),
+        loading ? /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: "flex items-center justify-center py-4", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(import_lucide_react6.Loader2, { className: "h-4 w-4 animate-spin text-gray-500" }) }) : revisions.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: "py-4 text-center text-sm text-gray-500", children: "No revisions yet" }) : revisions.map((rev) => /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(DropdownItem, { onClick: () => onSelect(rev.id), children: /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "flex flex-col", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("span", { className: "text-sm truncate", children: rev.title || "Untitled" }),
+          /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("span", { className: "text-xs text-gray-500", children: formatRelativeTime(rev.createdAt) })
+        ] }) }, rev.id))
+      ]
+    }
+  );
+}
+
+// src/ui/components/toolbar/HistoryButtons.tsx
+var import_jsx_runtime15 = require("react/jsx-runtime");
+function HistoryButtons({
+  editor: editorProp,
+  textareaRef,
+  showMarkdown,
+  setShowMarkdown,
+  postSlug,
+  revisions,
+  aiGenerating,
+  loading
+}) {
+  const editor = editorProp;
+  const handleUndo = (0, import_react11.useCallback)(() => {
+    if (editor) {
+      editor.chain().focus().undo().run();
+    } else if (textareaRef?.current) {
+      textareaRef.current.focus();
+      document.execCommand("undo");
+    }
+  }, [editor, textareaRef]);
+  const handleRedo = (0, import_react11.useCallback)(() => {
+    if (editor) {
+      editor.chain().focus().redo().run();
+    } else if (textareaRef?.current) {
+      textareaRef.current.focus();
+      document.execCommand("redo");
+    }
+  }, [editor, textareaRef]);
+  if (loading) {
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(SkeletonButton, {})
+    ] });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      ToolbarButton,
+      {
+        onClick: handleUndo,
+        disabled: aiGenerating || (editor ? !editor.can().undo() : false),
+        title: "Undo (\u2318Z)",
+        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.Undo2, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      ToolbarButton,
+      {
+        onClick: handleRedo,
+        disabled: aiGenerating || (editor ? !editor.can().redo() : false),
+        title: "Redo (\u2318\u21E7Z)",
+        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.Redo2, { className: "w-5 h-5" })
+      }
+    ),
+    setShowMarkdown && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+        ToolbarButton,
+        {
+          onClick: () => setShowMarkdown(!showMarkdown),
+          active: showMarkdown,
+          disabled: aiGenerating,
+          title: showMarkdown ? "Switch to rich text editor" : "Switch to markdown mode",
+          children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.FileCode2, { className: "w-5 h-5" })
+        }
+      )
+    ] }),
+    revisions && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+        RevisionHistoryDropdown,
+        {
+          revisions: revisions.list,
+          loading: revisions.loading,
+          previewLoading: revisions.previewLoading,
+          disabled: aiGenerating || !postSlug,
+          isPreviewMode: !!revisions.previewing,
+          onOpen: revisions.fetch,
+          onSelect: revisions.preview
+        }
+      )
+    ] })
+  ] });
+}
+
+// src/ui/components/EditorToolbar.tsx
+var import_jsx_runtime16 = require("react/jsx-runtime");
+function EditorToolbar({
+  editor,
+  textareaRef,
+  markdown,
+  onMarkdownChange,
+  showMarkdown,
+  setShowMarkdown,
+  postSlug,
+  revisions,
+  aiGenerating,
+  hasSelection,
+  selectionHasComment,
+  onAddComment,
+  commentsCount,
+  onViewComments,
+  loading = false,
+  apiBasePath = "/api/cms"
+}) {
+  if (loading) {
+    return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "fixed top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 pt-4 pb-2 border-b border-border bg-background overflow-x-auto", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(FormatButtons, { loading: true }),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(BlockButtons, { loading: true }),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(MediaButtons, { loading: true }),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(HistoryButtons, { loading: true }),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Divider, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(SkeletonButton, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(SkeletonButton, {})
+    ] });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "fixed top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 pt-4 pb-2 border-b border-border bg-background overflow-x-auto", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      FormatButtons,
+      {
+        editor,
+        textareaRef,
+        markdown,
+        onMarkdownChange,
+        aiGenerating,
+        apiBasePath
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      BlockButtons,
+      {
+        editor,
+        textareaRef,
+        markdown,
+        onMarkdownChange,
+        aiGenerating
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      MediaButtons,
+      {
+        editor,
+        textareaRef,
+        markdown,
+        onMarkdownChange,
+        aiGenerating,
+        apiBasePath
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      HistoryButtons,
+      {
+        editor,
+        textareaRef,
+        showMarkdown,
+        setShowMarkdown,
+        postSlug,
+        revisions,
+        aiGenerating
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Divider, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      ToolbarButton,
+      {
+        onClick: onAddComment ?? (() => {
+        }),
+        disabled: aiGenerating || !hasSelection || !onAddComment,
+        title: hasSelection ? "New comment (\u2318\u2325M)" : selectionHasComment ? "Text already has a comment" : "Select text to comment",
+        children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react8.MessageSquarePlus, { className: "w-5 h-5" })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
+      ToolbarButton,
+      {
+        onClick: onViewComments ?? (() => {
+        }),
+        disabled: aiGenerating || !onViewComments,
+        title: "View all comments",
+        children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("span", { className: "flex items-center gap-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react8.MessageSquare, { className: "w-5 h-5" }),
+          commentsCount !== void 0 && commentsCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "text-xs tabular-nums", children: commentsCount })
+        ] })
+      }
+    )
+  ] });
 }
 
 // src/ui/components/CommentsPanel.tsx
-var import_react15 = require("react");
+var import_react13 = require("react");
+init_Portal();
 var import_lucide_react10 = require("lucide-react");
+init_cn();
 
 // src/ui/components/CommentThread.tsx
-var import_react14 = require("react");
+var import_react12 = require("react");
 var import_lucide_react9 = require("lucide-react");
+init_cn();
 
 // src/lib/comments.ts
 function canDeleteComment(comment, currentUserEmail, isAdmin) {
@@ -8426,7 +9478,7 @@ function createCommentsClient(apiBasePath = "/api/cms") {
 }
 
 // src/ui/components/CommentThread.tsx
-var import_jsx_runtime18 = require("react/jsx-runtime");
+var import_jsx_runtime17 = require("react/jsx-runtime");
 function formatRelativeTime2(dateStr) {
   const date = new Date(dateStr);
   const now = /* @__PURE__ */ new Date();
@@ -8451,11 +9503,11 @@ function CommentThread({
   onResolve,
   onClick
 }) {
-  const [isReplying, setIsReplying] = (0, import_react14.useState)(false);
-  const [isEditing, setIsEditing] = (0, import_react14.useState)(false);
-  const [replyContent, setReplyContent] = (0, import_react14.useState)("");
-  const [editContent, setEditContent] = (0, import_react14.useState)(comment.content);
-  const [loading, setLoading] = (0, import_react14.useState)(false);
+  const [isReplying, setIsReplying] = (0, import_react12.useState)(false);
+  const [isEditing, setIsEditing] = (0, import_react12.useState)(false);
+  const [replyContent, setReplyContent] = (0, import_react12.useState)("");
+  const [editContent, setEditContent] = (0, import_react12.useState)(comment.content);
+  const [loading, setLoading] = (0, import_react12.useState)(false);
   const canEdit = canEditComment(comment, currentUserEmail);
   const canDelete = canDeleteComment(comment, currentUserEmail, isAdmin);
   const isOwn = comment.user.email === currentUserEmail;
@@ -8489,7 +9541,7 @@ function CommentThread({
       setLoading(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
     "div",
     {
       role: "button",
@@ -8507,41 +9559,41 @@ function CommentThread({
         comment.resolved && "opacity-60"
       ),
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-start justify-between gap-2 mb-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-2 text-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "font-medium", children: isOwn ? "You" : comment.user.name || comment.user.email.split("@")[0] }),
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "text-ab-neutral", children: formatRelativeTime2(comment.createdAt) }),
-            comment.resolved && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "inline-flex items-center gap-1 text-xs text-ab-success", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Check, { className: "w-3 h-3" }),
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-start justify-between gap-2 mb-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center gap-2 text-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "font-medium", children: isOwn ? "You" : comment.user.name || comment.user.email.split("@")[0] }),
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-ab-neutral", children: formatRelativeTime2(comment.createdAt) }),
+            comment.resolved && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "inline-flex items-center gap-1 text-xs text-ab-success", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react9.Check, { className: "w-3 h-3" }),
               "Resolved"
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { onClick: (e) => e.stopPropagation(), children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
             Dropdown,
             {
-              trigger: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+              trigger: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
                 "button",
                 {
                   type: "button",
                   className: "w-6 h-6 rounded hover:bg-ab-neutral-subtle flex items-center justify-center text-ab-neutral",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.MoreHorizontal, { className: "w-4 h-4" })
+                  children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react9.MoreHorizontal, { className: "w-4 h-4" })
                 }
               ),
               align: "right",
               className: "min-w-[140px]",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DropdownItem, { onClick: onResolve, children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "flex items-center gap-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Check, { className: "w-4 h-4" }),
+                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(DropdownItem, { onClick: onResolve, children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "flex items-center gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react9.Check, { className: "w-4 h-4" }),
                   comment.resolved ? "Unresolve" : "Resolve"
                 ] }) }),
-                canEdit && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DropdownItem, { onClick: () => setIsEditing(true), children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "flex items-center gap-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Pencil, { className: "w-4 h-4" }),
+                canEdit && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(DropdownItem, { onClick: () => setIsEditing(true), children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "flex items-center gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react9.Pencil, { className: "w-4 h-4" }),
                   "Edit"
                 ] }) }),
-                canDelete && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(import_jsx_runtime18.Fragment, { children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DropdownDivider, {}),
-                  /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(DropdownItem, { onClick: handleDelete2, destructive: true, children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "flex items-center gap-2", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Trash2, { className: "w-4 h-4" }),
+                canDelete && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, { children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(DropdownDivider, {}),
+                  /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(DropdownItem, { onClick: handleDelete2, destructive: true, children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "flex items-center gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react9.Trash2, { className: "w-4 h-4" }),
                     "Delete"
                   ] }) })
                 ] })
@@ -8549,13 +9601,13 @@ function CommentThread({
             }
           ) })
         ] }),
-        comment.quotedText && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "mb-2 px-2 py-1 bg-ab-highlight-strong rounded text-sm italic text-ab-neutral-strong line-clamp-2", children: [
+        comment.quotedText && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "mb-2 px-2 py-1 bg-ab-highlight-strong rounded text-sm italic text-ab-neutral-strong line-clamp-2", children: [
           '"',
           comment.quotedText,
           '"'
         ] }),
-        isEditing ? /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+        isEditing ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
             "textarea",
             {
               value: editContent,
@@ -8580,8 +9632,8 @@ function CommentThread({
               className: "w-full min-h-[60px] max-h-[120px] px-3 py-2 border border-ab-neutral-border rounded-md bg-ab-surface-input resize-none text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex gap-2 justify-end", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex gap-2 justify-end", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
               "button",
               {
                 type: "button",
@@ -8595,7 +9647,7 @@ function CommentThread({
                 children: "Cancel"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
               "button",
               {
                 type: "button",
@@ -8609,8 +9661,8 @@ function CommentThread({
               }
             )
           ] })
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-sm whitespace-pre-wrap", children: comment.content }),
-        comment.replies && comment.replies.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "mt-3 pl-3 border-l-2 border-ab-neutral-border space-y-3", children: comment.replies.map((reply) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "text-sm whitespace-pre-wrap", children: comment.content }),
+        comment.replies && comment.replies.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "mt-3 pl-3 border-l-2 border-ab-neutral-border space-y-3", children: comment.replies.map((reply) => /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
           ReplyItem,
           {
             reply,
@@ -8618,8 +9670,8 @@ function CommentThread({
           },
           reply.id
         )) }),
-        !isEditing && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "mt-3", children: isReplying ? /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+        !isEditing && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "mt-3", children: isReplying ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
             "textarea",
             {
               value: replyContent,
@@ -8645,8 +9697,8 @@ function CommentThread({
               onClick: (e) => e.stopPropagation()
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex gap-2 justify-end", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex gap-2 justify-end", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
               "button",
               {
                 type: "button",
@@ -8660,7 +9712,7 @@ function CommentThread({
                 children: "Cancel"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
               "button",
               {
                 type: "button",
@@ -8674,7 +9726,7 @@ function CommentThread({
               }
             )
           ] })
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
           "button",
           {
             type: "button",
@@ -8684,7 +9736,7 @@ function CommentThread({
             },
             className: "inline-flex items-center gap-1 text-sm text-ab-neutral hover:text-foreground transition-colors",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react9.Reply, { className: "w-3.5 h-3.5" }),
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(import_lucide_react9.Reply, { className: "w-3.5 h-3.5" }),
               "Reply"
             ]
           }
@@ -8698,17 +9750,17 @@ function ReplyItem({
   currentUserEmail
 }) {
   const isOwn = reply.user.email === currentUserEmail;
-  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-sm", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-2 mb-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "font-medium", children: isOwn ? "You" : reply.user.name || reply.user.email.split("@")[0] }),
-      /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("span", { className: "text-ab-neutral text-xs", children: formatRelativeTime2(reply.createdAt) })
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "text-sm", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "flex items-center gap-2 mb-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "font-medium", children: isOwn ? "You" : reply.user.name || reply.user.email.split("@")[0] }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "text-ab-neutral text-xs", children: formatRelativeTime2(reply.createdAt) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "whitespace-pre-wrap text-ab-neutral-strong", children: reply.content })
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "whitespace-pre-wrap text-ab-neutral-strong", children: reply.content })
   ] });
 }
 
 // src/ui/components/CommentsPanel.tsx
-var import_jsx_runtime19 = require("react/jsx-runtime");
+var import_jsx_runtime18 = require("react/jsx-runtime");
 function CommentsPanel({
   comments,
   currentUserEmail,
@@ -8725,20 +9777,20 @@ function CommentsPanel({
   onClose,
   onClearSelection
 }) {
-  const [newComment, setNewComment] = (0, import_react15.useState)("");
-  const [isAnimating, setIsAnimating] = (0, import_react15.useState)(false);
-  const [isVisible, setIsVisible] = (0, import_react15.useState)(false);
-  const [mounted, setMounted] = (0, import_react15.useState)(false);
-  const [creating, setCreating] = (0, import_react15.useState)(false);
-  const [showResolved, setShowResolved] = (0, import_react15.useState)(false);
-  const textareaRef = (0, import_react15.useRef)(null);
-  const commentsEndRef = (0, import_react15.useRef)(null);
+  const [newComment, setNewComment] = (0, import_react13.useState)("");
+  const [isAnimating, setIsAnimating] = (0, import_react13.useState)(false);
+  const [isVisible, setIsVisible] = (0, import_react13.useState)(false);
+  const [mounted, setMounted] = (0, import_react13.useState)(false);
+  const [creating, setCreating] = (0, import_react13.useState)(false);
+  const [showResolved, setShowResolved] = (0, import_react13.useState)(false);
+  const textareaRef = (0, import_react13.useRef)(null);
+  const commentsEndRef = (0, import_react13.useRef)(null);
   const openComments = comments.filter((c) => !c.resolved);
   const resolvedComments = comments.filter((c) => c.resolved);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     setMounted(true);
   }, []);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (isOpen) {
       setIsVisible(true);
       document.body.style.overflow = "hidden";
@@ -8764,19 +9816,19 @@ function CommentsPanel({
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     if (selectedText && isOpen) {
       textareaRef.current?.focus();
     }
   }, [selectedText, isOpen]);
-  (0, import_react15.useEffect)(() => {
+  (0, import_react13.useEffect)(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
       textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`;
     }
   }, [newComment]);
-  const handleCreateComment = (0, import_react15.useCallback)(async () => {
+  const handleCreateComment = (0, import_react13.useCallback)(async () => {
     if (!newComment.trim() || !selectedText) return;
     setCreating(true);
     try {
@@ -8804,8 +9856,8 @@ function CommentsPanel({
     }
   };
   if (!isVisible || !mounted) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(AutobloggerPortal, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(AutobloggerPortal, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
       "div",
       {
         className: cn(
@@ -8815,7 +9867,7 @@ function CommentsPanel({
         onClick: onClose
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)(
       "div",
       {
         role: "dialog",
@@ -8828,35 +9880,35 @@ function CommentsPanel({
           isAnimating ? "translate-x-0" : "translate-x-full"
         ),
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-shrink-0 border-b border-ab-neutral-border px-4 py-3 flex items-center justify-between", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.MessageSquare, { className: "w-4 h-4 text-gray-500" }),
-              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h2", { className: "font-medium", children: "Comments" }),
-              openComments.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { className: "text-xs text-gray-500", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex-shrink-0 border-b border-ab-neutral-border px-4 py-3 flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react10.MessageSquare, { className: "w-4 h-4 text-gray-500" }),
+              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("h2", { className: "font-medium", children: "Comments" }),
+              openComments.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "text-xs text-gray-500", children: [
                 "(",
                 openComments.length,
                 ")"
               ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
               "button",
               {
                 type: "button",
                 onClick: onClose,
                 className: "w-8 h-8 rounded-md hover:bg-ab-neutral-subtle flex items-center justify-center text-ab-neutral",
                 "aria-label": "Close comments",
-                children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.X, { className: "w-4 h-4" })
+                children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react10.X, { className: "w-4 h-4" })
               }
             )
           ] }),
-          selectedText && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-shrink-0 border-b border-ab-neutral-border px-4 py-5 bg-ab-neutral-subtle/50", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex-1 px-2 py-1 bg-ab-highlight-strong rounded text-sm italic text-ab-neutral-strong line-clamp-2", children: [
+          selectedText && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex-shrink-0 border-b border-ab-neutral-border px-4 py-5 bg-ab-neutral-subtle/50", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-center justify-between mb-3", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex-1 px-2 py-1 bg-ab-highlight-strong rounded text-sm italic text-ab-neutral-strong line-clamp-2", children: [
                 '"',
                 selectedText,
                 '"'
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
                 "button",
                 {
                   type: "button",
@@ -8870,8 +9922,8 @@ function CommentsPanel({
                 }
               )
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "flex items-end gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "flex items-end gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
                 "textarea",
                 {
                   ref: textareaRef,
@@ -8884,23 +9936,23 @@ function CommentsPanel({
                   enterKeyHint: "send"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
                 "button",
                 {
                   type: "button",
                   onClick: handleCreateComment,
                   disabled: creating || !newComment.trim(),
                   className: "w-10 h-10 flex-shrink-0 rounded-full bg-ab-neutral-subtle border border-ab-neutral-border flex items-center justify-center disabled:opacity-50 hover:bg-ab-neutral-subtle/80",
-                  children: creating ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.Loader2, { className: "h-5 w-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.ArrowUp, { className: "h-5 w-5" })
+                  children: creating ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react10.Loader2, { className: "h-5 w-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react10.ArrowUp, { className: "h-5 w-5" })
                 }
               )
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: cn("flex-1 overflow-y-auto", selectedText && "hidden"), children: comments.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "text-center max-w-xs px-6", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.MessageSquare, { className: "w-8 h-8 mx-auto mb-2 text-gray-400" }),
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "text-gray-500 text-sm", children: "No comments yet. Select text and click the comment button to add one." })
-          ] }) }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "p-4 space-y-3", children: [
-            openComments.map((comment) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: cn("flex-1 overflow-y-auto", selectedText && "hidden"), children: comments.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "text-center max-w-xs px-6", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react10.MessageSquare, { className: "w-8 h-8 mx-auto mb-2 text-gray-400" }),
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("p", { className: "text-gray-500 text-sm", children: "No comments yet. Select text and click the comment button to add one." })
+          ] }) }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "p-4 space-y-3", children: [
+            openComments.map((comment) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
               CommentThread,
               {
                 comment,
@@ -8915,22 +9967,22 @@ function CommentsPanel({
               },
               comment.id
             )),
-            resolvedComments.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "pt-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            resolvedComments.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("div", { className: "pt-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
                 "button",
                 {
                   type: "button",
                   onClick: () => setShowResolved(!showResolved),
                   className: "w-full text-left text-sm text-ab-neutral hover:text-foreground transition-colors py-2",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { className: "inline-flex items-center gap-1", children: [
-                    showResolved ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.ChevronDown, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(import_lucide_react10.ChevronRight, { className: "w-4 h-4" }),
+                  children: /* @__PURE__ */ (0, import_jsx_runtime18.jsxs)("span", { className: "inline-flex items-center gap-1", children: [
+                    showResolved ? /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react10.ChevronDown, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(import_lucide_react10.ChevronRight, { className: "w-4 h-4" }),
                     "Resolved (",
                     resolvedComments.length,
                     ")"
                   ] })
                 }
               ),
-              showResolved && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "space-y-3 mt-2", children: resolvedComments.map((comment) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+              showResolved && /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "space-y-3 mt-2", children: resolvedComments.map((comment) => /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(
                 CommentThread,
                 {
                   comment,
@@ -8946,7 +9998,7 @@ function CommentsPanel({
                 comment.id
               )) })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { ref: commentsEndRef })
+            /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { ref: commentsEndRef })
           ] }) })
         ]
       }
@@ -8955,11 +10007,11 @@ function CommentsPanel({
 }
 
 // src/ui/components/TagsSection.tsx
-var import_react17 = require("react");
+var import_react15 = require("react");
 
 // src/ui/components/ExpandableSection.tsx
-var import_react16 = require("react");
-var import_jsx_runtime20 = require("react/jsx-runtime");
+var import_react14 = require("react");
+var import_jsx_runtime19 = require("react/jsx-runtime");
 function ExpandableSection({
   title,
   summary,
@@ -8969,7 +10021,7 @@ function ExpandableSection({
   children,
   className = ""
 }) {
-  const [internalExpanded, setInternalExpanded] = (0, import_react16.useState)(defaultExpanded);
+  const [internalExpanded, setInternalExpanded] = (0, import_react14.useState)(defaultExpanded);
   const isControlled = controlledExpanded !== void 0;
   const isExpanded = isControlled ? controlledExpanded : internalExpanded;
   const handleToggle = () => {
@@ -8979,37 +10031,38 @@ function ExpandableSection({
     }
     onExpandedChange?.(newValue);
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
       "button",
       {
         type: "button",
         onClick: handleToggle,
         className: "flex items-center justify-between gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-full",
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { children: title }),
-            summary && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-xs text-muted-foreground/70", children: summary })
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { children: title }),
+            summary && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "text-xs text-muted-foreground/70", children: summary })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
             "svg",
             {
               className: `h-4 w-4 shrink-0 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`,
               fill: "none",
               viewBox: "0 0 24 24",
               stroke: "currentColor",
-              children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 9l-7 7-7-7" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 9l-7 7-7-7" })
             }
           )
         ]
       }
     ),
-    isExpanded && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "mt-4 space-y-3", children })
+    isExpanded && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "mt-4 space-y-3", children })
   ] });
 }
 
 // src/ui/components/TagsSection.tsx
-var import_jsx_runtime21 = require("react/jsx-runtime");
+init_context();
+var import_jsx_runtime20 = require("react/jsx-runtime");
 function TagsSection({
   tags,
   onTagsChange,
@@ -9017,11 +10070,11 @@ function TagsSection({
   disabled = false
 }) {
   const { navigate } = useDashboardContext();
-  const [isExpanded, setIsExpanded] = (0, import_react17.useState)(false);
-  const [availableTags, setAvailableTags] = (0, import_react17.useState)([]);
-  const [loading, setLoading] = (0, import_react17.useState)(false);
-  const [dropdownOpen, setDropdownOpen] = (0, import_react17.useState)(false);
-  (0, import_react17.useEffect)(() => {
+  const [isExpanded, setIsExpanded] = (0, import_react15.useState)(false);
+  const [availableTags, setAvailableTags] = (0, import_react15.useState)([]);
+  const [loading, setLoading] = (0, import_react15.useState)(false);
+  const [dropdownOpen, setDropdownOpen] = (0, import_react15.useState)(false);
+  (0, import_react15.useEffect)(() => {
     if (isExpanded && availableTags.length === 0) {
       setLoading(true);
       fetch(`${apiBasePath}/tags`).then((res) => res.ok ? res.json() : Promise.reject()).then((data) => {
@@ -9044,7 +10097,7 @@ function TagsSection({
     (at) => !tags.some((t) => t.id === at.id)
   );
   const tagSummary = tags.length === 0 ? "no tags" : tags.length === 1 ? "1 tag" : `${tags.length} tags`;
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
     ExpandableSection,
     {
       title: "Tags",
@@ -9052,44 +10105,44 @@ function TagsSection({
       expanded: isExpanded,
       onExpandedChange: setIsExpanded,
       children: [
-        tags.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "flex flex-wrap gap-2", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+        tags.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "flex flex-wrap gap-2", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
           "span",
           {
             className: "inline-flex items-center gap-1 px-2 py-1 rounded-md bg-muted text-muted-foreground text-sm",
             children: [
               tag.name,
-              !disabled && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+              !disabled && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
                 "button",
                 {
                   type: "button",
                   onClick: () => handleRemoveTag(tag.id),
                   className: "hover:text-red-500 transition-colors",
-                  children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: "h-3 w-3", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M6 18L18 6M6 6l12 12" }) })
+                  children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("svg", { className: "h-3 w-3", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M6 18L18 6M6 6l12 12" }) })
                 }
               )
             ]
           },
           tag.id
         )) }),
-        !disabled && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(import_jsx_runtime21.Fragment, { children: loading ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-sm text-muted-foreground", children: "Loading tags..." }) : unselectedTags.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "max-w-[200px]", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+        !disabled && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(import_jsx_runtime20.Fragment, { children: loading ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "Loading tags..." }) : unselectedTags.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "max-w-[200px]", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           Dropdown,
           {
             open: dropdownOpen,
             onOpenChange: setDropdownOpen,
             align: "left",
             className: "max-h-48 overflow-auto",
-            trigger: /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+            trigger: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(
               "button",
               {
                 type: "button",
                 className: "w-full h-8 px-3 text-sm text-left border border-border rounded-md bg-transparent flex items-center justify-between",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "text-muted-foreground", children: "Add tag..." }),
-                  /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("svg", { className: "h-4 w-4 text-muted-foreground", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 9l-7 7-7-7" }) })
+                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("span", { className: "text-muted-foreground", children: "Add tag..." }),
+                  /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("svg", { className: "h-4 w-4 text-muted-foreground", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M19 9l-7 7-7-7" }) })
                 ]
               }
             ),
-            children: unselectedTags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+            children: unselectedTags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
               DropdownItem,
               {
                 onClick: () => handleAddTag(tag.id),
@@ -9098,10 +10151,10 @@ function TagsSection({
               tag.id
             ))
           }
-        ) }) : availableTags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("p", { className: "text-sm text-muted-foreground", children: [
+        ) }) : availableTags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("p", { className: "text-sm text-muted-foreground", children: [
           "No tags available.",
           " ",
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
             "button",
             {
               type: "button",
@@ -9110,30 +10163,31 @@ function TagsSection({
               children: "Create tags in Settings"
             }
           )
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "text-sm text-muted-foreground", children: "All tags added" }) })
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { className: "text-sm text-muted-foreground", children: "All tags added" }) })
       ]
     }
   );
 }
 
 // src/ui/hooks/useComments.ts
-var import_react18 = require("react");
+var import_react16 = require("react");
+init_comment_mark();
 function useComments({
   postId: initialPostId,
   editor,
   apiBasePath = "/api/cms",
   onSave
 }) {
-  const [postId, setPostId] = (0, import_react18.useState)(initialPostId);
-  const [comments, setComments] = (0, import_react18.useState)([]);
-  const [loading, setLoading] = (0, import_react18.useState)(false);
-  const [activeCommentId, setActiveCommentId] = (0, import_react18.useState)(null);
-  const [selectedText, setSelectedText] = (0, import_react18.useState)(null);
+  const [postId, setPostId] = (0, import_react16.useState)(initialPostId);
+  const [comments, setComments] = (0, import_react16.useState)([]);
+  const [loading, setLoading] = (0, import_react16.useState)(false);
+  const [activeCommentId, setActiveCommentId] = (0, import_react16.useState)(null);
+  const [selectedText, setSelectedText] = (0, import_react16.useState)(null);
   const client = createCommentsClient(apiBasePath);
-  (0, import_react18.useEffect)(() => {
+  (0, import_react16.useEffect)(() => {
     setPostId(initialPostId);
   }, [initialPostId]);
-  (0, import_react18.useEffect)(() => {
+  (0, import_react16.useEffect)(() => {
     if (!postId) {
       setComments([]);
       return;
@@ -9146,7 +10200,7 @@ function useComments({
       }
     }).catch(console.error).finally(() => setLoading(false));
   }, [postId, editor]);
-  const createComment = (0, import_react18.useCallback)(async (content) => {
+  const createComment = (0, import_react16.useCallback)(async (content) => {
     if (!selectedText) return;
     let effectivePostId = postId;
     if (!effectivePostId && onSave) {
@@ -9169,7 +10223,7 @@ function useComments({
     setComments((prev) => [{ ...comment, replies: [] }, ...prev]);
     setSelectedText(null);
   }, [postId, selectedText, editor, onSave, client]);
-  const replyToComment = (0, import_react18.useCallback)(async (parentId, content) => {
+  const replyToComment = (0, import_react16.useCallback)(async (parentId, content) => {
     if (!postId) return;
     const reply = await client.createComment(postId, {
       quotedText: "",
@@ -9182,7 +10236,7 @@ function useComments({
       )
     );
   }, [postId, client]);
-  const editComment = (0, import_react18.useCallback)(async (commentId, content) => {
+  const editComment = (0, import_react16.useCallback)(async (commentId, content) => {
     if (!postId) return;
     const updated = await client.updateComment(postId, commentId, content);
     setComments(
@@ -9202,7 +10256,7 @@ function useComments({
       })
     );
   }, [postId, client]);
-  const removeComment = (0, import_react18.useCallback)(async (commentId) => {
+  const removeComment = (0, import_react16.useCallback)(async (commentId) => {
     if (!postId) return;
     await client.deleteComment(postId, commentId);
     if (editor) {
@@ -9219,7 +10273,7 @@ function useComments({
       }));
     });
   }, [postId, editor, client]);
-  const resolveComment = (0, import_react18.useCallback)(async (commentId) => {
+  const resolveComment = (0, import_react16.useCallback)(async (commentId) => {
     if (!postId) return;
     const updated = await client.toggleResolve(postId, commentId);
     if (editor) {
@@ -9234,7 +10288,7 @@ function useComments({
       (prev) => prev.map((c) => c.id === commentId ? { ...c, resolved: updated.resolved } : c)
     );
   }, [postId, editor, comments, selectedText, client]);
-  const resolveAllComments = (0, import_react18.useCallback)(async () => {
+  const resolveAllComments = (0, import_react16.useCallback)(async () => {
     if (!postId) return;
     await client.resolveAllComments(postId);
     if (editor) {
@@ -9246,7 +10300,7 @@ function useComments({
       (prev) => prev.map((c) => ({ ...c, resolved: true }))
     );
   }, [postId, editor, comments, client]);
-  const scrollToCommentMark = (0, import_react18.useCallback)((commentId) => {
+  const scrollToCommentMark = (0, import_react16.useCallback)((commentId) => {
     if (editor) {
       scrollToComment(editor, commentId);
     }
@@ -9272,357 +10326,25 @@ function useComments({
   };
 }
 
-// src/ui/hooks/useChat.tsx
-var import_react19 = require("react");
-var import_jsx_runtime22 = require("react/jsx-runtime");
-var ChatContext = (0, import_react19.createContext)(null);
-function parseEditBlocks(content) {
-  const editRegex = /:::edit\s*([\s\S]*?)\s*:::/g;
-  const edits = [];
-  let cleanContent = content;
-  let match;
-  while ((match = editRegex.exec(content)) !== null) {
-    try {
-      const edit = JSON.parse(match[1]);
-      edits.push(edit);
-      cleanContent = cleanContent.replace(match[0], "");
-    } catch {
-      console.warn("Failed to parse edit block:", match[1]);
-    }
-  }
-  cleanContent = cleanContent.replace(/\n{3,}/g, "\n\n").trim();
-  return { edits, cleanContent };
-}
-function stripEditBlocksForDisplay(content) {
-  let cleaned = content.replace(/:::edit\s*[\s\S]*?\s*:::/g, "");
-  cleaned = cleaned.replace(/:::edit\s*[\s\S]*$/g, "");
-  cleaned = cleaned.replace(/:::[a-z]*$/gi, "");
-  cleaned = cleaned.replace(/\n{3,}/g, "\n\n").trim();
-  return cleaned;
-}
-function cleanPlanOutput(content) {
-  let cleaned = content;
-  const planMatch = cleaned.match(/<plan>([\s\S]*?)<\/plan>/i);
-  if (planMatch) {
-    cleaned = planMatch[1];
-  } else {
-    const openTagMatch = cleaned.match(/<plan>([\s\S]*)/i);
-    if (openTagMatch) {
-      cleaned = openTagMatch[1];
-    }
-  }
-  const lines = cleaned.split("\n");
-  let lastBulletIndex = -1;
-  for (let i = lines.length - 1; i >= 0; i--) {
-    if (lines[i].trim().startsWith("- ")) {
-      lastBulletIndex = i;
-      break;
-    }
-  }
-  if (lastBulletIndex === -1) {
-    return cleaned.trim();
-  }
-  return lines.slice(0, lastBulletIndex + 1).join("\n").trim();
-}
-function ChatProvider({
-  children,
-  apiBasePath = "/api/cms",
-  chatApiPath,
-  historyApiPath = "/api/chat/history"
-}) {
-  const [messages, setMessages] = (0, import_react19.useState)([]);
-  const [essayContext, setEssayContext] = (0, import_react19.useState)(null);
-  const [isStreaming, setIsStreaming] = (0, import_react19.useState)(false);
-  const [isOpen, setIsOpen] = (0, import_react19.useState)(false);
-  const [mode, setMode] = (0, import_react19.useState)("ask");
-  const [webSearchEnabled, setWebSearchEnabled] = (0, import_react19.useState)(false);
-  const [thinkingEnabled, setThinkingEnabled] = (0, import_react19.useState)(false);
-  const [selectedModel, setSelectedModel] = (0, import_react19.useState)("claude-sonnet");
-  const editHandlerRef = (0, import_react19.useRef)(null);
-  const expandPlanHandlerRef = (0, import_react19.useRef)(null);
-  const historyLoadedRef = (0, import_react19.useRef)(false);
-  const abortControllerRef = (0, import_react19.useRef)(null);
-  const essayContextRef = (0, import_react19.useRef)(null);
-  (0, import_react19.useEffect)(() => {
-    essayContextRef.current = essayContext;
-  }, [essayContext]);
-  const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
-  const registerEditHandler = (0, import_react19.useCallback)((handler) => {
-    editHandlerRef.current = handler;
-  }, []);
-  const registerExpandPlanHandler = (0, import_react19.useCallback)((handler) => {
-    expandPlanHandlerRef.current = handler;
-  }, []);
-  const stopStreaming = (0, import_react19.useCallback)(() => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-    setIsStreaming(false);
-  }, []);
-  (0, import_react19.useEffect)(() => {
-    if (historyLoadedRef.current) return;
-    historyLoadedRef.current = true;
-    fetch(historyApiPath).then((res) => res.ok ? res.json() : []).then((data) => {
-      if (data.length > 0) {
-        setMessages(data.map((m) => ({ role: m.role, content: m.content })));
-      }
-    }).catch(() => {
-    });
-  }, [historyApiPath]);
-  const saveMessage = (0, import_react19.useCallback)((role, content) => {
-    fetch(historyApiPath, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role, content })
-    }).catch(() => {
-    });
-  }, [historyApiPath]);
-  const sendMessage = (0, import_react19.useCallback)(async (content) => {
-    if (!content.trim() || isStreaming) return;
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
-    const userMessage = { role: "user", content: content.trim() };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setIsStreaming(true);
-    saveMessage("user", content.trim());
-    const assistantMessage = { role: "assistant", content: "", mode };
-    setMessages([...newMessages, assistantMessage]);
-    try {
-      const response = await fetch(resolvedChatApiPath, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: newMessages,
-          essayContext,
-          mode,
-          model: selectedModel,
-          useWebSearch: webSearchEnabled,
-          useThinking: thinkingEnabled
-        }),
-        signal
-      });
-      if (!response.ok) {
-        if (response.status === 503) {
-          throw new Error("AI service temporarily unavailable. Please try again.");
-        }
-        if (response.status === 429) {
-          throw new Error("Rate limit exceeded. Please wait before trying again.");
-        }
-        const errorText = await response.text();
-        let errorMessage = `Server error (${response.status}). Please try again.`;
-        try {
-          const errorJson = JSON.parse(errorText);
-          if (errorJson.error) {
-            errorMessage = errorJson.error;
-          }
-        } catch {
-        }
-        throw new Error(errorMessage);
-      }
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No response body");
-      const decoder = new TextDecoder();
-      let assistantContent = "";
-      let appliedEdits = false;
-      let buffer = "";
-      while (true) {
-        const { done, value: value2 } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value2, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || "";
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6);
-            if (data === "[DONE]") continue;
-            try {
-              const parsed = JSON.parse(data);
-              if (parsed.error) {
-                throw new Error(parsed.error);
-              }
-              if (parsed.text) {
-                assistantContent += parsed.text;
-              }
-            } catch (parseError) {
-              if (parseError instanceof Error && parseError.message !== "Unexpected token") {
-                throw parseError;
-              }
-            }
-          }
-        }
-        const displayContent = mode === "agent" ? stripEditBlocksForDisplay(assistantContent) : assistantContent;
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = { role: "assistant", content: displayContent, mode };
-          return updated;
-        });
-      }
-      if (mode === "agent" && editHandlerRef.current && essayContextRef.current) {
-        const { edits, cleanContent } = parseEditBlocks(assistantContent);
-        const previousState = {
-          title: essayContextRef.current.title,
-          subtitle: essayContextRef.current.subtitle || "",
-          markdown: essayContextRef.current.markdown
-        };
-        for (const edit of edits) {
-          const success = editHandlerRef.current(edit);
-          if (success) appliedEdits = true;
-        }
-        if (edits.length > 0) {
-          const finalContent = cleanContent || "Edit applied.";
-          setMessages((prev) => {
-            const updated = [...prev];
-            updated[updated.length - 1] = {
-              role: "assistant",
-              content: finalContent,
-              mode,
-              appliedEdits,
-              previousState: appliedEdits ? previousState : void 0
-            };
-            return updated;
-          });
-          saveMessage("assistant", finalContent);
-        } else {
-          saveMessage("assistant", assistantContent);
-        }
-      } else if (mode === "plan") {
-        const cleanedContent = cleanPlanOutput(assistantContent);
-        setMessages((prev) => {
-          const updated = [...prev];
-          updated[updated.length - 1] = {
-            role: "assistant",
-            content: cleanedContent,
-            mode
-          };
-          return updated;
-        });
-        saveMessage("assistant", cleanedContent);
-      } else {
-        saveMessage("assistant", assistantContent);
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        return;
-      }
-      console.error("Chat error:", error);
-      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[updated.length - 1] = { role: "assistant", content: `Error: ${errorMessage}` };
-        return updated;
-      });
-    } finally {
-      abortControllerRef.current = null;
-      setIsStreaming(false);
-    }
-  }, [messages, isStreaming, essayContext, mode, webSearchEnabled, thinkingEnabled, selectedModel, saveMessage, resolvedChatApiPath]);
-  const clearMessages = (0, import_react19.useCallback)(() => {
-    setMessages([]);
-  }, []);
-  const addMessage = (0, import_react19.useCallback)((role, content) => {
-    const message = { role, content };
-    setMessages((prev) => [...prev, message]);
-    saveMessage(role, content);
-  }, [saveMessage]);
-  const undoEdit = (0, import_react19.useCallback)((messageIndex) => {
-    const message = messages[messageIndex];
-    if (!message?.previousState || !editHandlerRef.current) return;
-    const success = editHandlerRef.current({
-      type: "replace_all",
-      title: message.previousState.title,
-      subtitle: message.previousState.subtitle,
-      markdown: message.previousState.markdown
-    });
-    if (success) {
-      setMessages((prev) => {
-        const updated = [...prev];
-        updated[messageIndex] = {
-          ...updated[messageIndex],
-          appliedEdits: false,
-          previousState: void 0
-        };
-        return updated;
-      });
-    }
-  }, [messages]);
-  const expandPlan = (0, import_react19.useCallback)((wordCount = 800) => {
-    if (!expandPlanHandlerRef.current) return;
-    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
-    if (!lastAssistantMessage?.content) return;
-    expandPlanHandlerRef.current(lastAssistantMessage.content, wordCount);
-    setIsOpen(false);
-  }, [messages]);
-  const value = (0, import_react19.useMemo)(() => ({
-    messages,
-    essayContext,
-    isStreaming,
-    isOpen,
-    mode,
-    webSearchEnabled,
-    thinkingEnabled,
-    selectedModel,
-    setEssayContext,
-    sendMessage,
-    stopStreaming,
-    addMessage,
-    clearMessages,
-    setIsOpen,
-    setMode,
-    setWebSearchEnabled,
-    setThinkingEnabled,
-    setSelectedModel,
-    registerEditHandler,
-    undoEdit,
-    registerExpandPlanHandler,
-    expandPlan
-  }), [
-    messages,
-    essayContext,
-    isStreaming,
-    isOpen,
-    mode,
-    webSearchEnabled,
-    thinkingEnabled,
-    selectedModel,
-    sendMessage,
-    stopStreaming,
-    addMessage,
-    clearMessages,
-    registerEditHandler,
-    undoEdit,
-    registerExpandPlanHandler,
-    expandPlan
-  ]);
-  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(ChatContext.Provider, { value, children });
-}
-function useChatContext() {
-  const context = (0, import_react19.useContext)(ChatContext);
-  if (!context) {
-    throw new Error("useChatContext must be used within a ChatProvider");
-  }
-  return context;
-}
-function useChatContextOptional() {
-  return (0, import_react19.useContext)(ChatContext);
-}
-
 // src/ui/pages/EditorPage.tsx
-var import_jsx_runtime23 = require("react/jsx-runtime");
+init_useChat();
+var import_jsx_runtime24 = require("react/jsx-runtime");
+var TiptapEditor2 = (0, import_react20.lazy)(
+  () => Promise.resolve().then(() => (init_TiptapEditor(), TiptapEditor_exports)).then((m) => ({ default: m.TiptapEditor }))
+);
 function ContentSkeleton({ styles }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-2 mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-8 w-4/5" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-5 w-3/5" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-3 w-24" }) })
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2 mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-8 w-4/5" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-5 w-3/5" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-3 w-24" }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-3/4" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-5/6" })
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-3/4" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-5/6" })
     ] })
   ] });
 }
@@ -9640,11 +10362,11 @@ function AutoResizeTextarea({
       ref.current.style.height = `${ref.current.scrollHeight}px`;
     }
   }, [value]);
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
     "textarea",
     {
       ref,
-      value,
+      value: value ?? "",
       onChange: (e) => onChange(e.target.value),
       placeholder,
       disabled,
@@ -10349,8 +11071,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   const words = countWords(post.markdown);
   const isPublished = post.status === "published";
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col h-full", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex flex-col h-full", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
         EditorToolbar,
         {
           textareaRef,
@@ -10360,17 +11082,17 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           loading: true
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("main", { className: "flex-1 overflow-auto pb-20 pt-[41px]", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(ContentSkeleton, { styles }) })
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("main", { className: "flex-1 overflow-auto pb-20 pt-[41px]", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ContentSkeleton, { styles }) })
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex flex-col h-full", children: [
-    previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "bg-ab-warning/15 border-b border-ab-warning/30 px-4 py-2 flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "text-sm text-ab-warning", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex flex-col h-full", children: [
+    previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "bg-ab-warning/15 border-b border-ab-warning/30 px-4 py-2 flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "text-sm text-ab-warning", children: [
         "Previewing revision from ",
         new Date(previewingRevision.createdAt).toLocaleString()
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "button",
           {
             onClick: cancelRevisionPreview,
@@ -10378,7 +11100,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             children: "Cancel"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           "button",
           {
             onClick: restoreRevision,
@@ -10388,7 +11110,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         )
       ] })
     ] }),
-    !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+    !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
       EditorToolbar,
       {
         editor: showMarkdown ? null : editor,
@@ -10417,9 +11139,9 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         onViewComments: () => setCommentsOpen(true)
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("main", { className: `flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y ${!previewingRevision ? "pt-[41px]" : ""}`, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("header", { className: "space-y-2 mb-8", children: [
-        generating && !post.title ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("main", { className: `flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y ${!previewingRevision ? "pt-[41px]" : ""}`, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("header", { className: "space-y-2 mb-8", children: [
+        generating && !post.title ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           AutoResizeTextarea,
           {
             value: post.title,
@@ -10429,7 +11151,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
         ),
-        generating && !post.subtitle ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+        generating && !post.subtitle ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           AutoResizeTextarea,
           {
             value: post.subtitle,
@@ -10439,15 +11161,15 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "space-y-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-3/4" }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(Skeleton, { className: "h-4 w-5/6" })
-      ] }) : showMarkdown ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-3/4" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-5/6" })
+      ] }) : showMarkdown ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
         "textarea",
         {
           ref: textareaRef,
@@ -10457,8 +11179,12 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           disabled: generating || !!previewingRevision,
           className: `${styles.prose} w-full bg-transparent border-none outline-none resize-none overflow-hidden placeholder-muted-foreground leading-relaxed font-mono text-sm ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
         }
-      ) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
-        TiptapEditor,
+      ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_react20.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-3/4" })
+      ] }), children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        TiptapEditor2,
         {
           content: post.markdown,
           onChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
@@ -10482,15 +11208,15 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             setCommentsOpen(true);
           }
         }
-      ) }),
-      !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "mt-12 pt-8 border-t border-border space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground w-14", children: "URL" }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground/70", children: urlPrefix }),
-          isPublished ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "flex items-center gap-1.5 text-ab-neutral-strong", children: [
+      ) }) }),
+      !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mt-12 pt-8 border-t border-border space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground w-14", children: "URL" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground/70", children: urlPrefix }),
+          isPublished ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "flex items-center gap-1.5 text-ab-neutral-strong", children: [
             post.slug,
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("svg", { className: "w-3 h-3 text-muted-foreground/70", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("svg", { className: "w-3 h-3 text-muted-foreground/70", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "input",
             {
               type: "text",
@@ -10501,13 +11227,13 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             }
           )
         ] }) }),
-        wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-start gap-2 p-3 rounded-md bg-ab-warning/10 border border-ab-warning/30 text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("svg", { className: "w-4 h-4 text-ab-warning mt-0.5 flex-shrink-0", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "text-ab-warning", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "font-medium", children: "URL change detected." }),
+        wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-start gap-2 p-3 rounded-md bg-ab-warning/10 border border-ab-warning/30 text-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("svg", { className: "w-4 h-4 text-ab-warning mt-0.5 flex-shrink-0", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "text-ab-warning", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium", children: "URL change detected." }),
             " ",
             "Existing links to ",
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("code", { className: "px-1 py-0.5 bg-ab-warning/20 rounded text-xs", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("code", { className: "px-1 py-0.5 bg-ab-warning/20 rounded text-xs", children: [
               urlPrefix,
               originalSlug
             ] }),
@@ -10519,7 +11245,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             setPost((prev) => ({ ...prev, [name]: value }));
           };
           if (!field.label) {
-            return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+            return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               field.component,
               {
                 value: post[field.name],
@@ -10530,9 +11256,9 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
               }
             ) }, field.name);
           }
-          return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex items-center justify-between text-sm gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2 flex-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground w-14 flex-shrink-0", children: field.label }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-between text-sm gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2 flex-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground w-14 flex-shrink-0", children: field.label }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
               field.component,
               {
                 value: post[field.name],
@@ -10544,7 +11270,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             ) })
           ] }) }, field.name);
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
           TagsSection,
           {
             tags: post.tags || [],
@@ -10553,49 +11279,49 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
             disabled: saving || generating
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center justify-between text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "text-muted-foreground", children: "Status" }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: isPublished ? "text-xs text-ab-success-muted" : "text-xs text-muted-foreground/70", children: isPublished ? "Published" : "Draft" })
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between text-sm", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground", children: "Status" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: isPublished ? "text-xs text-ab-success-muted" : "text-xs text-muted-foreground/70", children: isPublished ? "Published" : "Draft" })
           ] }),
-          isPublished ? hasUnsavedChanges ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+          isPublished ? hasUnsavedChanges ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
             "button",
             {
               onClick: () => savePost(),
               disabled: saving || generating,
               className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
               children: [
-                savingAs && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                savingAs && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
                 ] }),
                 "Update"
               ]
             }
-          ) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+          ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
             "button",
             {
               onClick: handleUnpublish,
               className: "px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors",
               children: "Unpublish"
             }
-          ) : /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+          ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
             "button",
             {
               onClick: handlePublish,
               disabled: saving || generating,
               className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
               children: [
-                savingAs === "published" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                savingAs === "published" && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
                 ] }),
                 "Publish"
               ]
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "text-sm text-muted-foreground pt-2 border-t border-border", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "text-sm text-muted-foreground pt-2 border-t border-border", children: [
           words.toLocaleString(),
           " words \xB7 ~",
           Math.ceil(words / 200),
@@ -10603,21 +11329,21 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "flex items-center justify-end text-sm text-muted-foreground", children: generating ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { className: "hover:text-foreground transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none", style: { paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-end text-sm text-muted-foreground", children: generating ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { className: "hover:text-foreground transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
       "button",
       {
         onClick: cancelRevisionPreview,
         className: "hover:text-foreground transition-colors",
         children: "Press Esc to cancel"
       }
-    ) : isPublished && post.publishedAt ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { children: [
+    ) : isPublished && post.publishedAt ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { children: [
       "Published ",
       formatSavedTime(new Date(post.publishedAt))
-    ] }) : lastSaved ? /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { children: [
+    ] }) : lastSaved ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { children: [
       "Saved ",
       formatSavedTime(lastSaved)
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { children: "Not saved yet" }) }) }),
-    currentUserEmail && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { children: "Not saved yet" }) }) }),
+    currentUserEmail && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
       CommentsPanel,
       {
         comments: comments.list,
@@ -10639,69 +11365,15 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   ] });
 }
 
-// src/ui/pages/SettingsPage.tsx
+// src/ui/pages/settings/index.tsx
+init_context();
+
+// src/ui/pages/settings/UsersSettings.tsx
 var import_react21 = require("react");
 var import_lucide_react11 = require("lucide-react");
-var import_jsx_runtime24 = require("react/jsx-runtime");
-function SettingsPage({ subPath }) {
-  const { navigate, sharedData, sharedDataLoading } = useDashboardContext();
-  const counts = sharedData?.counts || {};
-  const autoDraftEnabled = sharedData?.settings?.autoDraftEnabled ?? false;
-  const loading = sharedDataLoading;
-  const allSettingsLinks = [
-    { path: "/settings/users", label: "Users", description: "Manage who can access the CMS", countKey: "users" },
-    { path: "/settings/posts", label: "All Posts", description: "Manage all posts", countKey: "posts" },
-    { path: "/settings/tags", label: "Tags", description: "Organize posts with tags", countKey: "tags" },
-    { path: "/settings/ai", label: "AI Settings", description: "Configure AI models and rules" },
-    { path: "/settings/integrations", label: "CMS Integrations", description: "Connect to external CMS systems" },
-    { path: "/settings/revisions", label: "Revisions", description: "View revision history" },
-    { path: "/settings/comments", label: "Comments", description: "Manage post comments" },
-    { path: "/settings/topics", label: "Topics", description: "RSS subscriptions for auto-draft", countKey: "topics" },
-    { path: "/settings/general", label: "General", description: "Post URLs and site settings" }
-  ];
-  const settingsLinks = autoDraftEnabled ? allSettingsLinks : allSettingsLinks.filter((link) => link.path !== "/settings/topics");
-  if (!subPath || subPath === "/") {
-    if (loading) {
-      return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-7 w-24 mb-6" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: [1, 2, 3, 4, 5, 6].map((i) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-4 sm:p-6 border border-border rounded-lg", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-16" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-8 w-12 mt-2" })
-        ] }, i)) })
-      ] });
-    }
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold pb-4 mb-6 border-b border-border", children: "Settings" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: settingsLinks.map((item) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-        "button",
-        {
-          onClick: () => navigate(item.path),
-          className: "p-4 sm:p-6 border border-border rounded-lg text-left hover:bg-accent transition-colors",
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: item.label }),
-            item.countKey ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-2xl font-bold mt-1", children: counts[item.countKey] ?? 0 }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground mt-1", children: "Configure \u2192" })
-          ]
-        },
-        item.path
-      )) })
-    ] });
-  }
-  const pageName = subPath.slice(1);
-  const revisionDetailMatch = pageName.match(/^revisions\/(.+)$/);
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-8", children: [
-    pageName === "general" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(GeneralSettingsContent, {}),
-    pageName === "users" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(UsersSettingsContent, {}),
-    pageName === "ai" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(AISettingsContent, {}),
-    pageName === "tags" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(TagsSettingsContent, {}),
-    pageName === "topics" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(TopicsSettingsContent, {}),
-    pageName === "integrations" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(IntegrationsSettingsContent, {}),
-    pageName === "posts" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PostsSettingsContent, {}),
-    pageName === "revisions" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(RevisionsSettingsContent, {}),
-    revisionDetailMatch && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(RevisionDetailContent, { revisionId: revisionDetailMatch[1] }),
-    pageName === "comments" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(CommentsSettingsContent, {})
-  ] });
-}
-function UsersSettingsContent() {
+init_context();
+var import_jsx_runtime25 = require("react/jsx-runtime");
+function UsersSettings() {
   const { apiBasePath } = useDashboardContext();
   const [users, setUsers] = (0, import_react21.useState)([]);
   const [loading, setLoading] = (0, import_react21.useState)(true);
@@ -10776,14 +11448,14 @@ function UsersSettingsContent() {
     if (role === "drafter") return "border border-border text-foreground";
     return "bg-secondary text-secondary-foreground";
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "space-y-6", children: showForm ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "max-w-md", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-between mb-6", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: editingUser ? "Edit User" : "Add User" }) }),
-    formError && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4", children: formError }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium", children: "Email *" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "space-y-6", children: showForm ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "max-w-md", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "flex items-center justify-between mb-6", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { className: "text-lg font-semibold", children: editingUser ? "Edit User" : "Add User" }) }),
+    formError && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4", children: formError }),
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { htmlFor: "email", className: "block text-sm font-medium", children: "Email *" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
           "input",
           {
             type: "email",
@@ -10796,9 +11468,9 @@ function UsersSettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium", children: "Name" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { htmlFor: "name", className: "block text-sm font-medium", children: "Name" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
           "input",
           {
             type: "text",
@@ -10810,9 +11482,9 @@ function UsersSettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "role", className: "block text-sm font-medium", children: "Role" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("label", { htmlFor: "role", className: "block text-sm font-medium", children: "Role" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
           "select",
           {
             id: "role",
@@ -10820,51 +11492,51 @@ function UsersSettingsContent() {
             onChange: (e) => setFormRole(e.target.value),
             className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "drafter", children: "Drafter" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "writer", children: "Writer" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "admin", children: "Admin" })
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("option", { value: "drafter", children: "Drafter" }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("option", { value: "writer", children: "Writer" }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("option", { value: "admin", children: "Admin" })
             ]
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex gap-4 pt-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "submit", disabled: saving, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50", children: saving ? editingUser ? "Saving..." : "Creating..." : editingUser ? "Save Changes" : "Create User" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "button", onClick: () => {
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex gap-4 pt-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { type: "submit", disabled: saving, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50", children: saving ? editingUser ? "Saving..." : "Creating..." : editingUser ? "Save Changes" : "Create User" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { type: "button", onClick: () => {
           setShowForm(false);
           resetForm();
         }, className: "px-4 py-2 text-muted-foreground hover:text-foreground", children: "Cancel" })
       ] })
     ] })
-  ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "Users" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: openNewForm, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm", children: "Add User" })
+  ] }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("h2", { className: "text-lg font-semibold", children: "Users" }),
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { onClick: openNewForm, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm", children: "Add User" })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "hidden md:block rounded-md border border-border", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "bg-muted/50", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Email" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Name" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Role" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "px-4 py-3 text-right text-sm font-medium text-muted-foreground", children: "Actions" })
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "hidden md:block rounded-md border border-border", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("table", { className: "w-full", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("thead", { className: "bg-muted/50", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Email" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Name" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Role" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("th", { className: "px-4 py-3 text-right text-sm font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "divide-y divide-border", children: users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-sm max-w-[250px] truncate", children: user.email }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-sm text-muted-foreground max-w-[150px] truncate", children: user.name || "\u2014" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-sm text-muted-foreground", children: new Date(user.createdAt).toLocaleDateString() }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "px-4 py-3 text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative inline-block", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("tbody", { className: "divide-y divide-border", children: users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("tr", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("td", { className: "px-4 py-3 text-sm max-w-[250px] truncate", children: user.email }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("td", { className: "px-4 py-3 text-sm text-muted-foreground max-w-[150px] truncate", children: user.name || "\u2014" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("td", { className: "px-4 py-3 text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("td", { className: "px-4 py-3 text-sm text-muted-foreground", children: new Date(user.createdAt).toLocaleDateString() }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("td", { className: "px-4 py-3 text-right", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
               "button",
               {
                 onClick: () => setMenuOpen(menuOpen === user.id ? null : user.id),
                 className: "p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-accent",
-                children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+                children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
               }
             ),
-            menuOpen === user.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            menuOpen === user.id && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
                 "button",
                 {
                   onClick: () => {
@@ -10875,8 +11547,8 @@ function UsersSettingsContent() {
                   children: "Edit"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "h-px bg-border my-1" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "h-px bg-border my-1" }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
                 "button",
                 {
                   onClick: () => handleDeleteUser(user.id, user.email),
@@ -10888,32 +11560,32 @@ function UsersSettingsContent() {
           ] }) })
         ] }, user.id)) })
       ] }),
-      users.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
+      users.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "md:hidden divide-y divide-border rounded-md border border-border bg-background", children: [
-      users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium truncate", children: user.email }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role })
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "md:hidden divide-y divide-border rounded-md border border-border bg-background", children: [
+      users.map((user) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "font-medium truncate", children: user.email }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
             user.name || "No name",
             " \xB7 Created ",
             new Date(user.createdAt).toLocaleDateString()
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
             "button",
             {
               onClick: () => setMenuOpen(menuOpen === user.id ? null : user.id),
               className: "p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-accent",
-              children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
             }
           ),
-          menuOpen === user.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          menuOpen === user.id && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
               "button",
               {
                 onClick: () => {
@@ -10924,8 +11596,8 @@ function UsersSettingsContent() {
                 children: "Edit"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "h-px bg-border my-1" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "h-px bg-border my-1" }),
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
               "button",
               {
                 onClick: () => handleDeleteUser(user.id, user.email),
@@ -10936,64 +11608,21 @@ function UsersSettingsContent() {
           ] })
         ] })
       ] }, user.id)),
-      users.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
+      users.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
     ] })
   ] }) });
 }
-function CollapsibleTemplate({
-  label,
-  value,
-  defaultValue,
-  onChange,
-  onReset,
-  placeholders,
-  disabled
-}) {
-  const [open, setOpen] = (0, import_react21.useState)(false);
-  const isCustom = value !== null;
-  const displayValue = value ?? defaultValue;
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mt-2", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-      "button",
-      {
-        type: "button",
-        onClick: () => setOpen(!open),
-        className: "flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground",
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronDown, { className: `h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}` }),
-          isCustom ? `Edit prompt template (customized)` : `Edit prompt template`
-        ]
-      }
-    ),
-    open && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mt-2 space-y-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-xs text-muted-foreground", children: [
-          "Placeholders: ",
-          placeholders
-        ] }),
-        isCustom && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("button", { type: "button", onClick: onReset, className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.RotateCcw, { className: "h-3 w-3" }),
-          " Reset to default"
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-        "textarea",
-        {
-          value: displayValue,
-          onChange: (e) => onChange(e.target.value),
-          rows: 10,
-          className: "w-full px-3 py-2 border border-input rounded-md bg-transparent resize-none font-mono text-xs",
-          disabled
-        }
-      )
-    ] })
-  ] });
-}
-function GeneralSettingsContent() {
+
+// src/ui/pages/settings/GeneralSettings.tsx
+var import_react22 = require("react");
+var import_lucide_react12 = require("lucide-react");
+init_context();
+var import_jsx_runtime26 = require("react/jsx-runtime");
+function GeneralSettings() {
   const { apiBasePath, sharedData, refetchSharedData } = useDashboardContext();
-  const [postUrlPattern, setPostUrlPattern] = (0, import_react21.useState)(sharedData?.settings?.postUrlPattern ?? "/e/{slug}");
-  const [saving, setSaving] = (0, import_react21.useState)(false);
-  const [saved, setSaved] = (0, import_react21.useState)(false);
+  const [postUrlPattern, setPostUrlPattern] = (0, import_react22.useState)(sharedData?.settings?.postUrlPattern ?? "/e/{slug}");
+  const [saving, setSaving] = (0, import_react22.useState)(false);
+  const [saved, setSaved] = (0, import_react22.useState)(false);
   async function handleSave() {
     setSaving(true);
     setSaved(false);
@@ -11007,19 +11636,19 @@ function GeneralSettingsContent() {
     await refetchSharedData();
     setTimeout(() => setSaved(false), 2e3);
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "General Settings" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure site-wide settings." })
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { className: "text-lg font-semibold", children: "General Settings" }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure site-wide settings." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-6 space-y-4", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-base font-medium", children: "Post URLs" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure the URL pattern for published posts." })
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "p-6 space-y-4", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h3", { className: "text-base font-medium", children: "Post URLs" }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure the URL pattern for published posts." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "postUrlPattern", className: "text-sm font-medium leading-none", children: "URL Pattern" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { htmlFor: "postUrlPattern", className: "text-sm font-medium leading-none", children: "URL Pattern" }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           "input",
           {
             id: "postUrlPattern",
@@ -11030,51 +11659,57 @@ function GeneralSettingsContent() {
             className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("p", { className: "text-sm text-muted-foreground", children: [
           "Use ",
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "{slug}" }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "{slug}" }),
           " as a placeholder for the post slug. Example: ",
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: [
             "/blog/",
             "{slug}"
           ] })
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
         "button",
         {
           onClick: handleSave,
           disabled: saving,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
           children: [
-            saving && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
+            saving && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(import_lucide_react12.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
             saving ? "Saving..." : "Save"
           ]
         }
       ),
-      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-ab-success", children: "Saved!" })
+      saved && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "text-sm text-ab-success", children: "Saved!" })
     ] })
   ] });
 }
-function IntegrationsSettingsContent() {
+
+// src/ui/pages/settings/IntegrationsSettings.tsx
+var import_react23 = require("react");
+var import_lucide_react13 = require("lucide-react");
+init_context();
+var import_jsx_runtime27 = require("react/jsx-runtime");
+function IntegrationsSettings() {
   const { apiBasePath, refetchSharedData } = useDashboardContext();
-  const [prismicEnabled, setPrismicEnabled] = (0, import_react21.useState)(false);
-  const [prismicRepository, setPrismicRepository] = (0, import_react21.useState)("");
-  const [prismicWriteToken, setPrismicWriteToken] = (0, import_react21.useState)("");
-  const [prismicDocumentType, setPrismicDocumentType] = (0, import_react21.useState)("autoblog");
-  const [prismicSyncMode, setPrismicSyncMode] = (0, import_react21.useState)("stub");
-  const [prismicLocale, setPrismicLocale] = (0, import_react21.useState)("en-us");
-  const [prismicAutoRename, setPrismicAutoRename] = (0, import_react21.useState)(false);
-  const [hasWriteToken, setHasWriteToken] = (0, import_react21.useState)(false);
-  const [hasEnvToken, setHasEnvToken] = (0, import_react21.useState)(false);
-  const [configRepository, setConfigRepository] = (0, import_react21.useState)(null);
-  const [loading, setLoading] = (0, import_react21.useState)(true);
-  const [saving, setSaving] = (0, import_react21.useState)(false);
-  const [saved, setSaved] = (0, import_react21.useState)(false);
-  const [error, setError] = (0, import_react21.useState)("");
-  (0, import_react21.useEffect)(() => {
+  const [prismicEnabled, setPrismicEnabled] = (0, import_react23.useState)(false);
+  const [prismicRepository, setPrismicRepository] = (0, import_react23.useState)("");
+  const [prismicWriteToken, setPrismicWriteToken] = (0, import_react23.useState)("");
+  const [prismicDocumentType, setPrismicDocumentType] = (0, import_react23.useState)("autoblog");
+  const [prismicSyncMode, setPrismicSyncMode] = (0, import_react23.useState)("stub");
+  const [prismicLocale, setPrismicLocale] = (0, import_react23.useState)("en-us");
+  const [prismicAutoRename, setPrismicAutoRename] = (0, import_react23.useState)(false);
+  const [hasWriteToken, setHasWriteToken] = (0, import_react23.useState)(false);
+  const [hasEnvToken, setHasEnvToken] = (0, import_react23.useState)(false);
+  const [configRepository, setConfigRepository] = (0, import_react23.useState)(null);
+  const [loading, setLoading] = (0, import_react23.useState)(true);
+  const [saving, setSaving] = (0, import_react23.useState)(false);
+  const [saved, setSaved] = (0, import_react23.useState)(false);
+  const [error, setError] = (0, import_react23.useState)("");
+  (0, import_react23.useEffect)(() => {
     fetch(`${apiBasePath}/settings/integrations`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
       const data = res.data?.prismic || {};
       setPrismicEnabled(data.enabled ?? false);
@@ -11119,32 +11754,32 @@ function IntegrationsSettingsContent() {
     setTimeout(() => setSaved(false), 2e3);
   }
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-7 w-32" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "rounded-lg border bg-card p-6 space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-5 w-24" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-10 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-10 w-full" })
+    return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Skeleton, { className: "h-7 w-32" }),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "rounded-lg border bg-card p-6 space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Skeleton, { className: "h-5 w-24" }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Skeleton, { className: "h-10 w-full" }),
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(Skeleton, { className: "h-10 w-full" })
       ] })
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "CMS Integrations" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Connect autoblogger to external CMS systems." })
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { className: "text-lg font-semibold", children: "CMS Integrations" }),
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-muted-foreground", children: "Connect autoblogger to external CMS systems." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-base font-medium", children: "Prismic" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Sync posts to Prismic as stub documents." })
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h3", { className: "text-base font-medium", children: "Prismic" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-muted-foreground", children: "Sync posts to Prismic as stub documents." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
           "button",
           {
             onClick: () => setPrismicEnabled(!prismicEnabled),
             className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicEnabled ? "bg-foreground" : "bg-muted"}`,
-            children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
               "span",
               {
                 className: `inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${prismicEnabled ? "translate-x-6" : "translate-x-1"}`
@@ -11153,13 +11788,13 @@ function IntegrationsSettingsContent() {
           }
         )
       ] }),
-      prismicEnabled && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-4 pt-4 border-t border-border", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("label", { htmlFor: "prismicRepository", className: "text-sm font-medium leading-none", children: [
+      prismicEnabled && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-4 pt-4 border-t border-border", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("label", { htmlFor: "prismicRepository", className: "text-sm font-medium leading-none", children: [
             "Repository Name",
-            configRepository && prismicRepository === configRepository && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 From config" })
+            configRepository && prismicRepository === configRepository && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 From config" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
             "input",
             {
               id: "prismicRepository",
@@ -11170,18 +11805,18 @@ function IntegrationsSettingsContent() {
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: configRepository ? `Detected from your Prismic config. Change if needed.` : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-muted-foreground", children: configRepository ? `Detected from your Prismic config. Change if needed.` : /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
             "Your Prismic repository name (e.g., ",
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "ordo-playground" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "ordo-playground" }),
             ")"
           ] }) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("label", { htmlFor: "prismicWriteToken", className: "text-sm font-medium leading-none", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("label", { htmlFor: "prismicWriteToken", className: "text-sm font-medium leading-none", children: [
             "Write API Token",
-            hasEnvToken && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 Using PRISMIC_WRITE_TOKEN from env" })
+            hasEnvToken && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 Using PRISMIC_WRITE_TOKEN from env" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
             "input",
             {
               id: "prismicWriteToken",
@@ -11192,11 +11827,11 @@ function IntegrationsSettingsContent() {
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: hasEnvToken ? "Token detected from PRISMIC_WRITE_TOKEN environment variable. Leave blank to use it, or enter a different token to override." : "From Prismic Settings > API & Security > Repository Security" })
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-muted-foreground", children: hasEnvToken ? "Token detected from PRISMIC_WRITE_TOKEN environment variable. Leave blank to use it, or enter a different token to override." : "From Prismic Settings > API & Security > Repository Security" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "prismicDocumentType", className: "text-sm font-medium leading-none", children: "Document Type" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { htmlFor: "prismicDocumentType", className: "text-sm font-medium leading-none", children: "Document Type" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
             "input",
             {
               id: "prismicDocumentType",
@@ -11207,11 +11842,11 @@ function IntegrationsSettingsContent() {
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "The Prismic custom type to create for synced posts." })
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-muted-foreground", children: "The Prismic custom type to create for synced posts." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "prismicSyncMode", className: "text-sm font-medium leading-none", children: "Sync Mode" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { htmlFor: "prismicSyncMode", className: "text-sm font-medium leading-none", children: "Sync Mode" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
             "select",
             {
               id: "prismicSyncMode",
@@ -11219,16 +11854,16 @@ function IntegrationsSettingsContent() {
               onChange: (e) => setPrismicSyncMode(e.target.value),
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "stub", children: "Stub (minimal reference data)" }),
-                /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "full", children: "Full (sync all content)" })
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("option", { value: "stub", children: "Stub (minimal reference data)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("option", { value: "full", children: "Full (sync all content)" })
               ]
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Stub mode creates minimal documents; content is fetched from autoblogger at render time." })
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-muted-foreground", children: "Stub mode creates minimal documents; content is fetched from autoblogger at render time." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "prismicLocale", className: "text-sm font-medium leading-none", children: "Locale" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { htmlFor: "prismicLocale", className: "text-sm font-medium leading-none", children: "Locale" }),
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
             "input",
             {
               id: "prismicLocale",
@@ -11239,20 +11874,20 @@ function IntegrationsSettingsContent() {
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "The master locale for your Prismic repository." })
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-muted-foreground", children: "The master locale for your Prismic repository." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between pt-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "prismicAutoRename", className: "text-sm font-medium leading-none", children: "Auto-update Document Name" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground mt-1", children: "Automatically update the Prismic document display name from the post title when publishing." })
+        /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center justify-between pt-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("label", { htmlFor: "prismicAutoRename", className: "text-sm font-medium leading-none", children: "Auto-update Document Name" }),
+            /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { className: "text-sm text-muted-foreground mt-1", children: "Automatically update the Prismic document display name from the post title when publishing." })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
             "button",
             {
               id: "prismicAutoRename",
               onClick: () => setPrismicAutoRename(!prismicAutoRename),
               className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicAutoRename ? "bg-foreground" : "bg-muted"}`,
-              children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
                 "span",
                 {
                   className: `inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${prismicAutoRename ? "translate-x-6" : "translate-x-1"}`
@@ -11263,58 +11898,303 @@ function IntegrationsSettingsContent() {
         ] })
       ] })
     ] }) }),
-    error && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-md bg-destructive/15 p-3 text-sm text-destructive", children: error }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+    error && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { className: "rounded-md bg-destructive/15 p-3 text-sm text-destructive", children: error }),
+    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
         "button",
         {
           onClick: handleSave,
           disabled: saving,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
           children: [
-            saving && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
+            saving && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(import_lucide_react13.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
             saving ? "Saving..." : "Save"
           ]
         }
       ),
-      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-ab-success", children: "Saved!" })
+      saved && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-sm text-ab-success", children: "Saved!" })
     ] })
   ] });
 }
-function AISettingsContent() {
-  const { apiBasePath, navigate, refetchSharedData } = useDashboardContext();
-  const [rules, setRules] = (0, import_react21.useState)("");
-  const [chatRules, setChatRules] = (0, import_react21.useState)("");
-  const [rewriteRules, setRewriteRules] = (0, import_react21.useState)("");
-  const [autoDraftRules, setAutoDraftRules] = (0, import_react21.useState)("");
-  const [planRules, setPlanRules] = (0, import_react21.useState)("");
-  const [autoDraftWordCount, setAutoDraftWordCount] = (0, import_react21.useState)(800);
-  const [autoDraftEnabled, setAutoDraftEnabled] = (0, import_react21.useState)(false);
-  const [defaultModel, setDefaultModel] = (0, import_react21.useState)("claude-sonnet");
-  const [models, setModels] = (0, import_react21.useState)([]);
-  const [generateTemplate, setGenerateTemplate] = (0, import_react21.useState)(null);
-  const [chatTemplate, setChatTemplate] = (0, import_react21.useState)(null);
-  const [rewriteTemplate, setRewriteTemplate] = (0, import_react21.useState)(null);
-  const [autoDraftTemplate, setAutoDraftTemplate] = (0, import_react21.useState)(null);
-  const [planTemplate, setPlanTemplate] = (0, import_react21.useState)(null);
-  const [expandPlanTemplate, setExpandPlanTemplate] = (0, import_react21.useState)(null);
-  const [agentTemplate, setAgentTemplate] = (0, import_react21.useState)(null);
-  const [defaultGenerateTemplate, setDefaultGenerateTemplate] = (0, import_react21.useState)("");
-  const [defaultChatTemplate, setDefaultChatTemplate] = (0, import_react21.useState)("");
-  const [defaultRewriteTemplate, setDefaultRewriteTemplate] = (0, import_react21.useState)("");
-  const [defaultAutoDraftTemplate, setDefaultAutoDraftTemplate] = (0, import_react21.useState)("");
-  const [defaultPlanRules, setDefaultPlanRules] = (0, import_react21.useState)("");
-  const [defaultPlanTemplate, setDefaultPlanTemplate] = (0, import_react21.useState)("");
-  const [defaultExpandPlanTemplate, setDefaultExpandPlanTemplate] = (0, import_react21.useState)("");
-  const [defaultAgentTemplate, setDefaultAgentTemplate] = (0, import_react21.useState)("");
-  const [anthropicKey, setAnthropicKey] = (0, import_react21.useState)("");
-  const [openaiKey, setOpenaiKey] = (0, import_react21.useState)("");
-  const [hasAnthropicEnvKey, setHasAnthropicEnvKey] = (0, import_react21.useState)(false);
-  const [hasOpenaiEnvKey, setHasOpenaiEnvKey] = (0, import_react21.useState)(false);
-  const [loading, setLoading] = (0, import_react21.useState)(true);
-  const [saving, setSaving] = (0, import_react21.useState)(false);
-  const [saved, setSaved] = (0, import_react21.useState)(false);
-  (0, import_react21.useEffect)(() => {
+
+// src/ui/pages/settings/CommentsSettings.tsx
+var import_react24 = require("react");
+var import_lucide_react14 = require("lucide-react");
+init_context();
+var import_jsx_runtime28 = require("react/jsx-runtime");
+var COMMENTS_PER_PAGE = 25;
+function CommentsSettings() {
+  const { apiBasePath, navigate } = useDashboardContext();
+  const [comments, setComments] = (0, import_react24.useState)([]);
+  const [totalCount, setTotalCount] = (0, import_react24.useState)(0);
+  const [loading, setLoading] = (0, import_react24.useState)(true);
+  const [currentPage, setCurrentPage] = (0, import_react24.useState)(1);
+  const [totalPages, setTotalPages] = (0, import_react24.useState)(1);
+  (0, import_react24.useEffect)(() => {
+    setLoading(true);
+    fetch(`${apiBasePath}/comments?page=${currentPage}&limit=${COMMENTS_PER_PAGE}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
+      setComments(res.data || []);
+      setTotalCount(res.total ?? res.data?.length ?? 0);
+      setTotalPages(res.totalPages || Math.ceil((res.total ?? res.data?.length ?? 0) / COMMENTS_PER_PAGE));
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, [apiBasePath, currentPage]);
+  function getStatusBadge(comment) {
+    const isDeleted = comment.deletedAt !== null;
+    const isResolved = comment.resolved;
+    if (isDeleted) {
+      return { label: "deleted", classes: "bg-destructive text-destructive-foreground" };
+    }
+    if (isResolved) {
+      return { label: "resolved", classes: "bg-secondary text-secondary-foreground" };
+    }
+    return { label: "active", classes: "bg-primary text-primary-foreground" };
+  }
+  const PaginationControls = ({ position }) => {
+    if (totalPages <= 1) return null;
+    const getPageNumbers = () => {
+      const pages = [];
+      if (totalPages <= 7) {
+        for (let i = 1; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        if (currentPage > 3) pages.push("ellipsis-start");
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) {
+          if (!pages.includes(i)) pages.push(i);
+        }
+        if (currentPage < totalPages - 2) pages.push("ellipsis-end");
+        if (!pages.includes(totalPages)) pages.push(totalPages);
+      }
+      return pages;
+    };
+    const spacingClass = position === "bottom" ? "mt-4" : "";
+    return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
+        "button",
+        {
+          onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
+          disabled: currentPage <= 1,
+          "aria-label": "Go to previous page",
+          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react14.ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "hidden sm:block", children: "Previous" })
+          ]
+        }
+      ) }),
+      getPageNumbers().map(
+        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react14.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+          "button",
+          {
+            onClick: () => setCurrentPage(page),
+            "aria-current": page === currentPage ? "page" : void 0,
+            className: `inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-9 w-9 ${page === currentPage ? "border border-input bg-background hover:bg-accent hover:text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"}`,
+            children: page
+          }
+        ) }, page)
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
+        "button",
+        {
+          onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
+          disabled: currentPage >= totalPages,
+          "aria-label": "Go to next page",
+          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(import_lucide_react14.ChevronRight, { className: "h-4 w-4" })
+          ]
+        }
+      ) })
+    ] }) });
+  };
+  if (loading && comments.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("h1", { className: "text-lg font-bold", children: "Comments" }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
+          totalCount,
+          " total comment",
+          totalCount !== 1 ? "s" : ""
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(PaginationControls, { position: "top" })
+    ] }),
+    comments.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No comments yet." }) : /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[200px]", children: "Post" }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Author" }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[300px]", children: "Comment" }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+        ] }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: comments.map((comment) => {
+          const status = getStatusBadge(comment);
+          const isReply = comment.parentId !== null;
+          const commentIdToOpen = comment.parentId || comment.id;
+          return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("tr", { className: "border-b", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "button",
+              {
+                onClick: () => navigate(`/editor/${comment.post.slug}`),
+                className: "block truncate max-w-[200px] hover:underline text-left",
+                children: comment.post.title || "Untitled"
+              }
+            ) }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: comment.user.name || comment.user.email }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
+              isReply && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "text-xs mr-1", children: "\u21B3" }),
+              comment.content.slice(0, 60),
+              comment.content.length > 60 ? "..." : ""
+            ] }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(comment.createdAt).toLocaleString() }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${status.classes}`, children: status.label }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "button",
+              {
+                onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
+                className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-8 px-3 hover:bg-accent text-muted-foreground hover:text-foreground",
+                children: "View"
+              }
+            ) })
+          ] }, comment.id);
+        }) })
+      ] }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: comments.map((comment) => {
+        const status = getStatusBadge(comment);
+        const isReply = comment.parentId !== null;
+        const commentIdToOpen = comment.parentId || comment.id;
+        return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "font-medium truncate", children: [
+                isReply && /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "text-xs mr-1", children: "\u21B3" }),
+                comment.content.slice(0, 40),
+                comment.content.length > 40 ? "..." : ""
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${status.classes}`, children: status.label })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+              comment.user.name || comment.user.email,
+              " \xB7 ",
+              new Date(comment.createdAt).toLocaleDateString()
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            "button",
+            {
+              onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
+              className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-8 px-3 hover:bg-accent text-muted-foreground hover:text-foreground shrink-0",
+              children: "View"
+            }
+          )
+        ] }, comment.id);
+      }) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(PaginationControls, { position: "bottom" })
+  ] });
+}
+
+// src/ui/pages/settings/AISettings.tsx
+var import_react26 = require("react");
+var import_lucide_react16 = require("lucide-react");
+init_context();
+
+// src/ui/pages/settings/CollapsibleTemplate.tsx
+var import_react25 = require("react");
+var import_lucide_react15 = require("lucide-react");
+var import_jsx_runtime29 = require("react/jsx-runtime");
+function CollapsibleTemplate({
+  label,
+  value,
+  defaultValue,
+  onChange,
+  onReset,
+  placeholders,
+  disabled
+}) {
+  const [open, setOpen] = (0, import_react25.useState)(false);
+  const isCustom = value !== null;
+  const displayValue = value ?? defaultValue;
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mt-2", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+      "button",
+      {
+        type: "button",
+        onClick: () => setOpen(!open),
+        className: "flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground",
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react15.ChevronDown, { className: `h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}` }),
+          isCustom ? `Edit prompt template (customized)` : `Edit prompt template`
+        ]
+      }
+    ),
+    open && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mt-2 space-y-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("p", { className: "text-xs text-muted-foreground", children: [
+          "Placeholders: ",
+          placeholders
+        ] }),
+        isCustom && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("button", { type: "button", onClick: onReset, className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react15.RotateCcw, { className: "h-3 w-3" }),
+          " Reset to default"
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+        "textarea",
+        {
+          value: displayValue,
+          onChange: (e) => onChange(e.target.value),
+          rows: 10,
+          className: "w-full px-3 py-2 border border-input rounded-md bg-transparent resize-none font-mono text-xs",
+          disabled
+        }
+      )
+    ] })
+  ] });
+}
+
+// src/ui/pages/settings/AISettings.tsx
+var import_jsx_runtime30 = require("react/jsx-runtime");
+function AISettings() {
+  const { apiBasePath, refetchSharedData } = useDashboardContext();
+  const [rules, setRules] = (0, import_react26.useState)("");
+  const [chatRules, setChatRules] = (0, import_react26.useState)("");
+  const [rewriteRules, setRewriteRules] = (0, import_react26.useState)("");
+  const [autoDraftRules, setAutoDraftRules] = (0, import_react26.useState)("");
+  const [planRules, setPlanRules] = (0, import_react26.useState)("");
+  const [autoDraftWordCount, setAutoDraftWordCount] = (0, import_react26.useState)(800);
+  const [autoDraftEnabled, setAutoDraftEnabled] = (0, import_react26.useState)(false);
+  const [defaultModel, setDefaultModel] = (0, import_react26.useState)("claude-sonnet");
+  const [models, setModels] = (0, import_react26.useState)([]);
+  const [generateTemplate, setGenerateTemplate] = (0, import_react26.useState)(null);
+  const [chatTemplate, setChatTemplate] = (0, import_react26.useState)(null);
+  const [rewriteTemplate, setRewriteTemplate] = (0, import_react26.useState)(null);
+  const [autoDraftTemplate, setAutoDraftTemplate] = (0, import_react26.useState)(null);
+  const [planTemplate, setPlanTemplate] = (0, import_react26.useState)(null);
+  const [expandPlanTemplate, setExpandPlanTemplate] = (0, import_react26.useState)(null);
+  const [agentTemplate, setAgentTemplate] = (0, import_react26.useState)(null);
+  const [defaultGenerateTemplate, setDefaultGenerateTemplate] = (0, import_react26.useState)("");
+  const [defaultChatTemplate, setDefaultChatTemplate] = (0, import_react26.useState)("");
+  const [defaultRewriteTemplate, setDefaultRewriteTemplate] = (0, import_react26.useState)("");
+  const [defaultAutoDraftTemplate, setDefaultAutoDraftTemplate] = (0, import_react26.useState)("");
+  const [defaultPlanRules, setDefaultPlanRules] = (0, import_react26.useState)("");
+  const [defaultPlanTemplate, setDefaultPlanTemplate] = (0, import_react26.useState)("");
+  const [defaultExpandPlanTemplate, setDefaultExpandPlanTemplate] = (0, import_react26.useState)("");
+  const [defaultAgentTemplate, setDefaultAgentTemplate] = (0, import_react26.useState)("");
+  const [anthropicKey, setAnthropicKey] = (0, import_react26.useState)("");
+  const [openaiKey, setOpenaiKey] = (0, import_react26.useState)("");
+  const [hasAnthropicEnvKey, setHasAnthropicEnvKey] = (0, import_react26.useState)(false);
+  const [hasOpenaiEnvKey, setHasOpenaiEnvKey] = (0, import_react26.useState)(false);
+  const [loading, setLoading] = (0, import_react26.useState)(true);
+  const [saving, setSaving] = (0, import_react26.useState)(false);
+  const [saved, setSaved] = (0, import_react26.useState)(false);
+  (0, import_react26.useEffect)(() => {
     Promise.all([
       fetch(`${apiBasePath}/ai/settings`).then((res) => res.ok ? res.json() : Promise.reject()),
       fetch(`${apiBasePath}/settings`).then((res) => res.ok ? res.json() : Promise.reject())
@@ -11393,24 +12273,24 @@ function AISettingsContent() {
     await refetchSharedData();
     setTimeout(() => setSaved(false), 2e3);
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "AI Settings" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure your AI writing assistant." })
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h2", { className: "text-lg font-semibold", children: "AI Settings" }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Configure your AI writing assistant." })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-base font-medium", children: "Models" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "API keys and model configuration." })
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h3", { className: "text-base font-medium", children: "Models" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "API keys and model configuration." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "grid gap-4 sm:grid-cols-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "anthropicKey", className: "text-sm font-medium leading-none", children: "Anthropic API Key" }),
-          hasAnthropicEnvKey && !anthropicKey ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "grid gap-4 sm:grid-cols-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { htmlFor: "anthropicKey", className: "text-sm font-medium leading-none", children: "Anthropic API Key" }),
+          hasAnthropicEnvKey && !anthropicKey ? /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             "input",
             {
               id: "anthropicKey",
@@ -11422,14 +12302,14 @@ function AISettingsContent() {
               disabled: saving
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-xs text-muted-foreground", children: hasAnthropicEnvKey && !anthropicKey ? "Using ANTHROPIC_API_KEY from environment. Enter a value above to override." : "Required for Claude models (Sonnet, Opus)" })
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-xs text-muted-foreground", children: hasAnthropicEnvKey && !anthropicKey ? "Using ANTHROPIC_API_KEY from environment. Enter a value above to override." : "Required for Claude models (Sonnet, Opus)" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "openaiKey", className: "text-sm font-medium leading-none", children: "OpenAI API Key" }),
-          hasOpenaiEnvKey && !openaiKey ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { htmlFor: "openaiKey", className: "text-sm font-medium leading-none", children: "OpenAI API Key" }),
+          hasOpenaiEnvKey && !openaiKey ? /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
+            /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             "input",
             {
               id: "openaiKey",
@@ -11441,38 +12321,38 @@ function AISettingsContent() {
               disabled: saving
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-xs text-muted-foreground", children: hasOpenaiEnvKey && !openaiKey ? "Using OPENAI_API_KEY from environment. Enter a value above to override." : "Required for GPT models" })
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-xs text-muted-foreground", children: hasOpenaiEnvKey && !openaiKey ? "Using OPENAI_API_KEY from environment. Enter a value above to override." : "Required for GPT models" })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none shrink-0", children: "Default Model" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative max-w-sm flex-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none shrink-0", children: "Default Model" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "relative max-w-sm flex-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             "select",
             {
               value: defaultModel,
               onChange: (e) => setDefaultModel(e.target.value),
               className: "h-10 w-full appearance-none rounded-md border border-input bg-background pl-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer",
-              children: models.map((model) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("option", { value: model.id, children: [
+              children: models.map((model) => /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("option", { value: model.id, children: [
                 model.name,
                 " \u2014 ",
                 model.description
               ] }, model.id))
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronDown, { className: "absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" })
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_lucide_react16.ChevronDown, { className: "absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" })
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-base font-medium", children: "Prompts" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules and templates for AI-generated content." })
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h3", { className: "text-base font-medium", children: "Prompts" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules and templates for AI-generated content." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Essay Writing Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Style and format rules for generated essays. Applied when generating or rewriting content." }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none", children: "Essay Writing Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Style and format rules for generated essays. Applied when generating or rewriting content." }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           "textarea",
           {
             value: rules,
@@ -11487,7 +12367,7 @@ function AISettingsContent() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           CollapsibleTemplate,
           {
             label: "Generate",
@@ -11500,10 +12380,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Chat Behavior Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "How the assistant should behave during brainstorming conversations. Controls personality and interaction style." }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none", children: "Chat Behavior Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "How the assistant should behave during brainstorming conversations." }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           "textarea",
           {
             value: chatRules,
@@ -11516,7 +12396,7 @@ function AISettingsContent() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           CollapsibleTemplate,
           {
             label: "Chat",
@@ -11529,10 +12409,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Rewrite Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for cleaning up selected text with the rewrite tool." }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none", children: "Rewrite Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for cleaning up selected text with the rewrite tool." }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           "textarea",
           {
             value: rewriteRules,
@@ -11545,7 +12425,7 @@ function AISettingsContent() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           CollapsibleTemplate,
           {
             label: "Rewrite",
@@ -11558,10 +12438,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for generating essays from news articles via RSS feeds. Controls how topics are transformed into original essays." }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for generating essays from news articles via RSS feeds." }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           "textarea",
           {
             value: autoDraftRules,
@@ -11574,9 +12454,9 @@ function AISettingsContent() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center gap-4 pt-2", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm whitespace-nowrap", children: "Target word count:" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex items-center gap-4 pt-2", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm whitespace-nowrap", children: "Target word count:" }),
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
             "input",
             {
               type: "number",
@@ -11589,7 +12469,7 @@ function AISettingsContent() {
             }
           )
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           CollapsibleTemplate,
           {
             label: "Auto-Draft",
@@ -11602,22 +12482,22 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Plan Format Rules" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for essay plan structure and format. Controls how outlines are organized in Plan mode." }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-end", children: planRules && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none", children: "Plan Format Rules" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Rules for essay plan structure and format in Plan mode." }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "flex items-center justify-end", children: planRules && /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
           "button",
           {
             type: "button",
             onClick: () => setPlanRules(""),
             className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-7 px-2 hover:bg-accent hover:text-accent-foreground",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.RotateCcw, { className: "h-3 w-3 mr-1" }),
+              /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_lucide_react16.RotateCcw, { className: "h-3 w-3 mr-1" }),
               "Reset to default"
             ]
           }
         ) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           "textarea",
           {
             value: planRules || defaultPlanRules,
@@ -11627,10 +12507,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Plan Mode Template" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Prompt template for Plan mode in chat. Controls the full system prompt." }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none", children: "Plan Mode Template" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Prompt template for Plan mode in chat." }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           CollapsibleTemplate,
           {
             label: "Plan",
@@ -11643,10 +12523,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Expand Plan Template" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Prompt template for expanding a plan outline into a full essay draft." }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none", children: "Expand Plan Template" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Prompt template for expanding a plan into a full essay." }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           CollapsibleTemplate,
           {
             label: "Expand Plan",
@@ -11659,10 +12539,10 @@ function AISettingsContent() {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Agent Mode Template" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Instructions for Agent mode in chat. Controls how the AI makes direct edits to essays." }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none", children: "Agent Mode Template" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Instructions for Agent mode in chat." }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           CollapsibleTemplate,
           {
             label: "Agent",
@@ -11676,17 +12556,17 @@ function AISettingsContent() {
         )
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-base font-medium", children: "Features" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Enable or disable AI features." })
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h3", { className: "text-base font-medium", children: "Features" }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Enable or disable AI features." })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-0.5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-muted-foreground", children: "Enable RSS topic subscriptions and automatic draft generation." })
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "space-y-0.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft" }),
+          /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "text-sm text-muted-foreground", children: "Enable RSS topic subscriptions and automatic draft generation." })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
           "button",
           {
             type: "button",
@@ -11694,7 +12574,7 @@ function AISettingsContent() {
             "aria-checked": autoDraftEnabled,
             onClick: () => setAutoDraftEnabled(!autoDraftEnabled),
             className: `relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${autoDraftEnabled ? "bg-foreground" : "bg-input"}`,
-            children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
               "span",
               {
                 className: `pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${autoDraftEnabled ? "translate-x-5" : "translate-x-0"}`
@@ -11704,34 +12584,40 @@ function AISettingsContent() {
         )
       ] })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)(
         "button",
         {
           onClick: handleSave,
           disabled: saving,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
           children: [
-            saving && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
+            saving && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(import_lucide_react16.Loader2, { className: "mr-2 h-4 w-4 animate-spin" }),
             saving ? "Saving..." : "Save"
           ]
         }
       ),
-      saved && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-ab-success", children: "Saved!" })
+      saved && /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "text-sm text-ab-success", children: "Saved!" })
     ] })
   ] });
 }
-function TagsSettingsContent() {
+
+// src/ui/pages/settings/TagsSettings.tsx
+var import_react27 = require("react");
+var import_lucide_react17 = require("lucide-react");
+init_context();
+var import_jsx_runtime31 = require("react/jsx-runtime");
+function TagsSettings() {
   const { apiBasePath } = useDashboardContext();
-  const [tags, setTags] = (0, import_react21.useState)([]);
-  const [loading, setLoading] = (0, import_react21.useState)(true);
-  const [dialogOpen, setDialogOpen] = (0, import_react21.useState)(false);
-  const [editingTag, setEditingTag] = (0, import_react21.useState)(null);
-  const [tagName, setTagName] = (0, import_react21.useState)("");
-  const [saving, setSaving] = (0, import_react21.useState)(false);
-  const [error, setError] = (0, import_react21.useState)("");
-  const [menuOpen, setMenuOpen] = (0, import_react21.useState)(null);
-  (0, import_react21.useEffect)(() => {
+  const [tags, setTags] = (0, import_react27.useState)([]);
+  const [loading, setLoading] = (0, import_react27.useState)(true);
+  const [dialogOpen, setDialogOpen] = (0, import_react27.useState)(false);
+  const [editingTag, setEditingTag] = (0, import_react27.useState)(null);
+  const [tagName, setTagName] = (0, import_react27.useState)("");
+  const [saving, setSaving] = (0, import_react27.useState)(false);
+  const [error, setError] = (0, import_react27.useState)("");
+  const [menuOpen, setMenuOpen] = (0, import_react27.useState)(null);
+  (0, import_react27.useEffect)(() => {
     fetchTags();
   }, [apiBasePath]);
   async function fetchTags() {
@@ -11787,11 +12673,11 @@ function TagsSettingsContent() {
     }
     setSaving(false);
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between mb-6 md:mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "Tags" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex items-center justify-between mb-6 md:mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h2", { className: "text-lg font-semibold", children: "Tags" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
         "button",
         {
           onClick: openCreateDialog,
@@ -11800,29 +12686,29 @@ function TagsSettingsContent() {
         }
       )
     ] }),
-    tags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No tags yet. Create one to get started." }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Name" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Posts" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    tags.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No tags yet. Create one to get started." }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(import_jsx_runtime31.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Name" }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Posts" }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "block truncate max-w-[250px]", children: tag.name }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: tag._count?.posts ?? 0 }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative inline-block", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "block truncate max-w-[250px]", children: tag.name }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: tag._count?.posts ?? 0 }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014" }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               "button",
               {
                 onClick: () => setMenuOpen(menuOpen === tag.id ? null : tag.id),
                 className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-                children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+                children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(import_lucide_react17.MoreVertical, { className: "h-4 w-4" })
               }
             ),
-            menuOpen === tag.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            menuOpen === tag.id && /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
                 "button",
                 {
                   onClick: () => openEditDialog(tag),
@@ -11830,8 +12716,8 @@ function TagsSettingsContent() {
                   children: "Edit"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
                 "button",
                 {
                   onClick: () => handleDelete2(tag),
@@ -11843,26 +12729,26 @@ function TagsSettingsContent() {
           ] }) })
         ] }, tag.id)) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium truncate block", children: tag.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: tags.map((tag) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "font-medium truncate block", children: tag.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
             tag._count?.posts ?? 0,
             " posts \xB7 Created ",
             tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014"
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
             "button",
             {
               onClick: () => setMenuOpen(menuOpen === tag.id ? null : tag.id),
               className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-              children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(import_lucide_react17.MoreVertical, { className: "h-4 w-4" })
             }
           ),
-          menuOpen === tag.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          menuOpen === tag.id && /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               "button",
               {
                 onClick: () => openEditDialog(tag),
@@ -11870,8 +12756,8 @@ function TagsSettingsContent() {
                 children: "Edit"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               "button",
               {
                 onClick: () => handleDelete2(tag),
@@ -11883,20 +12769,20 @@ function TagsSettingsContent() {
         ] })
       ] }, tag.id)) })
     ] }),
-    dialogOpen && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "fixed inset-0 z-50 flex items-center justify-center", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+    dialogOpen && /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "fixed inset-0 z-50 flex items-center justify-center", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
         "div",
         {
           className: "fixed inset-0 bg-black/80",
           onClick: () => setDialogOpen(false)
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative z-50 w-full max-w-sm bg-background border border-border rounded-lg shadow-lg", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex flex-col space-y-1.5 p-6", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-lg font-semibold leading-none tracking-tight", children: editingTag ? "Edit Tag" : "Create Tag" }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("form", { onSubmit: handleSubmit, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "px-6 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "tagName", className: "text-sm font-medium leading-none", children: "Name" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "relative z-50 w-full max-w-sm bg-background border border-border rounded-lg shadow-lg", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "flex flex-col space-y-1.5 p-6", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("h3", { className: "text-lg font-semibold leading-none tracking-tight", children: editingTag ? "Edit Tag" : "Create Tag" }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("form", { onSubmit: handleSubmit, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "px-6 pb-4", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "space-y-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("label", { htmlFor: "tagName", className: "text-sm font-medium leading-none", children: "Name" }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               "input",
               {
                 id: "tagName",
@@ -11908,10 +12794,10 @@ function TagsSettingsContent() {
                 className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               }
             ),
-            error && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-sm text-destructive", children: error })
+            error && /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "text-sm text-destructive", children: error })
           ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-end gap-2 p-6 pt-0", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "flex items-center justify-end gap-2 p-6 pt-0", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               "button",
               {
                 type: "button",
@@ -11921,7 +12807,7 @@ function TagsSettingsContent() {
                 children: "Cancel"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               "button",
               {
                 type: "submit",
@@ -11936,21 +12822,27 @@ function TagsSettingsContent() {
     ] })
   ] });
 }
-function TopicsSettingsContent() {
+
+// src/ui/pages/settings/TopicsSettings.tsx
+var import_react28 = require("react");
+var import_lucide_react18 = require("lucide-react");
+init_context();
+var import_jsx_runtime32 = require("react/jsx-runtime");
+function TopicsSettings() {
   const { apiBasePath } = useDashboardContext();
-  const [topics, setTopics] = (0, import_react21.useState)([]);
-  const [loading, setLoading] = (0, import_react21.useState)(true);
-  const [showForm, setShowForm] = (0, import_react21.useState)(false);
-  const [editingTopic, setEditingTopic] = (0, import_react21.useState)(null);
-  const [generating, setGenerating] = (0, import_react21.useState)(null);
-  const [formName, setFormName] = (0, import_react21.useState)("");
-  const [formKeywords, setFormKeywords] = (0, import_react21.useState)("");
-  const [formFeeds, setFormFeeds] = (0, import_react21.useState)("");
-  const [formFrequency, setFormFrequency] = (0, import_react21.useState)("daily");
-  const [formMaxPerPeriod, setFormMaxPerPeriod] = (0, import_react21.useState)(3);
-  const [formEssayFocus, setFormEssayFocus] = (0, import_react21.useState)("");
-  const [formIsActive, setFormIsActive] = (0, import_react21.useState)(true);
-  (0, import_react21.useEffect)(() => {
+  const [topics, setTopics] = (0, import_react28.useState)([]);
+  const [loading, setLoading] = (0, import_react28.useState)(true);
+  const [showForm, setShowForm] = (0, import_react28.useState)(false);
+  const [editingTopic, setEditingTopic] = (0, import_react28.useState)(null);
+  const [generating, setGenerating] = (0, import_react28.useState)(null);
+  const [formName, setFormName] = (0, import_react28.useState)("");
+  const [formKeywords, setFormKeywords] = (0, import_react28.useState)("");
+  const [formFeeds, setFormFeeds] = (0, import_react28.useState)("");
+  const [formFrequency, setFormFrequency] = (0, import_react28.useState)("daily");
+  const [formMaxPerPeriod, setFormMaxPerPeriod] = (0, import_react28.useState)(3);
+  const [formEssayFocus, setFormEssayFocus] = (0, import_react28.useState)("");
+  const [formIsActive, setFormIsActive] = (0, import_react28.useState)(true);
+  (0, import_react28.useEffect)(() => {
     fetchTopics();
   }, [apiBasePath]);
   async function fetchTopics() {
@@ -12027,29 +12919,29 @@ function TopicsSettingsContent() {
       setGenerating(null);
     }
   }
-  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-4", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "Topics" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("button", { onClick: openNewForm, className: "flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Plus, { className: "h-4 w-4" }),
+  if (loading) return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "space-y-4", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h2", { className: "text-lg font-semibold", children: "Topics" }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("button", { onClick: openNewForm, className: "flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react18.Plus, { className: "h-4 w-4" }),
         " New Topic"
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-muted-foreground text-sm -mt-2", children: "RSS topic subscriptions for auto-generating draft posts." }),
-    showForm && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "border border-border rounded-lg p-4 space-y-4 bg-muted/30", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "font-medium", children: editingTopic ? "Edit Topic" : "New Topic" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: () => {
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "text-muted-foreground text-sm -mt-2", children: "RSS topic subscriptions for auto-generating draft posts." }),
+    showForm && /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "border border-border rounded-lg p-4 space-y-4 bg-muted/30", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h3", { className: "font-medium", children: editingTopic ? "Edit Topic" : "New Topic" }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { onClick: () => {
           setShowForm(false);
           resetForm();
           setEditingTopic(null);
-        }, className: "text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.X, { className: "h-4 w-4" }) })
+        }, className: "text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react18.X, { className: "h-4 w-4" }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Name" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Name" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
             "input",
             {
               type: "text",
@@ -12061,9 +12953,9 @@ function TopicsSettingsContent() {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Keywords (comma-separated)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Keywords (comma-separated)" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
             "input",
             {
               type: "text",
@@ -12074,9 +12966,9 @@ function TopicsSettingsContent() {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "RSS Feed URLs (one per line)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium mb-1", children: "RSS Feed URLs (one per line)" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
             "textarea",
             {
               value: formFeeds,
@@ -12087,27 +12979,27 @@ function TopicsSettingsContent() {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "grid grid-cols-2 gap-4", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Frequency" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "grid grid-cols-2 gap-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Frequency" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
               "select",
               {
                 value: formFrequency,
                 onChange: (e) => setFormFrequency(e.target.value),
                 className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "daily", children: "Daily" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "weekly", children: "Weekly" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "hourly", children: "Hourly" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("option", { value: "manual", children: "Manual" })
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: "daily", children: "Daily" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: "weekly", children: "Weekly" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: "hourly", children: "Hourly" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: "manual", children: "Manual" })
                 ]
               }
             )
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Max per period" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Max per period" }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
               "input",
               {
                 type: "number",
@@ -12120,9 +13012,9 @@ function TopicsSettingsContent() {
             )
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Essay Focus (optional)" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { className: "block text-sm font-medium mb-1", children: "Essay Focus (optional)" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
             "textarea",
             {
               value: formEssayFocus,
@@ -12133,8 +13025,8 @@ function TopicsSettingsContent() {
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
             "input",
             {
               type: "checkbox",
@@ -12143,11 +13035,11 @@ function TopicsSettingsContent() {
               onChange: (e) => setFormIsActive(e.target.checked)
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("label", { htmlFor: "isActive", className: "text-sm", children: "Active" })
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("label", { htmlFor: "isActive", className: "text-sm", children: "Active" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "submit", className: "px-4 py-2 bg-primary text-primary-foreground rounded-md", children: editingTopic ? "Update" : "Create" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { type: "button", onClick: () => {
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "submit", className: "px-4 py-2 bg-primary text-primary-foreground rounded-md", children: editingTopic ? "Update" : "Create" }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", onClick: () => {
             setShowForm(false);
             resetForm();
             setEditingTopic(null);
@@ -12155,21 +13047,21 @@ function TopicsSettingsContent() {
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "border border-border rounded-lg divide-y divide-border", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "border border-border rounded-lg divide-y divide-border", children: [
       topics.map((topic) => {
         const keywords = JSON.parse(topic.keywords);
         const feeds = JSON.parse(topic.rssFeeds);
-        return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-start justify-between", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "font-medium", children: topic.name }),
-              !topic.isActive && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-xs bg-muted px-1.5 py-0.5 rounded", children: "Paused" })
+        return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "p-4", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "flex items-start justify-between", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "font-medium", children: topic.name }),
+              !topic.isActive && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "text-xs bg-muted px-1.5 py-0.5 rounded", children: "Paused" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
               keywords.slice(0, 3).join(", "),
               keywords.length > 3 && ` +${keywords.length - 3}`
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-xs text-muted-foreground mt-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: "text-xs text-muted-foreground mt-1", children: [
               feeds.length,
               " feed",
               feeds.length !== 1 ? "s" : "",
@@ -12181,38 +13073,44 @@ function TopicsSettingsContent() {
               topic.lastRunAt && ` \xB7 Last run: ${new Date(topic.lastRunAt).toLocaleDateString()}`
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "flex items-center gap-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
               "button",
               {
                 onClick: () => handleGenerate(topic.id),
                 disabled: generating !== null,
                 className: "p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-50",
                 title: "Generate now",
-                children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Play, { className: `h-4 w-4 ${generating === topic.id ? "animate-pulse" : ""}` })
+                children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react18.Play, { className: `h-4 w-4 ${generating === topic.id ? "animate-pulse" : ""}` })
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: () => openEditForm(topic), className: "p-1.5 text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Pencil, { className: "h-4 w-4" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { onClick: () => handleDelete2(topic.id), className: "p-1.5 text-red-500 hover:text-red-600", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.Trash2, { className: "h-4 w-4" }) })
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { onClick: () => openEditForm(topic), className: "p-1.5 text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react18.Pencil, { className: "h-4 w-4" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { onClick: () => handleDelete2(topic.id), className: "p-1.5 text-red-500 hover:text-red-600", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react18.Trash2, { className: "h-4 w-4" }) })
           ] })
         ] }) }, topic.id);
       }),
-      topics.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "p-4 text-muted-foreground text-center", children: "No topics configured" })
+      topics.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "p-4 text-muted-foreground text-center", children: "No topics configured" })
     ] })
   ] });
 }
+
+// src/ui/pages/settings/PostsSettings.tsx
+var import_react29 = require("react");
+var import_lucide_react19 = require("lucide-react");
+init_context();
+var import_jsx_runtime33 = require("react/jsx-runtime");
 var POSTS_PER_PAGE = 25;
-function PostsSettingsContent() {
+function PostsSettings() {
   const { apiBasePath, navigate, sharedData } = useDashboardContext();
   const postUrlPattern = sharedData?.settings?.postUrlPattern ?? "/e/{slug}";
   const getPostUrl = (slug) => postUrlPattern.replace("{slug}", slug);
-  const [posts, setPosts] = (0, import_react21.useState)([]);
-  const [totalCount, setTotalCount] = (0, import_react21.useState)(0);
-  const [loading, setLoading] = (0, import_react21.useState)(true);
-  const [currentPage, setCurrentPage] = (0, import_react21.useState)(1);
-  const [totalPages, setTotalPages] = (0, import_react21.useState)(1);
-  const [menuOpen, setMenuOpen] = (0, import_react21.useState)(null);
-  (0, import_react21.useEffect)(() => {
+  const [posts, setPosts] = (0, import_react29.useState)([]);
+  const [totalCount, setTotalCount] = (0, import_react29.useState)(0);
+  const [loading, setLoading] = (0, import_react29.useState)(true);
+  const [currentPage, setCurrentPage] = (0, import_react29.useState)(1);
+  const [totalPages, setTotalPages] = (0, import_react29.useState)(1);
+  const [menuOpen, setMenuOpen] = (0, import_react29.useState)(null);
+  (0, import_react29.useEffect)(() => {
     setLoading(true);
     fetch(`${apiBasePath}/posts?all=1&page=${currentPage}&limit=${POSTS_PER_PAGE}&includeRevisionCount=1`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
       setPosts(res.data || []);
@@ -12255,8 +13153,8 @@ function PostsSettingsContent() {
       return pages;
     };
     const spacingClass = position === "bottom" ? "mt-4" : "";
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
@@ -12264,13 +13162,13 @@ function PostsSettingsContent() {
           "aria-label": "Go to previous page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Previous" })
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_lucide_react19.ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "hidden sm:block", children: "Previous" })
           ]
         }
       ) }),
       getPageNumbers().map(
-        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_lucide_react19.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
           "button",
           {
             onClick: () => setCurrentPage(page),
@@ -12280,7 +13178,7 @@ function PostsSettingsContent() {
           }
         ) }, page)
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
@@ -12288,27 +13186,27 @@ function PostsSettingsContent() {
           "aria-label": "Go to next page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Next" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronRight, { className: "h-4 w-4" })
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_lucide_react19.ChevronRight, { className: "h-4 w-4" })
           ]
         }
       ) })
     ] }) });
   };
-  if (loading && posts.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "shrink-0", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h1", { className: "text-lg font-bold", children: "Posts" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
+  if (loading && posts.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h1", { className: "text-lg font-bold", children: "Posts" }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
           totalCount,
           " total post",
           totalCount !== 1 ? "s" : ""
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "top" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(PaginationControls, { position: "top" }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
           "button",
           {
             onClick: () => navigate("/editor"),
@@ -12318,33 +13216,33 @@ function PostsSettingsContent() {
         )
       ] })
     ] }),
-    posts.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No posts yet." }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Title" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Slug" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Revisions" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Updated" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    posts.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No posts yet." }) : /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(import_jsx_runtime33.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Title" }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Slug" }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Revisions" }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Updated" }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: posts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "block truncate max-w-[200px]", children: post.title || "Untitled" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "block truncate max-w-[250px] text-muted-foreground font-mono", children: post.slug }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(post.status)}`, children: post.status }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: post._count?.revisions ?? 0 }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(post.updatedAt).toLocaleDateString() }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative inline-block", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: posts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "block truncate max-w-[200px]", children: post.title || "Untitled" }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "block truncate max-w-[250px] text-muted-foreground font-mono", children: post.slug }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(post.status)}`, children: post.status }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: post._count?.revisions ?? 0 }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(post.updatedAt).toLocaleDateString() }),
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
               "button",
               {
                 onClick: () => setMenuOpen(menuOpen === post.id ? null : post.id),
                 className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-                children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+                children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_lucide_react19.MoreVertical, { className: "h-4 w-4" })
               }
             ),
-            menuOpen === post.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            menuOpen === post.id && /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
                 "button",
                 {
                   onClick: () => {
@@ -12355,7 +13253,7 @@ function PostsSettingsContent() {
                   children: "Edit"
                 }
               ),
-              post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
                 "a",
                 {
                   href: getPostUrl(post.slug),
@@ -12366,8 +13264,8 @@ function PostsSettingsContent() {
                   children: "View"
                 }
               ),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+              /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
                 "button",
                 {
                   onClick: () => handleDelete2(post),
@@ -12379,13 +13277,13 @@ function PostsSettingsContent() {
           ] }) })
         ] }, post.id)) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: posts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium truncate", children: post.title || "Untitled" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(post.status)}`, children: post.status })
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: posts.map((post) => /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "font-medium truncate", children: post.title || "Untitled" }),
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(post.status)}`, children: post.status })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
             post.slug,
             " \xB7 ",
             post._count?.revisions ?? 0,
@@ -12393,17 +13291,17 @@ function PostsSettingsContent() {
             new Date(post.updatedAt).toLocaleDateString()
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "relative", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "relative", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
             "button",
             {
               onClick: () => setMenuOpen(menuOpen === post.id ? null : post.id),
               className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-              children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreVertical, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(import_lucide_react19.MoreVertical, { className: "h-4 w-4" })
             }
           ),
-          menuOpen === post.id && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          menuOpen === post.id && /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
               "button",
               {
                 onClick: () => {
@@ -12414,7 +13312,7 @@ function PostsSettingsContent() {
                 children: "Edit"
               }
             ),
-            post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            post.status === "published" && /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
               "a",
               {
                 href: getPostUrl(post.slug),
@@ -12425,8 +13323,8 @@ function PostsSettingsContent() {
                 children: "View"
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+            /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
               "button",
               {
                 onClick: () => handleDelete2(post),
@@ -12438,18 +13336,24 @@ function PostsSettingsContent() {
         ] })
       ] }, post.id)) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "bottom" })
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(PaginationControls, { position: "bottom" })
   ] });
 }
+
+// src/ui/pages/settings/RevisionsSettings.tsx
+var import_react30 = require("react");
+var import_lucide_react20 = require("lucide-react");
+init_context();
+var import_jsx_runtime34 = require("react/jsx-runtime");
 var REVISIONS_PER_PAGE = 25;
-function RevisionsSettingsContent() {
+function RevisionsSettings() {
   const { apiBasePath, navigate } = useDashboardContext();
-  const [revisions, setRevisions] = (0, import_react21.useState)([]);
-  const [totalCount, setTotalCount] = (0, import_react21.useState)(0);
-  const [loading, setLoading] = (0, import_react21.useState)(true);
-  const [currentPage, setCurrentPage] = (0, import_react21.useState)(1);
-  const [totalPages, setTotalPages] = (0, import_react21.useState)(1);
-  (0, import_react21.useEffect)(() => {
+  const [revisions, setRevisions] = (0, import_react30.useState)([]);
+  const [totalCount, setTotalCount] = (0, import_react30.useState)(0);
+  const [loading, setLoading] = (0, import_react30.useState)(true);
+  const [currentPage, setCurrentPage] = (0, import_react30.useState)(1);
+  const [totalPages, setTotalPages] = (0, import_react30.useState)(1);
+  (0, import_react30.useEffect)(() => {
     setLoading(true);
     fetch(`${apiBasePath}/revisions?page=${currentPage}&limit=${REVISIONS_PER_PAGE}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
       setRevisions(res.data || []);
@@ -12482,8 +13386,8 @@ function RevisionsSettingsContent() {
       return pages;
     };
     const spacingClass = position === "bottom" ? "mt-4" : "";
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
@@ -12491,13 +13395,13 @@ function RevisionsSettingsContent() {
           "aria-label": "Go to previous page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Previous" })
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_lucide_react20.ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "hidden sm:block", children: "Previous" })
           ]
         }
       ) }),
       getPageNumbers().map(
-        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_lucide_react20.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
           "button",
           {
             onClick: () => setCurrentPage(page),
@@ -12507,7 +13411,7 @@ function RevisionsSettingsContent() {
           }
         ) }, page)
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
@@ -12515,39 +13419,39 @@ function RevisionsSettingsContent() {
           "aria-label": "Go to next page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Next" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronRight, { className: "h-4 w-4" })
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_lucide_react20.ChevronRight, { className: "h-4 w-4" })
           ]
         }
       ) })
     ] }) });
   };
-  if (loading && revisions.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "shrink-0", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h1", { className: "text-lg font-bold", children: "Revisions" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
+  if (loading && revisions.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h1", { className: "text-lg font-bold", children: "Revisions" }),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
           totalCount,
           " total revision",
           totalCount !== 1 ? "s" : ""
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "top" })
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(PaginationControls, { position: "top" })
     ] }),
-    revisions.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No revisions yet." }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Post" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Content Preview" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    revisions.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No revisions yet." }) : /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(import_jsx_runtime34.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("tr", { className: "border-b", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Post" }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Content Preview" }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: revisions.map((revision) => {
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: revisions.map((revision) => {
           const isCurrent = revision.post.markdown === revision.markdown;
-          return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("tr", { className: "border-b", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
               "button",
               {
                 onClick: () => navigate(`/editor/${revision.post.slug}`),
@@ -12555,13 +13459,13 @@ function RevisionsSettingsContent() {
                 children: revision.post.title || "Untitled"
               }
             ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
               revision.markdown.slice(0, 80),
               revision.markdown.length > 80 ? "..." : ""
             ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(revision.createdAt).toLocaleString() }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(revision.createdAt).toLocaleString() }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
               "button",
               {
                 onClick: () => navigate(`/settings/revisions/${revision.id}`),
@@ -12572,22 +13476,22 @@ function RevisionsSettingsContent() {
           ] }, revision.id);
         }) })
       ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: revisions.map((revision) => {
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: revisions.map((revision) => {
         const isCurrent = revision.post.markdown === revision.markdown;
-        return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium truncate", children: revision.post.title || "Untitled" }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" })
+        return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "font-medium truncate", children: revision.post.title || "Untitled" }),
+              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
               revision.markdown.slice(0, 40),
               revision.markdown.length > 40 ? "..." : "",
               " \xB7 ",
               new Date(revision.createdAt).toLocaleDateString()
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
             "button",
             {
               onClick: () => navigate(`/settings/revisions/${revision.id}`),
@@ -12598,15 +13502,15 @@ function RevisionsSettingsContent() {
         ] }, revision.id);
       }) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "bottom" })
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(PaginationControls, { position: "bottom" })
   ] });
 }
-function RevisionDetailContent({ revisionId }) {
+function RevisionDetail({ revisionId }) {
   const { apiBasePath, navigate } = useDashboardContext();
-  const [revision, setRevision] = (0, import_react21.useState)(null);
-  const [loading, setLoading] = (0, import_react21.useState)(true);
-  const [restoring, setRestoring] = (0, import_react21.useState)(false);
-  (0, import_react21.useEffect)(() => {
+  const [revision, setRevision] = (0, import_react30.useState)(null);
+  const [loading, setLoading] = (0, import_react30.useState)(true);
+  const [restoring, setRestoring] = (0, import_react30.useState)(false);
+  (0, import_react30.useEffect)(() => {
     fetch(`${apiBasePath}/revisions/${revisionId}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
       setRevision(res.data);
       setLoading(false);
@@ -12623,61 +13527,61 @@ function RevisionDetailContent({ revisionId }) {
     setRestoring(false);
   }
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-6 w-32" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-64" })
+    return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Skeleton, { className: "h-6 w-32" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(Skeleton, { className: "h-64" })
     ] });
   }
   if (!revision) {
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+    return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
         "button",
         {
           onClick: () => navigate("/settings/revisions"),
           className: "text-sm text-muted-foreground hover:text-foreground flex items-center gap-1",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_lucide_react20.ChevronLeft, { className: "h-4 w-4" }),
             " Back to Revisions"
           ]
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("p", { className: "text-muted-foreground", children: "Revision not found." })
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("p", { className: "text-muted-foreground", children: "Revision not found." })
     ] });
   }
   const isCurrent = revision.post.markdown === revision.markdown;
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-1", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "space-y-1", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
           "button",
           {
             onClick: () => navigate("/settings/revisions"),
             className: "text-sm text-muted-foreground hover:text-foreground flex items-center gap-1",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
+              /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_lucide_react20.ChevronLeft, { className: "h-4 w-4" }),
               " Back to Revisions"
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h2", { className: "text-lg font-semibold", children: "Revision Detail" })
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h2", { className: "text-lg font-semibold", children: "Revision Detail" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center gap-2", children: isCurrent ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground", children: "current" }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "flex items-center gap-2", children: isCurrent ? /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground", children: "current" }) : /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)(
         "button",
         {
           onClick: handleRestore,
           disabled: restoring,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50",
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.RotateCcw, { className: "h-4 w-4 mr-2" }),
+            /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(import_lucide_react20.RotateCcw, { className: "h-4 w-4 mr-2" }),
             restoring ? "Restoring..." : "Restore This Revision"
           ]
         }
       ) })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "rounded-lg border bg-card p-4 space-y-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-muted-foreground", children: "Post" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "rounded-lg border bg-card p-4 space-y-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "text-sm text-muted-foreground", children: "Post" }),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)(
           "button",
           {
             onClick: () => navigate(`/editor/${revision.post.slug}`),
@@ -12686,238 +13590,128 @@ function RevisionDetailContent({ revisionId }) {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-muted-foreground", children: "Title at revision" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm", children: revision.title || "\u2014" })
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "text-sm text-muted-foreground", children: "Title at revision" }),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "text-sm", children: revision.title || "\u2014" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm text-muted-foreground", children: "Created" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-sm", children: new Date(revision.createdAt).toLocaleString() })
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "text-sm text-muted-foreground", children: "Created" }),
+        /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("span", { className: "text-sm", children: new Date(revision.createdAt).toLocaleString() })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-2", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h3", { className: "text-sm font-medium", children: "Content" }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "rounded-lg border bg-muted/30 p-4 max-h-96 overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("pre", { className: "text-sm whitespace-pre-wrap font-mono", children: revision.markdown }) })
+    /* @__PURE__ */ (0, import_jsx_runtime34.jsxs)("div", { className: "space-y-2", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("h3", { className: "text-sm font-medium", children: "Content" }),
+      /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("div", { className: "rounded-lg border bg-muted/30 p-4 max-h-96 overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime34.jsx)("pre", { className: "text-sm whitespace-pre-wrap font-mono", children: revision.markdown }) })
     ] })
   ] });
 }
-var COMMENTS_PER_PAGE = 25;
-function CommentsSettingsContent() {
-  const { apiBasePath, navigate, basePath } = useDashboardContext();
-  const [comments, setComments] = (0, import_react21.useState)([]);
-  const [totalCount, setTotalCount] = (0, import_react21.useState)(0);
-  const [loading, setLoading] = (0, import_react21.useState)(true);
-  const [currentPage, setCurrentPage] = (0, import_react21.useState)(1);
-  const [totalPages, setTotalPages] = (0, import_react21.useState)(1);
-  (0, import_react21.useEffect)(() => {
-    setLoading(true);
-    fetch(`${apiBasePath}/comments?page=${currentPage}&limit=${COMMENTS_PER_PAGE}`).then((res) => res.ok ? res.json() : Promise.reject()).then((res) => {
-      setComments(res.data || []);
-      setTotalCount(res.total ?? res.data?.length ?? 0);
-      setTotalPages(res.totalPages || Math.ceil((res.total ?? res.data?.length ?? 0) / COMMENTS_PER_PAGE));
-      setLoading(false);
-    }).catch(() => setLoading(false));
-  }, [apiBasePath, currentPage]);
-  function getStatusBadge(comment) {
-    const isDeleted = comment.deletedAt !== null;
-    const isResolved = comment.resolved;
-    if (isDeleted) {
-      return { label: "deleted", classes: "bg-destructive text-destructive-foreground" };
+
+// src/ui/pages/settings/index.tsx
+var import_jsx_runtime35 = require("react/jsx-runtime");
+function SettingsPage({ subPath }) {
+  const { navigate, sharedData, sharedDataLoading } = useDashboardContext();
+  const counts = sharedData?.counts || {};
+  const autoDraftEnabled = sharedData?.settings?.autoDraftEnabled ?? false;
+  const loading = sharedDataLoading;
+  const allSettingsLinks = [
+    { path: "/settings/users", label: "Users", description: "Manage who can access the CMS", countKey: "users" },
+    { path: "/settings/posts", label: "All Posts", description: "Manage all posts", countKey: "posts" },
+    { path: "/settings/tags", label: "Tags", description: "Organize posts with tags", countKey: "tags" },
+    { path: "/settings/ai", label: "AI Settings", description: "Configure AI models and rules" },
+    { path: "/settings/integrations", label: "CMS Integrations", description: "Connect to external CMS systems" },
+    { path: "/settings/revisions", label: "Revisions", description: "View revision history" },
+    { path: "/settings/comments", label: "Comments", description: "Manage post comments" },
+    { path: "/settings/topics", label: "Topics", description: "RSS subscriptions for auto-draft", countKey: "topics" },
+    { path: "/settings/general", label: "General", description: "Post URLs and site settings" }
+  ];
+  const settingsLinks = autoDraftEnabled ? allSettingsLinks : allSettingsLinks.filter((link) => link.path !== "/settings/topics");
+  if (!subPath || subPath === "/") {
+    if (loading) {
+      return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(PageContainer, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Skeleton, { className: "h-7 w-24 mb-6" }),
+        /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: [1, 2, 3, 4, 5, 6].map((i) => /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)("div", { className: "p-4 sm:p-6 border border-border rounded-lg", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Skeleton, { className: "h-4 w-16" }),
+          /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(Skeleton, { className: "h-8 w-12 mt-2" })
+        ] }, i)) })
+      ] });
     }
-    if (isResolved) {
-      return { label: "resolved", classes: "bg-secondary text-secondary-foreground" };
-    }
-    return { label: "active", classes: "bg-primary text-primary-foreground" };
+    return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(PageContainer, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("h2", { className: "text-lg font-semibold pb-3 mb-5 border-b border-border", children: "Settings" }),
+      /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: settingsLinks.map((item) => /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(
+        "button",
+        {
+          onClick: () => navigate(item.path),
+          className: "p-4 sm:p-6 border border-border rounded-lg text-left hover:bg-accent transition-colors",
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "text-sm text-muted-foreground", children: item.label }),
+            item.countKey ? /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "text-2xl font-bold mt-1", children: counts[item.countKey] ?? 0 }) : /* @__PURE__ */ (0, import_jsx_runtime35.jsx)("p", { className: "text-sm text-muted-foreground mt-1", children: "Configure \u2192" })
+          ]
+        },
+        item.path
+      )) })
+    ] });
   }
-  const PaginationControls = ({ position }) => {
-    if (totalPages <= 1) return null;
-    const getPageNumbers = () => {
-      const pages = [];
-      if (totalPages <= 7) {
-        for (let i = 1; i <= totalPages; i++) pages.push(i);
-      } else {
-        pages.push(1);
-        if (currentPage > 3) pages.push("ellipsis-start");
-        const start = Math.max(2, currentPage - 1);
-        const end = Math.min(totalPages - 1, currentPage + 1);
-        for (let i = start; i <= end; i++) {
-          if (!pages.includes(i)) pages.push(i);
-        }
-        if (currentPage < totalPages - 2) pages.push("ellipsis-end");
-        if (!pages.includes(totalPages)) pages.push(totalPages);
-      }
-      return pages;
-    };
-    const spacingClass = position === "bottom" ? "mt-4" : "";
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("ul", { className: "flex flex-row items-center gap-1", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-        "button",
-        {
-          onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
-          disabled: currentPage <= 1,
-          "aria-label": "Go to previous page",
-          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronLeft, { className: "h-4 w-4" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Previous" })
-          ]
-        }
-      ) }),
-      getPageNumbers().map(
-        (page) => typeof page === "string" ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.MoreHorizontal, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-          "button",
-          {
-            onClick: () => setCurrentPage(page),
-            "aria-current": page === currentPage ? "page" : void 0,
-            className: `inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium h-9 w-9 ${page === currentPage ? "border border-input bg-background hover:bg-accent hover:text-accent-foreground" : "hover:bg-accent hover:text-accent-foreground"}`,
-            children: page
-          }
-        ) }, page)
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("li", { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-        "button",
-        {
-          onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
-          disabled: currentPage >= totalPages,
-          "aria-label": "Go to next page",
-          className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "hidden sm:block", children: "Next" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_lucide_react11.ChevronRight, { className: "h-4 w-4" })
-          ]
-        }
-      ) })
-    ] }) });
-  };
-  if (loading && comments.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "shrink-0", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("h1", { className: "text-lg font-bold", children: "Comments" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground mt-1", children: [
-          totalCount,
-          " total comment",
-          totalCount !== 1 ? "s" : ""
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "top" })
-    ] }),
-    comments.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "py-8 text-center text-muted-foreground", children: "No comments yet." }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(import_jsx_runtime24.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[200px]", children: "Post" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Author" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[300px]", children: "Comment" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
-        ] }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("tbody", { className: "[&_tr:last-child]:border-0", children: comments.map((comment) => {
-          const status = getStatusBadge(comment);
-          const isReply = comment.parentId !== null;
-          const commentIdToOpen = comment.parentId || comment.id;
-          return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("tr", { className: "border-b", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-              "button",
-              {
-                onClick: () => navigate(`/editor/${comment.post.slug}`),
-                className: "block truncate max-w-[200px] hover:underline text-left",
-                children: comment.post.title || "Untitled"
-              }
-            ) }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: comment.user.name || comment.user.email }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
-              isReply && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-xs mr-1", children: "\u21B3" }),
-              comment.content.slice(0, 60),
-              comment.content.length > 60 ? "..." : ""
-            ] }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(comment.createdAt).toLocaleString() }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${status.classes}`, children: status.label }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-              "button",
-              {
-                onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
-                className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-8 px-3 hover:bg-accent text-muted-foreground hover:text-foreground",
-                children: "View"
-              }
-            ) })
-          ] }, comment.id);
-        }) })
-      ] }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "md:hidden divide-y rounded-md border bg-background", children: comments.map((comment) => {
-        const status = getStatusBadge(comment);
-        const isReply = comment.parentId !== null;
-        const commentIdToOpen = comment.parentId || comment.id;
-        return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "font-medium truncate", children: [
-                isReply && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-xs mr-1", children: "\u21B3" }),
-                comment.content.slice(0, 40),
-                comment.content.length > 40 ? "..." : ""
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${status.classes}`, children: status.label })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("p", { className: "text-sm text-muted-foreground truncate", children: [
-              comment.user.name || comment.user.email,
-              " \xB7 ",
-              new Date(comment.createdAt).toLocaleDateString()
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-            "button",
-            {
-              onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
-              className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-8 px-3 hover:bg-accent text-muted-foreground hover:text-foreground shrink-0",
-              children: "View"
-            }
-          )
-        ] }, comment.id);
-      }) })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(PaginationControls, { position: "bottom" })
+  const pageName = subPath.slice(1);
+  const revisionDetailMatch = pageName.match(/^revisions\/(.+)$/);
+  return /* @__PURE__ */ (0, import_jsx_runtime35.jsxs)(PageContainer, { children: [
+    pageName === "general" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(GeneralSettings, {}),
+    pageName === "users" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(UsersSettings, {}),
+    pageName === "ai" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(AISettings, {}),
+    pageName === "tags" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(TagsSettings, {}),
+    pageName === "topics" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(TopicsSettings, {}),
+    pageName === "integrations" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(IntegrationsSettings, {}),
+    pageName === "posts" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(PostsSettings, {}),
+    pageName === "revisions" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(RevisionsSettings, {}),
+    revisionDetailMatch && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(RevisionDetail, { revisionId: revisionDetailMatch[1] }),
+    pageName === "comments" && /* @__PURE__ */ (0, import_jsx_runtime35.jsx)(CommentsSettings, {})
   ] });
 }
 
+// src/ui/components/Navbar.tsx
+init_context();
+
 // src/ui/components/ThemeToggle.tsx
-var import_react22 = require("react");
+var import_react31 = require("react");
+init_useTheme();
 
 // src/ui/components/Icons.tsx
-var import_jsx_runtime25 = require("react/jsx-runtime");
-var ChatIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" }) });
-var SunIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" }) });
-var MoonIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" }) });
-var ChevronLeftIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) });
+init_cn();
+var import_jsx_runtime36 = require("react/jsx-runtime");
+var ChatIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" }) });
+var SunIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" }) });
+var MoonIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" }) });
+var ChevronLeftIcon = ({ className }) => /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ (0, import_jsx_runtime36.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) });
 
 // src/ui/components/ThemeToggle.tsx
-var import_jsx_runtime26 = require("react/jsx-runtime");
+init_cn();
+var import_jsx_runtime37 = require("react/jsx-runtime");
 function ThemeToggle({ className }) {
   const { resolvedTheme, setTheme } = useAutobloggerTheme();
-  const [mounted, setMounted] = (0, import_react22.useState)(false);
-  (0, import_react22.useEffect)(() => setMounted(true), []);
+  const [mounted, setMounted] = (0, import_react31.useState)(false);
+  (0, import_react31.useEffect)(() => setMounted(true), []);
   const handleToggle = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(
     "button",
     {
       type: "button",
       onClick: handleToggle,
       className: cn(
-        "w-9 h-9 rounded-md border border-border",
+        "w-10 h-10 rounded-md border border-border",
         "active:bg-accent md:hover:bg-accent",
         "text-muted-foreground",
         "flex items-center justify-center",
         className
       ),
       "aria-label": "Toggle dark mode",
-      children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-4 h-4 transition-transform duration-200 active:scale-90", children: !mounted ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "w-4 h-4" }) : resolvedTheme === "dark" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(SunIcon, { className: "w-4 h-4" }) : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(MoonIcon, { className: "w-4 h-4" }) })
+      children: /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "w-5 h-5 transition-transform duration-200 active:scale-90", children: !mounted ? /* @__PURE__ */ (0, import_jsx_runtime37.jsx)("div", { className: "w-5 h-5" }) : resolvedTheme === "dark" ? /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(SunIcon, { className: "w-5 h-5" }) : /* @__PURE__ */ (0, import_jsx_runtime37.jsx)(MoonIcon, { className: "w-5 h-5" }) })
     }
   );
 }
 
 // src/ui/components/Navbar.tsx
-var import_jsx_runtime27 = require("react/jsx-runtime");
+var import_jsx_runtime38 = require("react/jsx-runtime");
 function Navbar({
   onSignOut,
   rightSlot
@@ -12929,523 +13723,86 @@ function Navbar({
     e.currentTarget.blur();
     goBack();
   };
-  const avatarTrigger = /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+  const avatarTrigger = /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(
     "button",
     {
       type: "button",
-      className: "relative w-10 h-10 md:w-9 md:h-9 rounded-full bg-secondary flex items-center justify-center text-base md:text-sm font-medium text-secondary-foreground active:ring-2 md:hover:ring-2 active:ring-ring md:hover:ring-ring transition-shadow",
+      className: "relative w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground active:ring-2 md:hover:ring-2 active:ring-ring md:hover:ring-ring transition-shadow",
       children: [
         session?.user?.email?.charAt(0).toUpperCase() || "?",
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
       ]
     }
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("header", { className: "sticky top-0 z-50 border-b border-border bg-background overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
-    isRoot ? /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("header", { className: "sticky top-0 z-50 border-b border-border bg-background overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
+    isRoot ? /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
       "Writer",
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(
       "button",
       {
         type: "button",
         onClick: handleBack,
-        className: "h-10 md:h-9 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-base md:text-sm font-medium rounded-md active:bg-accent md:hover:bg-accent active:text-accent-foreground md:hover:text-accent-foreground touch-manipulation",
+        className: "h-10 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-sm font-medium rounded-md active:bg-accent md:hover:bg-accent active:text-accent-foreground md:hover:text-accent-foreground touch-manipulation",
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ChevronLeftIcon, {}),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { className: "hidden sm:inline", children: "Back" })
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(ChevronLeftIcon, {}),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)("span", { className: "hidden sm:inline", children: "Back" })
         ]
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { className: "flex items-center gap-2", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)("div", { className: "flex items-center gap-2", children: [
       rightSlot,
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(ThemeToggle, {}),
-      session && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(Dropdown, { trigger: avatarTrigger, align: "right", className: "min-w-[180px]", children: [
-        session.user?.role === "admin" && /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)(import_jsx_runtime27.Fragment, { children: [
-          !isSettings ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
-          /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownDivider, {})
+      /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(ThemeToggle, {}),
+      session && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(Dropdown, { trigger: avatarTrigger, align: "right", className: "min-w-[180px]", children: [
+        session.user?.role === "admin" && /* @__PURE__ */ (0, import_jsx_runtime38.jsxs)(import_jsx_runtime38.Fragment, { children: [
+          !isSettings ? /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
+          /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(DropdownDivider, {})
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownItem, { onClick: () => {
+        /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(DropdownItem, { onClick: () => {
           window.location.href = "/";
         }, children: "Back to site" }),
-        onSignOut && /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(DropdownItem, { onClick: onSignOut, children: "Logout" })
+        onSignOut && /* @__PURE__ */ (0, import_jsx_runtime38.jsx)(DropdownItem, { onClick: onSignOut, children: "Logout" })
       ] })
     ] })
   ] }) });
 }
 
 // src/ui/components/ChatButton.tsx
-var import_jsx_runtime28 = require("react/jsx-runtime");
+init_useChat();
+var import_jsx_runtime39 = require("react/jsx-runtime");
 function ChatButton() {
   const chatContext = useChatContextOptional();
   if (!chatContext) return null;
   const { setIsOpen, isOpen } = chatContext;
-  return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(
     "button",
     {
       type: "button",
       onClick: () => setIsOpen(!isOpen),
-      className: `w-10 h-10 md:w-9 md:h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent flex items-center justify-center transition-colors ${isOpen ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`,
+      className: `w-10 h-10 rounded-md border border-border active:bg-accent md:hover:bg-accent flex items-center justify-center transition-colors ${isOpen ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`,
       "aria-label": "Toggle chat",
       title: "Chat (\u2318\u21E7A)",
-      children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(ChatIcon, { className: "w-5 h-5 md:w-4 md:h-4" })
+      children: /* @__PURE__ */ (0, import_jsx_runtime39.jsx)(ChatIcon, { className: "w-5 h-5" })
     }
   );
 }
 
-// src/ui/components/ChatPanel.tsx
-var import_react23 = require("react");
-var import_lucide_react12 = require("lucide-react");
-var import_jsx_runtime29 = require("react/jsx-runtime");
-var DEFAULT_PROSE_CLASSES2 = "";
-function stripPlanTags(content) {
-  return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
-}
-function ChatPanel({
-  proseClasses = DEFAULT_PROSE_CLASSES2,
-  onNavigate: onNavigateProp,
-  isOnEditor: isOnEditorProp
-}) {
-  const {
-    messages,
-    isStreaming,
-    isOpen: open,
-    setIsOpen,
-    sendMessage: contextSendMessage,
-    stopStreaming,
-    essayContext,
-    mode,
-    setMode,
-    undoEdit,
-    webSearchEnabled,
-    setWebSearchEnabled,
-    thinkingEnabled,
-    setThinkingEnabled,
-    selectedModel,
-    setSelectedModel,
-    expandPlan
-  } = useChatContext();
-  const dashboardContext = (0, import_react23.useContext)(DashboardContext);
-  const onNavigate = onNavigateProp ?? dashboardContext?.navigate;
-  const isOnEditor = isOnEditorProp ?? !!essayContext;
-  const [input, setInput] = (0, import_react23.useState)("");
-  const [isAnimating, setIsAnimating] = (0, import_react23.useState)(open);
-  const [isVisible, setIsVisible] = (0, import_react23.useState)(open);
-  const [mounted, setMounted] = (0, import_react23.useState)(typeof window !== "undefined");
-  const [copiedIndex, setCopiedIndex] = (0, import_react23.useState)(null);
-  const [modeMenuOpen, setModeMenuOpen] = (0, import_react23.useState)(false);
-  const modeMenuRef = (0, import_react23.useRef)(null);
-  const messagesEndRef = (0, import_react23.useRef)(null);
-  const messagesContainerRef = (0, import_react23.useRef)(null);
-  const textareaRef = (0, import_react23.useRef)(null);
-  const prevMessageCountRef = (0, import_react23.useRef)(0);
-  const savedScrollPositionRef = (0, import_react23.useRef)(null);
-  const hasOpenedBeforeRef = (0, import_react23.useRef)(false);
-  const lastUserMessageRef = (0, import_react23.useRef)(null);
-  const contextModels = dashboardContext?.sharedData?.aiSettings?.availableModels;
-  const models = contextModels && contextModels.length > 0 ? contextModels : DEFAULT_MODELS;
-  const currentModel = models.find((m) => m.id === selectedModel);
-  const onClose = (0, import_react23.useCallback)(() => setIsOpen(false), [setIsOpen]);
-  const copyToClipboard = (0, import_react23.useCallback)(async (text, index) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedIndex(index);
-    setTimeout(() => setCopiedIndex(null), 2e3);
-  }, []);
-  const handleDraftEssay = (0, import_react23.useCallback)(() => {
-    const lastAssistantMessage = [...messages].reverse().find((m) => m.role === "assistant");
-    if (!lastAssistantMessage?.content) return;
-    if (isOnEditor) {
-      expandPlan();
-      setMode("agent");
-    } else if (onNavigate) {
-      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
-      setIsOpen(false);
-      onNavigate("/editor?fromPlan=1");
-    } else {
-      sessionStorage.setItem("pendingPlan", lastAssistantMessage.content);
-      setIsOpen(false);
-      window.location.href = "/writer/editor?fromPlan=1";
-    }
-  }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate]);
-  (0, import_react23.useEffect)(() => {
-    function handleClick(e) {
-      if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
-        setModeMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-  (0, import_react23.useEffect)(() => {
-    if (!mounted) setMounted(true);
-  }, [mounted]);
-  (0, import_react23.useEffect)(() => {
-    if (open) {
-      setIsVisible(true);
-      document.body.style.overflow = "hidden";
-      document.body.style.position = "fixed";
-      document.body.style.width = "100%";
-      document.body.style.top = `-${window.scrollY}px`;
-    } else {
-      setIsAnimating(false);
-      const scrollY = document.body.style.top;
-      document.body.style.overflow = "";
-      document.body.style.position = "";
-      document.body.style.width = "";
-      document.body.style.top = "";
-      window.scrollTo(0, parseInt(scrollY || "0") * -1);
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-      }, 200);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
-  (0, import_react23.useEffect)(() => {
-    if (isVisible && open && !isAnimating) {
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    }
-  }, [isVisible, open, isAnimating]);
-  (0, import_react23.useEffect)(() => {
-    if (!open && messagesContainerRef.current) {
-      savedScrollPositionRef.current = messagesContainerRef.current.scrollTop;
-    }
-  }, [open]);
-  (0, import_react23.useEffect)(() => {
-    if (!open || !isVisible) return;
-    if (!hasOpenedBeforeRef.current) {
-      hasOpenedBeforeRef.current = true;
-      return;
-    }
-    const container = messagesContainerRef.current;
-    if (container && savedScrollPositionRef.current !== null) {
-      setTimeout(() => {
-        container.scrollTop = savedScrollPositionRef.current;
-      }, 50);
-    }
-  }, [open, isVisible]);
-  (0, import_react23.useEffect)(() => {
-    if (!open || !isVisible) return;
-    const prevCount = prevMessageCountRef.current;
-    const currentCount = messages.length;
-    if (currentCount > prevCount && prevCount > 0) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-      }, 50);
-    }
-    prevMessageCountRef.current = currentCount;
-  }, [messages.length, open, isVisible]);
-  (0, import_react23.useEffect)(() => {
-    if (!isStreaming) return;
-    const container = messagesContainerRef.current;
-    const userMessage = lastUserMessageRef.current;
-    if (!container || !userMessage) return;
-    const containerRect = container.getBoundingClientRect();
-    const messageRect = userMessage.getBoundingClientRect();
-    const distanceFromTop = messageRect.top - containerRect.top;
-    if (distanceFromTop > 10) {
-      container.scrollTop += Math.min(distanceFromTop * 0.3, 30);
-    }
-  }, [messages, isStreaming]);
-  (0, import_react23.useEffect)(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = `${Math.min(textarea.scrollHeight, 200)}px`;
-    }
-  }, [input]);
-  const sendMessage = (0, import_react23.useCallback)(async () => {
-    if (!input.trim() || isStreaming) return;
-    const content = input.trim();
-    setInput("");
-    await contextSendMessage(content);
-  }, [input, isStreaming, contextSendMessage]);
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-    if (e.key === "Escape") {
-      e.stopPropagation();
-      onClose();
-    }
-  };
-  (0, import_react23.useEffect)(() => {
-    const handleGlobalKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
-        e.preventDefault();
-        if (essayContext) {
-          if (!open) {
-            setIsOpen(true);
-          }
-          setMode(mode === "agent" ? "ask" : "agent");
-        } else {
-          setIsOpen(!open);
-          setMode("ask");
-        }
-      }
-    };
-    document.addEventListener("keydown", handleGlobalKeyDown);
-    return () => document.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [open, setIsOpen, setMode, essayContext, mode]);
-  if (!isVisible || !mounted) return null;
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(AutobloggerPortal, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-      "div",
-      {
-        className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
-        onClick: onClose
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
-      "div",
-      {
-        role: "dialog",
-        "aria-modal": "true",
-        "aria-label": "Chat",
-        className: `fixed z-[70] flex flex-col bg-background text-foreground shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("h2", { className: "font-medium", children: "Chat" }),
-              essayContext && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground truncate max-w-[140px]", children: essayContext.title || "Untitled" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-              "button",
-              {
-                onClick: onClose,
-                className: "w-9 h-9 md:w-8 md:h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
-                "aria-label": "Close chat",
-                children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.X, { className: "w-5 h-5 md:w-4 md:h-4" })
-              }
-            )
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto flex flex-col-reverse", children: messages.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "px-4 py-4 space-y-4", children: [
-            messages.map((message, index) => {
-              const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
-              return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                "div",
-                {
-                  ref: isLastUserMessage ? lastUserMessageRef : void 0,
-                  className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
-                  children: /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
-                    "div",
-                    {
-                      className: `max-w-[85%] rounded-2xl px-3 py-2 text-base relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
-                      children: [
-                        message.role === "assistant" ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                          "div",
-                          {
-                            className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
-                            dangerouslySetInnerHTML: { __html: markdownToStyledHtml(stripPlanTags(message.content)) }
-                          }
-                        ) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
-                        isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
-                        message.role === "assistant" && !isStreaming && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                            "button",
-                            {
-                              onClick: () => copyToClipboard(message.content, index),
-                              className: "text-muted-foreground hover:text-foreground p-1 rounded",
-                              "aria-label": "Copy message",
-                              children: copiedIndex === index ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Check, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Copy, { className: "w-3.5 h-3.5" })
-                            }
-                          ),
-                          message.appliedEdits && message.previousState && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                            "button",
-                            {
-                              onClick: () => undoEdit(index),
-                              className: "text-muted-foreground hover:text-foreground p-1 rounded",
-                              "aria-label": "Undo edit",
-                              children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Undo2, { className: "w-3.5 h-3.5" })
-                            }
-                          ),
-                          message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                            "button",
-                            {
-                              onClick: handleDraftEssay,
-                              className: "text-xs text-muted-foreground hover:text-foreground px-1 rounded",
-                              children: "Draft Essay"
-                            }
-                          )
-                        ] })
-                      ]
-                    }
-                  )
-                },
-                index
-              );
-            }),
-            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { ref: messagesEndRef })
-          ] }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
-            "form",
-            {
-              onSubmit: (e) => {
-                e.preventDefault();
-                sendMessage();
-              },
-              className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "mb-2 flex items-center gap-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { ref: modeMenuRef, className: "relative", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
-                      "button",
-                      {
-                        type: "button",
-                        onClick: () => setModeMenuOpen(!modeMenuOpen),
-                        title: "Switch mode (\u2318\u21E7A)",
-                        className: `inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full transition-colors ${mode === "ask" ? "bg-ab-success/15 text-ab-success" : mode === "agent" ? "bg-muted text-muted-foreground" : "bg-ab-warning/15 text-ab-warning"}`,
-                        children: [
-                          mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.MessageSquare, { className: "w-3 h-3" }),
-                          mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Pencil, { className: "w-3 h-3" }),
-                          mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.List, { className: "w-3 h-3" }),
-                          mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
-                          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.ChevronDown, { className: "w-2.5 h-2.5 opacity-60" })
-                        ]
-                      }
-                    ),
-                    modeMenuOpen && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
-                        "button",
-                        {
-                          type: "button",
-                          onClick: () => {
-                            setMode("agent");
-                            setModeMenuOpen(false);
-                            textareaRef.current?.focus();
-                          },
-                          disabled: !essayContext,
-                          className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
-                          children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Pencil, { className: "w-4 h-4" }),
-                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "flex-1", children: "Agent" }),
-                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
-                            mode === "agent" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
-                          ]
-                        }
-                      ),
-                      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
-                        "button",
-                        {
-                          type: "button",
-                          onClick: () => {
-                            setMode("plan");
-                            setModeMenuOpen(false);
-                            textareaRef.current?.focus();
-                          },
-                          className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
-                          children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.List, { className: "w-4 h-4" }),
-                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "flex-1", children: "Plan" }),
-                            mode === "plan" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
-                          ]
-                        }
-                      ),
-                      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
-                        "button",
-                        {
-                          type: "button",
-                          onClick: () => {
-                            setMode("ask");
-                            setModeMenuOpen(false);
-                            textareaRef.current?.focus();
-                          },
-                          className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
-                          children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.MessageSquare, { className: "w-4 h-4" }),
-                            /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "flex-1", children: "Ask" }),
-                            mode === "ask" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Check, { className: "w-4 h-4" })
-                          ]
-                        }
-                      )
-                    ] })
-                  ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                    ControlButton,
-                    {
-                      onClick: () => {
-                        setWebSearchEnabled(!webSearchEnabled);
-                        textareaRef.current?.focus();
-                      },
-                      active: webSearchEnabled,
-                      title: webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)",
-                      tabIndex: -1,
-                      children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Globe, { className: "w-4 h-4" })
-                    }
-                  ),
-                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                    ControlButton,
-                    {
-                      onClick: () => {
-                        setThinkingEnabled(!thinkingEnabled);
-                        textareaRef.current?.focus();
-                      },
-                      active: thinkingEnabled,
-                      title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
-                      tabIndex: -1,
-                      children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Brain, { className: "w-4 h-4" })
-                    }
-                  ),
-                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                    ModelSelector,
-                    {
-                      models,
-                      selectedModel,
-                      onModelChange: (id) => {
-                        setSelectedModel(id);
-                        textareaRef.current?.focus();
-                      },
-                      currentModel
-                    }
-                  )
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "flex items-end gap-2", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                    "textarea",
-                    {
-                      ref: textareaRef,
-                      value: input,
-                      onChange: (e) => setInput(e.target.value),
-                      onKeyDown: handleKeyDown,
-                      placeholder: mode === "plan" ? "Describe your essay idea..." : mode === "agent" && essayContext ? "Ask me to edit your essay..." : essayContext ? "Ask about your essay..." : "Ask anything...",
-                      className: "flex-1 min-h-[44px] max-h-[120px] resize-none px-3 py-2.5 border border-input rounded-md bg-transparent text-base focus:outline-none",
-                      rows: 1,
-                      autoFocus: true
-                    }
-                  ),
-                  /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
-                    "button",
-                    {
-                      type: isStreaming ? "button" : "submit",
-                      onClick: isStreaming ? stopStreaming : void 0,
-                      disabled: !isStreaming && !input.trim(),
-                      className: "rounded-full w-11 h-11 md:w-10 md:h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
-                      children: isStreaming ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.Square, { className: "h-5 w-5 md:h-4 md:w-4 fill-current" }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(import_lucide_react12.ArrowUp, { className: "h-6 w-6 md:h-5 md:w-5" })
-                    }
-                  )
-                ] })
-              ]
-            }
-          )
-        ]
-      }
-    )
-  ] });
+// src/ui/components/ThemeProvider.tsx
+init_useTheme();
+var import_jsx_runtime40 = require("react/jsx-runtime");
+function ThemeProvider({ children, className }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime40.jsx)(AutobloggerThemeProvider, { className, children });
 }
 
-// src/ui/components/ThemeProvider.tsx
-var import_jsx_runtime30 = require("react/jsx-runtime");
-function ThemeProvider({ children, className }) {
-  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(AutobloggerThemeProvider, { className, children });
-}
+// src/ui/dashboard.tsx
+init_useChat();
 
 // src/ui/hooks/useKeyboard.ts
-var import_react24 = require("react");
+var import_react32 = require("react");
 function useKeyboard(shortcuts, enabled = true) {
-  const shortcutsRef = (0, import_react24.useRef)(shortcuts);
+  const shortcutsRef = (0, import_react32.useRef)(shortcuts);
   shortcutsRef.current = shortcuts;
-  (0, import_react24.useEffect)(() => {
+  (0, import_react32.useEffect)(() => {
     if (!enabled) return;
     function handleKeyDown(event) {
       const target = event.target;
@@ -13504,12 +13861,16 @@ function useDashboardKeyboard(options) {
   useKeyboard(shortcuts, true);
 }
 
+// src/ui/dashboard.tsx
+init_useChat();
+
 // src/ui/components/Toaster.tsx
+init_useTheme();
 var import_sonner2 = require("sonner");
-var import_jsx_runtime31 = require("react/jsx-runtime");
+var import_jsx_runtime41 = require("react/jsx-runtime");
 function Toaster({ ...props }) {
   const { resolvedTheme } = useAutobloggerTheme();
-  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime41.jsx)(
     import_sonner2.Toaster,
     {
       theme: resolvedTheme,
@@ -13528,7 +13889,10 @@ function Toaster({ ...props }) {
 }
 
 // src/ui/dashboard.tsx
-var import_jsx_runtime32 = require("react/jsx-runtime");
+var import_jsx_runtime43 = require("react/jsx-runtime");
+var ChatPanel2 = (0, import_react34.lazy)(
+  () => Promise.resolve().then(() => (init_ChatPanel(), ChatPanel_exports)).then((m) => ({ default: m.ChatPanel }))
+);
 function AutobloggerDashboard({
   basePath = "/writer",
   apiBasePath = "/api/cms",
@@ -13546,13 +13910,13 @@ function AutobloggerDashboard({
 }) {
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
   const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`;
-  return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(ThemeProvider, { className: "h-dvh bg-background text-foreground flex flex-col overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ThemeProvider, { className: "h-dvh bg-background text-foreground flex flex-col overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
     ChatProvider,
     {
       apiBasePath,
       chatApiPath: resolvedChatApiPath,
       historyApiPath: resolvedHistoryApiPath,
-      children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+      children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
         DashboardLayout,
         {
           basePath,
@@ -13573,7 +13937,7 @@ function DashboardLayout({
   proseClasses
 }) {
   const { currentPath, navigate, onEditorStateChange } = useDashboardContext();
-  const [editorState, setEditorState] = (0, import_react25.useState)(null);
+  const [editorState, setEditorState] = (0, import_react34.useState)(null);
   const chatContext = useChatContextOptional();
   const editorSlug = currentPath.startsWith("/editor/") ? currentPath.replace("/editor/", "") : currentPath === "/editor" ? void 0 : void 0;
   const isEditorPage = currentPath.startsWith("/editor");
@@ -13582,7 +13946,7 @@ function DashboardLayout({
     onEditorStateChange?.(state);
   };
   const setEssayContext = chatContext?.setEssayContext;
-  (0, import_react25.useEffect)(() => {
+  (0, import_react34.useEffect)(() => {
     if (!setEssayContext) return;
     if (isEditorPage && editorState?.content) {
       setEssayContext({
@@ -13608,59 +13972,65 @@ function DashboardLayout({
       if (currentPath !== "/" && currentPath !== "") navigate("/");
     }
   });
-  const rightSlotWithButtons = /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
-    isEditorPage && editorState && /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+  const rightSlotWithButtons = /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_jsx_runtime43.Fragment, { children: [
+    isEditorPage && editorState && /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
       "button",
       {
         type: "button",
         onClick: () => editorState.onSave("draft"),
         disabled: !editorState.hasUnsavedChanges || !!editorState.savingAs,
-        className: "w-10 h-10 md:w-9 md:h-9 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
+        className: "w-10 h-10 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
         "aria-label": "Save",
         title: editorState.hasUnsavedChanges ? "Save changes (\u2318S)" : "No unsaved changes",
-        children: editorState.savingAs ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react13.Loader2, { className: "h-4 w-4 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(import_lucide_react13.Save, { className: "h-4 w-4" })
+        children: editorState.savingAs ? /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_lucide_react22.Loader2, { className: "w-5 h-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_lucide_react22.Save, { className: "w-5 h-5" })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(ChatButton, {}),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ChatButton, {}),
     navbarRightSlot
   ] });
-  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(import_jsx_runtime32.Fragment, { children: [
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)(import_jsx_runtime43.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(
       Navbar,
       {
         onSignOut,
         rightSlot: rightSlotWithButtons
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("main", { className: "flex-1 overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(ChatPanel, { proseClasses }),
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Toaster, {})
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("main", { className: "flex-1 overflow-auto", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(import_react34.Suspense, { fallback: null, children: /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(ChatPanel2, { proseClasses }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(Toaster, {})
   ] });
 }
 function DashboardRouter({ path, onEditorStateChange }) {
   const pathWithoutQuery = path.split("?")[0];
-  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(WriterDashboard, {});
+  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(WriterDashboard, {});
   if (pathWithoutQuery.startsWith("/editor")) {
     const slug = pathWithoutQuery.replace("/editor/", "").replace("/editor", "");
-    return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(EditorPage, { slug: slug || void 0, onEditorStateChange }, slug || "new");
+    return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(EditorPage, { slug: slug || void 0, onEditorStateChange }, slug || "new");
   }
-  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
-  return /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: "text-muted-foreground", children: [
+  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
+  return /* @__PURE__ */ (0, import_jsx_runtime43.jsx)("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ (0, import_jsx_runtime43.jsxs)("p", { className: "text-muted-foreground", children: [
     "Page not found: ",
     path
   ] }) });
 }
 
+// src/ui/index.ts
+init_useTheme();
+init_context();
+init_useChat();
+init_ChatPanel();
+
 // src/ui/hooks/useAIModels.ts
-var import_react26 = require("react");
+var import_react35 = require("react");
 function useAIModels(options) {
-  const [models, setModels] = (0, import_react26.useState)([]);
-  const [internalSelectedModel, setInternalSelectedModel] = (0, import_react26.useState)("");
-  const [isLoading, setIsLoading] = (0, import_react26.useState)(true);
+  const [models, setModels] = (0, import_react35.useState)([]);
+  const [internalSelectedModel, setInternalSelectedModel] = (0, import_react35.useState)("");
+  const [isLoading, setIsLoading] = (0, import_react35.useState)(true);
   const selectedModel = options?.externalSelectedModel ?? internalSelectedModel;
   const setSelectedModel = options?.externalSetSelectedModel ?? setInternalSelectedModel;
   const apiPath = options?.apiPath ?? "/api/cms/ai/settings";
-  (0, import_react26.useEffect)(() => {
+  (0, import_react35.useEffect)(() => {
     fetch(apiPath).then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
@@ -13681,6 +14051,10 @@ function useAIModels(options) {
     isLoading
   };
 }
+
+// src/ui/index.ts
+init_ModelSelector();
+init_ControlButton();
 
 // src/ui/shortcuts.ts
 var SHORTCUTS = {
@@ -13716,14 +14090,14 @@ function GlobalShortcuts({ writerPath = "/writer" } = {}) {
 }
 
 // src/ui/components/SeoSection.tsx
-var import_react27 = require("react");
-var import_jsx_runtime33 = require("react/jsx-runtime");
+var import_react36 = require("react");
+var import_jsx_runtime44 = require("react/jsx-runtime");
 function SeoSection({
   post,
   onFieldChange,
   disabled = false
 }) {
-  const [isExpanded, setIsExpanded] = (0, import_react27.useState)(false);
+  const [isExpanded, setIsExpanded] = (0, import_react36.useState)(false);
   const handleChange = (field, value) => {
     onFieldChange(field, value === "" ? null : value);
   };
@@ -13742,7 +14116,7 @@ function SeoSection({
     if (isNoIndex) parts.push("noindex");
     return parts.join(", ");
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)(
+  return /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)(
     ExpandableSection,
     {
       title: "SEO Settings",
@@ -13750,9 +14124,9 @@ function SeoSection({
       expanded: isExpanded,
       onExpandedChange: setIsExpanded,
       children: [
-        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "space-y-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("label", { className: "text-xs text-muted-foreground", children: "Title" }),
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("label", { className: "text-xs text-muted-foreground", children: "Title" }),
+          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
             "input",
             {
               type: "text",
@@ -13764,9 +14138,9 @@ function SeoSection({
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "space-y-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("label", { className: "text-xs text-muted-foreground", children: "Description" }),
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("label", { className: "text-xs text-muted-foreground", children: "Description" }),
+          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
             "textarea",
             {
               value: post.seoDescription || "",
@@ -13778,9 +14152,9 @@ function SeoSection({
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "space-y-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("label", { className: "text-xs text-muted-foreground", children: "Keywords" }),
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("label", { className: "text-xs text-muted-foreground", children: "Keywords" }),
+          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
             "input",
             {
               type: "text",
@@ -13792,8 +14166,8 @@ function SeoSection({
             }
           )
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("label", { className: "flex items-center gap-2 cursor-pointer", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime44.jsxs)("label", { className: "flex items-center gap-2 cursor-pointer", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)(
             "input",
             {
               type: "checkbox",
@@ -13803,7 +14177,7 @@ function SeoSection({
               className: "h-4 w-4 rounded border-border"
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "text-sm text-muted-foreground", children: "Hide from search engines (noindex)" })
+          /* @__PURE__ */ (0, import_jsx_runtime44.jsx)("span", { className: "text-sm text-muted-foreground", children: "Hide from search engines (noindex)" })
         ] })
       ]
     }
@@ -13826,6 +14200,7 @@ function SeoSection({
   ModelSelector,
   MoonIcon,
   Navbar,
+  PageContainer,
   SHORTCUTS,
   SeoSection,
   SunIcon,
