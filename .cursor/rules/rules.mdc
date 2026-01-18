@@ -227,8 +227,11 @@ console.warn('[autoblogger] Feature not supported')
 6. **Update `.cursor/rules/` if significant changes were made:**
    - `rules.mdc` — New conventions, patterns, do's/don'ts
    - `context.mdc` — New systems, architecture, file structure
-7. Commit with comprehensive message
-8. `git push origin main`
+7. **Bump version before committing** — `npm version patch --no-git-tag-version`
+   - This prevents CI from creating its own version bump commit
+   - Without this, CI pushes a "chore: bump version" commit, making origin ahead of local
+8. Commit with comprehensive message (include the version bump)
+9. `git push origin main`
 
 ### When user types "p" (pull)
 1. `git stash` — save local changes
@@ -260,3 +263,4 @@ Before running dev servers or long-running processes:
 - **Dark mode**: Use `ab-dark:` not `dark:` (custom prefix)
 - **SSE streams**: Always handle controller.close() errors
 - **useEffect deps**: Include all referenced values to avoid stale closures
+- **Origin always ahead**: If you push without bumping version locally, CI creates a version bump commit. Always run `npm version patch --no-git-tag-version` before committing.

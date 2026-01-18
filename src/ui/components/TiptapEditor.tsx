@@ -312,51 +312,110 @@ export function TiptapEditor({
     }
   }, [editor, content])
 
-  // Mobile selection preservation: save selection on touchstart before scroll can clear it
-  const savedSelectionRef = useRef<{ from: number; to: number } | null>(null)
+  // Mobile selection preservation and swipe-to-indent gesture
   const containerRef = useRef<HTMLDivElement>(null)
-
-  const handleTouchStart = useCallback(() => {
-    if (!editor) return
-    const { from, to, empty } = editor.state.selection
-    if (!empty) {
-      // Save non-empty selections before scroll might clear them
-      savedSelectionRef.current = { from, to }
-    }
-  }, [editor])
-
-  const handleTouchEnd = useCallback(() => {
-    if (!editor || !savedSelectionRef.current) return
+  
+  // Swipe gesture for mobile bullet indent/outdent (iOS Notes-style)
+  useEffect(() => {
+    if (!editor?.view) return
     
-    // Check if selection was lost (became empty/collapsed)
-    const { empty } = editor.state.selection
-    if (empty && savedSelectionRef.current) {
-      const { from, to } = savedSelectionRef.current
-      // Restore the selection after a brief delay to let scroll settle
-      requestAnimationFrame(() => {
-        if (editor && !editor.isDestroyed) {
-          try {
-            // Only restore if the positions are still valid
-            const docSize = editor.state.doc.content.size
-            if (from <= docSize && to <= docSize) {
-              editor.commands.setTextSelection({ from, to })
-            }
-          } catch {
-            // Selection positions may be invalid after content changes
-          }
+    const editorDom = editor.view.dom
+    
+    let swipeState: {
+      startX: number
+      startY: number
+      startTime: number
+      handled: boolean
+      listItemElement: HTMLLIElement | null
+    } | null = null
+    
+    // Find the closest <li> element from a touch target
+    const findListItem = (element: Element | null): HTMLLIElement | null => {
+      while (element && element !== editorDom) {
+        if (element.tagName === 'LI') {
+          return element as HTMLLIElement
         }
-      })
+        element = element.parentElement
+      }
+      return null
     }
-    // Clear saved selection after touch ends
-    savedSelectionRef.current = null
+    
+    const handleTouchStart = (e: TouchEvent) => {
+      const touch = e.touches[0]
+      const target = e.target as Element
+      const listItem = findListItem(target)
+      
+      swipeState = {
+        startX: touch.clientX,
+        startY: touch.clientY,
+        startTime: Date.now(),
+        handled: false,
+        listItemElement: listItem,
+      }
+    }
+    
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!swipeState || swipeState.handled) return
+      
+      // Must have started on a list item
+      if (!swipeState.listItemElement) return
+      
+      const touch = e.touches[0]
+      const deltaX = touch.clientX - swipeState.startX
+      const deltaY = touch.clientY - swipeState.startY
+      const elapsed = Date.now() - swipeState.startTime
+      
+      // Only trigger if:
+      // - Horizontal movement is significant (> 30px)
+      // - It's more horizontal than vertical
+      // - Fast enough (< 500ms)
+      const absX = Math.abs(deltaX)
+      const absY = Math.abs(deltaY)
+      const isHorizontalSwipe = absX > 30 && absX > absY * 1.2 && elapsed < 500
+      
+      if (!isHorizontalSwipe) return
+      
+      // Mark as handled to prevent multiple triggers
+      swipeState.handled = true
+      
+      // Prevent scrolling when we're handling indent
+      e.preventDefault()
+      
+      // Position cursor in the list item before indenting
+      try {
+        const pos = editor.view.posAtDOM(swipeState.listItemElement, 0)
+        editor.commands.setTextSelection(pos)
+      } catch {
+        // Position might fail, continue anyway with current selection
+      }
+      
+      if (deltaX > 0) {
+        // Swipe right = indent (sink list item)
+        editor.chain().focus().sinkListItem('listItem').run()
+      } else {
+        // Swipe left = outdent (lift list item)
+        editor.chain().focus().liftListItem('listItem').run()
+      }
+    }
+    
+    const handleTouchEnd = () => {
+      swipeState = null
+    }
+    
+    // Attach native event listeners directly to ProseMirror's DOM
+    editorDom.addEventListener('touchstart', handleTouchStart, { passive: true })
+    editorDom.addEventListener('touchmove', handleTouchMove, { passive: false })
+    editorDom.addEventListener('touchend', handleTouchEnd, { passive: true })
+    
+    return () => {
+      editorDom.removeEventListener('touchstart', handleTouchStart)
+      editorDom.removeEventListener('touchmove', handleTouchMove)
+      editorDom.removeEventListener('touchend', handleTouchEnd)
+    }
   }, [editor])
 
   return (
-    <div
-      ref={containerRef}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div ref={containerRef}>
       <EditorContent editor={editor} />
     </div>
   )

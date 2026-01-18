@@ -7219,7 +7219,7 @@ var TiptapEditor_exports = {};
 __export(TiptapEditor_exports, {
   TiptapEditor: () => TiptapEditor
 });
-import { useEffect as useEffect12, useMemo as useMemo4, useRef as useRef9, useCallback as useCallback10 } from "react";
+import { useEffect as useEffect12, useMemo as useMemo4, useRef as useRef9 } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
@@ -7405,43 +7405,69 @@ function TiptapEditor({
       }
     }
   }, [editor, content]);
-  const savedSelectionRef = useRef9(null);
   const containerRef = useRef9(null);
-  const handleTouchStart = useCallback10(() => {
-    if (!editor) return;
-    const { from, to, empty } = editor.state.selection;
-    if (!empty) {
-      savedSelectionRef.current = { from, to };
-    }
-  }, [editor]);
-  const handleTouchEnd = useCallback10(() => {
-    if (!editor || !savedSelectionRef.current) return;
-    const { empty } = editor.state.selection;
-    if (empty && savedSelectionRef.current) {
-      const { from, to } = savedSelectionRef.current;
-      requestAnimationFrame(() => {
-        if (editor && !editor.isDestroyed) {
-          try {
-            const docSize = editor.state.doc.content.size;
-            if (from <= docSize && to <= docSize) {
-              editor.commands.setTextSelection({ from, to });
-            }
-          } catch {
-          }
+  useEffect12(() => {
+    if (!editor?.view) return;
+    const editorDom = editor.view.dom;
+    let swipeState = null;
+    const findListItem = (element) => {
+      while (element && element !== editorDom) {
+        if (element.tagName === "LI") {
+          return element;
         }
-      });
-    }
-    savedSelectionRef.current = null;
+        element = element.parentElement;
+      }
+      return null;
+    };
+    const handleTouchStart = (e) => {
+      const touch = e.touches[0];
+      const target = e.target;
+      const listItem = findListItem(target);
+      swipeState = {
+        startX: touch.clientX,
+        startY: touch.clientY,
+        startTime: Date.now(),
+        handled: false,
+        listItemElement: listItem
+      };
+    };
+    const handleTouchMove = (e) => {
+      if (!swipeState || swipeState.handled) return;
+      if (!swipeState.listItemElement) return;
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - swipeState.startX;
+      const deltaY = touch.clientY - swipeState.startY;
+      const elapsed = Date.now() - swipeState.startTime;
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+      const isHorizontalSwipe = absX > 30 && absX > absY * 1.2 && elapsed < 500;
+      if (!isHorizontalSwipe) return;
+      swipeState.handled = true;
+      e.preventDefault();
+      try {
+        const pos = editor.view.posAtDOM(swipeState.listItemElement, 0);
+        editor.commands.setTextSelection(pos);
+      } catch {
+      }
+      if (deltaX > 0) {
+        editor.chain().focus().sinkListItem("listItem").run();
+      } else {
+        editor.chain().focus().liftListItem("listItem").run();
+      }
+    };
+    const handleTouchEnd = () => {
+      swipeState = null;
+    };
+    editorDom.addEventListener("touchstart", handleTouchStart, { passive: true });
+    editorDom.addEventListener("touchmove", handleTouchMove, { passive: false });
+    editorDom.addEventListener("touchend", handleTouchEnd, { passive: true });
+    return () => {
+      editorDom.removeEventListener("touchstart", handleTouchStart);
+      editorDom.removeEventListener("touchmove", handleTouchMove);
+      editorDom.removeEventListener("touchend", handleTouchEnd);
+    };
   }, [editor]);
-  return /* @__PURE__ */ jsx24(
-    "div",
-    {
-      ref: containerRef,
-      onTouchStart: handleTouchStart,
-      onTouchEnd: handleTouchEnd,
-      children: /* @__PURE__ */ jsx24(EditorContent, { editor })
-    }
-  );
+  return /* @__PURE__ */ jsx24("div", { ref: containerRef, children: /* @__PURE__ */ jsx24(EditorContent, { editor }) });
 }
 var PLACEHOLDER_STYLE_ID, DEFAULT_PROSE_CLASSES, StyledHeading, CustomStrike, CustomBulletList, CustomOrderedList, CustomCode, CustomBlockquote, CustomCodeBlock;
 var init_TiptapEditor = __esm({
@@ -14081,6 +14107,7 @@ function Toaster({ ...props }) {
 }
 
 // src/ui/dashboard.tsx
+import { toast as toast2 } from "sonner";
 import { Fragment as Fragment17, jsx as jsx44, jsxs as jsxs29 } from "react/jsx-runtime";
 var ChatPanel2 = lazy2(
   () => Promise.resolve().then(() => (init_ChatPanel(), ChatPanel_exports)).then((m) => ({ default: m.ChatPanel }))
@@ -14152,7 +14179,13 @@ function DashboardLayout({
   }, [isEditorPage, editorState?.content, setEssayContext]);
   useDashboardKeyboard({
     basePath,
-    onToggleView: onToggleView ? () => onToggleView(currentPath, editorSlug) : void 0,
+    onToggleView: onToggleView ? () => {
+      if (isEditorPage && editorState?.status === "draft") {
+        toast2.info("This essay is still a draft. Publish it to view the live page.");
+        return;
+      }
+      onToggleView(currentPath, editorSlug);
+    } : void 0,
     onToggleSettings: () => {
       if (currentPath.startsWith("/settings")) navigate("/");
       else navigate("/settings");

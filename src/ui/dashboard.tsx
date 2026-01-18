@@ -20,6 +20,7 @@ import { useDashboardKeyboard } from './hooks/useKeyboard'
 import { useChatContextOptional } from './hooks/useChat'
 import { useIOSVisualViewportHeaderFix } from './hooks/useIOSVisualViewportHeaderFix'
 import { Toaster } from './components/Toaster'
+import { toast } from 'sonner'
 
 interface AutobloggerDashboardProps {
   basePath?: string
@@ -133,7 +134,14 @@ function DashboardLayout({
 
   useDashboardKeyboard({
     basePath,
-    onToggleView: onToggleView ? () => onToggleView(currentPath, editorSlug) : undefined,
+    onToggleView: onToggleView ? () => {
+      // Only allow toggle to live site if the post is published
+      if (isEditorPage && editorState?.status === 'draft') {
+        toast.info('This essay is still a draft. Publish it to view the live page.')
+        return
+      }
+      onToggleView(currentPath, editorSlug)
+    } : undefined,
     onToggleSettings: () => {
       if (currentPath.startsWith('/settings')) navigate('/')
       else navigate('/settings')
