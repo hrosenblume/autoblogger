@@ -54,10 +54,9 @@ export function EditorToolbar({
   loading = false,
   apiBasePath = '/api/cms',
 }: EditorToolbarProps) {
-  // Use sticky positioning instead of fixed to prevent iOS visual viewport issues
-  // when copy/paste menu appears on mobile. The toolbar stays at top of scroll container
-  // rather than jumping when the visual viewport changes.
-  const toolbarClasses = "sticky top-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto"
+  // Toolbar is a flex child outside the scroll container.
+  // This prevents iOS visual viewport issues when copy/paste menu appears.
+  const toolbarClasses = "flex-shrink-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto"
 
   if (loading) {
     return (

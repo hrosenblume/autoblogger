@@ -17,6 +17,8 @@ import { useComments } from '../hooks/useComments'
 import { useChatContextOptional } from '../hooks/useChat'
 import { formatSavedTime, countWords } from '../../lib/format'
 import { Skeleton } from '../components/Skeleton'
+import { WarningBanner, WarningButton, WarningCode } from '../primitives/WarningBanner'
+import { SuccessText } from '../primitives/SuccessText'
 
 interface Tag {
   id: string
@@ -1004,59 +1006,53 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     <div className="flex flex-col h-full">
       {/* Revision Preview Banner */}
       {previewingRevision && (
-        <div className="bg-ab-warning/15 border-b border-ab-warning/30 px-4 py-2 flex items-center justify-between">
-          <span className="text-sm text-ab-warning">
-            Previewing revision from {new Date(previewingRevision.createdAt).toLocaleString()}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={cancelRevisionPreview}
-              className="px-3 py-1 text-sm border border-ab-warning/40 rounded hover:bg-ab-warning/20"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={restoreRevision}
-              className="px-3 py-1 text-sm bg-amber-600 text-white rounded hover:bg-amber-700"
-            >
-              Restore
-            </button>
-          </div>
-        </div>
+        <WarningBanner
+          actions={
+            <>
+              <WarningButton onClick={cancelRevisionPreview}>
+                Cancel
+              </WarningButton>
+              <WarningButton variant="solid" onClick={restoreRevision} className="hover:opacity-90">
+                Restore
+              </WarningButton>
+            </>
+          }
+        >
+          Previewing revision from {new Date(previewingRevision.createdAt).toLocaleString()}
+        </WarningBanner>
       )}
 
-      {/* Editor Content - toolbar is now sticky inside the scroll container for mobile stability */}
+      {/* Toolbar outside scroll container to prevent iOS visual viewport issues */}
+      {!previewingRevision && (
+        <EditorToolbar
+          editor={showMarkdown ? null : editor}
+          textareaRef={showMarkdown ? textareaRef : undefined}
+          markdown={post.markdown}
+          onMarkdownChange={(md) => setPost(prev => ({ ...prev, markdown: md }))}
+          showMarkdown={showMarkdown}
+          setShowMarkdown={setShowMarkdown}
+          aiGenerating={generating}
+          postSlug={slug}
+          revisions={post.id ? {
+            list: revisions,
+            loading: revisionsLoading,
+            previewLoading: false,
+            previewing: previewingRevision,
+            fetch: fetchRevisions,
+            preview: previewRevision,
+            cancel: cancelRevisionPreview,
+            restore: restoreRevision,
+          } : undefined}
+          apiBasePath={apiBasePath}
+          hasSelection={!!comments.selectedText && !comments.selectedText.hasExistingComment}
+          selectionHasComment={comments.selectedText?.hasExistingComment}
+          onAddComment={() => setCommentsOpen(true)}
+          commentsCount={comments.list.filter(c => !c.resolved).length}
+          onViewComments={() => setCommentsOpen(true)}
+        />
+      )}
+
       <main className="flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y">
-        {/* Toolbar - sticky positioning keeps it at top during scroll and prevents 
-            iOS visual viewport jumps when copy/paste menu appears */}
-        {!previewingRevision && (
-          <EditorToolbar
-            editor={showMarkdown ? null : editor}
-            textareaRef={showMarkdown ? textareaRef : undefined}
-            markdown={post.markdown}
-            onMarkdownChange={(md) => setPost(prev => ({ ...prev, markdown: md }))}
-            showMarkdown={showMarkdown}
-            setShowMarkdown={setShowMarkdown}
-            aiGenerating={generating}
-            postSlug={slug}
-            revisions={post.id ? {
-              list: revisions,
-              loading: revisionsLoading,
-              previewLoading: false,
-              previewing: previewingRevision,
-              fetch: fetchRevisions,
-              preview: previewRevision,
-              cancel: cancelRevisionPreview,
-              restore: restoreRevision,
-            } : undefined}
-            apiBasePath={apiBasePath}
-            hasSelection={!!comments.selectedText && !comments.selectedText.hasExistingComment}
-            selectionHasComment={comments.selectedText?.hasExistingComment}
-            onAddComment={() => setCommentsOpen(true)}
-            commentsCount={comments.list.filter(c => !c.resolved).length}
-            onViewComments={() => setCommentsOpen(true)}
-          />
-        )}
         <article className={`${styles.container} pt-12 pb-24 mx-auto`}>
           {/* Header - Title & Subtitle */}
           <header className="space-y-2 mb-8">
@@ -1068,7 +1064,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 onChange={(val) => setPost(prev => ({ ...prev, title: val }))}
                 placeholder="Title"
                 disabled={generating || !!previewingRevision}
-                className={`${styles.title} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             )}
             {generating && !post.subtitle ? (
@@ -1079,7 +1075,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                 onChange={(val) => setPost(prev => ({ ...prev, subtitle: val }))}
                 placeholder="Subtitle"
                 disabled={generating || !!previewingRevision}
-                className={`${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${(generating || previewingRevision) ? 'opacity-60 cursor-not-allowed' : ''}`}
               />
             )}
             <div className="!mt-4">
@@ -1152,7 +1148,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                   <span className="text-muted-foreground w-14">URL</span>
                   <span className="text-muted-foreground/70">{urlPrefix}</span>
                   {isPublished ? (
-                    <span className="flex items-center gap-1.5 text-ab-neutral-strong">
+                    <span className="flex items-center gap-1.5 text-gray-600 ab-dark:text-gray-400">
                       {post.slug}
                       <svg className="w-3 h-3 text-muted-foreground/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -1164,7 +1160,7 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
                       value={post.slug}
                       onChange={(e) => setPost(prev => ({ ...prev, slug: e.target.value }))}
                       placeholder="post-slug"
-                      className="flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-ab-neutral-strong"
+                      className="flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-gray-600 ab-dark:text-gray-400"
                     />
                   )}
                 </div>
@@ -1172,15 +1168,10 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               
               {/* Slug change warning for previously-published posts */}
               {wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && (
-                <div className="flex items-start gap-2 p-3 rounded-md bg-ab-warning/10 border border-ab-warning/30 text-sm">
-                  <svg className="w-4 h-4 text-ab-warning mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <div className="text-ab-warning">
-                    <span className="font-medium">URL change detected.</span>
-                    {' '}Existing links to <code className="px-1 py-0.5 bg-ab-warning/20 rounded text-xs">{urlPrefix}{originalSlug}</code> will automatically redirect to the new URL when you publish.
-                  </div>
-                </div>
+                <WarningBanner variant="box">
+                  <span className="font-medium">URL change detected.</span>
+                  {' '}Existing links to <WarningCode>{urlPrefix}{originalSlug}</WarningCode> will automatically redirect to the new URL when you publish.
+                </WarningBanner>
               )}
 
               {/* Custom Fields (footer position) */}
@@ -1235,9 +1226,11 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-2">
                   <span className="text-muted-foreground">Status</span>
-                  <span className={isPublished ? "text-xs text-ab-success-muted" : "text-xs text-muted-foreground/70"}>
-                    {isPublished ? 'Published' : 'Draft'}
-                  </span>
+                  {isPublished ? (
+                    <SuccessText muted className="text-xs">Published</SuccessText>
+                  ) : (
+                    <span className="text-xs text-muted-foreground/70">Draft</span>
+                  )}
                 </div>
                 
                 {/* Publish/Unpublish/Update button */}
