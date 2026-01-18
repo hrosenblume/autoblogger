@@ -225,7 +225,7 @@ var init_context = __esm({
     DEFAULT_STYLES = {
       container: "max-w-[680px] mx-auto px-6",
       title: "text-2xl font-bold leading-tight",
-      subtitle: "text-base text-muted-foreground leading-snug",
+      subtitle: "text-lg text-muted-foreground leading-snug",
       byline: "text-sm text-muted-foreground",
       prose: "prose"
     };
