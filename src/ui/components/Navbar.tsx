@@ -10,11 +10,14 @@ export interface NavbarProps {
   onSignOut?: () => void
   // Extra slot for host-app specific buttons (e.g., additional actions)
   rightSlot?: React.ReactNode
+  // When true, removes sticky positioning (used when Navbar is inside a fixed container)
+  isInsideFixedContainer?: boolean
 }
 
 export function Navbar({
   onSignOut,
   rightSlot,
+  isInsideFixedContainer = false,
 }: NavbarProps) {
   const { session, currentPath, navigate, goBack, basePath } = useDashboardContext()
 
@@ -38,8 +41,13 @@ export function Navbar({
     </button>
   )
 
+  // When inside a fixed container, don't add sticky positioning
+  const headerClasses = isInsideFixedContainer
+    ? "border-b border-border bg-background overscroll-none"
+    : "sticky top-0 z-50 border-b border-border bg-background overscroll-none"
+
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background overscroll-none">
+    <header className={headerClasses}>
       <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Left side: Logo or back button */}
         {isRoot ? (

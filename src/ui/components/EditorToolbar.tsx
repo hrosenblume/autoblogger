@@ -54,13 +54,21 @@ export function EditorToolbar({
   loading = false,
   apiBasePath = '/api/cms',
 }: EditorToolbarProps) {
-  // Toolbar is a flex child outside the scroll container.
-  // This prevents iOS visual viewport issues when copy/paste menu appears.
-  const toolbarClasses = "flex-shrink-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto"
+  // Toolbar is fixed below the navbar with iOS visual viewport transform
+  // This keeps it visible during iOS selection handle dragging
+  const toolbarClasses = "fixed left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto"
+  
+  // Navbar height: py-4 (32px) + h-10 (40px) + border (1px) = 73px
+  const toolbarStyle = {
+    top: '73px',
+    transform: 'translate3d(0, var(--vv-top, 0px), 0)',
+    willChange: 'transform' as const,
+    backfaceVisibility: 'hidden' as const,
+  }
 
   if (loading) {
     return (
-      <div className={toolbarClasses}>
+      <div className={toolbarClasses} style={toolbarStyle}>
         <FormatButtons loading={true} />
         <Divider />
         <BlockButtons loading={true} />
@@ -77,7 +85,7 @@ export function EditorToolbar({
   }
 
   return (
-    <div className={toolbarClasses}>
+    <div className={toolbarClasses} style={toolbarStyle}>
       <FormatButtons
         editor={editor}
         textareaRef={textareaRef}

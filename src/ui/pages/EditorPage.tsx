@@ -989,13 +989,15 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   if (loading) {
     return (
       <div className="flex flex-col h-full">
-        <main className="flex-1 overflow-auto pb-20">
-          <EditorToolbar
-            textareaRef={textareaRef}
-            markdown=""
-            onMarkdownChange={() => {}}
-            loading={true}
-          />
+        {/* Fixed toolbar */}
+        <EditorToolbar
+          textareaRef={textareaRef}
+          markdown=""
+          onMarkdownChange={() => {}}
+          loading={true}
+        />
+        {/* Content with padding for fixed toolbar */}
+        <main className="flex-1 overflow-auto pb-20 pt-[56px]">
           <ContentSkeleton styles={styles} />
         </main>
       </div>
@@ -1052,7 +1054,8 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
         />
       )}
 
-      <main className="flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y">
+      {/* Toolbar height (~44px) is accounted for in pt-[56px] */}
+      <main className="flex-1 overflow-auto pb-20 pt-[56px] overscroll-contain touch-pan-y">
         <article className={`${styles.container} pt-12 pb-24 mx-auto`}>
           {/* Header - Title & Subtitle */}
           <header className="space-y-2 mb-8">

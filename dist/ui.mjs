@@ -7227,7 +7227,7 @@ import Link from "@tiptap/extension-link";
 import Image2 from "@tiptap/extension-image";
 import Strike from "@tiptap/extension-strike";
 import Underline2 from "@tiptap/extension-underline";
-import { jsx as jsx22 } from "react/jsx-runtime";
+import { jsx as jsx24 } from "react/jsx-runtime";
 function injectPlaceholderStyles() {
   if (typeof document === "undefined") return;
   if (document.getElementById(PLACEHOLDER_STYLE_ID)) return;
@@ -7433,13 +7433,13 @@ function TiptapEditor({
     }
     savedSelectionRef.current = null;
   }, [editor]);
-  return /* @__PURE__ */ jsx22(
+  return /* @__PURE__ */ jsx24(
     "div",
     {
       ref: containerRef,
       onTouchStart: handleTouchStart,
       onTouchEnd: handleTouchEnd,
-      children: /* @__PURE__ */ jsx22(EditorContent, { editor })
+      children: /* @__PURE__ */ jsx24(EditorContent, { editor })
     }
   );
 }
@@ -7526,9 +7526,9 @@ var ChatPanel_exports = {};
 __export(ChatPanel_exports, {
   ChatPanel: () => ChatPanel
 });
-import { useState as useState27, useRef as useRef12, useEffect as useEffect24, useCallback as useCallback12, useContext as useContext5 } from "react";
+import { useState as useState27, useRef as useRef12, useEffect as useEffect25, useCallback as useCallback12, useContext as useContext5 } from "react";
 import { X as X4, Copy, Check as Check4, ArrowUp as ArrowUp3, Pencil as Pencil3, Undo2 as Undo22, ChevronDown as ChevronDown6, MessageSquare as MessageSquare3, Globe as Globe2, Brain as Brain2, Square, List as List2 } from "lucide-react";
-import { jsx as jsx41, jsxs as jsxs27 } from "react/jsx-runtime";
+import { jsx as jsx43, jsxs as jsxs28 } from "react/jsx-runtime";
 function stripPlanTags(content) {
   return content.replace(/<plan>/gi, "").replace(/<\/plan>/gi, "");
 }
@@ -7598,7 +7598,7 @@ function ChatPanel({
       window.location.href = "/writer/editor?fromPlan=1";
     }
   }, [messages, isOnEditor, expandPlan, setIsOpen, setMode, onNavigate]);
-  useEffect24(() => {
+  useEffect25(() => {
     function handleClick(e) {
       if (modeMenuRef.current && !modeMenuRef.current.contains(e.target)) {
         setModeMenuOpen(false);
@@ -7607,10 +7607,10 @@ function ChatPanel({
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
-  useEffect24(() => {
+  useEffect25(() => {
     if (!mounted) setMounted(true);
   }, [mounted]);
-  useEffect24(() => {
+  useEffect25(() => {
     if (open) {
       setIsVisible(true);
       document.body.style.overflow = "hidden";
@@ -7631,7 +7631,7 @@ function ChatPanel({
       return () => clearTimeout(timer);
     }
   }, [open]);
-  useEffect24(() => {
+  useEffect25(() => {
     if (isVisible && open && !isAnimating) {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
@@ -7640,12 +7640,12 @@ function ChatPanel({
       });
     }
   }, [isVisible, open, isAnimating]);
-  useEffect24(() => {
+  useEffect25(() => {
     if (!open && messagesContainerRef.current) {
       savedScrollPositionRef.current = messagesContainerRef.current.scrollTop;
     }
   }, [open]);
-  useEffect24(() => {
+  useEffect25(() => {
     if (!open || !isVisible) return;
     if (!hasOpenedBeforeRef.current) {
       hasOpenedBeforeRef.current = true;
@@ -7658,7 +7658,7 @@ function ChatPanel({
       }, 50);
     }
   }, [open, isVisible]);
-  useEffect24(() => {
+  useEffect25(() => {
     if (!open || !isVisible) return;
     const prevCount = prevMessageCountRef.current;
     const currentCount = messages.length;
@@ -7669,7 +7669,7 @@ function ChatPanel({
     }
     prevMessageCountRef.current = currentCount;
   }, [messages.length, open, isVisible]);
-  useEffect24(() => {
+  useEffect25(() => {
     if (!isStreaming) return;
     const container = messagesContainerRef.current;
     const userMessage = lastUserMessageRef.current;
@@ -7681,7 +7681,7 @@ function ChatPanel({
       container.scrollTop += Math.min(distanceFromTop * 0.3, 30);
     }
   }, [messages, isStreaming]);
-  useEffect24(() => {
+  useEffect25(() => {
     const textarea = textareaRef.current;
     if (textarea) {
       textarea.style.height = "auto";
@@ -7704,7 +7704,7 @@ function ChatPanel({
       onClose();
     }
   };
-  useEffect24(() => {
+  useEffect25(() => {
     const handleGlobalKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "a") {
         e.preventDefault();
@@ -7723,15 +7723,15 @@ function ChatPanel({
     return () => document.removeEventListener("keydown", handleGlobalKeyDown);
   }, [open, setIsOpen, setMode, essayContext, mode]);
   if (!isVisible || !mounted) return null;
-  return /* @__PURE__ */ jsxs27(AutobloggerPortal, { children: [
-    /* @__PURE__ */ jsx41(
+  return /* @__PURE__ */ jsxs28(AutobloggerPortal, { children: [
+    /* @__PURE__ */ jsx43(
       "div",
       {
         className: `fixed inset-0 h-[100dvh] bg-black/20 z-[60] transition-opacity duration-200 ${isAnimating ? "opacity-100" : "opacity-0"}`,
         onClick: onClose
       }
     ),
-    /* @__PURE__ */ jsxs27(
+    /* @__PURE__ */ jsxs28(
       "div",
       {
         role: "dialog",
@@ -7739,62 +7739,62 @@ function ChatPanel({
         "aria-label": "Chat",
         className: `fixed z-[70] flex flex-col bg-background text-foreground shadow-xl transition-transform duration-200 ease-out overflow-hidden inset-x-0 top-0 h-[100dvh] md:left-auto md:w-full md:max-w-[380px] md:border-l md:border-border ${isAnimating ? "translate-x-0" : "translate-x-full"}`,
         children: [
-          /* @__PURE__ */ jsxs27("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
-            /* @__PURE__ */ jsxs27("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ jsx41("h2", { className: "font-medium", children: "Chat" }),
-              essayContext && /* @__PURE__ */ jsx41("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground truncate max-w-[140px]", children: essayContext.title || "Untitled" })
+          /* @__PURE__ */ jsxs28("div", { className: "flex-shrink-0 border-b border-border px-4 py-3 flex items-center justify-between", children: [
+            /* @__PURE__ */ jsxs28("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsx43("h2", { className: "font-medium", children: "Chat" }),
+              essayContext && /* @__PURE__ */ jsx43("span", { className: "inline-block px-2 py-0.5 text-xs font-medium rounded-full bg-muted text-muted-foreground truncate max-w-[140px]", children: essayContext.title || "Untitled" })
             ] }),
-            /* @__PURE__ */ jsx41(
+            /* @__PURE__ */ jsx43(
               "button",
               {
                 onClick: onClose,
                 className: "w-9 h-9 md:w-8 md:h-8 rounded-md hover:bg-accent flex items-center justify-center text-muted-foreground",
                 "aria-label": "Close chat",
-                children: /* @__PURE__ */ jsx41(X4, { className: "w-5 h-5 md:w-4 md:h-4" })
+                children: /* @__PURE__ */ jsx43(X4, { className: "w-5 h-5 md:w-4 md:h-4" })
               }
             )
           ] }),
-          /* @__PURE__ */ jsx41("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto flex flex-col-reverse", children: messages.length === 0 ? /* @__PURE__ */ jsx41("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ jsx41("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ jsx41("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ jsxs27("div", { className: "px-4 py-4 space-y-4", children: [
+          /* @__PURE__ */ jsx43("div", { ref: messagesContainerRef, className: "flex-1 overflow-y-auto flex flex-col-reverse", children: messages.length === 0 ? /* @__PURE__ */ jsx43("div", { className: "h-full flex items-center justify-center", children: /* @__PURE__ */ jsx43("div", { className: "text-center max-w-xs px-6", children: /* @__PURE__ */ jsx43("p", { className: "text-muted-foreground text-sm", children: mode === "plan" ? "Describe your essay idea and I'll create a structured outline with section headers and key points." : essayContext ? "Chat about your essay \u2014 ask for feedback, discuss ideas, or get help with specific sections." : "Chat with AI to brainstorm ideas, get feedback, or explore topics." }) }) }) : /* @__PURE__ */ jsxs28("div", { className: "px-4 py-4 space-y-4", children: [
             messages.map((message, index) => {
               const isLastUserMessage = message.role === "user" && !messages.slice(index + 1).some((m) => m.role === "user");
-              return /* @__PURE__ */ jsx41(
+              return /* @__PURE__ */ jsx43(
                 "div",
                 {
                   ref: isLastUserMessage ? lastUserMessageRef : void 0,
                   className: `flex gap-3 group ${message.role === "user" ? "justify-end" : "justify-start"}`,
-                  children: /* @__PURE__ */ jsxs27(
+                  children: /* @__PURE__ */ jsxs28(
                     "div",
                     {
                       className: `max-w-[85%] rounded-2xl px-3 py-2 text-base relative ${message.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`,
                       children: [
-                        message.role === "assistant" ? /* @__PURE__ */ jsx41(
+                        message.role === "assistant" ? /* @__PURE__ */ jsx43(
                           "div",
                           {
                             className: `${proseClasses} [&>*:first-child]:mt-0 [&>*:last-child]:mb-0`,
                             dangerouslySetInnerHTML: { __html: markdownToHtml(stripPlanTags(message.content)) }
                           }
-                        ) : /* @__PURE__ */ jsx41("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
-                        isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ jsx41("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
-                        message.role === "assistant" && !isStreaming && /* @__PURE__ */ jsxs27("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
-                          /* @__PURE__ */ jsx41(
+                        ) : /* @__PURE__ */ jsx43("div", { className: "whitespace-pre-wrap break-words", children: message.content }),
+                        isStreaming && index === messages.length - 1 && message.role === "assistant" && /* @__PURE__ */ jsx43("span", { className: "inline-block w-1.5 h-3 bg-current ml-0.5 animate-pulse" }),
+                        message.role === "assistant" && !isStreaming && /* @__PURE__ */ jsxs28("div", { className: "absolute -bottom-6 left-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity", children: [
+                          /* @__PURE__ */ jsx43(
                             "button",
                             {
                               onClick: () => copyToClipboard(message.content, index),
                               className: "text-muted-foreground hover:text-foreground p-1 rounded",
                               "aria-label": "Copy message",
-                              children: copiedIndex === index ? /* @__PURE__ */ jsx41(Check4, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ jsx41(Copy, { className: "w-3.5 h-3.5" })
+                              children: copiedIndex === index ? /* @__PURE__ */ jsx43(Check4, { className: "w-3.5 h-3.5 text-green-500" }) : /* @__PURE__ */ jsx43(Copy, { className: "w-3.5 h-3.5" })
                             }
                           ),
-                          message.appliedEdits && message.previousState && /* @__PURE__ */ jsx41(
+                          message.appliedEdits && message.previousState && /* @__PURE__ */ jsx43(
                             "button",
                             {
                               onClick: () => undoEdit(index),
                               className: "text-muted-foreground hover:text-foreground p-1 rounded",
                               "aria-label": "Undo edit",
-                              children: /* @__PURE__ */ jsx41(Undo22, { className: "w-3.5 h-3.5" })
+                              children: /* @__PURE__ */ jsx43(Undo22, { className: "w-3.5 h-3.5" })
                             }
                           ),
-                          message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ jsx41(
+                          message.mode === "plan" && index === messages.length - 1 && message.content && /* @__PURE__ */ jsx43(
                             "button",
                             {
                               onClick: handleDraftEssay,
@@ -7810,9 +7810,9 @@ function ChatPanel({
                 index
               );
             }),
-            /* @__PURE__ */ jsx41("div", { ref: messagesEndRef })
+            /* @__PURE__ */ jsx43("div", { ref: messagesEndRef })
           ] }) }),
-          /* @__PURE__ */ jsxs27(
+          /* @__PURE__ */ jsxs28(
             "form",
             {
               onSubmit: (e) => {
@@ -7821,9 +7821,9 @@ function ChatPanel({
               },
               className: "flex-shrink-0 border-t border-border bg-background p-3 pb-[calc(1rem+env(safe-area-inset-bottom,0px))]",
               children: [
-                /* @__PURE__ */ jsxs27("div", { className: "pb-3 flex items-center gap-2", children: [
-                  /* @__PURE__ */ jsxs27("div", { ref: modeMenuRef, className: "relative", children: [
-                    /* @__PURE__ */ jsxs27(
+                /* @__PURE__ */ jsxs28("div", { className: "pb-3 flex items-center gap-2", children: [
+                  /* @__PURE__ */ jsxs28("div", { ref: modeMenuRef, className: "relative", children: [
+                    /* @__PURE__ */ jsxs28(
                       "button",
                       {
                         type: "button",
@@ -7831,16 +7831,16 @@ function ChatPanel({
                         title: "Switch mode (\u2318\u21E7A)",
                         className: `inline-flex items-center gap-1 px-2.5 py-1 text-sm font-medium rounded-full transition-colors ${mode === "ask" ? "bg-ab-success/15 text-ab-success" : mode === "agent" ? "bg-muted text-muted-foreground" : "bg-ab-warning/15 text-ab-warning"}`,
                         children: [
-                          mode === "ask" && /* @__PURE__ */ jsx41(MessageSquare3, { className: "w-3.5 h-3.5" }),
-                          mode === "agent" && /* @__PURE__ */ jsx41(Pencil3, { className: "w-3.5 h-3.5" }),
-                          mode === "plan" && /* @__PURE__ */ jsx41(List2, { className: "w-3.5 h-3.5" }),
+                          mode === "ask" && /* @__PURE__ */ jsx43(MessageSquare3, { className: "w-3.5 h-3.5" }),
+                          mode === "agent" && /* @__PURE__ */ jsx43(Pencil3, { className: "w-3.5 h-3.5" }),
+                          mode === "plan" && /* @__PURE__ */ jsx43(List2, { className: "w-3.5 h-3.5" }),
                           mode === "ask" ? "Ask" : mode === "agent" ? "Agent" : "Plan",
-                          /* @__PURE__ */ jsx41(ChevronDown6, { className: "w-3 h-3 opacity-60" })
+                          /* @__PURE__ */ jsx43(ChevronDown6, { className: "w-3 h-3 opacity-60" })
                         ]
                       }
                     ),
-                    modeMenuOpen && /* @__PURE__ */ jsxs27("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
-                      /* @__PURE__ */ jsxs27(
+                    modeMenuOpen && /* @__PURE__ */ jsxs28("div", { className: "absolute bottom-full left-0 mb-1 min-w-[160px] bg-popover border border-border rounded-lg shadow-lg z-[100] py-1", children: [
+                      /* @__PURE__ */ jsxs28(
                         "button",
                         {
                           type: "button",
@@ -7852,14 +7852,14 @@ function ChatPanel({
                           disabled: !essayContext,
                           className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed",
                           children: [
-                            /* @__PURE__ */ jsx41(Pencil3, { className: "w-4 h-4" }),
-                            /* @__PURE__ */ jsx41("span", { className: "flex-1", children: "Agent" }),
-                            /* @__PURE__ */ jsx41("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
-                            mode === "agent" && /* @__PURE__ */ jsx41(Check4, { className: "w-4 h-4" })
+                            /* @__PURE__ */ jsx43(Pencil3, { className: "w-4 h-4" }),
+                            /* @__PURE__ */ jsx43("span", { className: "flex-1", children: "Agent" }),
+                            /* @__PURE__ */ jsx43("span", { className: "text-xs text-muted-foreground", children: "\u2318\u21E7A" }),
+                            mode === "agent" && /* @__PURE__ */ jsx43(Check4, { className: "w-4 h-4" })
                           ]
                         }
                       ),
-                      /* @__PURE__ */ jsxs27(
+                      /* @__PURE__ */ jsxs28(
                         "button",
                         {
                           type: "button",
@@ -7870,13 +7870,13 @@ function ChatPanel({
                           },
                           className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
                           children: [
-                            /* @__PURE__ */ jsx41(List2, { className: "w-4 h-4" }),
-                            /* @__PURE__ */ jsx41("span", { className: "flex-1", children: "Plan" }),
-                            mode === "plan" && /* @__PURE__ */ jsx41(Check4, { className: "w-4 h-4" })
+                            /* @__PURE__ */ jsx43(List2, { className: "w-4 h-4" }),
+                            /* @__PURE__ */ jsx43("span", { className: "flex-1", children: "Plan" }),
+                            mode === "plan" && /* @__PURE__ */ jsx43(Check4, { className: "w-4 h-4" })
                           ]
                         }
                       ),
-                      /* @__PURE__ */ jsxs27(
+                      /* @__PURE__ */ jsxs28(
                         "button",
                         {
                           type: "button",
@@ -7887,15 +7887,15 @@ function ChatPanel({
                           },
                           className: "w-full px-3 py-2 text-left text-sm hover:bg-accent flex items-center gap-2",
                           children: [
-                            /* @__PURE__ */ jsx41(MessageSquare3, { className: "w-4 h-4" }),
-                            /* @__PURE__ */ jsx41("span", { className: "flex-1", children: "Ask" }),
-                            mode === "ask" && /* @__PURE__ */ jsx41(Check4, { className: "w-4 h-4" })
+                            /* @__PURE__ */ jsx43(MessageSquare3, { className: "w-4 h-4" }),
+                            /* @__PURE__ */ jsx43("span", { className: "flex-1", children: "Ask" }),
+                            mode === "ask" && /* @__PURE__ */ jsx43(Check4, { className: "w-4 h-4" })
                           ]
                         }
                       )
                     ] })
                   ] }),
-                  /* @__PURE__ */ jsx41(
+                  /* @__PURE__ */ jsx43(
                     ControlButton,
                     {
                       onClick: () => {
@@ -7905,10 +7905,10 @@ function ChatPanel({
                       active: webSearchEnabled,
                       title: webSearchEnabled ? "Web search enabled (works with all models)" : "Enable web search (works with all models)",
                       tabIndex: -1,
-                      children: /* @__PURE__ */ jsx41(Globe2, { className: "w-[18px] h-[18px]" })
+                      children: /* @__PURE__ */ jsx43(Globe2, { className: "w-[18px] h-[18px]" })
                     }
                   ),
-                  /* @__PURE__ */ jsx41(
+                  /* @__PURE__ */ jsx43(
                     ControlButton,
                     {
                       onClick: () => {
@@ -7918,10 +7918,10 @@ function ChatPanel({
                       active: thinkingEnabled,
                       title: thinkingEnabled ? "Thinking mode enabled" : "Enable thinking mode",
                       tabIndex: -1,
-                      children: /* @__PURE__ */ jsx41(Brain2, { className: "w-[18px] h-[18px]" })
+                      children: /* @__PURE__ */ jsx43(Brain2, { className: "w-[18px] h-[18px]" })
                     }
                   ),
-                  /* @__PURE__ */ jsx41(
+                  /* @__PURE__ */ jsx43(
                     ModelSelector,
                     {
                       models,
@@ -7934,8 +7934,8 @@ function ChatPanel({
                     }
                   )
                 ] }),
-                /* @__PURE__ */ jsxs27("div", { className: "flex items-end gap-2", children: [
-                  /* @__PURE__ */ jsx41(
+                /* @__PURE__ */ jsxs28("div", { className: "flex items-end gap-2", children: [
+                  /* @__PURE__ */ jsx43(
                     "textarea",
                     {
                       ref: textareaRef,
@@ -7948,14 +7948,14 @@ function ChatPanel({
                       autoFocus: true
                     }
                   ),
-                  /* @__PURE__ */ jsx41(
+                  /* @__PURE__ */ jsx43(
                     "button",
                     {
                       type: isStreaming ? "button" : "submit",
                       onClick: isStreaming ? stopStreaming : void 0,
                       disabled: !isStreaming && !input.trim(),
                       className: "rounded-full w-11 h-11 md:w-10 md:h-10 flex-shrink-0 border border-input bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center touch-manipulation",
-                      children: isStreaming ? /* @__PURE__ */ jsx41(Square, { className: "h-5 w-5 md:h-4 md:w-4 fill-current" }) : /* @__PURE__ */ jsx41(ArrowUp3, { className: "h-6 w-6 md:h-5 md:w-5" })
+                      children: isStreaming ? /* @__PURE__ */ jsx43(Square, { className: "h-5 w-5 md:h-4 md:w-4 fill-current" }) : /* @__PURE__ */ jsx43(ArrowUp3, { className: "h-6 w-6 md:h-5 md:w-5" })
                     }
                   )
                 ] })
@@ -7985,7 +7985,7 @@ var init_ChatPanel = __esm({
 
 // src/ui/dashboard.tsx
 init_context();
-import { useState as useState28, useEffect as useEffect25, lazy as lazy2, Suspense as Suspense2 } from "react";
+import { useState as useState28, useEffect as useEffect26, lazy as lazy2, Suspense as Suspense2 } from "react";
 import { Save, Loader2 as Loader28 } from "lucide-react";
 
 // src/ui/pages/WriterDashboard.tsx
@@ -9282,9 +9282,15 @@ function EditorToolbar({
   loading = false,
   apiBasePath = "/api/cms"
 }) {
-  const toolbarClasses = "sticky top-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto";
+  const toolbarClasses = "fixed left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto";
+  const toolbarStyle = {
+    top: "73px",
+    transform: "translate3d(0, var(--vv-top, 0px), 0)",
+    willChange: "transform",
+    backfaceVisibility: "hidden"
+  };
   if (loading) {
-    return /* @__PURE__ */ jsxs9("div", { className: toolbarClasses, children: [
+    return /* @__PURE__ */ jsxs9("div", { className: toolbarClasses, style: toolbarStyle, children: [
       /* @__PURE__ */ jsx16(FormatButtons, { loading: true }),
       /* @__PURE__ */ jsx16(Divider, {}),
       /* @__PURE__ */ jsx16(BlockButtons, { loading: true }),
@@ -9297,7 +9303,7 @@ function EditorToolbar({
       /* @__PURE__ */ jsx16(SkeletonButton, {})
     ] });
   }
-  return /* @__PURE__ */ jsxs9("div", { className: toolbarClasses, children: [
+  return /* @__PURE__ */ jsxs9("div", { className: toolbarClasses, style: toolbarStyle, children: [
     /* @__PURE__ */ jsx16(
       FormatButtons,
       {
@@ -10309,23 +10315,200 @@ function useComments({
 
 // src/ui/pages/EditorPage.tsx
 init_useChat();
-import { jsx as jsx23, jsxs as jsxs14 } from "react/jsx-runtime";
+
+// src/ui/primitives/WarningBanner.tsx
+init_useTheme();
+
+// src/ui/primitives/colors.ts
+var semanticColors = {
+  success: { light: "#16a34a", dark: "#4ade80" },
+  // green-600 / green-400
+  successMuted: { light: "#22c55e", dark: "#22c55e" },
+  // green-500
+  warning: { light: "#d97706", dark: "#fbbf24" },
+  // amber-600 / amber-400
+  active: { light: "#3b82f6", dark: "#60a5fa" },
+  // blue-500 / blue-400
+  neutral: { light: "#6b7280", dark: "#9ca3af" },
+  // gray-500 / gray-400
+  neutralStrong: { light: "#4b5563", dark: "#9ca3af" },
+  // gray-600 / gray-400
+  neutralBorder: { light: "#e5e7eb", dark: "#374151" },
+  // gray-200 / gray-700
+  neutralSubtle: { light: "#f3f4f6", dark: "#1f2937" },
+  // gray-100 / gray-800
+  surfaceInput: { light: "#ffffff", dark: "#111827" },
+  // white / gray-900
+  highlight: { light: "#fefce8", dark: "rgba(113, 63, 18, 0.2)" },
+  // yellow-50
+  highlightStrong: { light: "#fef9c3", dark: "rgba(113, 63, 18, 0.3)" },
+  // yellow-100
+  highlightBorder: { light: "#facc15", dark: "#ca8a04" },
+  // yellow-400 / yellow-600
+  placeholder: { light: "#d1d5db", dark: "#374151" }
+  // gray-300 / gray-700
+};
+function getColor(name, theme) {
+  return semanticColors[name][theme];
+}
+function getColorWithOpacity(name, theme, opacity) {
+  const hex = semanticColors[name][theme];
+  if (hex.startsWith("rgba")) {
+    const match = hex.match(/rgba?\(([^)]+)\)/);
+    if (match) {
+      const parts = match[1].split(",").map((s) => s.trim());
+      if (parts.length >= 3) {
+        return `rgba(${parts[0]}, ${parts[1]}, ${parts[2]}, ${opacity})`;
+      }
+    }
+    return hex;
+  }
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+// src/ui/primitives/WarningBanner.tsx
+import { jsx as jsx22, jsxs as jsxs14 } from "react/jsx-runtime";
+function WarningBanner({
+  children,
+  actions,
+  variant = "banner",
+  className = ""
+}) {
+  const { resolvedTheme } = useTheme();
+  const warningColor = getColor("warning", resolvedTheme);
+  const warningBg = getColorWithOpacity("warning", resolvedTheme, variant === "banner" ? 0.15 : 0.1);
+  const warningBorder = getColorWithOpacity("warning", resolvedTheme, 0.3);
+  if (variant === "box") {
+    return /* @__PURE__ */ jsxs14(
+      "div",
+      {
+        className: `flex items-start gap-2 p-3 rounded-md text-sm ${className}`,
+        style: {
+          backgroundColor: warningBg,
+          borderWidth: 1,
+          borderStyle: "solid",
+          borderColor: warningBorder
+        },
+        children: [
+          /* @__PURE__ */ jsx22(
+            "svg",
+            {
+              className: "w-4 h-4 mt-0.5 flex-shrink-0",
+              fill: "none",
+              viewBox: "0 0 24 24",
+              stroke: "currentColor",
+              style: { color: warningColor },
+              children: /* @__PURE__ */ jsx22("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" })
+            }
+          ),
+          /* @__PURE__ */ jsx22("div", { style: { color: warningColor }, children })
+        ]
+      }
+    );
+  }
+  return /* @__PURE__ */ jsxs14(
+    "div",
+    {
+      className: `px-4 py-2 flex items-center justify-between ${className}`,
+      style: {
+        backgroundColor: warningBg,
+        borderBottomWidth: 1,
+        borderBottomStyle: "solid",
+        borderBottomColor: warningBorder
+      },
+      children: [
+        /* @__PURE__ */ jsx22("span", { className: "text-sm", style: { color: warningColor }, children }),
+        actions && /* @__PURE__ */ jsx22("div", { className: "flex items-center gap-2", children: actions })
+      ]
+    }
+  );
+}
+function WarningButton({
+  variant = "outline",
+  className = "",
+  ...props
+}) {
+  const { resolvedTheme } = useTheme();
+  const warningColor = getColor("warning", resolvedTheme);
+  if (variant === "solid") {
+    return /* @__PURE__ */ jsx22(
+      "button",
+      {
+        className: `px-3 py-1 text-sm rounded ${className}`,
+        style: {
+          backgroundColor: "#d97706",
+          // amber-600
+          color: "#ffffff"
+        },
+        ...props
+      }
+    );
+  }
+  return /* @__PURE__ */ jsx22(
+    "button",
+    {
+      className: `px-3 py-1 text-sm rounded ${className}`,
+      style: {
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderColor: getColorWithOpacity("warning", resolvedTheme, 0.4),
+        color: warningColor
+      },
+      ...props
+    }
+  );
+}
+function WarningCode({ children }) {
+  const { resolvedTheme } = useTheme();
+  return /* @__PURE__ */ jsx22(
+    "code",
+    {
+      className: "px-1 py-0.5 rounded text-xs",
+      style: {
+        backgroundColor: getColorWithOpacity("warning", resolvedTheme, 0.2)
+      },
+      children
+    }
+  );
+}
+
+// src/ui/primitives/SuccessText.tsx
+init_useTheme();
+import { jsx as jsx23 } from "react/jsx-runtime";
+function SuccessText({ children, className = "", muted = false }) {
+  const { resolvedTheme } = useTheme();
+  const colorName = muted ? "successMuted" : "success";
+  return /* @__PURE__ */ jsx23(
+    "span",
+    {
+      className,
+      style: { color: getColor(colorName, resolvedTheme) },
+      children
+    }
+  );
+}
+
+// src/ui/pages/EditorPage.tsx
+import { Fragment as Fragment9, jsx as jsx25, jsxs as jsxs15 } from "react/jsx-runtime";
 var TiptapEditor2 = lazy(
   () => Promise.resolve().then(() => (init_TiptapEditor(), TiptapEditor_exports)).then((m) => ({ default: m.TiptapEditor }))
 );
 function ContentSkeleton({ styles }) {
-  return /* @__PURE__ */ jsxs14("div", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
-    /* @__PURE__ */ jsxs14("div", { className: "space-y-2 mb-8", children: [
-      /* @__PURE__ */ jsx23(Skeleton, { className: "h-8 w-4/5" }),
-      /* @__PURE__ */ jsx23(Skeleton, { className: "h-5 w-3/5" }),
-      /* @__PURE__ */ jsx23("div", { className: "!mt-4", children: /* @__PURE__ */ jsx23(Skeleton, { className: "h-3 w-24" }) })
+  return /* @__PURE__ */ jsxs15("div", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+    /* @__PURE__ */ jsxs15("div", { className: "space-y-2 mb-8", children: [
+      /* @__PURE__ */ jsx25(Skeleton, { className: "h-8 w-4/5" }),
+      /* @__PURE__ */ jsx25(Skeleton, { className: "h-5 w-3/5" }),
+      /* @__PURE__ */ jsx25("div", { className: "!mt-4", children: /* @__PURE__ */ jsx25(Skeleton, { className: "h-3 w-24" }) })
     ] }),
-    /* @__PURE__ */ jsxs14("div", { className: "space-y-3", children: [
-      /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-full" }),
-      /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-full" }),
-      /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-3/4" }),
-      /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-full" }),
-      /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-5/6" })
+    /* @__PURE__ */ jsxs15("div", { className: "space-y-3", children: [
+      /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-3/4" }),
+      /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-full" }),
+      /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-5/6" })
     ] })
   ] });
 }
@@ -10343,7 +10526,7 @@ function AutoResizeTextarea({
       ref.current.style.height = `${ref.current.scrollHeight}px`;
     }
   }, [value]);
-  return /* @__PURE__ */ jsx23(
+  return /* @__PURE__ */ jsx25(
     "textarea",
     {
       ref,
@@ -11052,8 +11235,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   const words = countWords(post.markdown);
   const isPublished = post.status === "published";
   if (loading) {
-    return /* @__PURE__ */ jsx23("div", { className: "flex flex-col h-full", children: /* @__PURE__ */ jsxs14("main", { className: "flex-1 overflow-auto pb-20", children: [
-      /* @__PURE__ */ jsx23(
+    return /* @__PURE__ */ jsxs15("div", { className: "flex flex-col h-full", children: [
+      /* @__PURE__ */ jsx25(
         EditorToolbar,
         {
           textareaRef,
@@ -11063,270 +11246,254 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           loading: true
         }
       ),
-      /* @__PURE__ */ jsx23(ContentSkeleton, { styles })
-    ] }) });
+      /* @__PURE__ */ jsx25("main", { className: "flex-1 overflow-auto pb-20 pt-[56px]", children: /* @__PURE__ */ jsx25(ContentSkeleton, { styles }) })
+    ] });
   }
-  return /* @__PURE__ */ jsxs14("div", { className: "flex flex-col h-full", children: [
-    previewingRevision && /* @__PURE__ */ jsxs14("div", { className: "bg-ab-warning/15 border-b border-ab-warning/30 px-4 py-2 flex items-center justify-between", children: [
-      /* @__PURE__ */ jsxs14("span", { className: "text-sm text-ab-warning", children: [
-        "Previewing revision from ",
-        new Date(previewingRevision.createdAt).toLocaleString()
-      ] }),
-      /* @__PURE__ */ jsxs14("div", { className: "flex items-center gap-2", children: [
-        /* @__PURE__ */ jsx23(
-          "button",
+  return /* @__PURE__ */ jsxs15("div", { className: "flex flex-col h-full", children: [
+    previewingRevision && /* @__PURE__ */ jsxs15(
+      WarningBanner,
+      {
+        actions: /* @__PURE__ */ jsxs15(Fragment9, { children: [
+          /* @__PURE__ */ jsx25(WarningButton, { onClick: cancelRevisionPreview, children: "Cancel" }),
+          /* @__PURE__ */ jsx25(WarningButton, { variant: "solid", onClick: restoreRevision, className: "hover:opacity-90", children: "Restore" })
+        ] }),
+        children: [
+          "Previewing revision from ",
+          new Date(previewingRevision.createdAt).toLocaleString()
+        ]
+      }
+    ),
+    !previewingRevision && /* @__PURE__ */ jsx25(
+      EditorToolbar,
+      {
+        editor: showMarkdown ? null : editor,
+        textareaRef: showMarkdown ? textareaRef : void 0,
+        markdown: post.markdown,
+        onMarkdownChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
+        showMarkdown,
+        setShowMarkdown,
+        aiGenerating: generating,
+        postSlug: slug,
+        revisions: post.id ? {
+          list: revisions,
+          loading: revisionsLoading,
+          previewLoading: false,
+          previewing: previewingRevision,
+          fetch: fetchRevisions,
+          preview: previewRevision,
+          cancel: cancelRevisionPreview,
+          restore: restoreRevision
+        } : void 0,
+        apiBasePath,
+        hasSelection: !!comments.selectedText && !comments.selectedText.hasExistingComment,
+        selectionHasComment: comments.selectedText?.hasExistingComment,
+        onAddComment: () => setCommentsOpen(true),
+        commentsCount: comments.list.filter((c) => !c.resolved).length,
+        onViewComments: () => setCommentsOpen(true)
+      }
+    ),
+    /* @__PURE__ */ jsx25("main", { className: "flex-1 overflow-auto pb-20 pt-[56px] overscroll-contain touch-pan-y", children: /* @__PURE__ */ jsxs15("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+      /* @__PURE__ */ jsxs15("header", { className: "space-y-2 mb-8", children: [
+        generating && !post.title ? /* @__PURE__ */ jsx25(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ jsx25(
+          AutoResizeTextarea,
           {
-            onClick: cancelRevisionPreview,
-            className: "px-3 py-1 text-sm border border-ab-warning/40 rounded hover:bg-ab-warning/20",
-            children: "Cancel"
+            value: post.title,
+            onChange: (val) => setPost((prev) => ({ ...prev, title: val })),
+            placeholder: "Title",
+            disabled: generating || !!previewingRevision,
+            className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
         ),
-        /* @__PURE__ */ jsx23(
-          "button",
+        generating && !post.subtitle ? /* @__PURE__ */ jsx25(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ jsx25(
+          AutoResizeTextarea,
           {
-            onClick: restoreRevision,
-            className: "px-3 py-1 text-sm bg-amber-600 text-white rounded hover:bg-amber-700",
-            children: "Restore"
-          }
-        )
-      ] })
-    ] }),
-    /* @__PURE__ */ jsxs14("main", { className: "flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y", children: [
-      !previewingRevision && /* @__PURE__ */ jsx23(
-        EditorToolbar,
-        {
-          editor: showMarkdown ? null : editor,
-          textareaRef: showMarkdown ? textareaRef : void 0,
-          markdown: post.markdown,
-          onMarkdownChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
-          showMarkdown,
-          setShowMarkdown,
-          aiGenerating: generating,
-          postSlug: slug,
-          revisions: post.id ? {
-            list: revisions,
-            loading: revisionsLoading,
-            previewLoading: false,
-            previewing: previewingRevision,
-            fetch: fetchRevisions,
-            preview: previewRevision,
-            cancel: cancelRevisionPreview,
-            restore: restoreRevision
-          } : void 0,
-          apiBasePath,
-          hasSelection: !!comments.selectedText && !comments.selectedText.hasExistingComment,
-          selectionHasComment: comments.selectedText?.hasExistingComment,
-          onAddComment: () => setCommentsOpen(true),
-          commentsCount: comments.list.filter((c) => !c.resolved).length,
-          onViewComments: () => setCommentsOpen(true)
-        }
-      ),
-      /* @__PURE__ */ jsxs14("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
-        /* @__PURE__ */ jsxs14("header", { className: "space-y-2 mb-8", children: [
-          generating && !post.title ? /* @__PURE__ */ jsx23(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ jsx23(
-            AutoResizeTextarea,
-            {
-              value: post.title,
-              onChange: (val) => setPost((prev) => ({ ...prev, title: val })),
-              placeholder: "Title",
-              disabled: generating || !!previewingRevision,
-              className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
-            }
-          ),
-          generating && !post.subtitle ? /* @__PURE__ */ jsx23(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ jsx23(
-            AutoResizeTextarea,
-            {
-              value: post.subtitle,
-              onChange: (val) => setPost((prev) => ({ ...prev, subtitle: val })),
-              placeholder: "Subtitle",
-              disabled: generating || !!previewingRevision,
-              className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
-            }
-          ),
-          /* @__PURE__ */ jsx23("div", { className: "!mt-4", children: /* @__PURE__ */ jsx23("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
-        ] }),
-        /* @__PURE__ */ jsx23("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ jsxs14("div", { className: "space-y-3", children: [
-          /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-full" }),
-          /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-full" }),
-          /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-3/4" }),
-          /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-full" }),
-          /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-5/6" })
-        ] }) : showMarkdown ? /* @__PURE__ */ jsx23(
-          "textarea",
-          {
-            ref: textareaRef,
-            value: post.markdown,
-            onChange: (e) => setPost((prev) => ({ ...prev, markdown: e.target.value })),
-            placeholder: "Start writing...",
+            value: post.subtitle,
+            onChange: (val) => setPost((prev) => ({ ...prev, subtitle: val })),
+            placeholder: "Subtitle",
             disabled: generating || !!previewingRevision,
-            className: `${styles.prose} w-full bg-transparent border-none outline-none resize-none overflow-hidden placeholder-muted-foreground leading-relaxed font-mono text-sm ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+            className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-gray-300 ab-dark:placeholder-gray-700 ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
-        ) : /* @__PURE__ */ jsx23(Suspense, { fallback: /* @__PURE__ */ jsxs14("div", { className: "space-y-3", children: [
-          /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-full" }),
-          /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-full" }),
-          /* @__PURE__ */ jsx23(Skeleton, { className: "h-4 w-3/4" })
-        ] }), children: /* @__PURE__ */ jsx23(
-          TiptapEditor2,
-          {
-            content: post.markdown,
-            onChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
-            onEditorReady: setEditor,
-            autoFocus: !slug,
-            proseClasses: styles.prose,
-            onSelectionChange: (sel) => {
-              if (sel?.hasSelection) {
-                comments.setSelectedText({
-                  text: sel.text,
-                  from: sel.from,
-                  to: sel.to,
-                  hasExistingComment: sel.hasExistingComment
-                });
-              } else {
-                comments.setSelectedText(null);
-              }
-            },
-            onCommentClick: (commentId) => {
-              comments.setActiveId(commentId);
-              setCommentsOpen(true);
+        ),
+        /* @__PURE__ */ jsx25("div", { className: "!mt-4", children: /* @__PURE__ */ jsx25("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
+      ] }),
+      /* @__PURE__ */ jsx25("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ jsxs15("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-3/4" }),
+        /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-5/6" })
+      ] }) : showMarkdown ? /* @__PURE__ */ jsx25(
+        "textarea",
+        {
+          ref: textareaRef,
+          value: post.markdown,
+          onChange: (e) => setPost((prev) => ({ ...prev, markdown: e.target.value })),
+          placeholder: "Start writing...",
+          disabled: generating || !!previewingRevision,
+          className: `${styles.prose} w-full bg-transparent border-none outline-none resize-none overflow-hidden placeholder-muted-foreground leading-relaxed font-mono text-sm ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+        }
+      ) : /* @__PURE__ */ jsx25(Suspense, { fallback: /* @__PURE__ */ jsxs15("div", { className: "space-y-3", children: [
+        /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-full" }),
+        /* @__PURE__ */ jsx25(Skeleton, { className: "h-4 w-3/4" })
+      ] }), children: /* @__PURE__ */ jsx25(
+        TiptapEditor2,
+        {
+          content: post.markdown,
+          onChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
+          onEditorReady: setEditor,
+          autoFocus: !slug,
+          proseClasses: styles.prose,
+          onSelectionChange: (sel) => {
+            if (sel?.hasSelection) {
+              comments.setSelectedText({
+                text: sel.text,
+                from: sel.from,
+                to: sel.to,
+                hasExistingComment: sel.hasExistingComment
+              });
+            } else {
+              comments.setSelectedText(null);
             }
+          },
+          onCommentClick: (commentId) => {
+            comments.setActiveId(commentId);
+            setCommentsOpen(true);
           }
-        ) }) }),
-        !previewingRevision && /* @__PURE__ */ jsxs14("div", { className: "mt-12 pt-8 border-t border-border space-y-4", children: [
-          /* @__PURE__ */ jsx23("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ jsxs14("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsx23("span", { className: "text-muted-foreground w-14", children: "URL" }),
-            /* @__PURE__ */ jsx23("span", { className: "text-muted-foreground/70", children: urlPrefix }),
-            isPublished ? /* @__PURE__ */ jsxs14("span", { className: "flex items-center gap-1.5 text-ab-neutral-strong", children: [
-              post.slug,
-              /* @__PURE__ */ jsx23("svg", { className: "w-3 h-3 text-muted-foreground/70", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx23("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
-            ] }) : /* @__PURE__ */ jsx23(
-              "input",
-              {
-                type: "text",
-                value: post.slug,
-                onChange: (e) => setPost((prev) => ({ ...prev, slug: e.target.value })),
-                placeholder: "post-slug",
-                className: "flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-ab-neutral-strong"
-              }
-            )
-          ] }) }),
-          wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && /* @__PURE__ */ jsxs14("div", { className: "flex items-start gap-2 p-3 rounded-md bg-ab-warning/10 border border-ab-warning/30 text-sm", children: [
-            /* @__PURE__ */ jsx23("svg", { className: "w-4 h-4 text-ab-warning mt-0.5 flex-shrink-0", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx23("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" }) }),
-            /* @__PURE__ */ jsxs14("div", { className: "text-ab-warning", children: [
-              /* @__PURE__ */ jsx23("span", { className: "font-medium", children: "URL change detected." }),
-              " ",
-              "Existing links to ",
-              /* @__PURE__ */ jsxs14("code", { className: "px-1 py-0.5 bg-ab-warning/20 rounded text-xs", children: [
-                urlPrefix,
-                originalSlug
-              ] }),
-              " will automatically redirect to the new URL when you publish."
-            ] })
-          ] }),
-          fields.filter((f) => f.position === "footer").map((field) => {
-            const handleFieldChange = (name, value) => {
-              setPost((prev) => ({ ...prev, [name]: value }));
-            };
-            if (!field.label) {
-              return /* @__PURE__ */ jsx23("div", { className: "text-sm", children: /* @__PURE__ */ jsx23(
-                field.component,
-                {
-                  value: post[field.name],
-                  onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
-                  onFieldChange: handleFieldChange,
-                  post,
-                  disabled: saving || generating
-                }
-              ) }, field.name);
-            }
-            return /* @__PURE__ */ jsx23("div", { className: "flex items-center justify-between text-sm gap-2", children: /* @__PURE__ */ jsxs14("div", { className: "flex items-center gap-2 flex-1", children: [
-              /* @__PURE__ */ jsx23("span", { className: "text-muted-foreground w-14 flex-shrink-0", children: field.label }),
-              /* @__PURE__ */ jsx23("div", { className: "flex-1", children: /* @__PURE__ */ jsx23(
-                field.component,
-                {
-                  value: post[field.name],
-                  onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
-                  onFieldChange: handleFieldChange,
-                  post,
-                  disabled: saving || generating
-                }
-              ) })
-            ] }) }, field.name);
-          }),
-          /* @__PURE__ */ jsx23(
-            TagsSection,
+        }
+      ) }) }),
+      !previewingRevision && /* @__PURE__ */ jsxs15("div", { className: "mt-12 pt-8 border-t border-border space-y-4", children: [
+        /* @__PURE__ */ jsx25("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ jsxs15("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx25("span", { className: "text-muted-foreground w-14", children: "URL" }),
+          /* @__PURE__ */ jsx25("span", { className: "text-muted-foreground/70", children: urlPrefix }),
+          isPublished ? /* @__PURE__ */ jsxs15("span", { className: "flex items-center gap-1.5 text-gray-600 ab-dark:text-gray-400", children: [
+            post.slug,
+            /* @__PURE__ */ jsx25("svg", { className: "w-3 h-3 text-muted-foreground/70", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ jsx25("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
+          ] }) : /* @__PURE__ */ jsx25(
+            "input",
             {
-              tags: post.tags || [],
-              onTagsChange: (tags) => setPost((prev) => ({ ...prev, tags })),
-              apiBasePath,
-              disabled: saving || generating
+              type: "text",
+              value: post.slug,
+              onChange: (e) => setPost((prev) => ({ ...prev, slug: e.target.value })),
+              placeholder: "post-slug",
+              className: "flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-gray-600 ab-dark:text-gray-400"
             }
-          ),
-          /* @__PURE__ */ jsxs14("div", { className: "flex items-center justify-between text-sm", children: [
-            /* @__PURE__ */ jsxs14("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ jsx23("span", { className: "text-muted-foreground", children: "Status" }),
-              /* @__PURE__ */ jsx23("span", { className: isPublished ? "text-xs text-ab-success-muted" : "text-xs text-muted-foreground/70", children: isPublished ? "Published" : "Draft" })
-            ] }),
-            isPublished ? hasUnsavedChanges ? /* @__PURE__ */ jsxs14(
-              "button",
-              {
-                onClick: () => savePost(),
-                disabled: saving || generating,
-                className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
-                children: [
-                  savingAs && /* @__PURE__ */ jsxs14("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
-                    /* @__PURE__ */ jsx23("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
-                    /* @__PURE__ */ jsx23("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
-                  ] }),
-                  "Update"
-                ]
-              }
-            ) : /* @__PURE__ */ jsx23(
-              "button",
-              {
-                onClick: handleUnpublish,
-                className: "px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors",
-                children: "Unpublish"
-              }
-            ) : /* @__PURE__ */ jsxs14(
-              "button",
-              {
-                onClick: handlePublish,
-                disabled: saving || generating,
-                className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
-                children: [
-                  savingAs === "published" && /* @__PURE__ */ jsxs14("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
-                    /* @__PURE__ */ jsx23("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
-                    /* @__PURE__ */ jsx23("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
-                  ] }),
-                  "Publish"
-                ]
-              }
-            )
+          )
+        ] }) }),
+        wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && /* @__PURE__ */ jsxs15(WarningBanner, { variant: "box", children: [
+          /* @__PURE__ */ jsx25("span", { className: "font-medium", children: "URL change detected." }),
+          " ",
+          "Existing links to ",
+          /* @__PURE__ */ jsxs15(WarningCode, { children: [
+            urlPrefix,
+            originalSlug
           ] }),
-          /* @__PURE__ */ jsxs14("div", { className: "text-sm text-muted-foreground pt-2 border-t border-border", children: [
-            words.toLocaleString(),
-            " words \xB7 ~",
-            Math.ceil(words / 200),
-            " min read"
-          ] })
+          " will automatically redirect to the new URL when you publish."
+        ] }),
+        fields.filter((f) => f.position === "footer").map((field) => {
+          const handleFieldChange = (name, value) => {
+            setPost((prev) => ({ ...prev, [name]: value }));
+          };
+          if (!field.label) {
+            return /* @__PURE__ */ jsx25("div", { className: "text-sm", children: /* @__PURE__ */ jsx25(
+              field.component,
+              {
+                value: post[field.name],
+                onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
+                onFieldChange: handleFieldChange,
+                post,
+                disabled: saving || generating
+              }
+            ) }, field.name);
+          }
+          return /* @__PURE__ */ jsx25("div", { className: "flex items-center justify-between text-sm gap-2", children: /* @__PURE__ */ jsxs15("div", { className: "flex items-center gap-2 flex-1", children: [
+            /* @__PURE__ */ jsx25("span", { className: "text-muted-foreground w-14 flex-shrink-0", children: field.label }),
+            /* @__PURE__ */ jsx25("div", { className: "flex-1", children: /* @__PURE__ */ jsx25(
+              field.component,
+              {
+                value: post[field.name],
+                onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
+                onFieldChange: handleFieldChange,
+                post,
+                disabled: saving || generating
+              }
+            ) })
+          ] }) }, field.name);
+        }),
+        /* @__PURE__ */ jsx25(
+          TagsSection,
+          {
+            tags: post.tags || [],
+            onTagsChange: (tags) => setPost((prev) => ({ ...prev, tags })),
+            apiBasePath,
+            disabled: saving || generating
+          }
+        ),
+        /* @__PURE__ */ jsxs15("div", { className: "flex items-center justify-between text-sm", children: [
+          /* @__PURE__ */ jsxs15("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx25("span", { className: "text-muted-foreground", children: "Status" }),
+            isPublished ? /* @__PURE__ */ jsx25(SuccessText, { muted: true, className: "text-xs", children: "Published" }) : /* @__PURE__ */ jsx25("span", { className: "text-xs text-muted-foreground/70", children: "Draft" })
+          ] }),
+          isPublished ? hasUnsavedChanges ? /* @__PURE__ */ jsxs15(
+            "button",
+            {
+              onClick: () => savePost(),
+              disabled: saving || generating,
+              className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
+              children: [
+                savingAs && /* @__PURE__ */ jsxs15("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                  /* @__PURE__ */ jsx25("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                  /* @__PURE__ */ jsx25("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                ] }),
+                "Update"
+              ]
+            }
+          ) : /* @__PURE__ */ jsx25(
+            "button",
+            {
+              onClick: handleUnpublish,
+              className: "px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors",
+              children: "Unpublish"
+            }
+          ) : /* @__PURE__ */ jsxs15(
+            "button",
+            {
+              onClick: handlePublish,
+              disabled: saving || generating,
+              className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
+              children: [
+                savingAs === "published" && /* @__PURE__ */ jsxs15("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                  /* @__PURE__ */ jsx25("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                  /* @__PURE__ */ jsx25("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                ] }),
+                "Publish"
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxs15("div", { className: "text-sm text-muted-foreground pt-2 border-t border-border", children: [
+          words.toLocaleString(),
+          " words \xB7 ~",
+          Math.ceil(words / 200),
+          " min read"
         ] })
       ] })
-    ] }),
-    /* @__PURE__ */ jsx23("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none", style: { paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }, children: /* @__PURE__ */ jsx23("div", { className: "flex items-center justify-end text-sm text-muted-foreground", children: generating ? /* @__PURE__ */ jsx23("button", { className: "hover:text-foreground transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ jsx23(
+    ] }) }),
+    /* @__PURE__ */ jsx25("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none", style: { paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }, children: /* @__PURE__ */ jsx25("div", { className: "flex items-center justify-end text-sm text-muted-foreground", children: generating ? /* @__PURE__ */ jsx25("button", { className: "hover:text-foreground transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ jsx25(
       "button",
       {
         onClick: cancelRevisionPreview,
         className: "hover:text-foreground transition-colors",
         children: "Press Esc to cancel"
       }
-    ) : isPublished && post.publishedAt ? /* @__PURE__ */ jsxs14("span", { children: [
+    ) : isPublished && post.publishedAt ? /* @__PURE__ */ jsxs15("span", { children: [
       "Published ",
       formatSavedTime(new Date(post.publishedAt))
-    ] }) : lastSaved ? /* @__PURE__ */ jsxs14("span", { children: [
+    ] }) : lastSaved ? /* @__PURE__ */ jsxs15("span", { children: [
       "Saved ",
       formatSavedTime(lastSaved)
-    ] }) : /* @__PURE__ */ jsx23("span", { children: "Not saved yet" }) }) }),
-    currentUserEmail && /* @__PURE__ */ jsx23(
+    ] }) : /* @__PURE__ */ jsx25("span", { children: "Not saved yet" }) }) }),
+    currentUserEmail && /* @__PURE__ */ jsx25(
       CommentsPanel,
       {
         comments: comments.list,
@@ -11355,7 +11522,7 @@ init_context();
 init_context();
 import { useState as useState16, useEffect as useEffect14 } from "react";
 import { MoreVertical as MoreVertical2 } from "lucide-react";
-import { Fragment as Fragment9, jsx as jsx24, jsxs as jsxs15 } from "react/jsx-runtime";
+import { Fragment as Fragment10, jsx as jsx26, jsxs as jsxs16 } from "react/jsx-runtime";
 function UsersSettings() {
   const { apiBasePath } = useDashboardContext();
   const [users, setUsers] = useState16([]);
@@ -11431,14 +11598,14 @@ function UsersSettings() {
     if (role === "drafter") return "border border-border text-foreground";
     return "bg-secondary text-secondary-foreground";
   }
-  if (loading) return /* @__PURE__ */ jsx24(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ jsx24("div", { className: "space-y-6", children: showForm ? /* @__PURE__ */ jsxs15("div", { className: "max-w-md", children: [
-    /* @__PURE__ */ jsx24("div", { className: "flex items-center justify-between mb-6", children: /* @__PURE__ */ jsx24("h2", { className: "text-lg font-semibold", children: editingUser ? "Edit User" : "Add User" }) }),
-    formError && /* @__PURE__ */ jsx24("div", { className: "bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4", children: formError }),
-    /* @__PURE__ */ jsxs15("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-      /* @__PURE__ */ jsxs15("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx24("label", { htmlFor: "email", className: "block text-sm font-medium", children: "Email *" }),
-        /* @__PURE__ */ jsx24(
+  if (loading) return /* @__PURE__ */ jsx26(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ jsx26("div", { className: "space-y-6", children: showForm ? /* @__PURE__ */ jsxs16("div", { className: "max-w-md", children: [
+    /* @__PURE__ */ jsx26("div", { className: "flex items-center justify-between mb-6", children: /* @__PURE__ */ jsx26("h2", { className: "text-lg font-semibold", children: editingUser ? "Edit User" : "Add User" }) }),
+    formError && /* @__PURE__ */ jsx26("div", { className: "bg-destructive/10 text-destructive p-3 rounded-lg text-sm mb-4", children: formError }),
+    /* @__PURE__ */ jsxs16("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+      /* @__PURE__ */ jsxs16("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx26("label", { htmlFor: "email", className: "block text-sm font-medium", children: "Email *" }),
+        /* @__PURE__ */ jsx26(
           "input",
           {
             type: "email",
@@ -11451,9 +11618,9 @@ function UsersSettings() {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs15("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx24("label", { htmlFor: "name", className: "block text-sm font-medium", children: "Name" }),
-        /* @__PURE__ */ jsx24(
+      /* @__PURE__ */ jsxs16("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx26("label", { htmlFor: "name", className: "block text-sm font-medium", children: "Name" }),
+        /* @__PURE__ */ jsx26(
           "input",
           {
             type: "text",
@@ -11465,9 +11632,9 @@ function UsersSettings() {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs15("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx24("label", { htmlFor: "role", className: "block text-sm font-medium", children: "Role" }),
-        /* @__PURE__ */ jsxs15(
+      /* @__PURE__ */ jsxs16("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx26("label", { htmlFor: "role", className: "block text-sm font-medium", children: "Role" }),
+        /* @__PURE__ */ jsxs16(
           "select",
           {
             id: "role",
@@ -11475,51 +11642,51 @@ function UsersSettings() {
             onChange: (e) => setFormRole(e.target.value),
             className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
             children: [
-              /* @__PURE__ */ jsx24("option", { value: "drafter", children: "Drafter" }),
-              /* @__PURE__ */ jsx24("option", { value: "writer", children: "Writer" }),
-              /* @__PURE__ */ jsx24("option", { value: "admin", children: "Admin" })
+              /* @__PURE__ */ jsx26("option", { value: "drafter", children: "Drafter" }),
+              /* @__PURE__ */ jsx26("option", { value: "writer", children: "Writer" }),
+              /* @__PURE__ */ jsx26("option", { value: "admin", children: "Admin" })
             ]
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs15("div", { className: "flex gap-4 pt-2", children: [
-        /* @__PURE__ */ jsx24("button", { type: "submit", disabled: saving, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50", children: saving ? editingUser ? "Saving..." : "Creating..." : editingUser ? "Save Changes" : "Create User" }),
-        /* @__PURE__ */ jsx24("button", { type: "button", onClick: () => {
+      /* @__PURE__ */ jsxs16("div", { className: "flex gap-4 pt-2", children: [
+        /* @__PURE__ */ jsx26("button", { type: "submit", disabled: saving, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50", children: saving ? editingUser ? "Saving..." : "Creating..." : editingUser ? "Save Changes" : "Create User" }),
+        /* @__PURE__ */ jsx26("button", { type: "button", onClick: () => {
           setShowForm(false);
           resetForm();
         }, className: "px-4 py-2 text-muted-foreground hover:text-foreground", children: "Cancel" })
       ] })
     ] })
-  ] }) : /* @__PURE__ */ jsxs15(Fragment9, { children: [
-    /* @__PURE__ */ jsxs15("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsx24("h2", { className: "text-lg font-semibold", children: "Users" }),
-      /* @__PURE__ */ jsx24("button", { onClick: openNewForm, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm", children: "Add User" })
+  ] }) : /* @__PURE__ */ jsxs16(Fragment10, { children: [
+    /* @__PURE__ */ jsxs16("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx26("h2", { className: "text-lg font-semibold", children: "Users" }),
+      /* @__PURE__ */ jsx26("button", { onClick: openNewForm, className: "px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm", children: "Add User" })
     ] }),
-    /* @__PURE__ */ jsxs15("div", { className: "hidden md:block rounded-md border border-border", children: [
-      /* @__PURE__ */ jsxs15("table", { className: "w-full", children: [
-        /* @__PURE__ */ jsx24("thead", { className: "bg-muted/50", children: /* @__PURE__ */ jsxs15("tr", { children: [
-          /* @__PURE__ */ jsx24("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Email" }),
-          /* @__PURE__ */ jsx24("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Name" }),
-          /* @__PURE__ */ jsx24("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Role" }),
-          /* @__PURE__ */ jsx24("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ jsx24("th", { className: "px-4 py-3 text-right text-sm font-medium text-muted-foreground", children: "Actions" })
+    /* @__PURE__ */ jsxs16("div", { className: "hidden md:block rounded-md border border-border", children: [
+      /* @__PURE__ */ jsxs16("table", { className: "w-full", children: [
+        /* @__PURE__ */ jsx26("thead", { className: "bg-muted/50", children: /* @__PURE__ */ jsxs16("tr", { children: [
+          /* @__PURE__ */ jsx26("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Email" }),
+          /* @__PURE__ */ jsx26("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Name" }),
+          /* @__PURE__ */ jsx26("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Role" }),
+          /* @__PURE__ */ jsx26("th", { className: "px-4 py-3 text-left text-sm font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ jsx26("th", { className: "px-4 py-3 text-right text-sm font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ jsx24("tbody", { className: "divide-y divide-border", children: users.map((user) => /* @__PURE__ */ jsxs15("tr", { children: [
-          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-sm max-w-[250px] truncate", children: user.email }),
-          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-sm text-muted-foreground max-w-[150px] truncate", children: user.name || "\u2014" }),
-          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-sm", children: /* @__PURE__ */ jsx24("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role }) }),
-          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-sm text-muted-foreground", children: new Date(user.createdAt).toLocaleDateString() }),
-          /* @__PURE__ */ jsx24("td", { className: "px-4 py-3 text-right", children: /* @__PURE__ */ jsxs15("div", { className: "relative inline-block", children: [
-            /* @__PURE__ */ jsx24(
+        /* @__PURE__ */ jsx26("tbody", { className: "divide-y divide-border", children: users.map((user) => /* @__PURE__ */ jsxs16("tr", { children: [
+          /* @__PURE__ */ jsx26("td", { className: "px-4 py-3 text-sm max-w-[250px] truncate", children: user.email }),
+          /* @__PURE__ */ jsx26("td", { className: "px-4 py-3 text-sm text-muted-foreground max-w-[150px] truncate", children: user.name || "\u2014" }),
+          /* @__PURE__ */ jsx26("td", { className: "px-4 py-3 text-sm", children: /* @__PURE__ */ jsx26("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role }) }),
+          /* @__PURE__ */ jsx26("td", { className: "px-4 py-3 text-sm text-muted-foreground", children: new Date(user.createdAt).toLocaleDateString() }),
+          /* @__PURE__ */ jsx26("td", { className: "px-4 py-3 text-right", children: /* @__PURE__ */ jsxs16("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ jsx26(
               "button",
               {
                 onClick: () => setMenuOpen(menuOpen === user.id ? null : user.id),
                 className: "p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-accent",
-                children: /* @__PURE__ */ jsx24(MoreVertical2, { className: "h-4 w-4" })
+                children: /* @__PURE__ */ jsx26(MoreVertical2, { className: "h-4 w-4" })
               }
             ),
-            menuOpen === user.id && /* @__PURE__ */ jsxs15("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
-              /* @__PURE__ */ jsx24(
+            menuOpen === user.id && /* @__PURE__ */ jsxs16("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
+              /* @__PURE__ */ jsx26(
                 "button",
                 {
                   onClick: () => {
@@ -11530,8 +11697,8 @@ function UsersSettings() {
                   children: "Edit"
                 }
               ),
-              /* @__PURE__ */ jsx24("div", { className: "h-px bg-border my-1" }),
-              /* @__PURE__ */ jsx24(
+              /* @__PURE__ */ jsx26("div", { className: "h-px bg-border my-1" }),
+              /* @__PURE__ */ jsx26(
                 "button",
                 {
                   onClick: () => handleDeleteUser(user.id, user.email),
@@ -11543,32 +11710,32 @@ function UsersSettings() {
           ] }) })
         ] }, user.id)) })
       ] }),
-      users.length === 0 && /* @__PURE__ */ jsx24("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
+      users.length === 0 && /* @__PURE__ */ jsx26("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
     ] }),
-    /* @__PURE__ */ jsxs15("div", { className: "md:hidden divide-y divide-border rounded-md border border-border bg-background", children: [
-      users.map((user) => /* @__PURE__ */ jsxs15("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-        /* @__PURE__ */ jsxs15("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-          /* @__PURE__ */ jsxs15("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsx24("span", { className: "font-medium truncate", children: user.email }),
-            /* @__PURE__ */ jsx24("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role })
+    /* @__PURE__ */ jsxs16("div", { className: "md:hidden divide-y divide-border rounded-md border border-border bg-background", children: [
+      users.map((user) => /* @__PURE__ */ jsxs16("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ jsxs16("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ jsxs16("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx26("span", { className: "font-medium truncate", children: user.email }),
+            /* @__PURE__ */ jsx26("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getRoleBadgeClasses(user.role)}`, children: user.role })
           ] }),
-          /* @__PURE__ */ jsxs15("p", { className: "text-sm text-muted-foreground truncate", children: [
+          /* @__PURE__ */ jsxs16("p", { className: "text-sm text-muted-foreground truncate", children: [
             user.name || "No name",
             " \xB7 Created ",
             new Date(user.createdAt).toLocaleDateString()
           ] })
         ] }),
-        /* @__PURE__ */ jsxs15("div", { className: "relative", children: [
-          /* @__PURE__ */ jsx24(
+        /* @__PURE__ */ jsxs16("div", { className: "relative", children: [
+          /* @__PURE__ */ jsx26(
             "button",
             {
               onClick: () => setMenuOpen(menuOpen === user.id ? null : user.id),
               className: "p-1.5 text-muted-foreground hover:text-foreground rounded hover:bg-accent",
-              children: /* @__PURE__ */ jsx24(MoreVertical2, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ jsx26(MoreVertical2, { className: "h-4 w-4" })
             }
           ),
-          menuOpen === user.id && /* @__PURE__ */ jsxs15("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
-            /* @__PURE__ */ jsx24(
+          menuOpen === user.id && /* @__PURE__ */ jsxs16("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[100px] py-1", children: [
+            /* @__PURE__ */ jsx26(
               "button",
               {
                 onClick: () => {
@@ -11579,8 +11746,8 @@ function UsersSettings() {
                 children: "Edit"
               }
             ),
-            /* @__PURE__ */ jsx24("div", { className: "h-px bg-border my-1" }),
-            /* @__PURE__ */ jsx24(
+            /* @__PURE__ */ jsx26("div", { className: "h-px bg-border my-1" }),
+            /* @__PURE__ */ jsx26(
               "button",
               {
                 onClick: () => handleDeleteUser(user.id, user.email),
@@ -11591,7 +11758,7 @@ function UsersSettings() {
           ] })
         ] })
       ] }, user.id)),
-      users.length === 0 && /* @__PURE__ */ jsx24("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
+      users.length === 0 && /* @__PURE__ */ jsx26("p", { className: "p-8 text-center text-muted-foreground", children: "No users yet. Add one to get started." })
     ] })
   ] }) });
 }
@@ -11600,7 +11767,7 @@ function UsersSettings() {
 init_context();
 import { useState as useState17 } from "react";
 import { Loader2 as Loader24 } from "lucide-react";
-import { jsx as jsx25, jsxs as jsxs16 } from "react/jsx-runtime";
+import { jsx as jsx27, jsxs as jsxs17 } from "react/jsx-runtime";
 function GeneralSettings() {
   const { apiBasePath, sharedData, refetchSharedData } = useDashboardContext();
   const [postUrlPattern, setPostUrlPattern] = useState17(sharedData?.settings?.postUrlPattern ?? "/e/{slug}");
@@ -11619,19 +11786,19 @@ function GeneralSettings() {
     await refetchSharedData();
     setTimeout(() => setSaved(false), 2e3);
   }
-  return /* @__PURE__ */ jsxs16("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ jsxs16("div", { children: [
-      /* @__PURE__ */ jsx25("h2", { className: "text-lg font-semibold", children: "General Settings" }),
-      /* @__PURE__ */ jsx25("p", { className: "text-sm text-muted-foreground", children: "Configure site-wide settings." })
+  return /* @__PURE__ */ jsxs17("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxs17("div", { children: [
+      /* @__PURE__ */ jsx27("h2", { className: "text-lg font-semibold", children: "General Settings" }),
+      /* @__PURE__ */ jsx27("p", { className: "text-sm text-muted-foreground", children: "Configure site-wide settings." })
     ] }),
-    /* @__PURE__ */ jsx25("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs16("div", { className: "p-6 space-y-4", children: [
-      /* @__PURE__ */ jsxs16("div", { children: [
-        /* @__PURE__ */ jsx25("h3", { className: "text-base font-medium", children: "Post URLs" }),
-        /* @__PURE__ */ jsx25("p", { className: "text-sm text-muted-foreground", children: "Configure the URL pattern for published posts." })
+    /* @__PURE__ */ jsx27("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs17("div", { className: "p-6 space-y-4", children: [
+      /* @__PURE__ */ jsxs17("div", { children: [
+        /* @__PURE__ */ jsx27("h3", { className: "text-base font-medium", children: "Post URLs" }),
+        /* @__PURE__ */ jsx27("p", { className: "text-sm text-muted-foreground", children: "Configure the URL pattern for published posts." })
       ] }),
-      /* @__PURE__ */ jsxs16("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx25("label", { htmlFor: "postUrlPattern", className: "text-sm font-medium leading-none", children: "URL Pattern" }),
-        /* @__PURE__ */ jsx25(
+      /* @__PURE__ */ jsxs17("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx27("label", { htmlFor: "postUrlPattern", className: "text-sm font-medium leading-none", children: "URL Pattern" }),
+        /* @__PURE__ */ jsx27(
           "input",
           {
             id: "postUrlPattern",
@@ -11642,31 +11809,31 @@ function GeneralSettings() {
             className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           }
         ),
-        /* @__PURE__ */ jsxs16("p", { className: "text-sm text-muted-foreground", children: [
+        /* @__PURE__ */ jsxs17("p", { className: "text-sm text-muted-foreground", children: [
           "Use ",
-          /* @__PURE__ */ jsx25("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "{slug}" }),
+          /* @__PURE__ */ jsx27("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "{slug}" }),
           " as a placeholder for the post slug. Example: ",
-          /* @__PURE__ */ jsxs16("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: [
+          /* @__PURE__ */ jsxs17("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: [
             "/blog/",
             "{slug}"
           ] })
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ jsxs16("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ jsxs16(
+    /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ jsxs17(
         "button",
         {
           onClick: handleSave,
           disabled: saving,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
           children: [
-            saving && /* @__PURE__ */ jsx25(Loader24, { className: "mr-2 h-4 w-4 animate-spin" }),
+            saving && /* @__PURE__ */ jsx27(Loader24, { className: "mr-2 h-4 w-4 animate-spin" }),
             saving ? "Saving..." : "Save"
           ]
         }
       ),
-      saved && /* @__PURE__ */ jsx25("span", { className: "text-sm text-ab-success", children: "Saved!" })
+      saved && /* @__PURE__ */ jsx27("span", { className: "text-sm text-ab-success", children: "Saved!" })
     ] })
   ] });
 }
@@ -11675,7 +11842,7 @@ function GeneralSettings() {
 init_context();
 import { useState as useState18, useEffect as useEffect15 } from "react";
 import { Loader2 as Loader25 } from "lucide-react";
-import { Fragment as Fragment10, jsx as jsx26, jsxs as jsxs17 } from "react/jsx-runtime";
+import { Fragment as Fragment11, jsx as jsx28, jsxs as jsxs18 } from "react/jsx-runtime";
 function IntegrationsSettings() {
   const { apiBasePath, refetchSharedData } = useDashboardContext();
   const [prismicEnabled, setPrismicEnabled] = useState18(false);
@@ -11737,32 +11904,32 @@ function IntegrationsSettings() {
     setTimeout(() => setSaved(false), 2e3);
   }
   if (loading) {
-    return /* @__PURE__ */ jsxs17("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ jsx26(Skeleton, { className: "h-7 w-32" }),
-      /* @__PURE__ */ jsxs17("div", { className: "rounded-lg border bg-card p-6 space-y-4", children: [
-        /* @__PURE__ */ jsx26(Skeleton, { className: "h-5 w-24" }),
-        /* @__PURE__ */ jsx26(Skeleton, { className: "h-10 w-full" }),
-        /* @__PURE__ */ jsx26(Skeleton, { className: "h-10 w-full" })
+    return /* @__PURE__ */ jsxs18("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsx28(Skeleton, { className: "h-7 w-32" }),
+      /* @__PURE__ */ jsxs18("div", { className: "rounded-lg border bg-card p-6 space-y-4", children: [
+        /* @__PURE__ */ jsx28(Skeleton, { className: "h-5 w-24" }),
+        /* @__PURE__ */ jsx28(Skeleton, { className: "h-10 w-full" }),
+        /* @__PURE__ */ jsx28(Skeleton, { className: "h-10 w-full" })
       ] })
     ] });
   }
-  return /* @__PURE__ */ jsxs17("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ jsxs17("div", { children: [
-      /* @__PURE__ */ jsx26("h2", { className: "text-lg font-semibold", children: "CMS Integrations" }),
-      /* @__PURE__ */ jsx26("p", { className: "text-sm text-muted-foreground", children: "Connect autoblogger to external CMS systems." })
+  return /* @__PURE__ */ jsxs18("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxs18("div", { children: [
+      /* @__PURE__ */ jsx28("h2", { className: "text-lg font-semibold", children: "CMS Integrations" }),
+      /* @__PURE__ */ jsx28("p", { className: "text-sm text-muted-foreground", children: "Connect autoblogger to external CMS systems." })
     ] }),
-    /* @__PURE__ */ jsx26("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs17("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ jsxs17("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxs17("div", { children: [
-          /* @__PURE__ */ jsx26("h3", { className: "text-base font-medium", children: "Prismic" }),
-          /* @__PURE__ */ jsx26("p", { className: "text-sm text-muted-foreground", children: "Sync posts to Prismic as stub documents." })
+    /* @__PURE__ */ jsx28("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs18("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ jsxs18("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxs18("div", { children: [
+          /* @__PURE__ */ jsx28("h3", { className: "text-base font-medium", children: "Prismic" }),
+          /* @__PURE__ */ jsx28("p", { className: "text-sm text-muted-foreground", children: "Sync posts to Prismic as stub documents." })
         ] }),
-        /* @__PURE__ */ jsx26(
+        /* @__PURE__ */ jsx28(
           "button",
           {
             onClick: () => setPrismicEnabled(!prismicEnabled),
             className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicEnabled ? "bg-foreground" : "bg-muted"}`,
-            children: /* @__PURE__ */ jsx26(
+            children: /* @__PURE__ */ jsx28(
               "span",
               {
                 className: `inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${prismicEnabled ? "translate-x-6" : "translate-x-1"}`
@@ -11771,13 +11938,13 @@ function IntegrationsSettings() {
           }
         )
       ] }),
-      prismicEnabled && /* @__PURE__ */ jsxs17("div", { className: "space-y-4 pt-4 border-t border-border", children: [
-        /* @__PURE__ */ jsxs17("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsxs17("label", { htmlFor: "prismicRepository", className: "text-sm font-medium leading-none", children: [
+      prismicEnabled && /* @__PURE__ */ jsxs18("div", { className: "space-y-4 pt-4 border-t border-border", children: [
+        /* @__PURE__ */ jsxs18("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsxs18("label", { htmlFor: "prismicRepository", className: "text-sm font-medium leading-none", children: [
             "Repository Name",
-            configRepository && prismicRepository === configRepository && /* @__PURE__ */ jsx26("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 From config" })
+            configRepository && prismicRepository === configRepository && /* @__PURE__ */ jsx28("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 From config" })
           ] }),
-          /* @__PURE__ */ jsx26(
+          /* @__PURE__ */ jsx28(
             "input",
             {
               id: "prismicRepository",
@@ -11788,18 +11955,18 @@ function IntegrationsSettings() {
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             }
           ),
-          /* @__PURE__ */ jsx26("p", { className: "text-sm text-muted-foreground", children: configRepository ? `Detected from your Prismic config. Change if needed.` : /* @__PURE__ */ jsxs17(Fragment10, { children: [
+          /* @__PURE__ */ jsx28("p", { className: "text-sm text-muted-foreground", children: configRepository ? `Detected from your Prismic config. Change if needed.` : /* @__PURE__ */ jsxs18(Fragment11, { children: [
             "Your Prismic repository name (e.g., ",
-            /* @__PURE__ */ jsx26("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "ordo-playground" }),
+            /* @__PURE__ */ jsx28("code", { className: "px-1 py-0.5 bg-muted rounded text-xs", children: "ordo-playground" }),
             ")"
           ] }) })
         ] }),
-        /* @__PURE__ */ jsxs17("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsxs17("label", { htmlFor: "prismicWriteToken", className: "text-sm font-medium leading-none", children: [
+        /* @__PURE__ */ jsxs18("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsxs18("label", { htmlFor: "prismicWriteToken", className: "text-sm font-medium leading-none", children: [
             "Write API Token",
-            hasEnvToken && /* @__PURE__ */ jsx26("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 Using PRISMIC_WRITE_TOKEN from env" })
+            hasEnvToken && /* @__PURE__ */ jsx28("span", { className: "ml-2 text-xs font-normal text-ab-success", children: "\u2713 Using PRISMIC_WRITE_TOKEN from env" })
           ] }),
-          /* @__PURE__ */ jsx26(
+          /* @__PURE__ */ jsx28(
             "input",
             {
               id: "prismicWriteToken",
@@ -11810,11 +11977,11 @@ function IntegrationsSettings() {
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             }
           ),
-          /* @__PURE__ */ jsx26("p", { className: "text-sm text-muted-foreground", children: hasEnvToken ? "Token detected from PRISMIC_WRITE_TOKEN environment variable. Leave blank to use it, or enter a different token to override." : "From Prismic Settings > API & Security > Repository Security" })
+          /* @__PURE__ */ jsx28("p", { className: "text-sm text-muted-foreground", children: hasEnvToken ? "Token detected from PRISMIC_WRITE_TOKEN environment variable. Leave blank to use it, or enter a different token to override." : "From Prismic Settings > API & Security > Repository Security" })
         ] }),
-        /* @__PURE__ */ jsxs17("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsx26("label", { htmlFor: "prismicDocumentType", className: "text-sm font-medium leading-none", children: "Document Type" }),
-          /* @__PURE__ */ jsx26(
+        /* @__PURE__ */ jsxs18("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "prismicDocumentType", className: "text-sm font-medium leading-none", children: "Document Type" }),
+          /* @__PURE__ */ jsx28(
             "input",
             {
               id: "prismicDocumentType",
@@ -11825,11 +11992,11 @@ function IntegrationsSettings() {
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             }
           ),
-          /* @__PURE__ */ jsx26("p", { className: "text-sm text-muted-foreground", children: "The Prismic custom type to create for synced posts." })
+          /* @__PURE__ */ jsx28("p", { className: "text-sm text-muted-foreground", children: "The Prismic custom type to create for synced posts." })
         ] }),
-        /* @__PURE__ */ jsxs17("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsx26("label", { htmlFor: "prismicSyncMode", className: "text-sm font-medium leading-none", children: "Sync Mode" }),
-          /* @__PURE__ */ jsxs17(
+        /* @__PURE__ */ jsxs18("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "prismicSyncMode", className: "text-sm font-medium leading-none", children: "Sync Mode" }),
+          /* @__PURE__ */ jsxs18(
             "select",
             {
               id: "prismicSyncMode",
@@ -11837,16 +12004,16 @@ function IntegrationsSettings() {
               onChange: (e) => setPrismicSyncMode(e.target.value),
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               children: [
-                /* @__PURE__ */ jsx26("option", { value: "stub", children: "Stub (minimal reference data)" }),
-                /* @__PURE__ */ jsx26("option", { value: "full", children: "Full (sync all content)" })
+                /* @__PURE__ */ jsx28("option", { value: "stub", children: "Stub (minimal reference data)" }),
+                /* @__PURE__ */ jsx28("option", { value: "full", children: "Full (sync all content)" })
               ]
             }
           ),
-          /* @__PURE__ */ jsx26("p", { className: "text-sm text-muted-foreground", children: "Stub mode creates minimal documents; content is fetched from autoblogger at render time." })
+          /* @__PURE__ */ jsx28("p", { className: "text-sm text-muted-foreground", children: "Stub mode creates minimal documents; content is fetched from autoblogger at render time." })
         ] }),
-        /* @__PURE__ */ jsxs17("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsx26("label", { htmlFor: "prismicLocale", className: "text-sm font-medium leading-none", children: "Locale" }),
-          /* @__PURE__ */ jsx26(
+        /* @__PURE__ */ jsxs18("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx28("label", { htmlFor: "prismicLocale", className: "text-sm font-medium leading-none", children: "Locale" }),
+          /* @__PURE__ */ jsx28(
             "input",
             {
               id: "prismicLocale",
@@ -11857,20 +12024,20 @@ function IntegrationsSettings() {
               className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             }
           ),
-          /* @__PURE__ */ jsx26("p", { className: "text-sm text-muted-foreground", children: "The master locale for your Prismic repository." })
+          /* @__PURE__ */ jsx28("p", { className: "text-sm text-muted-foreground", children: "The master locale for your Prismic repository." })
         ] }),
-        /* @__PURE__ */ jsxs17("div", { className: "flex items-center justify-between pt-2", children: [
-          /* @__PURE__ */ jsxs17("div", { children: [
-            /* @__PURE__ */ jsx26("label", { htmlFor: "prismicAutoRename", className: "text-sm font-medium leading-none", children: "Auto-update Document Name" }),
-            /* @__PURE__ */ jsx26("p", { className: "text-sm text-muted-foreground mt-1", children: "Automatically update the Prismic document display name from the post title when publishing." })
+        /* @__PURE__ */ jsxs18("div", { className: "flex items-center justify-between pt-2", children: [
+          /* @__PURE__ */ jsxs18("div", { children: [
+            /* @__PURE__ */ jsx28("label", { htmlFor: "prismicAutoRename", className: "text-sm font-medium leading-none", children: "Auto-update Document Name" }),
+            /* @__PURE__ */ jsx28("p", { className: "text-sm text-muted-foreground mt-1", children: "Automatically update the Prismic document display name from the post title when publishing." })
           ] }),
-          /* @__PURE__ */ jsx26(
+          /* @__PURE__ */ jsx28(
             "button",
             {
               id: "prismicAutoRename",
               onClick: () => setPrismicAutoRename(!prismicAutoRename),
               className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${prismicAutoRename ? "bg-foreground" : "bg-muted"}`,
-              children: /* @__PURE__ */ jsx26(
+              children: /* @__PURE__ */ jsx28(
                 "span",
                 {
                   className: `inline-block h-4 w-4 transform rounded-full bg-background transition-transform ${prismicAutoRename ? "translate-x-6" : "translate-x-1"}`
@@ -11881,21 +12048,21 @@ function IntegrationsSettings() {
         ] })
       ] })
     ] }) }),
-    error && /* @__PURE__ */ jsx26("div", { className: "rounded-md bg-destructive/15 p-3 text-sm text-destructive", children: error }),
-    /* @__PURE__ */ jsxs17("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ jsxs17(
+    error && /* @__PURE__ */ jsx28("div", { className: "rounded-md bg-destructive/15 p-3 text-sm text-destructive", children: error }),
+    /* @__PURE__ */ jsxs18("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ jsxs18(
         "button",
         {
           onClick: handleSave,
           disabled: saving,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
           children: [
-            saving && /* @__PURE__ */ jsx26(Loader25, { className: "mr-2 h-4 w-4 animate-spin" }),
+            saving && /* @__PURE__ */ jsx28(Loader25, { className: "mr-2 h-4 w-4 animate-spin" }),
             saving ? "Saving..." : "Save"
           ]
         }
       ),
-      saved && /* @__PURE__ */ jsx26("span", { className: "text-sm text-ab-success", children: "Saved!" })
+      saved && /* @__PURE__ */ jsx28("span", { className: "text-sm text-ab-success", children: "Saved!" })
     ] })
   ] });
 }
@@ -11904,7 +12071,7 @@ function IntegrationsSettings() {
 init_context();
 import { useState as useState19, useEffect as useEffect16 } from "react";
 import { ChevronLeft, ChevronRight as ChevronRight2, MoreHorizontal as MoreHorizontal2 } from "lucide-react";
-import { Fragment as Fragment11, jsx as jsx27, jsxs as jsxs18 } from "react/jsx-runtime";
+import { Fragment as Fragment12, jsx as jsx29, jsxs as jsxs19 } from "react/jsx-runtime";
 var COMMENTS_PER_PAGE = 25;
 function CommentsSettings() {
   const { apiBasePath, navigate } = useDashboardContext();
@@ -11953,8 +12120,8 @@ function CommentsSettings() {
       return pages;
     };
     const spacingClass = position === "bottom" ? "mt-4" : "";
-    return /* @__PURE__ */ jsx27("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ jsxs18("ul", { className: "flex flex-row items-center gap-1", children: [
-      /* @__PURE__ */ jsx27("li", { children: /* @__PURE__ */ jsxs18(
+    return /* @__PURE__ */ jsx29("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ jsxs19("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ jsx29("li", { children: /* @__PURE__ */ jsxs19(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
@@ -11962,13 +12129,13 @@ function CommentsSettings() {
           "aria-label": "Go to previous page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ jsx27(ChevronLeft, { className: "h-4 w-4" }),
-            /* @__PURE__ */ jsx27("span", { className: "hidden sm:block", children: "Previous" })
+            /* @__PURE__ */ jsx29(ChevronLeft, { className: "h-4 w-4" }),
+            /* @__PURE__ */ jsx29("span", { className: "hidden sm:block", children: "Previous" })
           ]
         }
       ) }),
       getPageNumbers().map(
-        (page) => typeof page === "string" ? /* @__PURE__ */ jsx27("li", { children: /* @__PURE__ */ jsx27("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ jsx27(MoreHorizontal2, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ jsx27("li", { children: /* @__PURE__ */ jsx27(
+        (page) => typeof page === "string" ? /* @__PURE__ */ jsx29("li", { children: /* @__PURE__ */ jsx29("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ jsx29(MoreHorizontal2, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ jsx29("li", { children: /* @__PURE__ */ jsx29(
           "button",
           {
             onClick: () => setCurrentPage(page),
@@ -11978,7 +12145,7 @@ function CommentsSettings() {
           }
         ) }, page)
       ),
-      /* @__PURE__ */ jsx27("li", { children: /* @__PURE__ */ jsxs18(
+      /* @__PURE__ */ jsx29("li", { children: /* @__PURE__ */ jsxs19(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
@@ -11986,42 +12153,42 @@ function CommentsSettings() {
           "aria-label": "Go to next page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ jsx27("span", { className: "hidden sm:block", children: "Next" }),
-            /* @__PURE__ */ jsx27(ChevronRight2, { className: "h-4 w-4" })
+            /* @__PURE__ */ jsx29("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ jsx29(ChevronRight2, { className: "h-4 w-4" })
           ]
         }
       ) })
     ] }) });
   };
-  if (loading && comments.length === 0) return /* @__PURE__ */ jsx27(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ jsxs18("div", { children: [
-    /* @__PURE__ */ jsxs18("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
-      /* @__PURE__ */ jsxs18("div", { className: "shrink-0", children: [
-        /* @__PURE__ */ jsx27("h1", { className: "text-lg font-bold", children: "Comments" }),
-        /* @__PURE__ */ jsxs18("p", { className: "text-sm text-muted-foreground mt-1", children: [
+  if (loading && comments.length === 0) return /* @__PURE__ */ jsx29(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ jsxs19("div", { children: [
+    /* @__PURE__ */ jsxs19("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ jsxs19("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ jsx29("h1", { className: "text-lg font-bold", children: "Comments" }),
+        /* @__PURE__ */ jsxs19("p", { className: "text-sm text-muted-foreground mt-1", children: [
           totalCount,
           " total comment",
           totalCount !== 1 ? "s" : ""
         ] })
       ] }),
-      /* @__PURE__ */ jsx27(PaginationControls, { position: "top" })
+      /* @__PURE__ */ jsx29(PaginationControls, { position: "top" })
     ] }),
-    comments.length === 0 ? /* @__PURE__ */ jsx27("div", { className: "py-8 text-center text-muted-foreground", children: "No comments yet." }) : /* @__PURE__ */ jsxs18(Fragment11, { children: [
-      /* @__PURE__ */ jsx27("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs18("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ jsx27("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs18("tr", { className: "border-b", children: [
-          /* @__PURE__ */ jsx27("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[200px]", children: "Post" }),
-          /* @__PURE__ */ jsx27("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Author" }),
-          /* @__PURE__ */ jsx27("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[300px]", children: "Comment" }),
-          /* @__PURE__ */ jsx27("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ jsx27("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
-          /* @__PURE__ */ jsx27("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    comments.length === 0 ? /* @__PURE__ */ jsx29("div", { className: "py-8 text-center text-muted-foreground", children: "No comments yet." }) : /* @__PURE__ */ jsxs19(Fragment12, { children: [
+      /* @__PURE__ */ jsx29("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs19("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ jsx29("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs19("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx29("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[200px]", children: "Post" }),
+          /* @__PURE__ */ jsx29("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Author" }),
+          /* @__PURE__ */ jsx29("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground max-w-[300px]", children: "Comment" }),
+          /* @__PURE__ */ jsx29("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ jsx29("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ jsx29("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ jsx27("tbody", { className: "[&_tr:last-child]:border-0", children: comments.map((comment) => {
+        /* @__PURE__ */ jsx29("tbody", { className: "[&_tr:last-child]:border-0", children: comments.map((comment) => {
           const status = getStatusBadge(comment);
           const isReply = comment.parentId !== null;
           const commentIdToOpen = comment.parentId || comment.id;
-          return /* @__PURE__ */ jsxs18("tr", { className: "border-b", children: [
-            /* @__PURE__ */ jsx27("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx27(
+          return /* @__PURE__ */ jsxs19("tr", { className: "border-b", children: [
+            /* @__PURE__ */ jsx29("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx29(
               "button",
               {
                 onClick: () => navigate(`/editor/${comment.post.slug}`),
@@ -12029,15 +12196,15 @@ function CommentsSettings() {
                 children: comment.post.title || "Untitled"
               }
             ) }),
-            /* @__PURE__ */ jsx27("td", { className: "p-4 align-middle text-muted-foreground", children: comment.user.name || comment.user.email }),
-            /* @__PURE__ */ jsx27("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsxs18("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
-              isReply && /* @__PURE__ */ jsx27("span", { className: "text-xs mr-1", children: "\u21B3" }),
+            /* @__PURE__ */ jsx29("td", { className: "p-4 align-middle text-muted-foreground", children: comment.user.name || comment.user.email }),
+            /* @__PURE__ */ jsx29("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsxs19("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
+              isReply && /* @__PURE__ */ jsx29("span", { className: "text-xs mr-1", children: "\u21B3" }),
               comment.content.slice(0, 60),
               comment.content.length > 60 ? "..." : ""
             ] }) }),
-            /* @__PURE__ */ jsx27("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(comment.createdAt).toLocaleString() }),
-            /* @__PURE__ */ jsx27("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx27("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${status.classes}`, children: status.label }) }),
-            /* @__PURE__ */ jsx27("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsx27(
+            /* @__PURE__ */ jsx29("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(comment.createdAt).toLocaleString() }),
+            /* @__PURE__ */ jsx29("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx29("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${status.classes}`, children: status.label }) }),
+            /* @__PURE__ */ jsx29("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsx29(
               "button",
               {
                 onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
@@ -12048,27 +12215,27 @@ function CommentsSettings() {
           ] }, comment.id);
         }) })
       ] }) }),
-      /* @__PURE__ */ jsx27("div", { className: "md:hidden divide-y rounded-md border bg-background", children: comments.map((comment) => {
+      /* @__PURE__ */ jsx29("div", { className: "md:hidden divide-y rounded-md border bg-background", children: comments.map((comment) => {
         const status = getStatusBadge(comment);
         const isReply = comment.parentId !== null;
         const commentIdToOpen = comment.parentId || comment.id;
-        return /* @__PURE__ */ jsxs18("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-          /* @__PURE__ */ jsxs18("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-            /* @__PURE__ */ jsxs18("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ jsxs18("span", { className: "font-medium truncate", children: [
-                isReply && /* @__PURE__ */ jsx27("span", { className: "text-xs mr-1", children: "\u21B3" }),
+        return /* @__PURE__ */ jsxs19("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+          /* @__PURE__ */ jsxs19("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+            /* @__PURE__ */ jsxs19("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsxs19("span", { className: "font-medium truncate", children: [
+                isReply && /* @__PURE__ */ jsx29("span", { className: "text-xs mr-1", children: "\u21B3" }),
                 comment.content.slice(0, 40),
                 comment.content.length > 40 ? "..." : ""
               ] }),
-              /* @__PURE__ */ jsx27("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${status.classes}`, children: status.label })
+              /* @__PURE__ */ jsx29("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${status.classes}`, children: status.label })
             ] }),
-            /* @__PURE__ */ jsxs18("p", { className: "text-sm text-muted-foreground truncate", children: [
+            /* @__PURE__ */ jsxs19("p", { className: "text-sm text-muted-foreground truncate", children: [
               comment.user.name || comment.user.email,
               " \xB7 ",
               new Date(comment.createdAt).toLocaleDateString()
             ] })
           ] }),
-          /* @__PURE__ */ jsx27(
+          /* @__PURE__ */ jsx29(
             "button",
             {
               onClick: () => navigate(`/editor/${comment.post.slug}?comment=${commentIdToOpen}`),
@@ -12079,7 +12246,7 @@ function CommentsSettings() {
         ] }, comment.id);
       }) })
     ] }),
-    /* @__PURE__ */ jsx27(PaginationControls, { position: "bottom" })
+    /* @__PURE__ */ jsx29(PaginationControls, { position: "bottom" })
   ] });
 }
 
@@ -12091,7 +12258,7 @@ import { ChevronDown as ChevronDown5, RotateCcw as RotateCcw2, Loader2 as Loader
 // src/ui/pages/settings/CollapsibleTemplate.tsx
 import { useState as useState20 } from "react";
 import { ChevronDown as ChevronDown4, RotateCcw } from "lucide-react";
-import { jsx as jsx28, jsxs as jsxs19 } from "react/jsx-runtime";
+import { jsx as jsx30, jsxs as jsxs20 } from "react/jsx-runtime";
 function CollapsibleTemplate({
   label,
   value,
@@ -12104,31 +12271,31 @@ function CollapsibleTemplate({
   const [open, setOpen] = useState20(false);
   const isCustom = value !== null;
   const displayValue = value ?? defaultValue;
-  return /* @__PURE__ */ jsxs19("div", { className: "mt-2", children: [
-    /* @__PURE__ */ jsxs19(
+  return /* @__PURE__ */ jsxs20("div", { className: "mt-2", children: [
+    /* @__PURE__ */ jsxs20(
       "button",
       {
         type: "button",
         onClick: () => setOpen(!open),
         className: "flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground",
         children: [
-          /* @__PURE__ */ jsx28(ChevronDown4, { className: `h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}` }),
+          /* @__PURE__ */ jsx30(ChevronDown4, { className: `h-4 w-4 transition-transform ${open ? "" : "-rotate-90"}` }),
           isCustom ? `Edit prompt template (customized)` : `Edit prompt template`
         ]
       }
     ),
-    open && /* @__PURE__ */ jsxs19("div", { className: "mt-2 space-y-2", children: [
-      /* @__PURE__ */ jsxs19("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxs19("p", { className: "text-xs text-muted-foreground", children: [
+    open && /* @__PURE__ */ jsxs20("div", { className: "mt-2 space-y-2", children: [
+      /* @__PURE__ */ jsxs20("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxs20("p", { className: "text-xs text-muted-foreground", children: [
           "Placeholders: ",
           placeholders
         ] }),
-        isCustom && /* @__PURE__ */ jsxs19("button", { type: "button", onClick: onReset, className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground", children: [
-          /* @__PURE__ */ jsx28(RotateCcw, { className: "h-3 w-3" }),
+        isCustom && /* @__PURE__ */ jsxs20("button", { type: "button", onClick: onReset, className: "flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground", children: [
+          /* @__PURE__ */ jsx30(RotateCcw, { className: "h-3 w-3" }),
           " Reset to default"
         ] })
       ] }),
-      /* @__PURE__ */ jsx28(
+      /* @__PURE__ */ jsx30(
         "textarea",
         {
           value: displayValue,
@@ -12143,7 +12310,7 @@ function CollapsibleTemplate({
 }
 
 // src/ui/pages/settings/AISettings.tsx
-import { jsx as jsx29, jsxs as jsxs20 } from "react/jsx-runtime";
+import { jsx as jsx31, jsxs as jsxs21 } from "react/jsx-runtime";
 function AISettings() {
   const { apiBasePath, refetchSharedData } = useDashboardContext();
   const [rules, setRules] = useState21("");
@@ -12256,24 +12423,24 @@ function AISettings() {
     await refetchSharedData();
     setTimeout(() => setSaved(false), 2e3);
   }
-  if (loading) return /* @__PURE__ */ jsx29(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ jsxs20("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ jsxs20("div", { children: [
-      /* @__PURE__ */ jsx29("h2", { className: "text-lg font-semibold", children: "AI Settings" }),
-      /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Configure your AI writing assistant." })
+  if (loading) return /* @__PURE__ */ jsx31(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ jsxs21("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxs21("div", { children: [
+      /* @__PURE__ */ jsx31("h2", { className: "text-lg font-semibold", children: "AI Settings" }),
+      /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Configure your AI writing assistant." })
     ] }),
-    /* @__PURE__ */ jsx29("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs20("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ jsxs20("div", { children: [
-        /* @__PURE__ */ jsx29("h3", { className: "text-base font-medium", children: "Models" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "API keys and model configuration." })
+    /* @__PURE__ */ jsx31("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs21("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ jsxs21("div", { children: [
+        /* @__PURE__ */ jsx31("h3", { className: "text-base font-medium", children: "Models" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "API keys and model configuration." })
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "grid gap-4 sm:grid-cols-2", children: [
-        /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsx29("label", { htmlFor: "anthropicKey", className: "text-sm font-medium leading-none", children: "Anthropic API Key" }),
-          hasAnthropicEnvKey && !anthropicKey ? /* @__PURE__ */ jsxs20("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
-            /* @__PURE__ */ jsx29("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
-            /* @__PURE__ */ jsx29("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
-          ] }) : /* @__PURE__ */ jsx29(
+      /* @__PURE__ */ jsxs21("div", { className: "grid gap-4 sm:grid-cols-2", children: [
+        /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx31("label", { htmlFor: "anthropicKey", className: "text-sm font-medium leading-none", children: "Anthropic API Key" }),
+          hasAnthropicEnvKey && !anthropicKey ? /* @__PURE__ */ jsxs21("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
+            /* @__PURE__ */ jsx31("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
+            /* @__PURE__ */ jsx31("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
+          ] }) : /* @__PURE__ */ jsx31(
             "input",
             {
               id: "anthropicKey",
@@ -12285,14 +12452,14 @@ function AISettings() {
               disabled: saving
             }
           ),
-          /* @__PURE__ */ jsx29("p", { className: "text-xs text-muted-foreground", children: hasAnthropicEnvKey && !anthropicKey ? "Using ANTHROPIC_API_KEY from environment. Enter a value above to override." : "Required for Claude models (Sonnet, Opus)" })
+          /* @__PURE__ */ jsx31("p", { className: "text-xs text-muted-foreground", children: hasAnthropicEnvKey && !anthropicKey ? "Using ANTHROPIC_API_KEY from environment. Enter a value above to override." : "Required for Claude models (Sonnet, Opus)" })
         ] }),
-        /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsx29("label", { htmlFor: "openaiKey", className: "text-sm font-medium leading-none", children: "OpenAI API Key" }),
-          hasOpenaiEnvKey && !openaiKey ? /* @__PURE__ */ jsxs20("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
-            /* @__PURE__ */ jsx29("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
-            /* @__PURE__ */ jsx29("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
-          ] }) : /* @__PURE__ */ jsx29(
+        /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+          /* @__PURE__ */ jsx31("label", { htmlFor: "openaiKey", className: "text-sm font-medium leading-none", children: "OpenAI API Key" }),
+          hasOpenaiEnvKey && !openaiKey ? /* @__PURE__ */ jsxs21("div", { className: "flex h-10 w-full items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm", children: [
+            /* @__PURE__ */ jsx31("span", { className: "text-muted-foreground", children: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" }),
+            /* @__PURE__ */ jsx31("span", { className: "ml-2 text-xs text-ab-success", children: "(from environment)" })
+          ] }) : /* @__PURE__ */ jsx31(
             "input",
             {
               id: "openaiKey",
@@ -12304,38 +12471,38 @@ function AISettings() {
               disabled: saving
             }
           ),
-          /* @__PURE__ */ jsx29("p", { className: "text-xs text-muted-foreground", children: hasOpenaiEnvKey && !openaiKey ? "Using OPENAI_API_KEY from environment. Enter a value above to override." : "Required for GPT models" })
+          /* @__PURE__ */ jsx31("p", { className: "text-xs text-muted-foreground", children: hasOpenaiEnvKey && !openaiKey ? "Using OPENAI_API_KEY from environment. Enter a value above to override." : "Required for GPT models" })
         ] })
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "flex items-center gap-4", children: [
-        /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none shrink-0", children: "Default Model" }),
-        /* @__PURE__ */ jsxs20("div", { className: "relative max-w-sm flex-1", children: [
-          /* @__PURE__ */ jsx29(
+      /* @__PURE__ */ jsxs21("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none shrink-0", children: "Default Model" }),
+        /* @__PURE__ */ jsxs21("div", { className: "relative max-w-sm flex-1", children: [
+          /* @__PURE__ */ jsx31(
             "select",
             {
               value: defaultModel,
               onChange: (e) => setDefaultModel(e.target.value),
               className: "h-10 w-full appearance-none rounded-md border border-input bg-background pl-3 pr-10 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 cursor-pointer",
-              children: models.map((model) => /* @__PURE__ */ jsxs20("option", { value: model.id, children: [
+              children: models.map((model) => /* @__PURE__ */ jsxs21("option", { value: model.id, children: [
                 model.name,
                 " \u2014 ",
                 model.description
               ] }, model.id))
             }
           ),
-          /* @__PURE__ */ jsx29(ChevronDown5, { className: "absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" })
+          /* @__PURE__ */ jsx31(ChevronDown5, { className: "absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" })
         ] })
       ] })
     ] }) }),
-    /* @__PURE__ */ jsx29("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs20("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ jsxs20("div", { children: [
-        /* @__PURE__ */ jsx29("h3", { className: "text-base font-medium", children: "Prompts" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Rules and templates for AI-generated content." })
+    /* @__PURE__ */ jsx31("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs21("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ jsxs21("div", { children: [
+        /* @__PURE__ */ jsx31("h3", { className: "text-base font-medium", children: "Prompts" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Rules and templates for AI-generated content." })
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none", children: "Essay Writing Rules" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Style and format rules for generated essays. Applied when generating or rewriting content." }),
-        /* @__PURE__ */ jsx29(
+      /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none", children: "Essay Writing Rules" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Style and format rules for generated essays. Applied when generating or rewriting content." }),
+        /* @__PURE__ */ jsx31(
           "textarea",
           {
             value: rules,
@@ -12350,7 +12517,7 @@ function AISettings() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ jsx29(
+        /* @__PURE__ */ jsx31(
           CollapsibleTemplate,
           {
             label: "Generate",
@@ -12363,10 +12530,10 @@ function AISettings() {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none", children: "Chat Behavior Rules" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "How the assistant should behave during brainstorming conversations." }),
-        /* @__PURE__ */ jsx29(
+      /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none", children: "Chat Behavior Rules" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "How the assistant should behave during brainstorming conversations." }),
+        /* @__PURE__ */ jsx31(
           "textarea",
           {
             value: chatRules,
@@ -12379,7 +12546,7 @@ function AISettings() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ jsx29(
+        /* @__PURE__ */ jsx31(
           CollapsibleTemplate,
           {
             label: "Chat",
@@ -12392,10 +12559,10 @@ function AISettings() {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none", children: "Rewrite Rules" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Rules for cleaning up selected text with the rewrite tool." }),
-        /* @__PURE__ */ jsx29(
+      /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none", children: "Rewrite Rules" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Rules for cleaning up selected text with the rewrite tool." }),
+        /* @__PURE__ */ jsx31(
           "textarea",
           {
             value: rewriteRules,
@@ -12408,7 +12575,7 @@ function AISettings() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ jsx29(
+        /* @__PURE__ */ jsx31(
           CollapsibleTemplate,
           {
             label: "Rewrite",
@@ -12421,10 +12588,10 @@ function AISettings() {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft Rules" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Rules for generating essays from news articles via RSS feeds." }),
-        /* @__PURE__ */ jsx29(
+      /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft Rules" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Rules for generating essays from news articles via RSS feeds." }),
+        /* @__PURE__ */ jsx31(
           "textarea",
           {
             value: autoDraftRules,
@@ -12437,9 +12604,9 @@ function AISettings() {
             disabled: saving
           }
         ),
-        /* @__PURE__ */ jsx29("div", { className: "flex items-center gap-4 pt-2", children: /* @__PURE__ */ jsxs20("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ jsx29("label", { className: "text-sm whitespace-nowrap", children: "Target word count:" }),
-          /* @__PURE__ */ jsx29(
+        /* @__PURE__ */ jsx31("div", { className: "flex items-center gap-4 pt-2", children: /* @__PURE__ */ jsxs21("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx31("label", { className: "text-sm whitespace-nowrap", children: "Target word count:" }),
+          /* @__PURE__ */ jsx31(
             "input",
             {
               type: "number",
@@ -12452,7 +12619,7 @@ function AISettings() {
             }
           )
         ] }) }),
-        /* @__PURE__ */ jsx29(
+        /* @__PURE__ */ jsx31(
           CollapsibleTemplate,
           {
             label: "Auto-Draft",
@@ -12465,22 +12632,22 @@ function AISettings() {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none", children: "Plan Format Rules" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Rules for essay plan structure and format in Plan mode." }),
-        /* @__PURE__ */ jsx29("div", { className: "flex items-center justify-end", children: planRules && /* @__PURE__ */ jsxs20(
+      /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none", children: "Plan Format Rules" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Rules for essay plan structure and format in Plan mode." }),
+        /* @__PURE__ */ jsx31("div", { className: "flex items-center justify-end", children: planRules && /* @__PURE__ */ jsxs21(
           "button",
           {
             type: "button",
             onClick: () => setPlanRules(""),
             className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-7 px-2 hover:bg-accent hover:text-accent-foreground",
             children: [
-              /* @__PURE__ */ jsx29(RotateCcw2, { className: "h-3 w-3 mr-1" }),
+              /* @__PURE__ */ jsx31(RotateCcw2, { className: "h-3 w-3 mr-1" }),
               "Reset to default"
             ]
           }
         ) }),
-        /* @__PURE__ */ jsx29(
+        /* @__PURE__ */ jsx31(
           "textarea",
           {
             value: planRules || defaultPlanRules,
@@ -12490,10 +12657,10 @@ function AISettings() {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none", children: "Plan Mode Template" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Prompt template for Plan mode in chat." }),
-        /* @__PURE__ */ jsx29(
+      /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none", children: "Plan Mode Template" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Prompt template for Plan mode in chat." }),
+        /* @__PURE__ */ jsx31(
           CollapsibleTemplate,
           {
             label: "Plan",
@@ -12506,10 +12673,10 @@ function AISettings() {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none", children: "Expand Plan Template" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Prompt template for expanding a plan into a full essay." }),
-        /* @__PURE__ */ jsx29(
+      /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none", children: "Expand Plan Template" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Prompt template for expanding a plan into a full essay." }),
+        /* @__PURE__ */ jsx31(
           CollapsibleTemplate,
           {
             label: "Expand Plan",
@@ -12522,10 +12689,10 @@ function AISettings() {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "space-y-2", children: [
-        /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none", children: "Agent Mode Template" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Instructions for Agent mode in chat." }),
-        /* @__PURE__ */ jsx29(
+      /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
+        /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none", children: "Agent Mode Template" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Instructions for Agent mode in chat." }),
+        /* @__PURE__ */ jsx31(
           CollapsibleTemplate,
           {
             label: "Agent",
@@ -12539,17 +12706,17 @@ function AISettings() {
         )
       ] })
     ] }) }),
-    /* @__PURE__ */ jsx29("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs20("div", { className: "p-6 space-y-6", children: [
-      /* @__PURE__ */ jsxs20("div", { children: [
-        /* @__PURE__ */ jsx29("h3", { className: "text-base font-medium", children: "Features" }),
-        /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Enable or disable AI features." })
+    /* @__PURE__ */ jsx31("div", { className: "rounded-lg border bg-card text-card-foreground shadow-sm", children: /* @__PURE__ */ jsxs21("div", { className: "p-6 space-y-6", children: [
+      /* @__PURE__ */ jsxs21("div", { children: [
+        /* @__PURE__ */ jsx31("h3", { className: "text-base font-medium", children: "Features" }),
+        /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Enable or disable AI features." })
       ] }),
-      /* @__PURE__ */ jsxs20("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsxs20("div", { className: "space-y-0.5", children: [
-          /* @__PURE__ */ jsx29("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft" }),
-          /* @__PURE__ */ jsx29("p", { className: "text-sm text-muted-foreground", children: "Enable RSS topic subscriptions and automatic draft generation." })
+      /* @__PURE__ */ jsxs21("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxs21("div", { className: "space-y-0.5", children: [
+          /* @__PURE__ */ jsx31("label", { className: "text-sm font-medium leading-none", children: "Auto-Draft" }),
+          /* @__PURE__ */ jsx31("p", { className: "text-sm text-muted-foreground", children: "Enable RSS topic subscriptions and automatic draft generation." })
         ] }),
-        /* @__PURE__ */ jsx29(
+        /* @__PURE__ */ jsx31(
           "button",
           {
             type: "button",
@@ -12557,7 +12724,7 @@ function AISettings() {
             "aria-checked": autoDraftEnabled,
             onClick: () => setAutoDraftEnabled(!autoDraftEnabled),
             className: `relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${autoDraftEnabled ? "bg-foreground" : "bg-input"}`,
-            children: /* @__PURE__ */ jsx29(
+            children: /* @__PURE__ */ jsx31(
               "span",
               {
                 className: `pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform ${autoDraftEnabled ? "translate-x-5" : "translate-x-0"}`
@@ -12567,20 +12734,20 @@ function AISettings() {
         )
       ] })
     ] }) }),
-    /* @__PURE__ */ jsxs20("div", { className: "flex items-center gap-3", children: [
-      /* @__PURE__ */ jsxs20(
+    /* @__PURE__ */ jsxs21("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ jsxs21(
         "button",
         {
           onClick: handleSave,
           disabled: saving,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-10 px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50",
           children: [
-            saving && /* @__PURE__ */ jsx29(Loader26, { className: "mr-2 h-4 w-4 animate-spin" }),
+            saving && /* @__PURE__ */ jsx31(Loader26, { className: "mr-2 h-4 w-4 animate-spin" }),
             saving ? "Saving..." : "Save"
           ]
         }
       ),
-      saved && /* @__PURE__ */ jsx29("span", { className: "text-sm text-ab-success", children: "Saved!" })
+      saved && /* @__PURE__ */ jsx31("span", { className: "text-sm text-ab-success", children: "Saved!" })
     ] })
   ] });
 }
@@ -12589,7 +12756,7 @@ function AISettings() {
 init_context();
 import { useState as useState22, useEffect as useEffect18 } from "react";
 import { MoreVertical as MoreVertical3 } from "lucide-react";
-import { Fragment as Fragment12, jsx as jsx30, jsxs as jsxs21 } from "react/jsx-runtime";
+import { Fragment as Fragment13, jsx as jsx32, jsxs as jsxs22 } from "react/jsx-runtime";
 function TagsSettings() {
   const { apiBasePath } = useDashboardContext();
   const [tags, setTags] = useState22([]);
@@ -12656,11 +12823,11 @@ function TagsSettings() {
     }
     setSaving(false);
   }
-  if (loading) return /* @__PURE__ */ jsx30(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ jsxs21("div", { children: [
-    /* @__PURE__ */ jsxs21("div", { className: "flex items-center justify-between mb-6 md:mb-8", children: [
-      /* @__PURE__ */ jsx30("h2", { className: "text-lg font-semibold", children: "Tags" }),
-      /* @__PURE__ */ jsx30(
+  if (loading) return /* @__PURE__ */ jsx32(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ jsxs22("div", { children: [
+    /* @__PURE__ */ jsxs22("div", { className: "flex items-center justify-between mb-6 md:mb-8", children: [
+      /* @__PURE__ */ jsx32("h2", { className: "text-lg font-semibold", children: "Tags" }),
+      /* @__PURE__ */ jsx32(
         "button",
         {
           onClick: openCreateDialog,
@@ -12669,29 +12836,29 @@ function TagsSettings() {
         }
       )
     ] }),
-    tags.length === 0 ? /* @__PURE__ */ jsx30("div", { className: "py-8 text-center text-muted-foreground", children: "No tags yet. Create one to get started." }) : /* @__PURE__ */ jsxs21(Fragment12, { children: [
-      /* @__PURE__ */ jsx30("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs21("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ jsx30("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs21("tr", { className: "border-b", children: [
-          /* @__PURE__ */ jsx30("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Name" }),
-          /* @__PURE__ */ jsx30("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Posts" }),
-          /* @__PURE__ */ jsx30("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ jsx30("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    tags.length === 0 ? /* @__PURE__ */ jsx32("div", { className: "py-8 text-center text-muted-foreground", children: "No tags yet. Create one to get started." }) : /* @__PURE__ */ jsxs22(Fragment13, { children: [
+      /* @__PURE__ */ jsx32("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs22("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ jsx32("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs22("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Name" }),
+          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Posts" }),
+          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ jsx30("tbody", { className: "[&_tr:last-child]:border-0", children: tags.map((tag) => /* @__PURE__ */ jsxs21("tr", { className: "border-b", children: [
-          /* @__PURE__ */ jsx30("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx30("span", { className: "block truncate max-w-[250px]", children: tag.name }) }),
-          /* @__PURE__ */ jsx30("td", { className: "p-4 align-middle text-muted-foreground", children: tag._count?.posts ?? 0 }),
-          /* @__PURE__ */ jsx30("td", { className: "p-4 align-middle text-muted-foreground", children: tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014" }),
-          /* @__PURE__ */ jsx30("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsxs21("div", { className: "relative inline-block", children: [
-            /* @__PURE__ */ jsx30(
+        /* @__PURE__ */ jsx32("tbody", { className: "[&_tr:last-child]:border-0", children: tags.map((tag) => /* @__PURE__ */ jsxs22("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx32("span", { className: "block truncate max-w-[250px]", children: tag.name }) }),
+          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle text-muted-foreground", children: tag._count?.posts ?? 0 }),
+          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle text-muted-foreground", children: tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014" }),
+          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsxs22("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ jsx32(
               "button",
               {
                 onClick: () => setMenuOpen(menuOpen === tag.id ? null : tag.id),
                 className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-                children: /* @__PURE__ */ jsx30(MoreVertical3, { className: "h-4 w-4" })
+                children: /* @__PURE__ */ jsx32(MoreVertical3, { className: "h-4 w-4" })
               }
             ),
-            menuOpen === tag.id && /* @__PURE__ */ jsxs21("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-              /* @__PURE__ */ jsx30(
+            menuOpen === tag.id && /* @__PURE__ */ jsxs22("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+              /* @__PURE__ */ jsx32(
                 "button",
                 {
                   onClick: () => openEditDialog(tag),
@@ -12699,8 +12866,8 @@ function TagsSettings() {
                   children: "Edit"
                 }
               ),
-              /* @__PURE__ */ jsx30("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-              /* @__PURE__ */ jsx30(
+              /* @__PURE__ */ jsx32("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+              /* @__PURE__ */ jsx32(
                 "button",
                 {
                   onClick: () => handleDelete2(tag),
@@ -12712,26 +12879,26 @@ function TagsSettings() {
           ] }) })
         ] }, tag.id)) })
       ] }) }),
-      /* @__PURE__ */ jsx30("div", { className: "md:hidden divide-y rounded-md border bg-background", children: tags.map((tag) => /* @__PURE__ */ jsxs21("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-        /* @__PURE__ */ jsxs21("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-          /* @__PURE__ */ jsx30("span", { className: "font-medium truncate block", children: tag.name }),
-          /* @__PURE__ */ jsxs21("p", { className: "text-sm text-muted-foreground truncate", children: [
+      /* @__PURE__ */ jsx32("div", { className: "md:hidden divide-y rounded-md border bg-background", children: tags.map((tag) => /* @__PURE__ */ jsxs22("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ jsxs22("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ jsx32("span", { className: "font-medium truncate block", children: tag.name }),
+          /* @__PURE__ */ jsxs22("p", { className: "text-sm text-muted-foreground truncate", children: [
             tag._count?.posts ?? 0,
             " posts \xB7 Created ",
             tag.createdAt ? new Date(tag.createdAt).toLocaleDateString() : "\u2014"
           ] })
         ] }),
-        /* @__PURE__ */ jsxs21("div", { className: "relative", children: [
-          /* @__PURE__ */ jsx30(
+        /* @__PURE__ */ jsxs22("div", { className: "relative", children: [
+          /* @__PURE__ */ jsx32(
             "button",
             {
               onClick: () => setMenuOpen(menuOpen === tag.id ? null : tag.id),
               className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-              children: /* @__PURE__ */ jsx30(MoreVertical3, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ jsx32(MoreVertical3, { className: "h-4 w-4" })
             }
           ),
-          menuOpen === tag.id && /* @__PURE__ */ jsxs21("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-            /* @__PURE__ */ jsx30(
+          menuOpen === tag.id && /* @__PURE__ */ jsxs22("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+            /* @__PURE__ */ jsx32(
               "button",
               {
                 onClick: () => openEditDialog(tag),
@@ -12739,8 +12906,8 @@ function TagsSettings() {
                 children: "Edit"
               }
             ),
-            /* @__PURE__ */ jsx30("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-            /* @__PURE__ */ jsx30(
+            /* @__PURE__ */ jsx32("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+            /* @__PURE__ */ jsx32(
               "button",
               {
                 onClick: () => handleDelete2(tag),
@@ -12752,20 +12919,20 @@ function TagsSettings() {
         ] })
       ] }, tag.id)) })
     ] }),
-    dialogOpen && /* @__PURE__ */ jsxs21("div", { className: "fixed inset-0 z-50 flex items-center justify-center", children: [
-      /* @__PURE__ */ jsx30(
+    dialogOpen && /* @__PURE__ */ jsxs22("div", { className: "fixed inset-0 z-50 flex items-center justify-center", children: [
+      /* @__PURE__ */ jsx32(
         "div",
         {
           className: "fixed inset-0 bg-black/80",
           onClick: () => setDialogOpen(false)
         }
       ),
-      /* @__PURE__ */ jsxs21("div", { className: "relative z-50 w-full max-w-sm bg-background border border-border rounded-lg shadow-lg", children: [
-        /* @__PURE__ */ jsx30("div", { className: "flex flex-col space-y-1.5 p-6", children: /* @__PURE__ */ jsx30("h3", { className: "text-lg font-semibold leading-none tracking-tight", children: editingTag ? "Edit Tag" : "Create Tag" }) }),
-        /* @__PURE__ */ jsxs21("form", { onSubmit: handleSubmit, children: [
-          /* @__PURE__ */ jsx30("div", { className: "px-6 pb-4", children: /* @__PURE__ */ jsxs21("div", { className: "space-y-2", children: [
-            /* @__PURE__ */ jsx30("label", { htmlFor: "tagName", className: "text-sm font-medium leading-none", children: "Name" }),
-            /* @__PURE__ */ jsx30(
+      /* @__PURE__ */ jsxs22("div", { className: "relative z-50 w-full max-w-sm bg-background border border-border rounded-lg shadow-lg", children: [
+        /* @__PURE__ */ jsx32("div", { className: "flex flex-col space-y-1.5 p-6", children: /* @__PURE__ */ jsx32("h3", { className: "text-lg font-semibold leading-none tracking-tight", children: editingTag ? "Edit Tag" : "Create Tag" }) }),
+        /* @__PURE__ */ jsxs22("form", { onSubmit: handleSubmit, children: [
+          /* @__PURE__ */ jsx32("div", { className: "px-6 pb-4", children: /* @__PURE__ */ jsxs22("div", { className: "space-y-2", children: [
+            /* @__PURE__ */ jsx32("label", { htmlFor: "tagName", className: "text-sm font-medium leading-none", children: "Name" }),
+            /* @__PURE__ */ jsx32(
               "input",
               {
                 id: "tagName",
@@ -12777,10 +12944,10 @@ function TagsSettings() {
                 className: "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               }
             ),
-            error && /* @__PURE__ */ jsx30("p", { className: "text-sm text-destructive", children: error })
+            error && /* @__PURE__ */ jsx32("p", { className: "text-sm text-destructive", children: error })
           ] }) }),
-          /* @__PURE__ */ jsxs21("div", { className: "flex items-center justify-end gap-2 p-6 pt-0", children: [
-            /* @__PURE__ */ jsx30(
+          /* @__PURE__ */ jsxs22("div", { className: "flex items-center justify-end gap-2 p-6 pt-0", children: [
+            /* @__PURE__ */ jsx32(
               "button",
               {
                 type: "button",
@@ -12790,7 +12957,7 @@ function TagsSettings() {
                 children: "Cancel"
               }
             ),
-            /* @__PURE__ */ jsx30(
+            /* @__PURE__ */ jsx32(
               "button",
               {
                 type: "submit",
@@ -12810,7 +12977,7 @@ function TagsSettings() {
 init_context();
 import { useState as useState23, useEffect as useEffect19 } from "react";
 import { Plus as Plus2, Pencil as Pencil2, Trash2 as Trash22, Play, X as X3 } from "lucide-react";
-import { jsx as jsx31, jsxs as jsxs22 } from "react/jsx-runtime";
+import { jsx as jsx33, jsxs as jsxs23 } from "react/jsx-runtime";
 function TopicsSettings() {
   const { apiBasePath } = useDashboardContext();
   const [topics, setTopics] = useState23([]);
@@ -12902,29 +13069,29 @@ function TopicsSettings() {
       setGenerating(null);
     }
   }
-  if (loading) return /* @__PURE__ */ jsx31(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ jsxs22("div", { className: "space-y-4", children: [
-    /* @__PURE__ */ jsxs22("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsx31("h2", { className: "text-lg font-semibold", children: "Topics" }),
-      /* @__PURE__ */ jsxs22("button", { onClick: openNewForm, className: "flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm", children: [
-        /* @__PURE__ */ jsx31(Plus2, { className: "h-4 w-4" }),
+  if (loading) return /* @__PURE__ */ jsx33(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ jsxs23("div", { className: "space-y-4", children: [
+    /* @__PURE__ */ jsxs23("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsx33("h2", { className: "text-lg font-semibold", children: "Topics" }),
+      /* @__PURE__ */ jsxs23("button", { onClick: openNewForm, className: "flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-md text-sm", children: [
+        /* @__PURE__ */ jsx33(Plus2, { className: "h-4 w-4" }),
         " New Topic"
       ] })
     ] }),
-    /* @__PURE__ */ jsx31("p", { className: "text-muted-foreground text-sm -mt-2", children: "RSS topic subscriptions for auto-generating draft posts." }),
-    showForm && /* @__PURE__ */ jsxs22("div", { className: "border border-border rounded-lg p-4 space-y-4 bg-muted/30", children: [
-      /* @__PURE__ */ jsxs22("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsx31("h3", { className: "font-medium", children: editingTopic ? "Edit Topic" : "New Topic" }),
-        /* @__PURE__ */ jsx31("button", { onClick: () => {
+    /* @__PURE__ */ jsx33("p", { className: "text-muted-foreground text-sm -mt-2", children: "RSS topic subscriptions for auto-generating draft posts." }),
+    showForm && /* @__PURE__ */ jsxs23("div", { className: "border border-border rounded-lg p-4 space-y-4 bg-muted/30", children: [
+      /* @__PURE__ */ jsxs23("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx33("h3", { className: "font-medium", children: editingTopic ? "Edit Topic" : "New Topic" }),
+        /* @__PURE__ */ jsx33("button", { onClick: () => {
           setShowForm(false);
           resetForm();
           setEditingTopic(null);
-        }, className: "text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ jsx31(X3, { className: "h-4 w-4" }) })
+        }, className: "text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ jsx33(X3, { className: "h-4 w-4" }) })
       ] }),
-      /* @__PURE__ */ jsxs22("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
-        /* @__PURE__ */ jsxs22("div", { children: [
-          /* @__PURE__ */ jsx31("label", { className: "block text-sm font-medium mb-1", children: "Name" }),
-          /* @__PURE__ */ jsx31(
+      /* @__PURE__ */ jsxs23("form", { onSubmit: handleSubmit, className: "space-y-4", children: [
+        /* @__PURE__ */ jsxs23("div", { children: [
+          /* @__PURE__ */ jsx33("label", { className: "block text-sm font-medium mb-1", children: "Name" }),
+          /* @__PURE__ */ jsx33(
             "input",
             {
               type: "text",
@@ -12936,9 +13103,9 @@ function TopicsSettings() {
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs22("div", { children: [
-          /* @__PURE__ */ jsx31("label", { className: "block text-sm font-medium mb-1", children: "Keywords (comma-separated)" }),
-          /* @__PURE__ */ jsx31(
+        /* @__PURE__ */ jsxs23("div", { children: [
+          /* @__PURE__ */ jsx33("label", { className: "block text-sm font-medium mb-1", children: "Keywords (comma-separated)" }),
+          /* @__PURE__ */ jsx33(
             "input",
             {
               type: "text",
@@ -12949,9 +13116,9 @@ function TopicsSettings() {
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs22("div", { children: [
-          /* @__PURE__ */ jsx31("label", { className: "block text-sm font-medium mb-1", children: "RSS Feed URLs (one per line)" }),
-          /* @__PURE__ */ jsx31(
+        /* @__PURE__ */ jsxs23("div", { children: [
+          /* @__PURE__ */ jsx33("label", { className: "block text-sm font-medium mb-1", children: "RSS Feed URLs (one per line)" }),
+          /* @__PURE__ */ jsx33(
             "textarea",
             {
               value: formFeeds,
@@ -12962,27 +13129,27 @@ function TopicsSettings() {
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs22("div", { className: "grid grid-cols-2 gap-4", children: [
-          /* @__PURE__ */ jsxs22("div", { children: [
-            /* @__PURE__ */ jsx31("label", { className: "block text-sm font-medium mb-1", children: "Frequency" }),
-            /* @__PURE__ */ jsxs22(
+        /* @__PURE__ */ jsxs23("div", { className: "grid grid-cols-2 gap-4", children: [
+          /* @__PURE__ */ jsxs23("div", { children: [
+            /* @__PURE__ */ jsx33("label", { className: "block text-sm font-medium mb-1", children: "Frequency" }),
+            /* @__PURE__ */ jsxs23(
               "select",
               {
                 value: formFrequency,
                 onChange: (e) => setFormFrequency(e.target.value),
                 className: "w-full px-3 py-2 border border-input rounded-md bg-transparent",
                 children: [
-                  /* @__PURE__ */ jsx31("option", { value: "daily", children: "Daily" }),
-                  /* @__PURE__ */ jsx31("option", { value: "weekly", children: "Weekly" }),
-                  /* @__PURE__ */ jsx31("option", { value: "hourly", children: "Hourly" }),
-                  /* @__PURE__ */ jsx31("option", { value: "manual", children: "Manual" })
+                  /* @__PURE__ */ jsx33("option", { value: "daily", children: "Daily" }),
+                  /* @__PURE__ */ jsx33("option", { value: "weekly", children: "Weekly" }),
+                  /* @__PURE__ */ jsx33("option", { value: "hourly", children: "Hourly" }),
+                  /* @__PURE__ */ jsx33("option", { value: "manual", children: "Manual" })
                 ]
               }
             )
           ] }),
-          /* @__PURE__ */ jsxs22("div", { children: [
-            /* @__PURE__ */ jsx31("label", { className: "block text-sm font-medium mb-1", children: "Max per period" }),
-            /* @__PURE__ */ jsx31(
+          /* @__PURE__ */ jsxs23("div", { children: [
+            /* @__PURE__ */ jsx33("label", { className: "block text-sm font-medium mb-1", children: "Max per period" }),
+            /* @__PURE__ */ jsx33(
               "input",
               {
                 type: "number",
@@ -12995,9 +13162,9 @@ function TopicsSettings() {
             )
           ] })
         ] }),
-        /* @__PURE__ */ jsxs22("div", { children: [
-          /* @__PURE__ */ jsx31("label", { className: "block text-sm font-medium mb-1", children: "Essay Focus (optional)" }),
-          /* @__PURE__ */ jsx31(
+        /* @__PURE__ */ jsxs23("div", { children: [
+          /* @__PURE__ */ jsx33("label", { className: "block text-sm font-medium mb-1", children: "Essay Focus (optional)" }),
+          /* @__PURE__ */ jsx33(
             "textarea",
             {
               value: formEssayFocus,
@@ -13008,8 +13175,8 @@ function TopicsSettings() {
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ jsx31(
+        /* @__PURE__ */ jsxs23("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsx33(
             "input",
             {
               type: "checkbox",
@@ -13018,11 +13185,11 @@ function TopicsSettings() {
               onChange: (e) => setFormIsActive(e.target.checked)
             }
           ),
-          /* @__PURE__ */ jsx31("label", { htmlFor: "isActive", className: "text-sm", children: "Active" })
+          /* @__PURE__ */ jsx33("label", { htmlFor: "isActive", className: "text-sm", children: "Active" })
         ] }),
-        /* @__PURE__ */ jsxs22("div", { className: "flex gap-2", children: [
-          /* @__PURE__ */ jsx31("button", { type: "submit", className: "px-4 py-2 bg-primary text-primary-foreground rounded-md", children: editingTopic ? "Update" : "Create" }),
-          /* @__PURE__ */ jsx31("button", { type: "button", onClick: () => {
+        /* @__PURE__ */ jsxs23("div", { className: "flex gap-2", children: [
+          /* @__PURE__ */ jsx33("button", { type: "submit", className: "px-4 py-2 bg-primary text-primary-foreground rounded-md", children: editingTopic ? "Update" : "Create" }),
+          /* @__PURE__ */ jsx33("button", { type: "button", onClick: () => {
             setShowForm(false);
             resetForm();
             setEditingTopic(null);
@@ -13030,21 +13197,21 @@ function TopicsSettings() {
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs22("div", { className: "border border-border rounded-lg divide-y divide-border", children: [
+    /* @__PURE__ */ jsxs23("div", { className: "border border-border rounded-lg divide-y divide-border", children: [
       topics.map((topic) => {
         const keywords = JSON.parse(topic.keywords);
         const feeds = JSON.parse(topic.rssFeeds);
-        return /* @__PURE__ */ jsx31("div", { className: "p-4", children: /* @__PURE__ */ jsxs22("div", { className: "flex items-start justify-between", children: [
-          /* @__PURE__ */ jsxs22("div", { children: [
-            /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ jsx31("p", { className: "font-medium", children: topic.name }),
-              !topic.isActive && /* @__PURE__ */ jsx31("span", { className: "text-xs bg-muted px-1.5 py-0.5 rounded", children: "Paused" })
+        return /* @__PURE__ */ jsx33("div", { className: "p-4", children: /* @__PURE__ */ jsxs23("div", { className: "flex items-start justify-between", children: [
+          /* @__PURE__ */ jsxs23("div", { children: [
+            /* @__PURE__ */ jsxs23("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsx33("p", { className: "font-medium", children: topic.name }),
+              !topic.isActive && /* @__PURE__ */ jsx33("span", { className: "text-xs bg-muted px-1.5 py-0.5 rounded", children: "Paused" })
             ] }),
-            /* @__PURE__ */ jsxs22("p", { className: "text-sm text-muted-foreground mt-1", children: [
+            /* @__PURE__ */ jsxs23("p", { className: "text-sm text-muted-foreground mt-1", children: [
               keywords.slice(0, 3).join(", "),
               keywords.length > 3 && ` +${keywords.length - 3}`
             ] }),
-            /* @__PURE__ */ jsxs22("p", { className: "text-xs text-muted-foreground mt-1", children: [
+            /* @__PURE__ */ jsxs23("p", { className: "text-xs text-muted-foreground mt-1", children: [
               feeds.length,
               " feed",
               feeds.length !== 1 ? "s" : "",
@@ -13056,23 +13223,23 @@ function TopicsSettings() {
               topic.lastRunAt && ` \xB7 Last run: ${new Date(topic.lastRunAt).toLocaleDateString()}`
             ] })
           ] }),
-          /* @__PURE__ */ jsxs22("div", { className: "flex items-center gap-1", children: [
-            /* @__PURE__ */ jsx31(
+          /* @__PURE__ */ jsxs23("div", { className: "flex items-center gap-1", children: [
+            /* @__PURE__ */ jsx33(
               "button",
               {
                 onClick: () => handleGenerate(topic.id),
                 disabled: generating !== null,
                 className: "p-1.5 text-muted-foreground hover:text-foreground disabled:opacity-50",
                 title: "Generate now",
-                children: /* @__PURE__ */ jsx31(Play, { className: `h-4 w-4 ${generating === topic.id ? "animate-pulse" : ""}` })
+                children: /* @__PURE__ */ jsx33(Play, { className: `h-4 w-4 ${generating === topic.id ? "animate-pulse" : ""}` })
               }
             ),
-            /* @__PURE__ */ jsx31("button", { onClick: () => openEditForm(topic), className: "p-1.5 text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ jsx31(Pencil2, { className: "h-4 w-4" }) }),
-            /* @__PURE__ */ jsx31("button", { onClick: () => handleDelete2(topic.id), className: "p-1.5 text-red-500 hover:text-red-600", children: /* @__PURE__ */ jsx31(Trash22, { className: "h-4 w-4" }) })
+            /* @__PURE__ */ jsx33("button", { onClick: () => openEditForm(topic), className: "p-1.5 text-muted-foreground hover:text-foreground", children: /* @__PURE__ */ jsx33(Pencil2, { className: "h-4 w-4" }) }),
+            /* @__PURE__ */ jsx33("button", { onClick: () => handleDelete2(topic.id), className: "p-1.5 text-red-500 hover:text-red-600", children: /* @__PURE__ */ jsx33(Trash22, { className: "h-4 w-4" }) })
           ] })
         ] }) }, topic.id);
       }),
-      topics.length === 0 && /* @__PURE__ */ jsx31("p", { className: "p-4 text-muted-foreground text-center", children: "No topics configured" })
+      topics.length === 0 && /* @__PURE__ */ jsx33("p", { className: "p-4 text-muted-foreground text-center", children: "No topics configured" })
     ] })
   ] });
 }
@@ -13081,7 +13248,7 @@ function TopicsSettings() {
 init_context();
 import { useState as useState24, useEffect as useEffect20 } from "react";
 import { ChevronLeft as ChevronLeft2, ChevronRight as ChevronRight3, MoreVertical as MoreVertical4, MoreHorizontal as MoreHorizontal3 } from "lucide-react";
-import { Fragment as Fragment13, jsx as jsx32, jsxs as jsxs23 } from "react/jsx-runtime";
+import { Fragment as Fragment14, jsx as jsx34, jsxs as jsxs24 } from "react/jsx-runtime";
 var POSTS_PER_PAGE = 25;
 function PostsSettings() {
   const { apiBasePath, navigate, sharedData } = useDashboardContext();
@@ -13136,8 +13303,8 @@ function PostsSettings() {
       return pages;
     };
     const spacingClass = position === "bottom" ? "mt-4" : "";
-    return /* @__PURE__ */ jsx32("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ jsxs23("ul", { className: "flex flex-row items-center gap-1", children: [
-      /* @__PURE__ */ jsx32("li", { children: /* @__PURE__ */ jsxs23(
+    return /* @__PURE__ */ jsx34("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ jsxs24("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ jsx34("li", { children: /* @__PURE__ */ jsxs24(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
@@ -13145,13 +13312,13 @@ function PostsSettings() {
           "aria-label": "Go to previous page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ jsx32(ChevronLeft2, { className: "h-4 w-4" }),
-            /* @__PURE__ */ jsx32("span", { className: "hidden sm:block", children: "Previous" })
+            /* @__PURE__ */ jsx34(ChevronLeft2, { className: "h-4 w-4" }),
+            /* @__PURE__ */ jsx34("span", { className: "hidden sm:block", children: "Previous" })
           ]
         }
       ) }),
       getPageNumbers().map(
-        (page) => typeof page === "string" ? /* @__PURE__ */ jsx32("li", { children: /* @__PURE__ */ jsx32("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ jsx32(MoreHorizontal3, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ jsx32("li", { children: /* @__PURE__ */ jsx32(
+        (page) => typeof page === "string" ? /* @__PURE__ */ jsx34("li", { children: /* @__PURE__ */ jsx34("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ jsx34(MoreHorizontal3, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ jsx34("li", { children: /* @__PURE__ */ jsx34(
           "button",
           {
             onClick: () => setCurrentPage(page),
@@ -13161,7 +13328,7 @@ function PostsSettings() {
           }
         ) }, page)
       ),
-      /* @__PURE__ */ jsx32("li", { children: /* @__PURE__ */ jsxs23(
+      /* @__PURE__ */ jsx34("li", { children: /* @__PURE__ */ jsxs24(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
@@ -13169,27 +13336,27 @@ function PostsSettings() {
           "aria-label": "Go to next page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ jsx32("span", { className: "hidden sm:block", children: "Next" }),
-            /* @__PURE__ */ jsx32(ChevronRight3, { className: "h-4 w-4" })
+            /* @__PURE__ */ jsx34("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ jsx34(ChevronRight3, { className: "h-4 w-4" })
           ]
         }
       ) })
     ] }) });
   };
-  if (loading && posts.length === 0) return /* @__PURE__ */ jsx32(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ jsxs23("div", { children: [
-    /* @__PURE__ */ jsxs23("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
-      /* @__PURE__ */ jsxs23("div", { className: "shrink-0", children: [
-        /* @__PURE__ */ jsx32("h1", { className: "text-lg font-bold", children: "Posts" }),
-        /* @__PURE__ */ jsxs23("p", { className: "text-sm text-muted-foreground mt-1", children: [
+  if (loading && posts.length === 0) return /* @__PURE__ */ jsx34(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ jsxs24("div", { children: [
+    /* @__PURE__ */ jsxs24("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ jsxs24("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ jsx34("h1", { className: "text-lg font-bold", children: "Posts" }),
+        /* @__PURE__ */ jsxs24("p", { className: "text-sm text-muted-foreground mt-1", children: [
           totalCount,
           " total post",
           totalCount !== 1 ? "s" : ""
         ] })
       ] }),
-      /* @__PURE__ */ jsxs23("div", { className: "flex items-center gap-4", children: [
-        /* @__PURE__ */ jsx32(PaginationControls, { position: "top" }),
-        /* @__PURE__ */ jsx32(
+      /* @__PURE__ */ jsxs24("div", { className: "flex items-center gap-4", children: [
+        /* @__PURE__ */ jsx34(PaginationControls, { position: "top" }),
+        /* @__PURE__ */ jsx34(
           "button",
           {
             onClick: () => navigate("/editor"),
@@ -13199,33 +13366,33 @@ function PostsSettings() {
         )
       ] })
     ] }),
-    posts.length === 0 ? /* @__PURE__ */ jsx32("div", { className: "py-8 text-center text-muted-foreground", children: "No posts yet." }) : /* @__PURE__ */ jsxs23(Fragment13, { children: [
-      /* @__PURE__ */ jsx32("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs23("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ jsx32("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs23("tr", { className: "border-b", children: [
-          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Title" }),
-          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Slug" }),
-          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
-          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Revisions" }),
-          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Updated" }),
-          /* @__PURE__ */ jsx32("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    posts.length === 0 ? /* @__PURE__ */ jsx34("div", { className: "py-8 text-center text-muted-foreground", children: "No posts yet." }) : /* @__PURE__ */ jsxs24(Fragment14, { children: [
+      /* @__PURE__ */ jsx34("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs24("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ jsx34("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs24("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx34("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Title" }),
+          /* @__PURE__ */ jsx34("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Slug" }),
+          /* @__PURE__ */ jsx34("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ jsx34("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Revisions" }),
+          /* @__PURE__ */ jsx34("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Updated" }),
+          /* @__PURE__ */ jsx34("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ jsx32("tbody", { className: "[&_tr:last-child]:border-0", children: posts.map((post) => /* @__PURE__ */ jsxs23("tr", { className: "border-b", children: [
-          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx32("span", { className: "block truncate max-w-[200px]", children: post.title || "Untitled" }) }),
-          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx32("span", { className: "block truncate max-w-[250px] text-muted-foreground font-mono", children: post.slug }) }),
-          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx32("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(post.status)}`, children: post.status }) }),
-          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle text-muted-foreground", children: post._count?.revisions ?? 0 }),
-          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(post.updatedAt).toLocaleDateString() }),
-          /* @__PURE__ */ jsx32("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsxs23("div", { className: "relative inline-block", children: [
-            /* @__PURE__ */ jsx32(
+        /* @__PURE__ */ jsx34("tbody", { className: "[&_tr:last-child]:border-0", children: posts.map((post) => /* @__PURE__ */ jsxs24("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx34("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx34("span", { className: "block truncate max-w-[200px]", children: post.title || "Untitled" }) }),
+          /* @__PURE__ */ jsx34("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx34("span", { className: "block truncate max-w-[250px] text-muted-foreground font-mono", children: post.slug }) }),
+          /* @__PURE__ */ jsx34("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx34("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(post.status)}`, children: post.status }) }),
+          /* @__PURE__ */ jsx34("td", { className: "p-4 align-middle text-muted-foreground", children: post._count?.revisions ?? 0 }),
+          /* @__PURE__ */ jsx34("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(post.updatedAt).toLocaleDateString() }),
+          /* @__PURE__ */ jsx34("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsxs24("div", { className: "relative inline-block", children: [
+            /* @__PURE__ */ jsx34(
               "button",
               {
                 onClick: () => setMenuOpen(menuOpen === post.id ? null : post.id),
                 className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-                children: /* @__PURE__ */ jsx32(MoreVertical4, { className: "h-4 w-4" })
+                children: /* @__PURE__ */ jsx34(MoreVertical4, { className: "h-4 w-4" })
               }
             ),
-            menuOpen === post.id && /* @__PURE__ */ jsxs23("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-              /* @__PURE__ */ jsx32(
+            menuOpen === post.id && /* @__PURE__ */ jsxs24("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+              /* @__PURE__ */ jsx34(
                 "button",
                 {
                   onClick: () => {
@@ -13236,7 +13403,7 @@ function PostsSettings() {
                   children: "Edit"
                 }
               ),
-              post.status === "published" && /* @__PURE__ */ jsx32(
+              post.status === "published" && /* @__PURE__ */ jsx34(
                 "a",
                 {
                   href: getPostUrl(post.slug),
@@ -13247,8 +13414,8 @@ function PostsSettings() {
                   children: "View"
                 }
               ),
-              /* @__PURE__ */ jsx32("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-              /* @__PURE__ */ jsx32(
+              /* @__PURE__ */ jsx34("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+              /* @__PURE__ */ jsx34(
                 "button",
                 {
                   onClick: () => handleDelete2(post),
@@ -13260,13 +13427,13 @@ function PostsSettings() {
           ] }) })
         ] }, post.id)) })
       ] }) }),
-      /* @__PURE__ */ jsx32("div", { className: "md:hidden divide-y rounded-md border bg-background", children: posts.map((post) => /* @__PURE__ */ jsxs23("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-        /* @__PURE__ */ jsxs23("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-          /* @__PURE__ */ jsxs23("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ jsx32("span", { className: "font-medium truncate", children: post.title || "Untitled" }),
-            /* @__PURE__ */ jsx32("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(post.status)}`, children: post.status })
+      /* @__PURE__ */ jsx34("div", { className: "md:hidden divide-y rounded-md border bg-background", children: posts.map((post) => /* @__PURE__ */ jsxs24("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+        /* @__PURE__ */ jsxs24("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+          /* @__PURE__ */ jsxs24("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsx34("span", { className: "font-medium truncate", children: post.title || "Untitled" }),
+            /* @__PURE__ */ jsx34("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(post.status)}`, children: post.status })
           ] }),
-          /* @__PURE__ */ jsxs23("p", { className: "text-sm text-muted-foreground truncate", children: [
+          /* @__PURE__ */ jsxs24("p", { className: "text-sm text-muted-foreground truncate", children: [
             post.slug,
             " \xB7 ",
             post._count?.revisions ?? 0,
@@ -13274,17 +13441,17 @@ function PostsSettings() {
             new Date(post.updatedAt).toLocaleDateString()
           ] })
         ] }),
-        /* @__PURE__ */ jsxs23("div", { className: "relative", children: [
-          /* @__PURE__ */ jsx32(
+        /* @__PURE__ */ jsxs24("div", { className: "relative", children: [
+          /* @__PURE__ */ jsx34(
             "button",
             {
               onClick: () => setMenuOpen(menuOpen === post.id ? null : post.id),
               className: "inline-flex items-center justify-center rounded-md h-8 w-8 hover:bg-accent text-muted-foreground",
-              children: /* @__PURE__ */ jsx32(MoreVertical4, { className: "h-4 w-4" })
+              children: /* @__PURE__ */ jsx34(MoreVertical4, { className: "h-4 w-4" })
             }
           ),
-          menuOpen === post.id && /* @__PURE__ */ jsxs23("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
-            /* @__PURE__ */ jsx32(
+          menuOpen === post.id && /* @__PURE__ */ jsxs24("div", { className: "absolute right-0 top-full mt-1 bg-popover border border-border rounded-md shadow-md z-50 min-w-[8rem] py-1", children: [
+            /* @__PURE__ */ jsx34(
               "button",
               {
                 onClick: () => {
@@ -13295,7 +13462,7 @@ function PostsSettings() {
                 children: "Edit"
               }
             ),
-            post.status === "published" && /* @__PURE__ */ jsx32(
+            post.status === "published" && /* @__PURE__ */ jsx34(
               "a",
               {
                 href: getPostUrl(post.slug),
@@ -13306,8 +13473,8 @@ function PostsSettings() {
                 children: "View"
               }
             ),
-            /* @__PURE__ */ jsx32("div", { className: "-mx-1 my-1 h-px bg-muted" }),
-            /* @__PURE__ */ jsx32(
+            /* @__PURE__ */ jsx34("div", { className: "-mx-1 my-1 h-px bg-muted" }),
+            /* @__PURE__ */ jsx34(
               "button",
               {
                 onClick: () => handleDelete2(post),
@@ -13319,7 +13486,7 @@ function PostsSettings() {
         ] })
       ] }, post.id)) })
     ] }),
-    /* @__PURE__ */ jsx32(PaginationControls, { position: "bottom" })
+    /* @__PURE__ */ jsx34(PaginationControls, { position: "bottom" })
   ] });
 }
 
@@ -13327,7 +13494,7 @@ function PostsSettings() {
 init_context();
 import { useState as useState25, useEffect as useEffect21 } from "react";
 import { ChevronLeft as ChevronLeft3, ChevronRight as ChevronRight4, MoreHorizontal as MoreHorizontal4, RotateCcw as RotateCcw3 } from "lucide-react";
-import { Fragment as Fragment14, jsx as jsx33, jsxs as jsxs24 } from "react/jsx-runtime";
+import { Fragment as Fragment15, jsx as jsx35, jsxs as jsxs25 } from "react/jsx-runtime";
 var REVISIONS_PER_PAGE = 25;
 function RevisionsSettings() {
   const { apiBasePath, navigate } = useDashboardContext();
@@ -13369,8 +13536,8 @@ function RevisionsSettings() {
       return pages;
     };
     const spacingClass = position === "bottom" ? "mt-4" : "";
-    return /* @__PURE__ */ jsx33("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ jsxs24("ul", { className: "flex flex-row items-center gap-1", children: [
-      /* @__PURE__ */ jsx33("li", { children: /* @__PURE__ */ jsxs24(
+    return /* @__PURE__ */ jsx35("nav", { role: "navigation", "aria-label": "pagination", className: `mx-auto flex w-full justify-end ${spacingClass}`, children: /* @__PURE__ */ jsxs25("ul", { className: "flex flex-row items-center gap-1", children: [
+      /* @__PURE__ */ jsx35("li", { children: /* @__PURE__ */ jsxs25(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.max(1, p - 1)),
@@ -13378,13 +13545,13 @@ function RevisionsSettings() {
           "aria-label": "Go to previous page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ jsx33(ChevronLeft3, { className: "h-4 w-4" }),
-            /* @__PURE__ */ jsx33("span", { className: "hidden sm:block", children: "Previous" })
+            /* @__PURE__ */ jsx35(ChevronLeft3, { className: "h-4 w-4" }),
+            /* @__PURE__ */ jsx35("span", { className: "hidden sm:block", children: "Previous" })
           ]
         }
       ) }),
       getPageNumbers().map(
-        (page) => typeof page === "string" ? /* @__PURE__ */ jsx33("li", { children: /* @__PURE__ */ jsx33("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ jsx33(MoreHorizontal4, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ jsx33("li", { children: /* @__PURE__ */ jsx33(
+        (page) => typeof page === "string" ? /* @__PURE__ */ jsx35("li", { children: /* @__PURE__ */ jsx35("span", { "aria-hidden": true, className: "flex h-9 w-9 items-center justify-center", children: /* @__PURE__ */ jsx35(MoreHorizontal4, { className: "h-4 w-4" }) }) }, page) : /* @__PURE__ */ jsx35("li", { children: /* @__PURE__ */ jsx35(
           "button",
           {
             onClick: () => setCurrentPage(page),
@@ -13394,7 +13561,7 @@ function RevisionsSettings() {
           }
         ) }, page)
       ),
-      /* @__PURE__ */ jsx33("li", { children: /* @__PURE__ */ jsxs24(
+      /* @__PURE__ */ jsx35("li", { children: /* @__PURE__ */ jsxs25(
         "button",
         {
           onClick: () => setCurrentPage((p) => Math.min(totalPages, p + 1)),
@@ -13402,39 +13569,39 @@ function RevisionsSettings() {
           "aria-label": "Go to next page",
           className: "inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-md text-sm font-medium h-9 px-2.5 hover:bg-accent hover:text-accent-foreground disabled:pointer-events-none disabled:opacity-50",
           children: [
-            /* @__PURE__ */ jsx33("span", { className: "hidden sm:block", children: "Next" }),
-            /* @__PURE__ */ jsx33(ChevronRight4, { className: "h-4 w-4" })
+            /* @__PURE__ */ jsx35("span", { className: "hidden sm:block", children: "Next" }),
+            /* @__PURE__ */ jsx35(ChevronRight4, { className: "h-4 w-4" })
           ]
         }
       ) })
     ] }) });
   };
-  if (loading && revisions.length === 0) return /* @__PURE__ */ jsx33(Skeleton, { className: "h-32" });
-  return /* @__PURE__ */ jsxs24("div", { children: [
-    /* @__PURE__ */ jsxs24("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
-      /* @__PURE__ */ jsxs24("div", { className: "shrink-0", children: [
-        /* @__PURE__ */ jsx33("h1", { className: "text-lg font-bold", children: "Revisions" }),
-        /* @__PURE__ */ jsxs24("p", { className: "text-sm text-muted-foreground mt-1", children: [
+  if (loading && revisions.length === 0) return /* @__PURE__ */ jsx35(Skeleton, { className: "h-32" });
+  return /* @__PURE__ */ jsxs25("div", { children: [
+    /* @__PURE__ */ jsxs25("div", { className: "flex items-end justify-between gap-4 mb-6 md:mb-8", children: [
+      /* @__PURE__ */ jsxs25("div", { className: "shrink-0", children: [
+        /* @__PURE__ */ jsx35("h1", { className: "text-lg font-bold", children: "Revisions" }),
+        /* @__PURE__ */ jsxs25("p", { className: "text-sm text-muted-foreground mt-1", children: [
           totalCount,
           " total revision",
           totalCount !== 1 ? "s" : ""
         ] })
       ] }),
-      /* @__PURE__ */ jsx33(PaginationControls, { position: "top" })
+      /* @__PURE__ */ jsx35(PaginationControls, { position: "top" })
     ] }),
-    revisions.length === 0 ? /* @__PURE__ */ jsx33("div", { className: "py-8 text-center text-muted-foreground", children: "No revisions yet." }) : /* @__PURE__ */ jsxs24(Fragment14, { children: [
-      /* @__PURE__ */ jsx33("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs24("table", { className: "w-full caption-bottom text-sm", children: [
-        /* @__PURE__ */ jsx33("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs24("tr", { className: "border-b", children: [
-          /* @__PURE__ */ jsx33("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Post" }),
-          /* @__PURE__ */ jsx33("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Content Preview" }),
-          /* @__PURE__ */ jsx33("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
-          /* @__PURE__ */ jsx33("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
-          /* @__PURE__ */ jsx33("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
+    revisions.length === 0 ? /* @__PURE__ */ jsx35("div", { className: "py-8 text-center text-muted-foreground", children: "No revisions yet." }) : /* @__PURE__ */ jsxs25(Fragment15, { children: [
+      /* @__PURE__ */ jsx35("div", { className: "hidden md:block rounded-md border", children: /* @__PURE__ */ jsxs25("table", { className: "w-full caption-bottom text-sm", children: [
+        /* @__PURE__ */ jsx35("thead", { className: "[&_tr]:border-b", children: /* @__PURE__ */ jsxs25("tr", { className: "border-b", children: [
+          /* @__PURE__ */ jsx35("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Post" }),
+          /* @__PURE__ */ jsx35("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Content Preview" }),
+          /* @__PURE__ */ jsx35("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Created" }),
+          /* @__PURE__ */ jsx35("th", { className: "h-12 px-4 text-left align-middle font-medium text-muted-foreground", children: "Status" }),
+          /* @__PURE__ */ jsx35("th", { className: "h-12 px-4 text-right align-middle font-medium text-muted-foreground", children: "Actions" })
         ] }) }),
-        /* @__PURE__ */ jsx33("tbody", { className: "[&_tr:last-child]:border-0", children: revisions.map((revision) => {
+        /* @__PURE__ */ jsx35("tbody", { className: "[&_tr:last-child]:border-0", children: revisions.map((revision) => {
           const isCurrent = revision.post.markdown === revision.markdown;
-          return /* @__PURE__ */ jsxs24("tr", { className: "border-b", children: [
-            /* @__PURE__ */ jsx33("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx33(
+          return /* @__PURE__ */ jsxs25("tr", { className: "border-b", children: [
+            /* @__PURE__ */ jsx35("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx35(
               "button",
               {
                 onClick: () => navigate(`/editor/${revision.post.slug}`),
@@ -13442,13 +13609,13 @@ function RevisionsSettings() {
                 children: revision.post.title || "Untitled"
               }
             ) }),
-            /* @__PURE__ */ jsx33("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsxs24("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
+            /* @__PURE__ */ jsx35("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsxs25("span", { className: "block truncate max-w-[300px] text-muted-foreground", children: [
               revision.markdown.slice(0, 80),
               revision.markdown.length > 80 ? "..." : ""
             ] }) }),
-            /* @__PURE__ */ jsx33("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(revision.createdAt).toLocaleString() }),
-            /* @__PURE__ */ jsx33("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx33("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" }) }),
-            /* @__PURE__ */ jsx33("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsx33(
+            /* @__PURE__ */ jsx35("td", { className: "p-4 align-middle text-muted-foreground", children: new Date(revision.createdAt).toLocaleString() }),
+            /* @__PURE__ */ jsx35("td", { className: "p-4 align-middle", children: /* @__PURE__ */ jsx35("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" }) }),
+            /* @__PURE__ */ jsx35("td", { className: "p-4 align-middle text-right", children: /* @__PURE__ */ jsx35(
               "button",
               {
                 onClick: () => navigate(`/settings/revisions/${revision.id}`),
@@ -13459,22 +13626,22 @@ function RevisionsSettings() {
           ] }, revision.id);
         }) })
       ] }) }),
-      /* @__PURE__ */ jsx33("div", { className: "md:hidden divide-y rounded-md border bg-background", children: revisions.map((revision) => {
+      /* @__PURE__ */ jsx35("div", { className: "md:hidden divide-y rounded-md border bg-background", children: revisions.map((revision) => {
         const isCurrent = revision.post.markdown === revision.markdown;
-        return /* @__PURE__ */ jsxs24("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
-          /* @__PURE__ */ jsxs24("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
-            /* @__PURE__ */ jsxs24("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ jsx33("span", { className: "font-medium truncate", children: revision.post.title || "Untitled" }),
-              /* @__PURE__ */ jsx33("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" })
+        return /* @__PURE__ */ jsxs25("div", { className: "flex items-center justify-between gap-4 px-4 py-5", children: [
+          /* @__PURE__ */ jsxs25("div", { className: "min-w-0 flex-1 space-y-1.5", children: [
+            /* @__PURE__ */ jsxs25("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsx35("span", { className: "font-medium truncate", children: revision.post.title || "Untitled" }),
+              /* @__PURE__ */ jsx35("span", { className: `inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shrink-0 ${getStatusBadgeClasses(isCurrent)}`, children: isCurrent ? "current" : "past" })
             ] }),
-            /* @__PURE__ */ jsxs24("p", { className: "text-sm text-muted-foreground truncate", children: [
+            /* @__PURE__ */ jsxs25("p", { className: "text-sm text-muted-foreground truncate", children: [
               revision.markdown.slice(0, 40),
               revision.markdown.length > 40 ? "..." : "",
               " \xB7 ",
               new Date(revision.createdAt).toLocaleDateString()
             ] })
           ] }),
-          /* @__PURE__ */ jsx33(
+          /* @__PURE__ */ jsx35(
             "button",
             {
               onClick: () => navigate(`/settings/revisions/${revision.id}`),
@@ -13485,7 +13652,7 @@ function RevisionsSettings() {
         ] }, revision.id);
       }) })
     ] }),
-    /* @__PURE__ */ jsx33(PaginationControls, { position: "bottom" })
+    /* @__PURE__ */ jsx35(PaginationControls, { position: "bottom" })
   ] });
 }
 function RevisionDetail({ revisionId }) {
@@ -13510,61 +13677,61 @@ function RevisionDetail({ revisionId }) {
     setRestoring(false);
   }
   if (loading) {
-    return /* @__PURE__ */ jsxs24("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ jsx33(Skeleton, { className: "h-6 w-32" }),
-      /* @__PURE__ */ jsx33(Skeleton, { className: "h-64" })
+    return /* @__PURE__ */ jsxs25("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsx35(Skeleton, { className: "h-6 w-32" }),
+      /* @__PURE__ */ jsx35(Skeleton, { className: "h-64" })
     ] });
   }
   if (!revision) {
-    return /* @__PURE__ */ jsxs24("div", { className: "space-y-6", children: [
-      /* @__PURE__ */ jsxs24(
+    return /* @__PURE__ */ jsxs25("div", { className: "space-y-6", children: [
+      /* @__PURE__ */ jsxs25(
         "button",
         {
           onClick: () => navigate("/settings/revisions"),
           className: "text-sm text-muted-foreground hover:text-foreground flex items-center gap-1",
           children: [
-            /* @__PURE__ */ jsx33(ChevronLeft3, { className: "h-4 w-4" }),
+            /* @__PURE__ */ jsx35(ChevronLeft3, { className: "h-4 w-4" }),
             " Back to Revisions"
           ]
         }
       ),
-      /* @__PURE__ */ jsx33("p", { className: "text-muted-foreground", children: "Revision not found." })
+      /* @__PURE__ */ jsx35("p", { className: "text-muted-foreground", children: "Revision not found." })
     ] });
   }
   const isCurrent = revision.post.markdown === revision.markdown;
-  return /* @__PURE__ */ jsxs24("div", { className: "space-y-6", children: [
-    /* @__PURE__ */ jsxs24("div", { className: "flex items-center justify-between", children: [
-      /* @__PURE__ */ jsxs24("div", { className: "space-y-1", children: [
-        /* @__PURE__ */ jsxs24(
+  return /* @__PURE__ */ jsxs25("div", { className: "space-y-6", children: [
+    /* @__PURE__ */ jsxs25("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxs25("div", { className: "space-y-1", children: [
+        /* @__PURE__ */ jsxs25(
           "button",
           {
             onClick: () => navigate("/settings/revisions"),
             className: "text-sm text-muted-foreground hover:text-foreground flex items-center gap-1",
             children: [
-              /* @__PURE__ */ jsx33(ChevronLeft3, { className: "h-4 w-4" }),
+              /* @__PURE__ */ jsx35(ChevronLeft3, { className: "h-4 w-4" }),
               " Back to Revisions"
             ]
           }
         ),
-        /* @__PURE__ */ jsx33("h2", { className: "text-lg font-semibold", children: "Revision Detail" })
+        /* @__PURE__ */ jsx35("h2", { className: "text-lg font-semibold", children: "Revision Detail" })
       ] }),
-      /* @__PURE__ */ jsx33("div", { className: "flex items-center gap-2", children: isCurrent ? /* @__PURE__ */ jsx33("span", { className: "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground", children: "current" }) : /* @__PURE__ */ jsxs24(
+      /* @__PURE__ */ jsx35("div", { className: "flex items-center gap-2", children: isCurrent ? /* @__PURE__ */ jsx35("span", { className: "inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground", children: "current" }) : /* @__PURE__ */ jsxs25(
         "button",
         {
           onClick: handleRestore,
           disabled: restoring,
           className: "inline-flex items-center justify-center rounded-md text-sm font-medium h-9 px-4 bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50",
           children: [
-            /* @__PURE__ */ jsx33(RotateCcw3, { className: "h-4 w-4 mr-2" }),
+            /* @__PURE__ */ jsx35(RotateCcw3, { className: "h-4 w-4 mr-2" }),
             restoring ? "Restoring..." : "Restore This Revision"
           ]
         }
       ) })
     ] }),
-    /* @__PURE__ */ jsxs24("div", { className: "rounded-lg border bg-card p-4 space-y-2", children: [
-      /* @__PURE__ */ jsxs24("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsx33("span", { className: "text-sm text-muted-foreground", children: "Post" }),
-        /* @__PURE__ */ jsx33(
+    /* @__PURE__ */ jsxs25("div", { className: "rounded-lg border bg-card p-4 space-y-2", children: [
+      /* @__PURE__ */ jsxs25("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx35("span", { className: "text-sm text-muted-foreground", children: "Post" }),
+        /* @__PURE__ */ jsx35(
           "button",
           {
             onClick: () => navigate(`/editor/${revision.post.slug}`),
@@ -13573,24 +13740,24 @@ function RevisionDetail({ revisionId }) {
           }
         )
       ] }),
-      /* @__PURE__ */ jsxs24("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsx33("span", { className: "text-sm text-muted-foreground", children: "Title at revision" }),
-        /* @__PURE__ */ jsx33("span", { className: "text-sm", children: revision.title || "\u2014" })
+      /* @__PURE__ */ jsxs25("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx35("span", { className: "text-sm text-muted-foreground", children: "Title at revision" }),
+        /* @__PURE__ */ jsx35("span", { className: "text-sm", children: revision.title || "\u2014" })
       ] }),
-      /* @__PURE__ */ jsxs24("div", { className: "flex items-center justify-between", children: [
-        /* @__PURE__ */ jsx33("span", { className: "text-sm text-muted-foreground", children: "Created" }),
-        /* @__PURE__ */ jsx33("span", { className: "text-sm", children: new Date(revision.createdAt).toLocaleString() })
+      /* @__PURE__ */ jsxs25("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsx35("span", { className: "text-sm text-muted-foreground", children: "Created" }),
+        /* @__PURE__ */ jsx35("span", { className: "text-sm", children: new Date(revision.createdAt).toLocaleString() })
       ] })
     ] }),
-    /* @__PURE__ */ jsxs24("div", { className: "space-y-2", children: [
-      /* @__PURE__ */ jsx33("h3", { className: "text-sm font-medium", children: "Content" }),
-      /* @__PURE__ */ jsx33("div", { className: "rounded-lg border bg-muted/30 p-4 max-h-96 overflow-auto", children: /* @__PURE__ */ jsx33("pre", { className: "text-sm whitespace-pre-wrap font-mono", children: revision.markdown }) })
+    /* @__PURE__ */ jsxs25("div", { className: "space-y-2", children: [
+      /* @__PURE__ */ jsx35("h3", { className: "text-sm font-medium", children: "Content" }),
+      /* @__PURE__ */ jsx35("div", { className: "rounded-lg border bg-muted/30 p-4 max-h-96 overflow-auto", children: /* @__PURE__ */ jsx35("pre", { className: "text-sm whitespace-pre-wrap font-mono", children: revision.markdown }) })
     ] })
   ] });
 }
 
 // src/ui/pages/settings/index.tsx
-import { jsx as jsx34, jsxs as jsxs25 } from "react/jsx-runtime";
+import { jsx as jsx36, jsxs as jsxs26 } from "react/jsx-runtime";
 function SettingsPage({ subPath }) {
   const { navigate, sharedData, sharedDataLoading } = useDashboardContext();
   const counts = sharedData?.counts || {};
@@ -13610,24 +13777,24 @@ function SettingsPage({ subPath }) {
   const settingsLinks = autoDraftEnabled ? allSettingsLinks : allSettingsLinks.filter((link) => link.path !== "/settings/topics");
   if (!subPath || subPath === "/") {
     if (loading) {
-      return /* @__PURE__ */ jsxs25(PageContainer, { children: [
-        /* @__PURE__ */ jsx34(Skeleton, { className: "h-7 w-24 mb-6" }),
-        /* @__PURE__ */ jsx34("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: [1, 2, 3, 4, 5, 6].map((i) => /* @__PURE__ */ jsxs25("div", { className: "p-4 sm:p-6 border border-border rounded-lg", children: [
-          /* @__PURE__ */ jsx34(Skeleton, { className: "h-4 w-16" }),
-          /* @__PURE__ */ jsx34(Skeleton, { className: "h-8 w-12 mt-2" })
+      return /* @__PURE__ */ jsxs26(PageContainer, { children: [
+        /* @__PURE__ */ jsx36(Skeleton, { className: "h-7 w-24 mb-6" }),
+        /* @__PURE__ */ jsx36("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: [1, 2, 3, 4, 5, 6].map((i) => /* @__PURE__ */ jsxs26("div", { className: "p-4 sm:p-6 border border-border rounded-lg", children: [
+          /* @__PURE__ */ jsx36(Skeleton, { className: "h-4 w-16" }),
+          /* @__PURE__ */ jsx36(Skeleton, { className: "h-8 w-12 mt-2" })
         ] }, i)) })
       ] });
     }
-    return /* @__PURE__ */ jsxs25(PageContainer, { children: [
-      /* @__PURE__ */ jsx34("h2", { className: "text-lg font-semibold pb-3 mb-5 border-b border-border", children: "Settings" }),
-      /* @__PURE__ */ jsx34("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: settingsLinks.map((item) => /* @__PURE__ */ jsxs25(
+    return /* @__PURE__ */ jsxs26(PageContainer, { children: [
+      /* @__PURE__ */ jsx36("h2", { className: "text-lg font-semibold pb-3 mb-5 border-b border-border", children: "Settings" }),
+      /* @__PURE__ */ jsx36("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4", children: settingsLinks.map((item) => /* @__PURE__ */ jsxs26(
         "button",
         {
           onClick: () => navigate(item.path),
           className: "p-4 sm:p-6 border border-border rounded-lg text-left hover:bg-accent transition-colors",
           children: [
-            /* @__PURE__ */ jsx34("p", { className: "text-sm text-muted-foreground", children: item.label }),
-            item.countKey ? /* @__PURE__ */ jsx34("p", { className: "text-2xl font-bold mt-1", children: counts[item.countKey] ?? 0 }) : /* @__PURE__ */ jsx34("p", { className: "text-sm text-muted-foreground mt-1", children: "Configure \u2192" })
+            /* @__PURE__ */ jsx36("p", { className: "text-sm text-muted-foreground", children: item.label }),
+            item.countKey ? /* @__PURE__ */ jsx36("p", { className: "text-2xl font-bold mt-1", children: counts[item.countKey] ?? 0 }) : /* @__PURE__ */ jsx36("p", { className: "text-sm text-muted-foreground mt-1", children: "Configure \u2192" })
           ]
         },
         item.path
@@ -13636,17 +13803,17 @@ function SettingsPage({ subPath }) {
   }
   const pageName = subPath.slice(1);
   const revisionDetailMatch = pageName.match(/^revisions\/(.+)$/);
-  return /* @__PURE__ */ jsxs25(PageContainer, { children: [
-    pageName === "general" && /* @__PURE__ */ jsx34(GeneralSettings, {}),
-    pageName === "users" && /* @__PURE__ */ jsx34(UsersSettings, {}),
-    pageName === "ai" && /* @__PURE__ */ jsx34(AISettings, {}),
-    pageName === "tags" && /* @__PURE__ */ jsx34(TagsSettings, {}),
-    pageName === "topics" && /* @__PURE__ */ jsx34(TopicsSettings, {}),
-    pageName === "integrations" && /* @__PURE__ */ jsx34(IntegrationsSettings, {}),
-    pageName === "posts" && /* @__PURE__ */ jsx34(PostsSettings, {}),
-    pageName === "revisions" && /* @__PURE__ */ jsx34(RevisionsSettings, {}),
-    revisionDetailMatch && /* @__PURE__ */ jsx34(RevisionDetail, { revisionId: revisionDetailMatch[1] }),
-    pageName === "comments" && /* @__PURE__ */ jsx34(CommentsSettings, {})
+  return /* @__PURE__ */ jsxs26(PageContainer, { children: [
+    pageName === "general" && /* @__PURE__ */ jsx36(GeneralSettings, {}),
+    pageName === "users" && /* @__PURE__ */ jsx36(UsersSettings, {}),
+    pageName === "ai" && /* @__PURE__ */ jsx36(AISettings, {}),
+    pageName === "tags" && /* @__PURE__ */ jsx36(TagsSettings, {}),
+    pageName === "topics" && /* @__PURE__ */ jsx36(TopicsSettings, {}),
+    pageName === "integrations" && /* @__PURE__ */ jsx36(IntegrationsSettings, {}),
+    pageName === "posts" && /* @__PURE__ */ jsx36(PostsSettings, {}),
+    pageName === "revisions" && /* @__PURE__ */ jsx36(RevisionsSettings, {}),
+    revisionDetailMatch && /* @__PURE__ */ jsx36(RevisionDetail, { revisionId: revisionDetailMatch[1] }),
+    pageName === "comments" && /* @__PURE__ */ jsx36(CommentsSettings, {})
   ] });
 }
 
@@ -13659,15 +13826,15 @@ import { useState as useState26, useEffect as useEffect22 } from "react";
 
 // src/ui/components/Icons.tsx
 init_cn();
-import { jsx as jsx35 } from "react/jsx-runtime";
-var ChatIcon = ({ className }) => /* @__PURE__ */ jsx35("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx35("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" }) });
-var SunIcon = ({ className }) => /* @__PURE__ */ jsx35("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx35("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" }) });
-var MoonIcon = ({ className }) => /* @__PURE__ */ jsx35("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx35("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" }) });
-var ChevronLeftIcon = ({ className }) => /* @__PURE__ */ jsx35("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx35("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) });
+import { jsx as jsx37 } from "react/jsx-runtime";
+var ChatIcon = ({ className }) => /* @__PURE__ */ jsx37("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx37("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" }) });
+var SunIcon = ({ className }) => /* @__PURE__ */ jsx37("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx37("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" }) });
+var MoonIcon = ({ className }) => /* @__PURE__ */ jsx37("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx37("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" }) });
+var ChevronLeftIcon = ({ className }) => /* @__PURE__ */ jsx37("svg", { className: cn("w-4 h-4", className), fill: "none", stroke: "currentColor", viewBox: "0 0 24 24", children: /* @__PURE__ */ jsx37("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) });
 
 // src/ui/components/ThemeToggle.tsx
 init_cn();
-import { jsx as jsx36 } from "react/jsx-runtime";
+import { jsx as jsx38 } from "react/jsx-runtime";
 function ThemeToggle({ className }) {
   const { resolvedTheme, setTheme } = useAutobloggerTheme();
   const [mounted, setMounted] = useState26(false);
@@ -13675,7 +13842,7 @@ function ThemeToggle({ className }) {
   const handleToggle = () => {
     setTheme(resolvedTheme === "dark" ? "light" : "dark");
   };
-  return /* @__PURE__ */ jsx36(
+  return /* @__PURE__ */ jsx38(
     "button",
     {
       type: "button",
@@ -13688,16 +13855,17 @@ function ThemeToggle({ className }) {
         className
       ),
       "aria-label": "Toggle dark mode",
-      children: /* @__PURE__ */ jsx36("div", { className: "w-5 h-5 transition-transform duration-200 active:scale-90", children: !mounted ? /* @__PURE__ */ jsx36("div", { className: "w-5 h-5" }) : resolvedTheme === "dark" ? /* @__PURE__ */ jsx36(SunIcon, { className: "w-5 h-5" }) : /* @__PURE__ */ jsx36(MoonIcon, { className: "w-5 h-5" }) })
+      children: /* @__PURE__ */ jsx38("div", { className: "w-5 h-5 transition-transform duration-200 active:scale-90", children: !mounted ? /* @__PURE__ */ jsx38("div", { className: "w-5 h-5" }) : resolvedTheme === "dark" ? /* @__PURE__ */ jsx38(SunIcon, { className: "w-5 h-5" }) : /* @__PURE__ */ jsx38(MoonIcon, { className: "w-5 h-5" }) })
     }
   );
 }
 
 // src/ui/components/Navbar.tsx
-import { Fragment as Fragment15, jsx as jsx37, jsxs as jsxs26 } from "react/jsx-runtime";
+import { Fragment as Fragment16, jsx as jsx39, jsxs as jsxs27 } from "react/jsx-runtime";
 function Navbar({
   onSignOut,
-  rightSlot
+  rightSlot,
+  isInsideFixedContainer = false
 }) {
   const { session, currentPath, navigate, goBack, basePath } = useDashboardContext();
   const isRoot = currentPath === "/" || currentPath === "";
@@ -13706,45 +13874,46 @@ function Navbar({
     e.currentTarget.blur();
     goBack();
   };
-  const avatarTrigger = /* @__PURE__ */ jsxs26(
+  const avatarTrigger = /* @__PURE__ */ jsxs27(
     "button",
     {
       type: "button",
       className: "relative w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-medium text-secondary-foreground active:ring-2 md:hover:ring-2 active:ring-ring md:hover:ring-ring transition-shadow",
       children: [
         session?.user?.email?.charAt(0).toUpperCase() || "?",
-        /* @__PURE__ */ jsx37("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
+        /* @__PURE__ */ jsx39("span", { className: "absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" })
       ]
     }
   );
-  return /* @__PURE__ */ jsx37("header", { className: "sticky top-0 z-50 border-b border-border bg-background overscroll-none", children: /* @__PURE__ */ jsxs26("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
-    isRoot ? /* @__PURE__ */ jsxs26("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
+  const headerClasses = isInsideFixedContainer ? "border-b border-border bg-background overscroll-none" : "sticky top-0 z-50 border-b border-border bg-background overscroll-none";
+  return /* @__PURE__ */ jsx39("header", { className: headerClasses, children: /* @__PURE__ */ jsxs27("div", { className: "max-w-5xl mx-auto px-6 py-4 flex items-center justify-between", children: [
+    isRoot ? /* @__PURE__ */ jsxs27("a", { href: basePath, className: "font-medium flex items-center gap-1.5", children: [
       "Writer",
-      /* @__PURE__ */ jsx37("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
-    ] }) : /* @__PURE__ */ jsxs26(
+      /* @__PURE__ */ jsx39("span", { className: "text-xs px-1.5 py-0.5 bg-primary text-primary-foreground rounded", children: "AI" })
+    ] }) : /* @__PURE__ */ jsxs27(
       "button",
       {
         type: "button",
         onClick: handleBack,
         className: "h-10 px-3 -ml-3 gap-1.5 inline-flex items-center justify-center text-sm font-medium rounded-md active:bg-accent md:hover:bg-accent active:text-accent-foreground md:hover:text-accent-foreground touch-manipulation",
         children: [
-          /* @__PURE__ */ jsx37(ChevronLeftIcon, {}),
-          /* @__PURE__ */ jsx37("span", { className: "hidden sm:inline", children: "Back" })
+          /* @__PURE__ */ jsx39(ChevronLeftIcon, {}),
+          /* @__PURE__ */ jsx39("span", { className: "hidden sm:inline", children: "Back" })
         ]
       }
     ),
-    /* @__PURE__ */ jsxs26("div", { className: "flex items-center gap-2", children: [
+    /* @__PURE__ */ jsxs27("div", { className: "flex items-center gap-2", children: [
       rightSlot,
-      /* @__PURE__ */ jsx37(ThemeToggle, {}),
-      session && /* @__PURE__ */ jsxs26(Dropdown, { trigger: avatarTrigger, align: "right", className: "min-w-[180px]", children: [
-        session.user?.role === "admin" && /* @__PURE__ */ jsxs26(Fragment15, { children: [
-          !isSettings ? /* @__PURE__ */ jsx37(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ jsx37(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
-          /* @__PURE__ */ jsx37(DropdownDivider, {})
+      /* @__PURE__ */ jsx39(ThemeToggle, {}),
+      session && /* @__PURE__ */ jsxs27(Dropdown, { trigger: avatarTrigger, align: "right", className: "min-w-[180px]", children: [
+        session.user?.role === "admin" && /* @__PURE__ */ jsxs27(Fragment16, { children: [
+          !isSettings ? /* @__PURE__ */ jsx39(DropdownItem, { onClick: () => navigate("/settings"), children: "Go to settings" }) : /* @__PURE__ */ jsx39(DropdownItem, { onClick: () => navigate("/"), children: "Back to writer" }),
+          /* @__PURE__ */ jsx39(DropdownDivider, {})
         ] }),
-        /* @__PURE__ */ jsx37(DropdownItem, { onClick: () => {
+        /* @__PURE__ */ jsx39(DropdownItem, { onClick: () => {
           window.location.href = "/";
         }, children: "Back to site" }),
-        onSignOut && /* @__PURE__ */ jsx37(DropdownItem, { onClick: onSignOut, children: "Logout" })
+        onSignOut && /* @__PURE__ */ jsx39(DropdownItem, { onClick: onSignOut, children: "Logout" })
       ] })
     ] })
   ] }) });
@@ -13752,12 +13921,12 @@ function Navbar({
 
 // src/ui/components/ChatButton.tsx
 init_useChat();
-import { jsx as jsx38 } from "react/jsx-runtime";
+import { jsx as jsx40 } from "react/jsx-runtime";
 function ChatButton() {
   const chatContext = useChatContextOptional();
   if (!chatContext) return null;
   const { setIsOpen, isOpen } = chatContext;
-  return /* @__PURE__ */ jsx38(
+  return /* @__PURE__ */ jsx40(
     "button",
     {
       type: "button",
@@ -13765,16 +13934,16 @@ function ChatButton() {
       className: `w-10 h-10 rounded-md border border-border active:bg-accent md:hover:bg-accent flex items-center justify-center transition-colors ${isOpen ? "bg-accent text-accent-foreground" : "text-muted-foreground"}`,
       "aria-label": "Toggle chat",
       title: "Chat (\u2318\u21E7A)",
-      children: /* @__PURE__ */ jsx38(ChatIcon, { className: "w-5 h-5" })
+      children: /* @__PURE__ */ jsx40(ChatIcon, { className: "w-5 h-5" })
     }
   );
 }
 
 // src/ui/components/ThemeProvider.tsx
 init_useTheme();
-import { jsx as jsx39 } from "react/jsx-runtime";
+import { jsx as jsx41 } from "react/jsx-runtime";
 function ThemeProvider({ children, className }) {
-  return /* @__PURE__ */ jsx39(AutobloggerThemeProvider, { className, children });
+  return /* @__PURE__ */ jsx41(AutobloggerThemeProvider, { className, children });
 }
 
 // src/ui/dashboard.tsx
@@ -13847,13 +14016,53 @@ function useDashboardKeyboard(options) {
 // src/ui/dashboard.tsx
 init_useChat();
 
+// src/ui/hooks/useIOSVisualViewportHeaderFix.ts
+import { useEffect as useEffect24 } from "react";
+function useIOSVisualViewportHeaderFix() {
+  useEffect24(() => {
+    if (typeof window === "undefined" || !window.visualViewport) {
+      return;
+    }
+    let rafId = 0;
+    let lastTop = null;
+    const apply = () => {
+      const vv2 = window.visualViewport;
+      const top = vv2 ? vv2.offsetTop : 0;
+      if (top === lastTop) return;
+      lastTop = top;
+      document.documentElement.style.setProperty("--vv-top", `${top}px`);
+    };
+    const schedule = () => {
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        apply();
+      });
+    };
+    apply();
+    const vv = window.visualViewport;
+    vv?.addEventListener("scroll", schedule);
+    vv?.addEventListener("resize", schedule);
+    window.addEventListener("scroll", schedule);
+    window.addEventListener("resize", schedule);
+    return () => {
+      vv?.removeEventListener("scroll", schedule);
+      vv?.removeEventListener("resize", schedule);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      if (rafId) cancelAnimationFrame(rafId);
+      document.documentElement.style.removeProperty("--vv-top");
+    };
+  }, []);
+}
+
 // src/ui/components/Toaster.tsx
 init_useTheme();
 import { Toaster as Sonner } from "sonner";
-import { jsx as jsx40 } from "react/jsx-runtime";
+import { jsx as jsx42 } from "react/jsx-runtime";
 function Toaster({ ...props }) {
   const { resolvedTheme } = useAutobloggerTheme();
-  return /* @__PURE__ */ jsx40(
+  return /* @__PURE__ */ jsx42(
     Sonner,
     {
       theme: resolvedTheme,
@@ -13872,7 +14081,7 @@ function Toaster({ ...props }) {
 }
 
 // src/ui/dashboard.tsx
-import { Fragment as Fragment16, jsx as jsx42, jsxs as jsxs28 } from "react/jsx-runtime";
+import { Fragment as Fragment17, jsx as jsx44, jsxs as jsxs29 } from "react/jsx-runtime";
 var ChatPanel2 = lazy2(
   () => Promise.resolve().then(() => (init_ChatPanel(), ChatPanel_exports)).then((m) => ({ default: m.ChatPanel }))
 );
@@ -13893,13 +14102,13 @@ function AutobloggerDashboard({
 }) {
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
   const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`;
-  return /* @__PURE__ */ jsx42(ThemeProvider, { className: "h-dvh bg-background text-foreground flex flex-col overscroll-none", children: /* @__PURE__ */ jsx42(
+  return /* @__PURE__ */ jsx44(ThemeProvider, { className: "h-dvh bg-background text-foreground flex flex-col overscroll-none", children: /* @__PURE__ */ jsx44(
     ChatProvider,
     {
       apiBasePath,
       chatApiPath: resolvedChatApiPath,
       historyApiPath: resolvedHistoryApiPath,
-      children: /* @__PURE__ */ jsx42(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ jsx42(
+      children: /* @__PURE__ */ jsx44(DashboardProvider, { basePath, apiBasePath, styles, fields, session, onEditorStateChange, onRegisterEditHandler, children: /* @__PURE__ */ jsx44(
         DashboardLayout,
         {
           basePath,
@@ -13929,7 +14138,7 @@ function DashboardLayout({
     onEditorStateChange?.(state);
   };
   const setEssayContext = chatContext?.setEssayContext;
-  useEffect25(() => {
+  useEffect26(() => {
     if (!setEssayContext) return;
     if (isEditorPage && editorState?.content) {
       setEssayContext({
@@ -13955,8 +14164,9 @@ function DashboardLayout({
       if (currentPath !== "/" && currentPath !== "") navigate("/");
     }
   });
-  const rightSlotWithButtons = /* @__PURE__ */ jsxs28(Fragment16, { children: [
-    isEditorPage && editorState && /* @__PURE__ */ jsx42(
+  useIOSVisualViewportHeaderFix();
+  const rightSlotWithButtons = /* @__PURE__ */ jsxs29(Fragment17, { children: [
+    isEditorPage && editorState && /* @__PURE__ */ jsx44(
       "button",
       {
         type: "button",
@@ -13965,34 +14175,60 @@ function DashboardLayout({
         className: "w-10 h-10 rounded-md border border-border active:bg-accent md:hover:bg-accent text-muted-foreground flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed",
         "aria-label": "Save",
         title: editorState.hasUnsavedChanges ? "Save changes (\u2318S)" : "No unsaved changes",
-        children: editorState.savingAs ? /* @__PURE__ */ jsx42(Loader28, { className: "w-5 h-5 animate-spin" }) : /* @__PURE__ */ jsx42(Save, { className: "w-5 h-5" })
+        children: editorState.savingAs ? /* @__PURE__ */ jsx44(Loader28, { className: "w-5 h-5 animate-spin" }) : /* @__PURE__ */ jsx44(Save, { className: "w-5 h-5" })
       }
     ),
-    /* @__PURE__ */ jsx42(ChatButton, {}),
+    /* @__PURE__ */ jsx44(ChatButton, {}),
     navbarRightSlot
   ] });
-  return /* @__PURE__ */ jsxs28(Fragment16, { children: [
-    /* @__PURE__ */ jsx42(
+  if (isEditorPage) {
+    return /* @__PURE__ */ jsxs29(Fragment17, { children: [
+      /* @__PURE__ */ jsx44(
+        "div",
+        {
+          className: "fixed top-0 left-0 right-0 z-50 bg-background",
+          style: {
+            transform: "translate3d(0, var(--vv-top, 0px), 0)",
+            willChange: "transform",
+            backfaceVisibility: "hidden"
+          },
+          children: /* @__PURE__ */ jsx44(
+            Navbar,
+            {
+              onSignOut,
+              rightSlot: rightSlotWithButtons,
+              isInsideFixedContainer: true
+            }
+          )
+        }
+      ),
+      /* @__PURE__ */ jsx44("main", { className: "flex-1 overflow-auto pt-[73px]", children: /* @__PURE__ */ jsx44(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
+      /* @__PURE__ */ jsx44(Suspense2, { fallback: null, children: /* @__PURE__ */ jsx44(ChatPanel2, { proseClasses }) }),
+      /* @__PURE__ */ jsx44(Toaster, {})
+    ] });
+  }
+  return /* @__PURE__ */ jsxs29(Fragment17, { children: [
+    /* @__PURE__ */ jsx44(
       Navbar,
       {
         onSignOut,
         rightSlot: rightSlotWithButtons
       }
     ),
-    /* @__PURE__ */ jsx42("main", { className: "flex-1 overflow-auto", children: /* @__PURE__ */ jsx42(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
-    /* @__PURE__ */ jsx42(Suspense2, { fallback: null, children: /* @__PURE__ */ jsx42(ChatPanel2, { proseClasses }) }),
-    /* @__PURE__ */ jsx42(Toaster, {})
+    /* @__PURE__ */ jsx44("main", { className: "flex-1 overflow-auto", children: /* @__PURE__ */ jsx44(DashboardRouter, { path: currentPath, onEditorStateChange: handleEditorStateChange }) }),
+    /* @__PURE__ */ jsx44(Suspense2, { fallback: null, children: /* @__PURE__ */ jsx44(ChatPanel2, { proseClasses }) }),
+    /* @__PURE__ */ jsx44(Toaster, {})
   ] });
 }
 function DashboardRouter({ path, onEditorStateChange }) {
   const pathWithoutQuery = path.split("?")[0];
-  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ jsx42(WriterDashboard, {});
+  if (pathWithoutQuery === "/" || pathWithoutQuery === "") return /* @__PURE__ */ jsx44(WriterDashboard, {});
   if (pathWithoutQuery.startsWith("/editor")) {
     const slug = pathWithoutQuery.replace("/editor/", "").replace("/editor", "");
-    return /* @__PURE__ */ jsx42(EditorPage, { slug: slug || void 0, onEditorStateChange }, slug || "new");
+    return /* @__PURE__ */ jsx44(EditorPage, { slug: slug || void 0, onEditorStateChange }, slug || "new");
   }
-  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ jsx42(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
-  return /* @__PURE__ */ jsx42("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ jsxs28("p", { className: "text-muted-foreground", children: [
+  if (pathWithoutQuery.startsWith("/settings")) return /* @__PURE__ */ jsx44(SettingsPage, { subPath: pathWithoutQuery.replace("/settings", "") });
+  return /* @__PURE__ */ jsx44("div", { className: "max-w-4xl mx-auto px-6 py-8", children: /* @__PURE__ */ jsxs29("p", { className: "text-muted-foreground", children: [
     "Page not found: ",
     path
   ] }) });
@@ -14005,7 +14241,7 @@ init_useChat();
 init_ChatPanel();
 
 // src/ui/hooks/useAIModels.ts
-import { useState as useState29, useEffect as useEffect26 } from "react";
+import { useState as useState29, useEffect as useEffect27 } from "react";
 function useAIModels(options) {
   const [models, setModels] = useState29([]);
   const [internalSelectedModel, setInternalSelectedModel] = useState29("");
@@ -14013,7 +14249,7 @@ function useAIModels(options) {
   const selectedModel = options?.externalSelectedModel ?? internalSelectedModel;
   const setSelectedModel = options?.externalSetSelectedModel ?? setInternalSelectedModel;
   const apiPath = options?.apiPath ?? "/api/cms/ai/settings";
-  useEffect26(() => {
+  useEffect27(() => {
     fetch(apiPath).then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.json();
@@ -14074,7 +14310,7 @@ function GlobalShortcuts({ writerPath = "/writer" } = {}) {
 
 // src/ui/components/SeoSection.tsx
 import { useState as useState30 } from "react";
-import { jsx as jsx43, jsxs as jsxs29 } from "react/jsx-runtime";
+import { jsx as jsx45, jsxs as jsxs30 } from "react/jsx-runtime";
 function SeoSection({
   post,
   onFieldChange,
@@ -14099,7 +14335,7 @@ function SeoSection({
     if (isNoIndex) parts.push("noindex");
     return parts.join(", ");
   };
-  return /* @__PURE__ */ jsxs29(
+  return /* @__PURE__ */ jsxs30(
     ExpandableSection,
     {
       title: "SEO Settings",
@@ -14107,9 +14343,9 @@ function SeoSection({
       expanded: isExpanded,
       onExpandedChange: setIsExpanded,
       children: [
-        /* @__PURE__ */ jsxs29("div", { className: "space-y-1", children: [
-          /* @__PURE__ */ jsx43("label", { className: "text-xs text-muted-foreground", children: "Title" }),
-          /* @__PURE__ */ jsx43(
+        /* @__PURE__ */ jsxs30("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ jsx45("label", { className: "text-xs text-muted-foreground", children: "Title" }),
+          /* @__PURE__ */ jsx45(
             "input",
             {
               type: "text",
@@ -14121,9 +14357,9 @@ function SeoSection({
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs29("div", { className: "space-y-1", children: [
-          /* @__PURE__ */ jsx43("label", { className: "text-xs text-muted-foreground", children: "Description" }),
-          /* @__PURE__ */ jsx43(
+        /* @__PURE__ */ jsxs30("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ jsx45("label", { className: "text-xs text-muted-foreground", children: "Description" }),
+          /* @__PURE__ */ jsx45(
             "textarea",
             {
               value: post.seoDescription || "",
@@ -14135,9 +14371,9 @@ function SeoSection({
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs29("div", { className: "space-y-1", children: [
-          /* @__PURE__ */ jsx43("label", { className: "text-xs text-muted-foreground", children: "Keywords" }),
-          /* @__PURE__ */ jsx43(
+        /* @__PURE__ */ jsxs30("div", { className: "space-y-1", children: [
+          /* @__PURE__ */ jsx45("label", { className: "text-xs text-muted-foreground", children: "Keywords" }),
+          /* @__PURE__ */ jsx45(
             "input",
             {
               type: "text",
@@ -14149,8 +14385,8 @@ function SeoSection({
             }
           )
         ] }),
-        /* @__PURE__ */ jsxs29("label", { className: "flex items-center gap-2 cursor-pointer", children: [
-          /* @__PURE__ */ jsx43(
+        /* @__PURE__ */ jsxs30("label", { className: "flex items-center gap-2 cursor-pointer", children: [
+          /* @__PURE__ */ jsx45(
             "input",
             {
               type: "checkbox",
@@ -14160,7 +14396,7 @@ function SeoSection({
               className: "h-4 w-4 rounded border-border"
             }
           ),
-          /* @__PURE__ */ jsx43("span", { className: "text-sm text-muted-foreground", children: "Hide from search engines (noindex)" })
+          /* @__PURE__ */ jsx45("span", { className: "text-sm text-muted-foreground", children: "Hide from search engines (noindex)" })
         ] })
       ]
     }

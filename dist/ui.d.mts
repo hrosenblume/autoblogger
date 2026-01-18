@@ -149,8 +149,9 @@ declare function AutobloggerDashboard({ basePath, apiBasePath, styles, fields, s
 interface NavbarProps {
     onSignOut?: () => void;
     rightSlot?: React.ReactNode;
+    isInsideFixedContainer?: boolean;
 }
-declare function Navbar({ onSignOut, rightSlot, }: NavbarProps): react_jsx_runtime.JSX.Element;
+declare function Navbar({ onSignOut, rightSlot, isInsideFixedContainer, }: NavbarProps): react_jsx_runtime.JSX.Element;
 
 interface ThemeToggleProps {
     className?: string;

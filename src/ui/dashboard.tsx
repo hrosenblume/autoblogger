@@ -18,6 +18,7 @@ const ChatPanel = lazy(() =>
 import { ChatProvider } from './hooks/useChat'
 import { useDashboardKeyboard } from './hooks/useKeyboard'
 import { useChatContextOptional } from './hooks/useChat'
+import { useIOSVisualViewportHeaderFix } from './hooks/useIOSVisualViewportHeaderFix'
 import { Toaster } from './components/Toaster'
 
 interface AutobloggerDashboardProps {
@@ -145,6 +146,10 @@ function DashboardLayout({
     },
   })
 
+  // Apply iOS visual viewport fix only on editor page
+  // This sets --vv-top CSS variable to track visual viewport offset
+  useIOSVisualViewportHeaderFix()
+
   // Build the right slot with save button, chat button, and any custom slot from host app
   const rightSlotWithButtons = (
     <>
@@ -171,6 +176,40 @@ function DashboardLayout({
       {navbarRightSlot}
     </>
   )
+
+  // Editor page uses fixed header with iOS visual viewport fix
+  // Other pages use normal sticky header
+  if (isEditorPage) {
+    return (
+      <>
+        {/* Fixed header container with iOS visual viewport transform */}
+        <div 
+          className="fixed top-0 left-0 right-0 z-50 bg-background"
+          style={{ 
+            transform: 'translate3d(0, var(--vv-top, 0px), 0)',
+            willChange: 'transform',
+            backfaceVisibility: 'hidden',
+          }}
+        >
+          <Navbar
+            onSignOut={onSignOut}
+            rightSlot={rightSlotWithButtons}
+            isInsideFixedContainer
+          />
+        </div>
+        {/* Main content with padding for fixed header */}
+        <main className="flex-1 overflow-auto pt-[73px]">
+          <DashboardRouter path={currentPath} onEditorStateChange={handleEditorStateChange} />
+        </main>
+        {/* Chat Panel - built-in (lazy loaded) */}
+        <Suspense fallback={null}>
+          <ChatPanel proseClasses={proseClasses} />
+        </Suspense>
+        {/* Toast notifications */}
+        <Toaster />
+      </>
+    )
+  }
 
   return (
     <>
