@@ -5,13 +5,13 @@ import { Skeleton } from '../Skeleton'
 
 /** Shared toolbar button styles - use this for any toolbar button */
 export const toolbarButtonStyles = {
-  base: 'px-3 py-2 text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center',
+  base: 'px-3 py-2 md:px-2 md:py-1.5 text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center',
   interactive: 'active:bg-accent md:hover:bg-accent',
   disabled: 'disabled:opacity-50 disabled:cursor-not-allowed',
   active: 'bg-accent text-accent-foreground',
   inactive: 'text-muted-foreground',
-  /** Icon size for toolbar icons */
-  iconSize: 'w-5 h-5',
+  /** Icon size for toolbar icons - responsive: larger on mobile, smaller on desktop */
+  iconSize: 'w-5 h-5 md:w-4 md:h-4',
 }
 
 /** Get complete toolbar button className */
@@ -54,5 +54,5 @@ export function Divider() {
 
 /** Skeleton placeholder for a toolbar button - matches ToolbarButton dimensions */
 export function SkeletonButton() {
-  return <Skeleton className="h-9 w-9 shrink-0" />
+  return <Skeleton className="h-9 w-9 md:h-7 md:w-8 shrink-0" />
 }

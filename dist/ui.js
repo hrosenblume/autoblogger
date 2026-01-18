@@ -7416,7 +7416,43 @@ function TiptapEditor({
       }
     }
   }, [editor, content]);
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_react19.EditorContent, { editor });
+  const savedSelectionRef = (0, import_react18.useRef)(null);
+  const containerRef = (0, import_react18.useRef)(null);
+  const handleTouchStart = (0, import_react18.useCallback)(() => {
+    if (!editor) return;
+    const { from, to, empty } = editor.state.selection;
+    if (!empty) {
+      savedSelectionRef.current = { from, to };
+    }
+  }, [editor]);
+  const handleTouchEnd = (0, import_react18.useCallback)(() => {
+    if (!editor || !savedSelectionRef.current) return;
+    const { empty } = editor.state.selection;
+    if (empty && savedSelectionRef.current) {
+      const { from, to } = savedSelectionRef.current;
+      requestAnimationFrame(() => {
+        if (editor && !editor.isDestroyed) {
+          try {
+            const docSize = editor.state.doc.content.size;
+            if (from <= docSize && to <= docSize) {
+              editor.commands.setTextSelection({ from, to });
+            }
+          } catch {
+          }
+        }
+      });
+    }
+    savedSelectionRef.current = null;
+  }, [editor]);
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+    "div",
+    {
+      ref: containerRef,
+      onTouchStart: handleTouchStart,
+      onTouchEnd: handleTouchEnd,
+      children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(import_react19.EditorContent, { editor })
+    }
+  );
 }
 var import_react18, import_react19, import_starter_kit, import_extension_placeholder, import_extension_link, import_extension_image, import_extension_strike, import_extension_underline, import_jsx_runtime23, PLACEHOLDER_STYLE_ID, DEFAULT_PROSE_CLASSES, StyledHeading, CustomStrike, CustomBulletList, CustomOrderedList, CustomCode, CustomBlockquote, CustomCodeBlock;
 var init_TiptapEditor = __esm({
@@ -8483,13 +8519,13 @@ var import_lucide_react8 = require("lucide-react");
 init_cn();
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var toolbarButtonStyles = {
-  base: "px-3 py-2 text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center",
+  base: "px-3 py-2 md:px-2 md:py-1.5 text-sm font-medium rounded transition-colors shrink-0 flex items-center justify-center",
   interactive: "active:bg-accent md:hover:bg-accent",
   disabled: "disabled:opacity-50 disabled:cursor-not-allowed",
   active: "bg-accent text-accent-foreground",
   inactive: "text-muted-foreground",
-  /** Icon size for toolbar icons */
-  iconSize: "w-5 h-5"
+  /** Icon size for toolbar icons - responsive: larger on mobile, smaller on desktop */
+  iconSize: "w-5 h-5 md:w-4 md:h-4"
 };
 function getToolbarButtonClass(active, disabled) {
   return cn(
@@ -8518,7 +8554,7 @@ function Divider() {
   return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "w-px h-7 bg-border mx-1.5 shrink-0" });
 }
 function SkeletonButton() {
-  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Skeleton, { className: "h-9 w-9 shrink-0" });
+  return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Skeleton, { className: "h-9 w-9 md:h-7 md:w-8 shrink-0" });
 }
 
 // src/ui/components/toolbar/FormatButtons.tsx
@@ -8683,7 +8719,7 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
         active: editor?.isActive("heading", { level: 1 }),
         disabled: aiGenerating,
         title: "Heading 1",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Heading1, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Heading1, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
@@ -8693,7 +8729,7 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
         active: editor?.isActive("heading", { level: 2 }),
         disabled: aiGenerating,
         title: "Heading 2",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Heading2, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Heading2, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
@@ -8703,7 +8739,7 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
         active: editor?.isActive("heading", { level: 3 }),
         disabled: aiGenerating,
         title: "Heading 3",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Heading3, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Heading3, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(Divider, {}),
@@ -8714,7 +8750,7 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
         active: editor?.isActive("bold"),
         disabled: aiGenerating,
         title: "Bold (\u2318B)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Bold, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Bold, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
@@ -8724,7 +8760,7 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
         active: editor?.isActive("italic"),
         disabled: aiGenerating,
         title: "Italic (\u2318I)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Italic, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Italic, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
@@ -8734,7 +8770,7 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
         active: editor?.isActive("underline"),
         disabled: aiGenerating || !!isMarkdownMode,
         title: "Underline (\u2318U)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Underline, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Underline, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
@@ -8744,7 +8780,7 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
         active: editor?.isActive("strike"),
         disabled: aiGenerating,
         title: "Strikethrough (\u2318\u21E7X)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Strikethrough, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Strikethrough, { className: toolbarButtonStyles.iconSize })
       }
     ),
     !isMarkdownMode && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
@@ -8755,7 +8791,7 @@ function FormatButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCh
           onClick: handleRewrite,
           disabled: !editor || !hasSelection || isRewriting || aiGenerating,
           title: !editor ? "Editor loading..." : hasSelection ? "Rewrite selection with AI" : "Select text to rewrite",
-          children: isRewriting ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Loader2, { className: "w-5 h-5 animate-spin" }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Wand2, { className: "w-5 h-5" })
+          children: isRewriting ? /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Loader2, { className: `${toolbarButtonStyles.iconSize} animate-spin` }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(import_lucide_react3.Wand2, { className: toolbarButtonStyles.iconSize })
         }
       )
     ] })
@@ -8807,7 +8843,7 @@ function BlockButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCha
         active: editor?.isActive("bulletList"),
         disabled: aiGenerating,
         title: "Bullet list",
-        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.List, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.List, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
@@ -8817,7 +8853,7 @@ function BlockButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCha
         active: editor?.isActive("orderedList"),
         disabled: aiGenerating,
         title: "Numbered list",
-        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.ListOrdered, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.ListOrdered, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
@@ -8827,7 +8863,7 @@ function BlockButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCha
         active: editor?.isActive("blockquote"),
         disabled: aiGenerating,
         title: "Blockquote",
-        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.Quote, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.Quote, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
@@ -8837,10 +8873,10 @@ function BlockButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCha
         active: editor?.isActive("codeBlock"),
         disabled: aiGenerating,
         title: "Code block",
-        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.Code2, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.Code2, { className: toolbarButtonStyles.iconSize })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(ToolbarButton, { onClick: handleHorizontalRule, disabled: aiGenerating, title: "Horizontal rule", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.Minus, { className: "w-5 h-5" }) })
+    /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(ToolbarButton, { onClick: handleHorizontalRule, disabled: aiGenerating, title: "Horizontal rule", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(import_lucide_react4.Minus, { className: toolbarButtonStyles.iconSize }) })
   ] });
 }
 
@@ -8945,10 +8981,10 @@ function MediaButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCha
         active: editor?.isActive("link"),
         disabled: aiGenerating,
         title: "Insert link",
-        children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react5.Link2, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react5.Link2, { className: toolbarButtonStyles.iconSize })
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(ToolbarButton, { onClick: () => fileInputRef.current?.click(), disabled: aiGenerating, title: "Insert image", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react5.Image, { className: "w-5 h-5" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(ToolbarButton, { onClick: () => fileInputRef.current?.click(), disabled: aiGenerating, title: "Insert image", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react5.Image, { className: toolbarButtonStyles.iconSize }) }),
     /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
       "input",
       {
@@ -8959,7 +8995,7 @@ function MediaButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCha
         className: "hidden"
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(ToolbarButton, { onClick: handleClearFormatting, disabled: aiGenerating, title: "Clear formatting", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react5.RemoveFormatting, { className: "w-5 h-5" }) })
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(ToolbarButton, { onClick: handleClearFormatting, disabled: aiGenerating, title: "Clear formatting", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(import_lucide_react5.RemoveFormatting, { className: toolbarButtonStyles.iconSize }) })
   ] });
 }
 
@@ -9239,7 +9275,7 @@ function HistoryButtons({
         onClick: handleUndo,
         disabled: aiGenerating || (editor ? !editor.can().undo() : false),
         title: "Undo (\u2318Z)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.Undo2, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.Undo2, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
@@ -9248,7 +9284,7 @@ function HistoryButtons({
         onClick: handleRedo,
         disabled: aiGenerating || (editor ? !editor.can().redo() : false),
         title: "Redo (\u2318\u21E7Z)",
-        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.Redo2, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.Redo2, { className: toolbarButtonStyles.iconSize })
       }
     ),
     setShowMarkdown && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
@@ -9260,7 +9296,7 @@ function HistoryButtons({
           active: showMarkdown,
           disabled: aiGenerating,
           title: showMarkdown ? "Switch to rich text editor" : "Switch to markdown mode",
-          children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.FileCode2, { className: "w-5 h-5" })
+          children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.FileCode2, { className: toolbarButtonStyles.iconSize })
         }
       )
     ] }),
@@ -9302,8 +9338,9 @@ function EditorToolbar({
   loading = false,
   apiBasePath = "/api/cms"
 }) {
+  const toolbarClasses = "sticky top-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto";
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "fixed top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 pt-4 pb-2 border-b border-border bg-background overflow-x-auto", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: toolbarClasses, children: [
       /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(FormatButtons, { loading: true }),
       /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Divider, {}),
       /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(BlockButtons, { loading: true }),
@@ -9316,7 +9353,7 @@ function EditorToolbar({
       /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(SkeletonButton, {})
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: "fixed top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 pt-4 pb-2 border-b border-border bg-background overflow-x-auto", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("div", { className: toolbarClasses, children: [
     /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
       FormatButtons,
       {
@@ -9372,7 +9409,7 @@ function EditorToolbar({
         }),
         disabled: aiGenerating || !hasSelection || !onAddComment,
         title: hasSelection ? "New comment (\u2318\u2325M)" : selectionHasComment ? "Text already has a comment" : "Select text to comment",
-        children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react8.MessageSquarePlus, { className: "w-5 h-5" })
+        children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react8.MessageSquarePlus, { className: toolbarButtonStyles.iconSize })
       }
     ),
     /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(
@@ -9383,7 +9420,7 @@ function EditorToolbar({
         disabled: aiGenerating || !onViewComments,
         title: "View all comments",
         children: /* @__PURE__ */ (0, import_jsx_runtime16.jsxs)("span", { className: "flex items-center gap-1", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react8.MessageSquare, { className: "w-5 h-5" }),
+          /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(import_lucide_react8.MessageSquare, { className: toolbarButtonStyles.iconSize }),
           commentsCount !== void 0 && commentsCount > 0 && /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("span", { className: "text-xs tabular-nums", children: commentsCount })
         ] })
       }
@@ -11071,7 +11108,7 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
   const words = countWords(post.markdown);
   const isPublished = post.status === "published";
   if (loading) {
-    return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex flex-col h-full", children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex flex-col h-full", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("main", { className: "flex-1 overflow-auto pb-20", children: [
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
         EditorToolbar,
         {
@@ -11082,8 +11119,8 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
           loading: true
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("main", { className: "flex-1 overflow-auto pb-20 pt-[41px]", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ContentSkeleton, { styles }) })
-    ] });
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(ContentSkeleton, { styles })
+    ] }) });
   }
   return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex flex-col h-full", children: [
     previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "bg-ab-warning/15 border-b border-ab-warning/30 px-4 py-2 flex items-center justify-between", children: [
@@ -11110,225 +11147,227 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
         )
       ] })
     ] }),
-    !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-      EditorToolbar,
-      {
-        editor: showMarkdown ? null : editor,
-        textareaRef: showMarkdown ? textareaRef : void 0,
-        markdown: post.markdown,
-        onMarkdownChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
-        showMarkdown,
-        setShowMarkdown,
-        aiGenerating: generating,
-        postSlug: slug,
-        revisions: post.id ? {
-          list: revisions,
-          loading: revisionsLoading,
-          previewLoading: false,
-          previewing: previewingRevision,
-          fetch: fetchRevisions,
-          preview: previewRevision,
-          cancel: cancelRevisionPreview,
-          restore: restoreRevision
-        } : void 0,
-        apiBasePath,
-        hasSelection: !!comments.selectedText && !comments.selectedText.hasExistingComment,
-        selectionHasComment: comments.selectedText?.hasExistingComment,
-        onAddComment: () => setCommentsOpen(true),
-        commentsCount: comments.list.filter((c) => !c.resolved).length,
-        onViewComments: () => setCommentsOpen(true)
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("main", { className: `flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y ${!previewingRevision ? "pt-[41px]" : ""}`, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("header", { className: "space-y-2 mb-8", children: [
-        generating && !post.title ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-          AutoResizeTextarea,
-          {
-            value: post.title,
-            onChange: (val) => setPost((prev) => ({ ...prev, title: val })),
-            placeholder: "Title",
-            disabled: generating || !!previewingRevision,
-            className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
-          }
-        ),
-        generating && !post.subtitle ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-          AutoResizeTextarea,
-          {
-            value: post.subtitle,
-            onChange: (val) => setPost((prev) => ({ ...prev, subtitle: val })),
-            placeholder: "Subtitle",
-            disabled: generating || !!previewingRevision,
-            className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-3/4" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-5/6" })
-      ] }) : showMarkdown ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-        "textarea",
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("main", { className: "flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y", children: [
+      !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+        EditorToolbar,
         {
-          ref: textareaRef,
-          value: post.markdown,
-          onChange: (e) => setPost((prev) => ({ ...prev, markdown: e.target.value })),
-          placeholder: "Start writing...",
-          disabled: generating || !!previewingRevision,
-          className: `${styles.prose} w-full bg-transparent border-none outline-none resize-none overflow-hidden placeholder-muted-foreground leading-relaxed font-mono text-sm ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+          editor: showMarkdown ? null : editor,
+          textareaRef: showMarkdown ? textareaRef : void 0,
+          markdown: post.markdown,
+          onMarkdownChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
+          showMarkdown,
+          setShowMarkdown,
+          aiGenerating: generating,
+          postSlug: slug,
+          revisions: post.id ? {
+            list: revisions,
+            loading: revisionsLoading,
+            previewLoading: false,
+            previewing: previewingRevision,
+            fetch: fetchRevisions,
+            preview: previewRevision,
+            cancel: cancelRevisionPreview,
+            restore: restoreRevision
+          } : void 0,
+          apiBasePath,
+          hasSelection: !!comments.selectedText && !comments.selectedText.hasExistingComment,
+          selectionHasComment: comments.selectedText?.hasExistingComment,
+          onAddComment: () => setCommentsOpen(true),
+          commentsCount: comments.list.filter((c) => !c.resolved).length,
+          onViewComments: () => setCommentsOpen(true)
         }
-      ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_react20.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-3", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-3/4" })
-      ] }), children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-        TiptapEditor2,
-        {
-          content: post.markdown,
-          onChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
-          onEditorReady: setEditor,
-          autoFocus: !slug,
-          proseClasses: styles.prose,
-          onSelectionChange: (sel) => {
-            if (sel?.hasSelection) {
-              comments.setSelectedText({
-                text: sel.text,
-                from: sel.from,
-                to: sel.to,
-                hasExistingComment: sel.hasExistingComment
-              });
-            } else {
-              comments.setSelectedText(null);
-            }
-          },
-          onCommentClick: (commentId) => {
-            comments.setActiveId(commentId);
-            setCommentsOpen(true);
-          }
-        }
-      ) }) }),
-      !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mt-12 pt-8 border-t border-border space-y-4", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground w-14", children: "URL" }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground/70", children: urlPrefix }),
-          isPublished ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "flex items-center gap-1.5 text-ab-neutral-strong", children: [
-            post.slug,
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("svg", { className: "w-3 h-3 text-muted-foreground/70", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-            "input",
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("article", { className: `${styles.container} pt-12 pb-24 mx-auto`, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("header", { className: "space-y-2 mb-8", children: [
+          generating && !post.title ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-8 w-4/5" }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            AutoResizeTextarea,
             {
-              type: "text",
-              value: post.slug,
-              onChange: (e) => setPost((prev) => ({ ...prev, slug: e.target.value })),
-              placeholder: "post-slug",
-              className: "flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-ab-neutral-strong"
+              value: post.title,
+              onChange: (val) => setPost((prev) => ({ ...prev, title: val })),
+              placeholder: "Title",
+              disabled: generating || !!previewingRevision,
+              className: `${styles.title} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
             }
-          )
-        ] }) }),
-        wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-start gap-2 p-3 rounded-md bg-ab-warning/10 border border-ab-warning/30 text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("svg", { className: "w-4 h-4 text-ab-warning mt-0.5 flex-shrink-0", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" }) }),
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "text-ab-warning", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium", children: "URL change detected." }),
-            " ",
-            "Existing links to ",
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("code", { className: "px-1 py-0.5 bg-ab-warning/20 rounded text-xs", children: [
-              urlPrefix,
-              originalSlug
-            ] }),
-            " will automatically redirect to the new URL when you publish."
-          ] })
+          ),
+          generating && !post.subtitle ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-5 w-3/5" }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            AutoResizeTextarea,
+            {
+              value: post.subtitle,
+              onChange: (val) => setPost((prev) => ({ ...prev, subtitle: val })),
+              placeholder: "Subtitle",
+              disabled: generating || !!previewingRevision,
+              className: `${styles.subtitle} w-full bg-transparent border-none outline-none placeholder-ab-placeholder ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "!mt-4", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: `${styles.byline} underline ${generating ? "opacity-60" : ""}`, children: session?.user?.name || session?.user?.email || "Author" }) })
         ] }),
-        fields.filter((f) => f.position === "footer").map((field) => {
-          const handleFieldChange = (name, value) => {
-            setPost((prev) => ({ ...prev, [name]: value }));
-          };
-          if (!field.label) {
-            return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-              field.component,
-              {
-                value: post[field.name],
-                onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
-                onFieldChange: handleFieldChange,
-                post,
-                disabled: saving || generating
-              }
-            ) }, field.name);
-          }
-          return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-between text-sm gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2 flex-1", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground w-14 flex-shrink-0", children: field.label }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-              field.component,
-              {
-                value: post[field.name],
-                onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
-                onFieldChange: handleFieldChange,
-                post,
-                disabled: saving || generating
-              }
-            ) })
-          ] }) }, field.name);
-        }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-          TagsSection,
+        /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "mt-8", children: generating && !post.markdown ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-3/4" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-5/6" })
+        ] }) : showMarkdown ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          "textarea",
           {
-            tags: post.tags || [],
-            onTagsChange: (tags) => setPost((prev) => ({ ...prev, tags })),
-            apiBasePath,
-            disabled: saving || generating
+            ref: textareaRef,
+            value: post.markdown,
+            onChange: (e) => setPost((prev) => ({ ...prev, markdown: e.target.value })),
+            placeholder: "Start writing...",
+            disabled: generating || !!previewingRevision,
+            className: `${styles.prose} w-full bg-transparent border-none outline-none resize-none overflow-hidden placeholder-muted-foreground leading-relaxed font-mono text-sm ${generating || previewingRevision ? "opacity-60 cursor-not-allowed" : ""}`
           }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between text-sm", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground", children: "Status" }),
-            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: isPublished ? "text-xs text-ab-success-muted" : "text-xs text-muted-foreground/70", children: isPublished ? "Published" : "Draft" })
+        ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_react20.Suspense, { fallback: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "space-y-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-full" }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Skeleton, { className: "h-4 w-3/4" })
+        ] }), children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+          TiptapEditor2,
+          {
+            content: post.markdown,
+            onChange: (md) => setPost((prev) => ({ ...prev, markdown: md })),
+            onEditorReady: setEditor,
+            autoFocus: !slug,
+            proseClasses: styles.prose,
+            onSelectionChange: (sel) => {
+              if (sel?.hasSelection) {
+                comments.setSelectedText({
+                  text: sel.text,
+                  from: sel.from,
+                  to: sel.to,
+                  hasExistingComment: sel.hasExistingComment
+                });
+              } else {
+                comments.setSelectedText(null);
+              }
+            },
+            onCommentClick: (commentId) => {
+              comments.setActiveId(commentId);
+              setCommentsOpen(true);
+            }
+          }
+        ) }) }),
+        !previewingRevision && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "mt-12 pt-8 border-t border-border space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-between text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground w-14", children: "URL" }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground/70", children: urlPrefix }),
+            isPublished ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "flex items-center gap-1.5 text-ab-neutral-strong", children: [
+              post.slug,
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("svg", { className: "w-3 h-3 text-muted-foreground/70", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" }) })
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              "input",
+              {
+                type: "text",
+                value: post.slug,
+                onChange: (e) => setPost((prev) => ({ ...prev, slug: e.target.value })),
+                placeholder: "post-slug",
+                className: "flex-1 bg-transparent border-none outline-none placeholder-muted-foreground text-ab-neutral-strong"
+              }
+            )
+          ] }) }),
+          wasPublished && originalSlug && post.slug !== originalSlug && !isPublished && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-start gap-2 p-3 rounded-md bg-ab-warning/10 border border-ab-warning/30 text-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("svg", { className: "w-4 h-4 text-ab-warning mt-0.5 flex-shrink-0", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "text-ab-warning", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "font-medium", children: "URL change detected." }),
+              " ",
+              "Existing links to ",
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("code", { className: "px-1 py-0.5 bg-ab-warning/20 rounded text-xs", children: [
+                urlPrefix,
+                originalSlug
+              ] }),
+              " will automatically redirect to the new URL when you publish."
+            ] })
           ] }),
-          isPublished ? hasUnsavedChanges ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-            "button",
-            {
-              onClick: () => savePost(),
-              disabled: saving || generating,
-              className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
-              children: [
-                savingAs && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
-                ] }),
-                "Update"
-              ]
+          fields.filter((f) => f.position === "footer").map((field) => {
+            const handleFieldChange = (name, value) => {
+              setPost((prev) => ({ ...prev, [name]: value }));
+            };
+            if (!field.label) {
+              return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "text-sm", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+                field.component,
+                {
+                  value: post[field.name],
+                  onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
+                  onFieldChange: handleFieldChange,
+                  post,
+                  disabled: saving || generating
+                }
+              ) }, field.name);
             }
-          ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
-            "button",
+            return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-between text-sm gap-2", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2 flex-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground w-14 flex-shrink-0", children: field.label }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex-1", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+                field.component,
+                {
+                  value: post[field.name],
+                  onChange: (val) => setPost((prev) => ({ ...prev, [field.name]: val })),
+                  onFieldChange: handleFieldChange,
+                  post,
+                  disabled: saving || generating
+                }
+              ) })
+            ] }) }, field.name);
+          }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+            TagsSection,
             {
-              onClick: handleUnpublish,
-              className: "px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors",
-              children: "Unpublish"
+              tags: post.tags || [],
+              onTagsChange: (tags) => setPost((prev) => ({ ...prev, tags })),
+              apiBasePath,
+              disabled: saving || generating
             }
-          ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
-            "button",
-            {
-              onClick: handlePublish,
-              disabled: saving || generating,
-              className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
-              children: [
-                savingAs === "published" && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
-                ] }),
-                "Publish"
-              ]
-            }
-          )
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "text-sm text-muted-foreground pt-2 border-t border-border", children: [
-          words.toLocaleString(),
-          " words \xB7 ~",
-          Math.ceil(words / 200),
-          " min read"
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center justify-between text-sm", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "text-muted-foreground", children: "Status" }),
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: isPublished ? "text-xs text-ab-success-muted" : "text-xs text-muted-foreground/70", children: isPublished ? "Published" : "Draft" })
+            ] }),
+            isPublished ? hasUnsavedChanges ? /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+              "button",
+              {
+                onClick: () => savePost(),
+                disabled: saving || generating,
+                className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
+                children: [
+                  savingAs && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                  ] }),
+                  "Update"
+                ]
+              }
+            ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+              "button",
+              {
+                onClick: handleUnpublish,
+                className: "px-3 py-1.5 text-sm rounded-md border border-border text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10 transition-colors",
+                children: "Unpublish"
+              }
+            ) : /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)(
+              "button",
+              {
+                onClick: handlePublish,
+                disabled: saving || generating,
+                className: "px-3 py-1.5 text-sm bg-primary text-primary-foreground rounded-md hover:opacity-90 disabled:opacity-50 flex items-center gap-1",
+                children: [
+                  savingAs === "published" && /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("svg", { className: "w-3 h-3 animate-spin", viewBox: "0 0 24 24", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("circle", { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4", fill: "none" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("path", { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                  ] }),
+                  "Publish"
+                ]
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "text-sm text-muted-foreground pt-2 border-t border-border", children: [
+            words.toLocaleString(),
+            " words \xB7 ~",
+            Math.ceil(words / 200),
+            " min read"
+          ] })
         ] })
       ] })
-    ] }) }),
+    ] }),
     /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("footer", { className: "fixed bottom-0 left-0 right-0 border-t border-border px-4 py-3 bg-background touch-none", style: { paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "flex items-center justify-end text-sm text-muted-foreground", children: generating ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { className: "hover:text-foreground transition-colors", children: "Press Esc to stop generating" }) : previewingRevision ? /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
       "button",
       {

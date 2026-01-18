@@ -3,7 +3,7 @@
 import type { Editor } from '@tiptap/react'
 import type { RefObject } from 'react'
 import { List, ListOrdered, Quote, Code2, Minus } from 'lucide-react'
-import { ToolbarButton, SkeletonButton } from './ToolbarButton'
+import { ToolbarButton, SkeletonButton, toolbarButtonStyles } from './ToolbarButton'
 import { insertBlockAtCursor, insertAtCursor } from '../../../lib/markdown-helpers'
 
 interface BlockButtonsProps {
@@ -68,7 +68,7 @@ export function BlockButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Bullet list"
       >
-        <List className="w-5 h-5" />
+        <List className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleOrderedList().run() : insertBlock('1. ')}
@@ -76,7 +76,7 @@ export function BlockButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Numbered list"
       >
-        <ListOrdered className="w-5 h-5" />
+        <ListOrdered className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
 
       {/* Block elements */}
@@ -86,7 +86,7 @@ export function BlockButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Blockquote"
       >
-        <Quote className="w-5 h-5" />
+        <Quote className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
       <ToolbarButton
         onClick={() => editor ? editor.chain().focus().toggleCodeBlock().run() : wrapSelection('```\n', '\n```')}
@@ -94,10 +94,10 @@ export function BlockButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Code block"
       >
-        <Code2 className="w-5 h-5" />
+        <Code2 className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
       <ToolbarButton onClick={handleHorizontalRule} disabled={aiGenerating} title="Horizontal rule">
-        <Minus className="w-5 h-5" />
+        <Minus className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
     </>
   )

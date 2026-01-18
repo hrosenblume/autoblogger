@@ -3,7 +3,7 @@
 import type { RefObject } from 'react'
 import type { Editor } from '@tiptap/react'
 import { MessageSquarePlus, MessageSquare } from 'lucide-react'
-import { ToolbarButton, Divider, SkeletonButton } from './toolbar/ToolbarButton'
+import { ToolbarButton, Divider, SkeletonButton, toolbarButtonStyles } from './toolbar/ToolbarButton'
 import { FormatButtons } from './toolbar/FormatButtons'
 import { BlockButtons } from './toolbar/BlockButtons'
 import { MediaButtons } from './toolbar/MediaButtons'
@@ -54,13 +54,14 @@ export function EditorToolbar({
   loading = false,
   apiBasePath = '/api/cms',
 }: EditorToolbarProps) {
-  // Navbar height: py-4 (2rem) + h-10 mobile / h-9 desktop + border (1px)
-  // Mobile: 2rem + 2.5rem + 1px = 4.5rem + 1px, Desktop: 2rem + 2.25rem + 1px = 4.25rem + 1px
-  // Use rem for position so it scales with html font-size (for global-scale support)
-  // Use -2px overlap to prevent subpixel gap between navbar border and toolbar
+  // Use sticky positioning instead of fixed to prevent iOS visual viewport issues
+  // when copy/paste menu appears on mobile. The toolbar stays at top of scroll container
+  // rather than jumping when the visual viewport changes.
+  const toolbarClasses = "sticky top-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 py-2 border-b border-border bg-background overflow-x-auto"
+
   if (loading) {
     return (
-      <div className="fixed top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 pt-4 pb-2 border-b border-border bg-background overflow-x-auto">
+      <div className={toolbarClasses}>
         <FormatButtons loading={true} />
         <Divider />
         <BlockButtons loading={true} />
@@ -77,7 +78,7 @@ export function EditorToolbar({
   }
 
   return (
-    <div className="fixed top-[4.125rem] left-0 right-0 z-40 flex items-center justify-start lg:justify-center gap-0.5 px-4 pt-4 pb-2 border-b border-border bg-background overflow-x-auto">
+    <div className={toolbarClasses}>
       <FormatButtons
         editor={editor}
         textareaRef={textareaRef}
@@ -133,7 +134,7 @@ export function EditorToolbar({
               : 'Select text to comment'
         }
       >
-        <MessageSquarePlus className="w-5 h-5" />
+        <MessageSquarePlus className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
       <ToolbarButton
         onClick={onViewComments ?? (() => {})}
@@ -141,7 +142,7 @@ export function EditorToolbar({
         title="View all comments"
       >
         <span className="flex items-center gap-1">
-          <MessageSquare className="w-5 h-5" />
+          <MessageSquare className={toolbarButtonStyles.iconSize} />
           {commentsCount !== undefined && commentsCount > 0 && (
             <span className="text-xs tabular-nums">{commentsCount}</span>
           )}

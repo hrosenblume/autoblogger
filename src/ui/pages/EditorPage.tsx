@@ -987,13 +987,13 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
   if (loading) {
     return (
       <div className="flex flex-col h-full">
-        <EditorToolbar
-          textareaRef={textareaRef}
-          markdown=""
-          onMarkdownChange={() => {}}
-          loading={true}
-        />
-        <main className="flex-1 overflow-auto pb-20 pt-[41px]">
+        <main className="flex-1 overflow-auto pb-20">
+          <EditorToolbar
+            textareaRef={textareaRef}
+            markdown=""
+            onMarkdownChange={() => {}}
+            loading={true}
+          />
           <ContentSkeleton styles={styles} />
         </main>
       </div>
@@ -1025,38 +1025,38 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
         </div>
       )}
 
-      {/* Toolbar */}
-      {!previewingRevision && (
-        <EditorToolbar
-          editor={showMarkdown ? null : editor}
-          textareaRef={showMarkdown ? textareaRef : undefined}
-          markdown={post.markdown}
-          onMarkdownChange={(md) => setPost(prev => ({ ...prev, markdown: md }))}
-          showMarkdown={showMarkdown}
-          setShowMarkdown={setShowMarkdown}
-          aiGenerating={generating}
-          postSlug={slug}
-          revisions={post.id ? {
-            list: revisions,
-            loading: revisionsLoading,
-            previewLoading: false,
-            previewing: previewingRevision,
-            fetch: fetchRevisions,
-            preview: previewRevision,
-            cancel: cancelRevisionPreview,
-            restore: restoreRevision,
-          } : undefined}
-          apiBasePath={apiBasePath}
-          hasSelection={!!comments.selectedText && !comments.selectedText.hasExistingComment}
-          selectionHasComment={comments.selectedText?.hasExistingComment}
-          onAddComment={() => setCommentsOpen(true)}
-          commentsCount={comments.list.filter(c => !c.resolved).length}
-          onViewComments={() => setCommentsOpen(true)}
-        />
-      )}
-
-      {/* Editor Content - pt-[41px] accounts for fixed toolbar height when visible */}
-      <main className={`flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y ${!previewingRevision ? 'pt-[41px]' : ''}`}>
+      {/* Editor Content - toolbar is now sticky inside the scroll container for mobile stability */}
+      <main className="flex-1 overflow-auto pb-20 overscroll-contain touch-pan-y">
+        {/* Toolbar - sticky positioning keeps it at top during scroll and prevents 
+            iOS visual viewport jumps when copy/paste menu appears */}
+        {!previewingRevision && (
+          <EditorToolbar
+            editor={showMarkdown ? null : editor}
+            textareaRef={showMarkdown ? textareaRef : undefined}
+            markdown={post.markdown}
+            onMarkdownChange={(md) => setPost(prev => ({ ...prev, markdown: md }))}
+            showMarkdown={showMarkdown}
+            setShowMarkdown={setShowMarkdown}
+            aiGenerating={generating}
+            postSlug={slug}
+            revisions={post.id ? {
+              list: revisions,
+              loading: revisionsLoading,
+              previewLoading: false,
+              previewing: previewingRevision,
+              fetch: fetchRevisions,
+              preview: previewRevision,
+              cancel: cancelRevisionPreview,
+              restore: restoreRevision,
+            } : undefined}
+            apiBasePath={apiBasePath}
+            hasSelection={!!comments.selectedText && !comments.selectedText.hasExistingComment}
+            selectionHasComment={comments.selectedText?.hasExistingComment}
+            onAddComment={() => setCommentsOpen(true)}
+            commentsCount={comments.list.filter(c => !c.resolved).length}
+            onViewComments={() => setCommentsOpen(true)}
+          />
+        )}
         <article className={`${styles.container} pt-12 pb-24 mx-auto`}>
           {/* Header - Title & Subtitle */}
           <header className="space-y-2 mb-8">

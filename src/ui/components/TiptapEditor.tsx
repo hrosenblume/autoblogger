@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useCallback } from 'react'
 import { useEditor, EditorContent, Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Heading from '@tiptap/extension-heading'
@@ -312,5 +312,52 @@ export function TiptapEditor({
     }
   }, [editor, content])
 
-  return <EditorContent editor={editor} />
+  // Mobile selection preservation: save selection on touchstart before scroll can clear it
+  const savedSelectionRef = useRef<{ from: number; to: number } | null>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const handleTouchStart = useCallback(() => {
+    if (!editor) return
+    const { from, to, empty } = editor.state.selection
+    if (!empty) {
+      // Save non-empty selections before scroll might clear them
+      savedSelectionRef.current = { from, to }
+    }
+  }, [editor])
+
+  const handleTouchEnd = useCallback(() => {
+    if (!editor || !savedSelectionRef.current) return
+    
+    // Check if selection was lost (became empty/collapsed)
+    const { empty } = editor.state.selection
+    if (empty && savedSelectionRef.current) {
+      const { from, to } = savedSelectionRef.current
+      // Restore the selection after a brief delay to let scroll settle
+      requestAnimationFrame(() => {
+        if (editor && !editor.isDestroyed) {
+          try {
+            // Only restore if the positions are still valid
+            const docSize = editor.state.doc.content.size
+            if (from <= docSize && to <= docSize) {
+              editor.commands.setTextSelection({ from, to })
+            }
+          } catch {
+            // Selection positions may be invalid after content changes
+          }
+        }
+      })
+    }
+    // Clear saved selection after touch ends
+    savedSelectionRef.current = null
+  }, [editor])
+
+  return (
+    <div
+      ref={containerRef}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <EditorContent editor={editor} />
+    </div>
+  )
 }

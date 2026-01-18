@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
 import type { RefObject } from 'react'
 import { Undo2, Redo2, FileCode2 } from 'lucide-react'
-import { ToolbarButton, Divider, SkeletonButton } from './ToolbarButton'
+import { ToolbarButton, Divider, SkeletonButton, toolbarButtonStyles } from './ToolbarButton'
 import { RevisionHistoryDropdown } from '../RevisionHistoryDropdown'
 import type { RevisionState } from '../../../lib/editor-types'
 
@@ -75,14 +75,14 @@ export function HistoryButtons({
         disabled={aiGenerating || (editor ? !editor.can().undo() : false)}
         title="Undo (⌘Z)"
       >
-        <Undo2 className="w-5 h-5" />
+        <Undo2 className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
       <ToolbarButton
         onClick={handleRedo}
         disabled={aiGenerating || (editor ? !editor.can().redo() : false)}
         title="Redo (⌘⇧Z)"
       >
-        <Redo2 className="w-5 h-5" />
+        <Redo2 className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
 
       {/* Markdown/Rich Text mode toggle */}
@@ -95,7 +95,7 @@ export function HistoryButtons({
             disabled={aiGenerating}
             title={showMarkdown ? 'Switch to rich text editor' : 'Switch to markdown mode'}
           >
-            <FileCode2 className="w-5 h-5" />
+            <FileCode2 className={toolbarButtonStyles.iconSize} />
           </ToolbarButton>
         </>
       )}

@@ -4,7 +4,7 @@ import { useRef, useCallback } from 'react'
 import type { Editor } from '@tiptap/react'
 import type { RefObject } from 'react'
 import { Link2, Image, RemoveFormatting } from 'lucide-react'
-import { ToolbarButton, SkeletonButton } from './ToolbarButton'
+import { ToolbarButton, SkeletonButton, toolbarButtonStyles } from './ToolbarButton'
 import { clearMarkdownFormatting } from '../../../lib/markdown-helpers'
 
 interface MediaButtonsProps {
@@ -134,10 +134,10 @@ export function MediaButtons({ editor: editorProp, textareaRef, markdown, onMark
         disabled={aiGenerating}
         title="Insert link"
       >
-        <Link2 className="w-5 h-5" />
+        <Link2 className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
       <ToolbarButton onClick={() => fileInputRef.current?.click()} disabled={aiGenerating} title="Insert image">
-        <Image className="w-5 h-5" />
+        <Image className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
       <input
         ref={fileInputRef}
@@ -147,7 +147,7 @@ export function MediaButtons({ editor: editorProp, textareaRef, markdown, onMark
         className="hidden"
       />
       <ToolbarButton onClick={handleClearFormatting} disabled={aiGenerating} title="Clear formatting">
-        <RemoveFormatting className="w-5 h-5" />
+        <RemoveFormatting className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
     </>
   )
