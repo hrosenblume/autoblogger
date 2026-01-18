@@ -415,33 +415,6 @@
 :is(.dark, .autoblogger.dark) .ab-prose th { background-color: hsl(var(--ab-muted, var(--muted, 240 3.7% 15.9%))); }
 
 /* ============================================
-   MOBILE TYPOGRAPHY (larger for readability)
-   Applies to screens smaller than 768px
-   ============================================ */
-@media (max-width: 767px) {
-  .autoblogger .prose {
-    font-size: 17px;
-  }
-  .autoblogger .prose h1 { font-size: 24px; }
-  .autoblogger .prose h2 { font-size: 19px; }
-  .autoblogger .prose h3 { font-size: 17px; }
-  
-  .ab-prose {
-    font-size: 17px;
-  }
-  .ab-prose h1 { font-size: 24px; }
-  .ab-prose h2 { font-size: 19px; }
-  .ab-prose h3 { font-size: 17px; }
-  
-  .autoblogger .ProseMirror {
-    font-size: 17px;
-  }
-  .autoblogger .ProseMirror h1 { font-size: 24px; }
-  .autoblogger .ProseMirror h2 { font-size: 19px; }
-  .autoblogger .ProseMirror h3 { font-size: 17px; }
-}
-
-/* ============================================
    TIPTAP EDITOR STYLES (scoped)
    ============================================ */
 
