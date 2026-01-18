@@ -100,7 +100,7 @@ export function createAPIHandler(cms: AutobloggerServer, options: APIHandlerOpti
       }
       
       if (path.startsWith('/chat/history')) {
-        return handleChatHistoryAPI(req, cms.config.prisma, !!session)
+        return handleChatHistoryAPI(req, cms.config.prisma as any, !!session)
       }
       
       return jsonResponse({ error: 'Not found' }, 404)
