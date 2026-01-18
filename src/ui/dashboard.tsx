@@ -59,29 +59,11 @@ export function AutobloggerDashboard({
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`
   const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`
 
-  // Disable pinch-to-zoom on iOS/mobile for the entire dashboard
-  useEffect(() => {
-    // Update viewport meta tag to prevent zoom
-    const viewportMeta = document.querySelector('meta[name="viewport"]')
-    if (viewportMeta) {
-      const originalContent = viewportMeta.getAttribute('content') || ''
-      // Only modify if not already set
-      if (!originalContent.includes('user-scalable')) {
-        const newContent = originalContent + ', user-scalable=no, maximum-scale=1'
-        viewportMeta.setAttribute('content', newContent)
-        
-        // Restore on unmount
-        return () => {
-          viewportMeta.setAttribute('content', originalContent)
-        }
-      }
-    }
-  }, [])
 
   // ThemeProvider is always used - it's self-contained and manages its own .dark class
   // The ThemeProvider wraps content with .autoblogger container that gets .dark class when needed
   return (
-    <ThemeProvider className="h-dvh bg-background text-foreground flex flex-col overscroll-none touch-manipulation">
+    <ThemeProvider className="h-dvh bg-background text-foreground flex flex-col overscroll-none">
       <ChatProvider 
         apiBasePath={apiBasePath}
         chatApiPath={resolvedChatApiPath}

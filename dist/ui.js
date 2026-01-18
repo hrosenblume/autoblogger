@@ -14185,20 +14185,7 @@ function AutobloggerDashboard({
 }) {
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`;
   const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`;
-  (0, import_react35.useEffect)(() => {
-    const viewportMeta = document.querySelector('meta[name="viewport"]');
-    if (viewportMeta) {
-      const originalContent = viewportMeta.getAttribute("content") || "";
-      if (!originalContent.includes("user-scalable")) {
-        const newContent = originalContent + ", user-scalable=no, maximum-scale=1";
-        viewportMeta.setAttribute("content", newContent);
-        return () => {
-          viewportMeta.setAttribute("content", originalContent);
-        };
-      }
-    }
-  }, []);
-  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(ThemeProvider, { className: "h-dvh bg-background text-foreground flex flex-col overscroll-none touch-manipulation", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(ThemeProvider, { className: "h-dvh bg-background text-foreground flex flex-col overscroll-none", children: /* @__PURE__ */ (0, import_jsx_runtime45.jsx)(
     ChatProvider,
     {
       apiBasePath,
