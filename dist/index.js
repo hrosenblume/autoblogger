@@ -7185,14 +7185,15 @@ async function uploadToS3(buffer, filename, contentType, config) {
   const client = await getS3Client(config);
   const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
   const key = `uploads/${(0, import_crypto.randomUUID)()}.${ext}`;
+  const acl = config.acl !== void 0 ? config.acl : "public-read";
   const params = {
     Bucket: config.bucket,
     Key: key,
     Body: buffer,
     ContentType: contentType
   };
-  if (config.acl) {
-    params.ACL = config.acl;
+  if (acl) {
+    params.ACL = acl;
   }
   await client.send(new PutObjectCommand(params));
   const cdnEndpoint = config.cdnEndpoint || config.endpoint || `https://${config.bucket}.s3.${config.region || "us-east-1"}.amazonaws.com`;

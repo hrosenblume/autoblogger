@@ -31,7 +31,7 @@ export interface StorageConfig {
     region?: string
     endpoint?: string
     cdnEndpoint?: string
-    acl?: string // e.g. 'public-read' — omit for DO Spaces (use bucket policy instead)
+    acl?: string // defaults to 'public-read'; set to '' to disable
   }
   // Local storage config
   local?: {
@@ -105,14 +105,15 @@ async function uploadToS3(
   const ext = filename.split('.').pop()?.toLowerCase() || 'jpg'
   const key = `uploads/${randomUUID()}.${ext}`
 
+  const acl = config.acl !== undefined ? config.acl : 'public-read'
   const params: Record<string, unknown> = {
     Bucket: config.bucket,
     Key: key,
     Body: buffer,
     ContentType: contentType,
   }
-  if (config.acl) {
-    params.ACL = config.acl
+  if (acl) {
+    params.ACL = acl
   }
   await client.send(new PutObjectCommand(params))
 
