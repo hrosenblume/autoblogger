@@ -7159,6 +7159,7 @@ async function getS3Client(config) {
       return new S3Client({
         region: config.region || "us-east-1",
         endpoint: config.endpoint,
+        forcePathStyle: false,
         credentials: {
           accessKeyId: config.accessKeyId,
           secretAccessKey: config.secretAccessKey
@@ -7184,15 +7185,16 @@ async function uploadToS3(buffer, filename, contentType, config) {
   const client = await getS3Client(config);
   const ext = filename.split(".").pop()?.toLowerCase() || "jpg";
   const key = `uploads/${(0, import_crypto.randomUUID)()}.${ext}`;
-  await client.send(
-    new PutObjectCommand({
-      Bucket: config.bucket,
-      Key: key,
-      Body: buffer,
-      ContentType: contentType,
-      ACL: "public-read"
-    })
-  );
+  const params = {
+    Bucket: config.bucket,
+    Key: key,
+    Body: buffer,
+    ContentType: contentType
+  };
+  if (config.acl) {
+    params.ACL = config.acl;
+  }
+  await client.send(new PutObjectCommand(params));
   const cdnEndpoint = config.cdnEndpoint || config.endpoint || `https://${config.bucket}.s3.${config.region || "us-east-1"}.amazonaws.com`;
   const url = cdnEndpoint.endsWith("/") ? `${cdnEndpoint}${key}` : `${cdnEndpoint}/${key}`;
   return { url, key };

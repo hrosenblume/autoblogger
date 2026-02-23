@@ -773,6 +773,7 @@ interface StorageConfig {
         region?: string;
         endpoint?: string;
         cdnEndpoint?: string;
+        acl?: string;
     };
     local?: {
         uploadDir?: string;
