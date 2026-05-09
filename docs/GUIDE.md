@@ -288,6 +288,39 @@ async function handler(req: Request) {
 export { handler as GET, handler as POST, handler as PATCH, handler as DELETE }
 ```
 
+### 4b. Mount the public API (optional)
+
+Autoblogger ships a bearer-token-authenticated public API alongside the dashboard's session-authenticated one. Mount it on its own route so external integrators can submit drafts, manage posts, and run AI generation programmatically.
+
+Create `app/writer/api/[...path]/route.ts`:
+
+```typescript
+import { cms } from '@/lib/cms'
+
+export const dynamic = 'force-dynamic'
+
+async function handler(req: Request) {
+  const url = new URL(req.url)
+  const path = url.pathname.replace('/writer/api', '')
+  return cms.handlePublicRequest(req, path)
+}
+
+export { handler as GET, handler as POST, handler as PATCH, handler as PUT, handler as DELETE }
+```
+
+Then create + manage keys at `/writer/settings/api`. Every request requires `Authorization: Bearer ab_live_…`. Endpoint groups under `/v1`:
+
+- `GET /v1/me` — auth health check
+- Posts: `GET /v1/posts` (filters: `status`, `q`, `tag`, `topicId`, `since`, `until`, `sort`, `order`, `page`, `limit`, `include`); convenience aliases `/v1/posts/{drafts,published,suggested,trash,counts}` and `/v1/posts/by-slug/:slug`
+- Posts CRUD + transitions: `POST/PATCH/PUT/DELETE /v1/posts/:id`, plus `POST /v1/posts/:id/{publish,unpublish,restore,approve,status,duplicate,preview-link,tags,agent}`
+- Tags: `GET/POST/PATCH/DELETE /v1/tags[/:id]`
+- Revisions: `GET /v1/posts/:id/revisions`, `GET /v1/revisions/:id`, `POST /v1/revisions/:id/restore`
+- Topics + auto-draft: `GET /v1/topics[/:id]`, `POST /v1/topics/:id/run`, `POST /v1/auto-draft/run`
+- AI: `GET /v1/ai/{models,settings}`, `POST /v1/ai/{generate,generate/raw,plan,expand-plan,rewrite,chat,search}`
+- Agent edit: `POST /v1/posts/:id/agent` — applies an instruction to an existing post; defaults to `new-draft` when the post is published, `in-place` when it's a draft
+
+All responses are JSON: `{ data: ... }` on success, `{ error: ... }` on failure. List endpoints return `{ data, total, page, totalPages }`. Every call is recorded in the audit log visible at `/writer/settings/api`.
+
 ### 5. Create the dashboard page
 
 Create `app/(writer)/writer/[[...path]]/page.tsx`:

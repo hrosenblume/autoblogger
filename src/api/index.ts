@@ -10,6 +10,7 @@ import { handleAdminAPI } from './admin'
 import { handleSettingsAPI } from './settings'
 import { handleRevisionsAPI } from './revisions'
 import { handleChatHistoryAPI } from './chat-history'
+import { handleApiKeysAPI } from './api-keys'
 
 interface APIHandlerOptions {
   basePath?: string
@@ -102,7 +103,11 @@ export function createAPIHandler(cms: AutobloggerServer, options: APIHandlerOpti
       if (path.startsWith('/chat/history')) {
         return handleChatHistoryAPI(req, cms.config.prisma as any, !!session)
       }
-      
+
+      if (path.startsWith('/api-keys')) {
+        return handleApiKeysAPI(req, cms, session, path)
+      }
+
       return jsonResponse({ error: 'Not found' }, 404)
     } catch (error) {
       console.error('API error:', error)
@@ -124,3 +129,4 @@ export { handleAdminAPI } from './admin'
 export { handleSettingsAPI } from './settings'
 export { handleRevisionsAPI } from './revisions'
 export { handleChatHistoryAPI } from './chat-history'
+export { handleApiKeysAPI } from './api-keys'

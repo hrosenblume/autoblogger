@@ -5807,6 +5807,124 @@ function createUsersData(prisma) {
   };
 }
 
+// src/data/api-keys.ts
+var import_node_crypto = require("crypto");
+var TOKEN_PREFIX = "ab_live_";
+function hashToken(plaintext) {
+  return (0, import_node_crypto.createHash)("sha256").update(plaintext).digest("hex");
+}
+function generatePlaintext() {
+  return TOKEN_PREFIX + (0, import_node_crypto.randomBytes)(16).toString("hex");
+}
+function createApiKeysData(prisma) {
+  return {
+    async findAll() {
+      return prisma.apiKey.findMany({
+        orderBy: { createdAt: "desc" }
+      });
+    },
+    async findById(id) {
+      return prisma.apiKey.findUnique({ where: { id } });
+    },
+    /**
+     * Create a new API key. Returns the plaintext token ONCE — it is hashed
+     * before storage and cannot be recovered later.
+     */
+    async create(input) {
+      const plaintext = generatePlaintext();
+      const prefix = plaintext.slice(0, 12);
+      const hash = hashToken(plaintext);
+      const key = await prisma.apiKey.create({
+        data: {
+          name: input.name,
+          prefix,
+          hash,
+          ownerUserId: input.ownerUserId ?? null
+        }
+      });
+      return { key, plaintext };
+    },
+    async revoke(id) {
+      return prisma.apiKey.update({
+        where: { id },
+        data: { revokedAt: /* @__PURE__ */ new Date() }
+      });
+    },
+    async delete(id) {
+      await prisma.apiKey.delete({ where: { id } });
+    },
+    /**
+     * Look up a key by its plaintext value. Returns null if not found or revoked.
+     */
+    async verify(plaintext) {
+      if (!plaintext.startsWith(TOKEN_PREFIX)) return null;
+      const hash = hashToken(plaintext);
+      const key = await prisma.apiKey.findUnique({ where: { hash } });
+      if (!key) return null;
+      if (key.revokedAt) return null;
+      return { id: key.id, name: key.name };
+    },
+    /**
+     * Bump lastUsedAt. Fire-and-forget; failures should not affect the request.
+     */
+    async touch(id) {
+      try {
+        await prisma.apiKey.update({
+          where: { id },
+          data: { lastUsedAt: /* @__PURE__ */ new Date() }
+        });
+      } catch (err) {
+        console.error("[autoblogger] Failed to touch API key:", err);
+      }
+    }
+  };
+}
+
+// src/data/api-audit-log.ts
+function createApiAuditLogData(prisma) {
+  return {
+    /**
+     * Append an audit log entry. Fire-and-forget — failures are logged but
+     * never bubble up to the caller, since logging must not break API responses.
+     */
+    async append(input) {
+      try {
+        await prisma.apiAuditLog.create({
+          data: {
+            apiKeyId: input.apiKeyId,
+            apiKeyName: input.apiKeyName,
+            method: input.method,
+            path: input.path,
+            postId: input.postId ?? null,
+            status: input.status,
+            ip: input.ip ?? null,
+            userAgent: input.userAgent ?? null
+          }
+        });
+      } catch (err) {
+        console.error("[autoblogger] Failed to write audit log:", err);
+      }
+    },
+    async findAll(opts) {
+      const page = opts?.page && opts.page > 0 ? opts.page : 1;
+      const limit = opts?.limit && opts.limit > 0 ? Math.min(opts.limit, 200) : 50;
+      const where = {};
+      if (opts?.keyId) where.apiKeyId = opts.keyId;
+      if (opts?.postId) where.postId = opts.postId;
+      const [data, total] = await Promise.all([
+        prisma.apiAuditLog.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          skip: (page - 1) * limit,
+          take: limit
+        }),
+        prisma.apiAuditLog.count({ where })
+      ]);
+      return { data, total };
+    }
+  };
+}
+
 // src/api/posts.ts
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -6173,12 +6291,12 @@ async function handleAIAPI(req, cms, session, path) {
     let styleExamples = "";
     try {
       const publishedPosts = await cms.posts.findPublished();
-      const MAX_STYLE_EXAMPLES = 5;
-      const MAX_WORDS_PER_EXAMPLE = 500;
+      const MAX_STYLE_EXAMPLES2 = 5;
+      const MAX_WORDS_PER_EXAMPLE2 = 500;
       if (publishedPosts.length > 0) {
-        const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
+        const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES2).map((post) => {
           const words = post.markdown.split(/\s+/);
-          const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
+          const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE2 ? words.slice(0, MAX_WORDS_PER_EXAMPLE2).join(" ") + "..." : post.markdown;
           return `## ${post.title}
 ${post.subtitle ? `*${post.subtitle}*
 ` : ""}
@@ -6240,12 +6358,12 @@ ${examples}
     let styleExamples = "";
     try {
       const publishedPosts = await cms.posts.findPublished();
-      const MAX_STYLE_EXAMPLES = 3;
-      const MAX_WORDS_PER_EXAMPLE = 300;
+      const MAX_STYLE_EXAMPLES2 = 3;
+      const MAX_WORDS_PER_EXAMPLE2 = 300;
       if (publishedPosts.length > 0) {
-        const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
+        const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES2).map((post) => {
           const words = post.markdown.split(/\s+/);
-          const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
+          const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE2 ? words.slice(0, MAX_WORDS_PER_EXAMPLE2).join(" ") + "..." : post.markdown;
           return `## ${post.title}
 ${truncatedContent}`;
         }).join("\n\n---\n\n");
@@ -6310,12 +6428,12 @@ ${text}` }
 async function fetchStyleExamples(cms) {
   try {
     const publishedPosts = await cms.posts.findPublished();
-    const MAX_STYLE_EXAMPLES = 5;
-    const MAX_WORDS_PER_EXAMPLE = 500;
+    const MAX_STYLE_EXAMPLES2 = 5;
+    const MAX_WORDS_PER_EXAMPLE2 = 500;
     if (publishedPosts.length > 0) {
-      const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES).map((post) => {
+      const examples = publishedPosts.slice(0, MAX_STYLE_EXAMPLES2).map((post) => {
         const words = post.markdown.split(/\s+/);
-        const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : post.markdown;
+        const truncatedContent = words.length > MAX_WORDS_PER_EXAMPLE2 ? words.slice(0, MAX_WORDS_PER_EXAMPLE2).join(" ") + "..." : post.markdown;
         return `## ${post.title}
 ${post.subtitle ? `*${post.subtitle}*
 ` : ""}
@@ -6800,6 +6918,64 @@ async function handleChatHistoryAPI(req, prisma, isAuthenticated) {
   }
 }
 
+// src/api/api-keys.ts
+function toPublic(key) {
+  return {
+    id: key.id,
+    name: key.name,
+    prefix: key.prefix,
+    ownerUserId: key.ownerUserId,
+    createdAt: key.createdAt,
+    lastUsedAt: key.lastUsedAt,
+    revokedAt: key.revokedAt
+  };
+}
+async function handleApiKeysAPI(req, cms, session, path) {
+  const method = req.method;
+  const adminError = requireAdmin(cms, session);
+  if (adminError) return adminError;
+  const segments = path.split("/").filter(Boolean);
+  const id = segments[1];
+  const action = segments[2];
+  if (method === "GET" && id === "audit") {
+    const url = new URL(req.url);
+    const keyId = url.searchParams.get("keyId") || void 0;
+    const postId = url.searchParams.get("postId") || void 0;
+    const page = parseInt(url.searchParams.get("page") || "1", 10);
+    const limit = parseInt(url.searchParams.get("limit") || "50", 10);
+    const result = await cms.apiAuditLog.findAll({ keyId, postId, page, limit });
+    return jsonResponse2(result);
+  }
+  if (method === "GET" && !id) {
+    const keys = await cms.apiKeys.findAll();
+    return jsonResponse2({ data: keys.map(toPublic) });
+  }
+  if (method === "POST" && !id) {
+    const body = await req.json().catch(() => ({}));
+    const name2 = typeof body.name === "string" ? body.name.trim() : "";
+    if (!name2) {
+      return jsonResponse2({ error: "name is required" }, 400);
+    }
+    const ownerUserId = session?.user?.id || null;
+    const { key, plaintext } = await cms.apiKeys.create({ name: name2, ownerUserId });
+    return jsonResponse2({ data: { ...toPublic(key), plaintext } }, 201);
+  }
+  if (method === "POST" && id && action === "revoke") {
+    const existing = await cms.apiKeys.findById(id);
+    if (!existing) return jsonResponse2({ error: "Key not found" }, 404);
+    if (existing.revokedAt) return jsonResponse2({ data: toPublic(existing) });
+    const updated = await cms.apiKeys.revoke(id);
+    return jsonResponse2({ data: toPublic(updated) });
+  }
+  if (method === "DELETE" && id && !action) {
+    const existing = await cms.apiKeys.findById(id);
+    if (!existing) return jsonResponse2({ error: "Key not found" }, 404);
+    await cms.apiKeys.delete(id);
+    return jsonResponse2({ data: { success: true } });
+  }
+  return jsonResponse2({ error: "Not found" }, 404);
+}
+
 // src/api/index.ts
 function extractPath(pathname, basePath) {
   const normalized = pathname.replace(/\/$/, "");
@@ -6864,6 +7040,9 @@ function createAPIHandler(cms, options = {}) {
       if (path.startsWith("/chat/history")) {
         return handleChatHistoryAPI(req, cms.config.prisma, !!session);
       }
+      if (path.startsWith("/api-keys")) {
+        return handleApiKeysAPI(req, cms, session, path);
+      }
       return jsonResponse3({ error: "Not found" }, 404);
     } catch (error) {
       console.error("API error:", error);
@@ -6871,6 +7050,951 @@ function createAPIHandler(cms, options = {}) {
         error: error instanceof Error ? error.message : "Internal server error"
       }, 500);
     }
+  };
+}
+
+// src/api/public/shared.ts
+function jsonResponse4(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" }
+  });
+}
+function badRequest(message) {
+  return jsonResponse4({ error: message }, 400);
+}
+function notFound(resource) {
+  return jsonResponse4({ error: `${resource} not found` }, 404);
+}
+function unprocessable(message) {
+  return jsonResponse4({ error: message }, 422);
+}
+function methodNotAllowed() {
+  return jsonResponse4({ error: "Method not allowed" }, 405);
+}
+async function collectStream(stream) {
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let text = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const chunk = decoder.decode(value, { stream: true });
+    for (const line of chunk.split("\n")) {
+      if (!line.startsWith("data: ")) continue;
+      const data = line.slice(6);
+      if (data === "[DONE]") continue;
+      try {
+        const parsed = JSON.parse(data);
+        if (typeof parsed.text === "string") text += parsed.text;
+      } catch {
+      }
+    }
+  }
+  return text;
+}
+function parseListQuery(url) {
+  const status = url.searchParams.get("status") || void 0;
+  const q = url.searchParams.get("q") || void 0;
+  const tags = url.searchParams.getAll("tag").filter(Boolean);
+  const topicId = url.searchParams.get("topicId") || void 0;
+  const sinceRaw = url.searchParams.get("since");
+  const untilRaw = url.searchParams.get("until");
+  const since = sinceRaw ? new Date(sinceRaw) : void 0;
+  const until = untilRaw ? new Date(untilRaw) : void 0;
+  const sortRaw = url.searchParams.get("sort");
+  const sort = sortRaw === "created" || sortRaw === "published" || sortRaw === "title" ? sortRaw : "updated";
+  const orderRaw = url.searchParams.get("order");
+  const order = orderRaw === "asc" ? "asc" : "desc";
+  const page = Math.max(parseInt(url.searchParams.get("page") || "1", 10), 1);
+  const limitRaw = parseInt(url.searchParams.get("limit") || "25", 10);
+  const limit = Math.max(1, Math.min(limitRaw || 25, 200));
+  const includeRaw = url.searchParams.get("include") || "";
+  const include = new Set(includeRaw.split(",").map((s) => s.trim()).filter(Boolean));
+  return { status, q, tags, topicId, since, until, sort, order, page, limit, include };
+}
+var SORT_FIELDS = {
+  updated: "updatedAt",
+  created: "createdAt",
+  published: "publishedAt",
+  title: "title"
+};
+function buildPostsQuery(query) {
+  const where = {};
+  if (query.status === "all") {
+  } else if (query.status) {
+    where.status = query.status;
+  } else {
+    where.status = { not: PostStatus.DELETED };
+  }
+  if (query.topicId) where.topicId = query.topicId;
+  if (query.q) {
+    where.OR = [
+      { title: { contains: query.q, mode: "insensitive" } },
+      { subtitle: { contains: query.q, mode: "insensitive" } },
+      { markdown: { contains: query.q, mode: "insensitive" } }
+    ];
+  }
+  if (query.tags.length > 0) {
+    where.AND = query.tags.map((slug) => ({
+      tags: { some: { tag: { name: slug } } }
+    }));
+  }
+  const dateField = query.status === "published" ? "publishedAt" : "updatedAt";
+  if (query.since || query.until) {
+    const range = {};
+    if (query.since) range.gte = query.since;
+    if (query.until) range.lte = query.until;
+    where[dateField] = range;
+  }
+  const include = {};
+  if (query.include.has("tags") || query.include.size === 0) {
+    include.tags = { include: { tag: true } };
+  }
+  if (query.include.has("revisionCount")) {
+    include._count = { select: { revisions: true } };
+  }
+  return {
+    where,
+    orderBy: { [SORT_FIELDS[query.sort]]: query.order },
+    skip: (query.page - 1) * query.limit,
+    take: query.limit,
+    include
+  };
+}
+function countWords2(text) {
+  if (!text) return 0;
+  return text.split(/\s+/).filter(Boolean).length;
+}
+function withWordCount2(post) {
+  return { ...post, wordCount: countWords2(post.markdown) };
+}
+async function applyStatusTransition(cms, postId, target, extras) {
+  const validTargets = [PostStatus.DRAFT, PostStatus.PUBLISHED, PostStatus.SUGGESTED, PostStatus.DELETED];
+  if (!validTargets.includes(target)) {
+    return { error: `Invalid status: ${target}`, status: 400 };
+  }
+  const existing = await cms.posts.findById(postId);
+  if (!existing) return { error: "Post not found", status: 404 };
+  if (target === PostStatus.DELETED) {
+    const result2 = await cms.posts.delete(postId);
+    return { post: result2 };
+  }
+  if (target === PostStatus.DRAFT) {
+    const result2 = await cms.posts.update(postId, {
+      status: PostStatus.DRAFT,
+      publishedAt: null
+    });
+    return { post: result2 };
+  }
+  if (target === PostStatus.PUBLISHED) {
+    const data = { status: PostStatus.PUBLISHED };
+    if (extras?.publishedAt) data.publishedAt = extras.publishedAt;
+    const result2 = await cms.posts.update(postId, data);
+    return { post: result2 };
+  }
+  const result = await cms.posts.update(postId, { status: target });
+  return { post: result };
+}
+function extractPostIdFromPath(path) {
+  const m = path.match(/^\/v1\/posts\/([^/]+)(?:\/|$)/);
+  if (m && !["drafts", "published", "suggested", "trash", "counts", "by-slug"].includes(m[1])) {
+    return m[1];
+  }
+  return null;
+}
+
+// src/api/public/auth.ts
+var BEARER_PREFIX = "Bearer ";
+async function authenticate(req, cms) {
+  const header = req.headers.get("authorization") || req.headers.get("Authorization");
+  if (!header || !header.startsWith(BEARER_PREFIX)) {
+    return { ok: false, reason: "missing" };
+  }
+  const plaintext = header.slice(BEARER_PREFIX.length).trim();
+  if (!plaintext) return { ok: false, reason: "missing" };
+  const verified = await cms.apiKeys.verify(plaintext);
+  if (!verified) return { ok: false, reason: "invalid" };
+  return { ok: true, key: verified };
+}
+function getClientIp(req) {
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0]?.trim() || null;
+  const real = req.headers.get("x-real-ip");
+  if (real) return real;
+  return null;
+}
+
+// src/api/public/posts.ts
+var STATUS_ALIASES = {
+  drafts: PostStatus.DRAFT,
+  published: PostStatus.PUBLISHED,
+  suggested: PostStatus.SUGGESTED,
+  trash: PostStatus.DELETED
+};
+async function handlePublicPosts(req, cms, _key, path) {
+  const method = req.method;
+  const segments = path.split("/").filter(Boolean);
+  const second = segments[2];
+  const third = segments[3];
+  if (method === "GET" && second === "counts") {
+    const prisma = cms.config.prisma;
+    const grouped = await prisma.post.groupBy({
+      by: ["status"],
+      _count: { _all: true }
+    });
+    const out = { all: 0, draft: 0, published: 0, suggested: 0, deleted: 0 };
+    for (const row of grouped) {
+      out[row.status] = row._count._all;
+      out.all += row._count._all;
+    }
+    return jsonResponse4({ data: out });
+  }
+  if (method === "GET" && second === "by-slug" && third) {
+    const post = await cms.posts.findBySlug(third);
+    if (!post) return notFound("Post");
+    return jsonResponse4({ data: withWordCount2(post) });
+  }
+  if (method === "GET" && second && STATUS_ALIASES[second] && !third) {
+    const prisma = cms.config.prisma;
+    const url = new URL(req.url);
+    url.searchParams.set("status", STATUS_ALIASES[second]);
+    const fakeReq = Object.assign(new Request(url.toString(), { headers: req.headers }), {
+      nextUrl: url
+    });
+    return listPosts(fakeReq, prisma);
+  }
+  if (method === "GET" && !second) {
+    const prisma = cms.config.prisma;
+    return listPosts(req, prisma);
+  }
+  if (method === "GET" && second && !third) {
+    const post = await cms.posts.findById(second);
+    if (!post) return notFound("Post");
+    return jsonResponse4({ data: withWordCount2(post) });
+  }
+  if (method === "POST" && !second) {
+    const body = await req.json().catch(() => ({}));
+    if (!body || typeof body.title !== "string" || !body.title.trim()) {
+      return badRequest("title is required");
+    }
+    const post = await cms.posts.create({
+      title: body.title,
+      subtitle: body.subtitle,
+      slug: body.slug,
+      markdown: typeof body.markdown === "string" ? body.markdown : "",
+      status: body.status || PostStatus.DRAFT,
+      sourceUrl: body.sourceUrl,
+      seoTitle: body.seoTitle,
+      seoDescription: body.seoDescription,
+      seoKeywords: body.seoKeywords,
+      noIndex: body.noIndex,
+      ogImage: body.ogImage,
+      tagIds: Array.isArray(body.tagIds) ? body.tagIds : void 0
+    });
+    return jsonResponse4({ data: post }, 201);
+  }
+  if (method === "PATCH" && second && !third) {
+    const body = await req.json().catch(() => ({}));
+    return updatePost(cms, second, body);
+  }
+  if (method === "PUT" && second && !third) {
+    const body = await req.json().catch(() => ({}));
+    if (!body || typeof body.title !== "string") {
+      return badRequest("PUT requires a full body with at least a title");
+    }
+    return updatePost(cms, second, body);
+  }
+  if (method === "DELETE" && second && !third) {
+    const existing = await cms.posts.findById(second);
+    if (!existing) return notFound("Post");
+    await cms.posts.delete(second);
+    return jsonResponse4({ data: { success: true } });
+  }
+  if (method === "POST" && second && third === "publish") {
+    const body = await req.json().catch(() => ({}));
+    const publishedAt = body?.publishedAt ? new Date(body.publishedAt) : void 0;
+    const result = await applyStatusTransition(cms, second, PostStatus.PUBLISHED, { publishedAt });
+    if ("error" in result) return jsonResponse4({ error: result.error }, result.status);
+    return jsonResponse4({ data: result.post });
+  }
+  if (method === "POST" && second && third === "unpublish") {
+    const result = await applyStatusTransition(cms, second, PostStatus.DRAFT);
+    if ("error" in result) return jsonResponse4({ error: result.error }, result.status);
+    return jsonResponse4({ data: result.post });
+  }
+  if (method === "POST" && second && third === "restore") {
+    const existing = await cms.posts.findById(second);
+    if (!existing) return notFound("Post");
+    if (existing.status !== PostStatus.DELETED) {
+      return unprocessable("Post is not in trash");
+    }
+    const result = await applyStatusTransition(cms, second, PostStatus.DRAFT);
+    if ("error" in result) return jsonResponse4({ error: result.error }, result.status);
+    return jsonResponse4({ data: result.post });
+  }
+  if (method === "POST" && second && third === "approve") {
+    const existing = await cms.posts.findById(second);
+    if (!existing) return notFound("Post");
+    if (existing.status !== PostStatus.SUGGESTED) {
+      return unprocessable("Post is not in suggested state");
+    }
+    const result = await applyStatusTransition(cms, second, PostStatus.DRAFT);
+    if ("error" in result) return jsonResponse4({ error: result.error }, result.status);
+    return jsonResponse4({ data: result.post });
+  }
+  if (method === "POST" && second && third === "status") {
+    const body = await req.json().catch(() => ({}));
+    const target = typeof body.status === "string" ? body.status : "";
+    if (!target) return badRequest("status is required");
+    const result = await applyStatusTransition(cms, second, target);
+    if ("error" in result) return jsonResponse4({ error: result.error }, result.status);
+    return jsonResponse4({ data: result.post });
+  }
+  if (method === "POST" && second && third === "duplicate") {
+    const original = await cms.posts.findById(second);
+    if (!original) return notFound("Post");
+    const cloned = await cms.posts.create({
+      title: `${original.title} (copy)`,
+      subtitle: original.subtitle,
+      slug: `${original.slug}-copy`,
+      markdown: original.markdown,
+      status: PostStatus.DRAFT,
+      seoTitle: original.seoTitle,
+      seoDescription: original.seoDescription,
+      seoKeywords: original.seoKeywords,
+      ogImage: original.ogImage
+    });
+    return jsonResponse4({ data: cloned }, 201);
+  }
+  if (method === "POST" && second && third === "preview-link") {
+    const existing = await cms.posts.findById(second);
+    if (!existing) return notFound("Post");
+    const url = await cms.posts.getPreviewUrl(second);
+    return jsonResponse4({ data: { url } });
+  }
+  if (method === "GET" && second && third === "revisions") {
+    const existing = await cms.posts.findById(second);
+    if (!existing) return notFound("Post");
+    const revisions = await cms.revisions.findByPost(second);
+    return jsonResponse4({ data: revisions });
+  }
+  if (method === "POST" && second && third === "tags") {
+    const existing = await cms.posts.findById(second);
+    if (!existing) return notFound("Post");
+    const body = await req.json().catch(() => ({}));
+    const prisma = cms.config.prisma;
+    let tagIds = Array.isArray(body.tagIds) ? body.tagIds : [];
+    if (Array.isArray(body.tagNames)) {
+      const names = body.tagNames.map((n) => String(n).trim()).filter(Boolean);
+      for (const name2 of names) {
+        let tag = await cms.tags.findByName(name2);
+        if (!tag) tag = await cms.tags.create(name2);
+        tagIds.push(tag.id);
+      }
+    }
+    await prisma.postTag.deleteMany({ where: { postId: second } });
+    if (tagIds.length > 0) {
+      await prisma.postTag.createMany({
+        data: tagIds.map((tagId) => ({ postId: second, tagId })),
+        skipDuplicates: true
+      });
+    }
+    const post = await cms.posts.findById(second);
+    return jsonResponse4({ data: post });
+  }
+  return methodNotAllowed();
+}
+async function listPosts(req, prisma) {
+  const url = new URL(req.url);
+  const query = parseListQuery(url);
+  const built = buildPostsQuery(query);
+  const [data, total] = await Promise.all([
+    prisma.post.findMany(built),
+    prisma.post.count({ where: built.where })
+  ]);
+  return jsonResponse4({
+    data: data.map((post) => withWordCount2(post)),
+    total,
+    page: query.page,
+    totalPages: Math.ceil(total / query.limit) || 1
+  });
+}
+async function updatePost(cms, id, body) {
+  const existing = await cms.posts.findById(id);
+  if (!existing) return notFound("Post");
+  const contentChanging = "title" in body || "subtitle" in body || "markdown" in body;
+  if (contentChanging && existing.markdown) {
+    const recent = await cms.revisions.findByPost(id);
+    const last = recent[0];
+    const isDifferent = !last || last.markdown !== existing.markdown || last.title !== existing.title || last.subtitle !== existing.subtitle;
+    if (isDifferent) {
+      await cms.revisions.create(id, {
+        title: existing.title,
+        subtitle: existing.subtitle ?? void 0,
+        markdown: existing.markdown
+      });
+      await cms.revisions.pruneOldest(id, 50);
+    }
+  }
+  const post = await cms.posts.update(id, body);
+  return jsonResponse4({ data: post });
+}
+
+// src/api/public/tags.ts
+async function handlePublicTags(req, cms, _key, path) {
+  const method = req.method;
+  const segments = path.split("/").filter(Boolean);
+  const id = segments[2];
+  if (method === "GET" && !id) {
+    const tags = await cms.tags.findAll();
+    return jsonResponse4({ data: tags });
+  }
+  if (method === "GET" && id) {
+    const tag = await cms.tags.findById(id);
+    if (!tag) return notFound("Tag");
+    return jsonResponse4({ data: tag });
+  }
+  if (method === "POST" && !id) {
+    const body = await req.json().catch(() => ({}));
+    const name2 = typeof body.name === "string" ? body.name.trim() : "";
+    if (!name2) return badRequest("name is required");
+    const tag = await cms.tags.create(name2);
+    return jsonResponse4({ data: tag }, 201);
+  }
+  if (method === "PATCH" && id) {
+    const body = await req.json().catch(() => ({}));
+    const name2 = typeof body.name === "string" ? body.name.trim() : "";
+    if (!name2) return badRequest("name is required");
+    const tag = await cms.tags.update(id, name2);
+    return jsonResponse4({ data: tag });
+  }
+  if (method === "DELETE" && id) {
+    const existing = await cms.tags.findById(id);
+    if (!existing) return notFound("Tag");
+    await cms.tags.delete(id);
+    return jsonResponse4({ data: { success: true } });
+  }
+  return methodNotAllowed();
+}
+
+// src/api/public/revisions.ts
+async function handlePublicRevisions(req, cms, _key, path) {
+  const method = req.method;
+  const segments = path.split("/").filter(Boolean);
+  const id = segments[2];
+  const action = segments[3];
+  if (method === "GET" && id && !action) {
+    const revision = await cms.revisions.findById(id);
+    if (!revision) return notFound("Revision");
+    return jsonResponse4({ data: revision });
+  }
+  if (method === "POST" && id && action === "restore") {
+    try {
+      const post = await cms.revisions.restore(id);
+      return jsonResponse4({ data: post });
+    } catch {
+      return notFound("Revision");
+    }
+  }
+  return methodNotAllowed();
+}
+
+// src/api/public/topics.ts
+async function handlePublicTopics(req, cms, _key, path) {
+  const method = req.method;
+  const segments = path.split("/").filter(Boolean);
+  if (segments[1] === "auto-draft" && segments[2] === "run" && method === "POST") {
+    const body = await req.json().catch(() => ({}));
+    const skipFrequencyCheck = body?.skipFrequencyCheck === true;
+    const results = await cms.autoDraft.run(void 0, skipFrequencyCheck);
+    return jsonResponse4({ data: results });
+  }
+  if (segments[1] !== "topics") return notFound("Resource");
+  const id = segments[2];
+  const action = segments[3];
+  if (method === "GET" && !id) {
+    const topics = await cms.topics.findAll();
+    return jsonResponse4({ data: topics });
+  }
+  if (method === "GET" && id && !action) {
+    const topic = await cms.topics.findById(id);
+    if (!topic) return notFound("Topic");
+    return jsonResponse4({ data: topic });
+  }
+  if (method === "POST" && id && action === "run") {
+    const body = await req.json().catch(() => ({}));
+    const skipFrequencyCheck = body?.skipFrequencyCheck === true;
+    const results = await cms.autoDraft.run(id, skipFrequencyCheck);
+    return jsonResponse4({ data: results });
+  }
+  return methodNotAllowed();
+}
+
+// src/ai/index.ts
+init_models();
+init_provider();
+init_generate2();
+init_chat2();
+init_builders2();
+init_prompts();
+
+// src/ai/parse.ts
+function parseGeneratedContent(markdown) {
+  const lines = markdown.trim().split("\n");
+  let title2 = "";
+  let subtitle = "";
+  let bodyStartIndex = 0;
+  if (lines[0]?.startsWith("# ")) {
+    title2 = lines[0].replace(/^#\s+/, "").trim();
+    bodyStartIndex = 1;
+  }
+  for (let i = bodyStartIndex; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line === "") continue;
+    const italicMatch = line.match(/^\*(.+)\*$/) || line.match(/^_(.+)_$/);
+    if (italicMatch) {
+      subtitle = italicMatch[1].trim();
+      bodyStartIndex = i + 1;
+    }
+    break;
+  }
+  while (bodyStartIndex < lines.length && lines[bodyStartIndex].trim() === "") {
+    bodyStartIndex++;
+  }
+  const body = lines.slice(bodyStartIndex).join("\n").trim();
+  return { title: title2, subtitle, body };
+}
+
+// src/api/public/ai.ts
+var MAX_STYLE_EXAMPLES = 5;
+var MAX_WORDS_PER_EXAMPLE = 500;
+async function fetchStyleExamples2(cms) {
+  try {
+    const posts = await cms.posts.findPublished();
+    if (posts.length === 0) return "";
+    const examples = posts.slice(0, MAX_STYLE_EXAMPLES).map((p) => {
+      const words = p.markdown.split(/\s+/);
+      const truncated = words.length > MAX_WORDS_PER_EXAMPLE ? words.slice(0, MAX_WORDS_PER_EXAMPLE).join(" ") + "..." : p.markdown;
+      return `## ${p.title}
+${p.subtitle ? `*${p.subtitle}*
+` : ""}${truncated}`;
+    }).join("\n\n---\n\n");
+    return `The following are examples of the author's published work. Use these to match their voice, tone, and writing style:
+
+${examples}`;
+  } catch {
+    return "";
+  }
+}
+function resolveKeys(cms, settings) {
+  return {
+    anthropicKey: cms.config.ai?.anthropicKey || settings.anthropicKey || void 0,
+    openaiKey: cms.config.ai?.openaiKey || settings.openaiKey || void 0
+  };
+}
+async function handlePublicAI(req, cms, _key, path) {
+  const method = req.method;
+  if (method === "GET" && path === "/v1/ai/models") {
+    const settings = await cms.aiSettings.get();
+    const { anthropicKey, openaiKey } = resolveKeys(cms, settings);
+    const options = await getModelOptions({ anthropicKey, openaiKey });
+    return jsonResponse4({ data: options });
+  }
+  if (method === "GET" && path === "/v1/ai/settings") {
+    const settings = await cms.aiSettings.get();
+    return jsonResponse4({
+      data: {
+        rules: settings.rules,
+        chatRules: settings.chatRules,
+        rewriteRules: settings.rewriteRules,
+        autoDraftRules: settings.autoDraftRules,
+        planRules: settings.planRules,
+        defaultModel: settings.defaultModel,
+        generateTemplate: settings.generateTemplate,
+        chatTemplate: settings.chatTemplate,
+        rewriteTemplate: settings.rewriteTemplate,
+        autoDraftTemplate: settings.autoDraftTemplate,
+        planTemplate: settings.planTemplate,
+        expandPlanTemplate: settings.expandPlanTemplate,
+        agentTemplate: settings.agentTemplate,
+        hasAnthropicKey: !!(cms.config.ai?.anthropicKey || settings.anthropicKey),
+        hasOpenaiKey: !!(cms.config.ai?.openaiKey || settings.openaiKey)
+      }
+    });
+  }
+  if (method !== "POST") return methodNotAllowed();
+  if (path === "/v1/ai/generate") {
+    return runGenerate(cms, req, { mode: "standard" });
+  }
+  if (path === "/v1/ai/generate/raw") {
+    return runGenerateRaw(cms, req);
+  }
+  if (path === "/v1/ai/plan") {
+    return runPlan(cms, req);
+  }
+  if (path === "/v1/ai/expand-plan") {
+    return runGenerate(cms, req, { mode: "expand_plan" });
+  }
+  if (path === "/v1/ai/rewrite") {
+    return runRewrite(cms, req);
+  }
+  if (path === "/v1/ai/chat") {
+    return runChat(cms, req);
+  }
+  if (path === "/v1/ai/search") {
+    return runSearch(cms, req);
+  }
+  const agentMatch = path.match(/^\/v1\/posts\/([^/]+)\/agent$/);
+  if (agentMatch) {
+    return runAgent(cms, req, agentMatch[1]);
+  }
+  return jsonResponse4({ error: "Not found" }, 404);
+}
+async function runGenerate(cms, req, opts) {
+  const body = await req.json().catch(() => ({}));
+  const settings = await cms.aiSettings.get();
+  const { anthropicKey, openaiKey } = resolveKeys(cms, settings);
+  const styleExamples = await fetchStyleExamples2(cms);
+  const model = body.model || settings.defaultModel;
+  const wordCount2 = typeof body.wordCount === "number" ? body.wordCount : void 0;
+  const useWebSearch = body.useWebSearch === true;
+  const useThinking = body.useThinking === true;
+  const save = body.save !== false;
+  let stream;
+  if (opts.mode === "expand_plan") {
+    const plan = typeof body.plan === "string" ? body.plan : "";
+    if (!plan.trim()) return badRequest("plan is required");
+    stream = await expandPlanStream({
+      plan,
+      model,
+      rules: settings.rules,
+      template: settings.expandPlanTemplate ?? null,
+      styleExamples,
+      wordCount: wordCount2,
+      anthropicKey,
+      openaiKey
+    });
+  } else {
+    const prompt = typeof body.prompt === "string" ? body.prompt : "";
+    if (!prompt.trim()) return badRequest("prompt is required");
+    stream = await generateStream({
+      prompt,
+      model,
+      wordCount: wordCount2,
+      rules: settings.rules,
+      template: settings.generateTemplate ?? null,
+      styleExamples,
+      anthropicKey,
+      openaiKey,
+      useWebSearch,
+      useThinking
+    });
+  }
+  const text = await collectStream(stream);
+  const parsed = parseGeneratedContent(text);
+  if (!save) {
+    return jsonResponse4({ data: { ...parsed, raw: text } });
+  }
+  const created = await cms.posts.create({
+    title: parsed.title || "Untitled",
+    subtitle: parsed.subtitle || void 0,
+    slug: typeof body.slug === "string" ? body.slug : void 0,
+    markdown: parsed.body,
+    status: PostStatus.DRAFT,
+    tagIds: Array.isArray(body.tagIds) ? body.tagIds : void 0
+  });
+  return jsonResponse4({ data: { ...parsed, raw: text, post: created } }, 201);
+}
+async function runGenerateRaw(cms, req) {
+  const body = await req.json().catch(() => ({}));
+  const prompt = typeof body.prompt === "string" ? body.prompt : "";
+  if (!prompt.trim()) return badRequest("prompt is required");
+  const settings = await cms.aiSettings.get();
+  const { anthropicKey, openaiKey } = resolveKeys(cms, settings);
+  const resolved = await resolveModel(
+    body.model,
+    async () => settings.defaultModel,
+    { anthropicKey, openaiKey }
+  );
+  const result = await generate(
+    resolved.id,
+    typeof body.system === "string" ? body.system : "",
+    prompt,
+    {
+      anthropicKey,
+      openaiKey,
+      maxTokens: typeof body.maxTokens === "number" ? body.maxTokens : 4096,
+      useWebSearch: body.useWebSearch === true
+    }
+  );
+  return jsonResponse4({
+    data: {
+      text: result.text,
+      usage: { inputTokens: result.inputTokens, outputTokens: result.outputTokens }
+    }
+  });
+}
+async function runPlan(cms, req) {
+  const body = await req.json().catch(() => ({}));
+  const prompt = typeof body.prompt === "string" ? body.prompt : "";
+  if (!prompt.trim()) return badRequest("prompt is required");
+  const settings = await cms.aiSettings.get();
+  const { anthropicKey, openaiKey } = resolveKeys(cms, settings);
+  const styleExamples = await fetchStyleExamples2(cms);
+  const { chatStream: chatStream2 } = await Promise.resolve().then(() => (init_chat2(), chat_exports));
+  const stream = await chatStream2({
+    messages: [{ role: "user", content: prompt }],
+    model: body.model || settings.defaultModel,
+    mode: "plan",
+    chatRules: settings.chatRules,
+    rules: settings.rules,
+    template: settings.chatTemplate ?? null,
+    planTemplate: settings.planTemplate ?? null,
+    planRules: settings.planRules ?? "",
+    styleExamples,
+    anthropicKey,
+    openaiKey,
+    useWebSearch: body.useWebSearch === true,
+    useThinking: body.useThinking === true
+  });
+  const text = await collectStream(stream);
+  return jsonResponse4({ data: { plan: text } });
+}
+async function runRewrite(cms, req) {
+  const body = await req.json().catch(() => ({}));
+  const text = typeof body.text === "string" ? body.text : "";
+  if (!text.trim()) return badRequest("text is required");
+  const settings = await cms.aiSettings.get();
+  const { anthropicKey, openaiKey } = resolveKeys(cms, settings);
+  const styleExamples = await fetchStyleExamples2(cms);
+  const systemPrompt = buildRewritePrompt2({
+    rewriteRules: settings.rewriteRules ?? "",
+    rules: settings.rules,
+    template: settings.rewriteTemplate ?? null,
+    styleExamples
+  });
+  const stream = await createStream({
+    model: body.model || settings.defaultModel,
+    messages: [
+      { role: "system", content: systemPrompt },
+      {
+        role: "user",
+        content: `Rewrite the following text, preserving meaning but improving clarity and style:
+
+${text}`
+      }
+    ],
+    anthropicKey,
+    openaiKey,
+    maxTokens: 2048
+  });
+  const rewritten = await collectStream(stream);
+  return jsonResponse4({ data: { text: rewritten.trim() } });
+}
+async function runChat(cms, req) {
+  const body = await req.json().catch(() => ({}));
+  const messages = Array.isArray(body.messages) ? body.messages : null;
+  if (!messages || messages.length === 0) return badRequest("messages array is required");
+  const settings = await cms.aiSettings.get();
+  const { anthropicKey, openaiKey } = resolveKeys(cms, settings);
+  const styleExamples = await fetchStyleExamples2(cms);
+  const { chatStream: chatStream2 } = await Promise.resolve().then(() => (init_chat2(), chat_exports));
+  const stream = await chatStream2({
+    messages,
+    model: body.model || settings.defaultModel,
+    mode: body.mode === "plan" || body.mode === "agent" || body.mode === "search" ? body.mode : "ask",
+    essayContext: body.essayContext || null,
+    chatRules: settings.chatRules,
+    rules: settings.rules,
+    template: settings.chatTemplate ?? null,
+    planTemplate: settings.planTemplate ?? null,
+    planRules: settings.planRules ?? "",
+    agentTemplate: settings.agentTemplate ?? null,
+    styleExamples,
+    anthropicKey,
+    openaiKey,
+    useWebSearch: body.useWebSearch === true,
+    useThinking: body.useThinking === true
+  });
+  const text = await collectStream(stream);
+  return jsonResponse4({ data: { text } });
+}
+async function runSearch(cms, req) {
+  const body = await req.json().catch(() => ({}));
+  const query = typeof body.query === "string" ? body.query : "";
+  if (!query.trim()) return badRequest("query is required");
+  const settings = await cms.aiSettings.get();
+  const { anthropicKey, openaiKey } = resolveKeys(cms, settings);
+  const result = await generate(
+    body.model || settings.defaultModel,
+    DEFAULT_SEARCH_ONLY_PROMPT,
+    query,
+    {
+      anthropicKey,
+      openaiKey,
+      maxTokens: 4096,
+      useWebSearch: true
+    }
+  );
+  return jsonResponse4({
+    data: {
+      text: result.text,
+      usage: { inputTokens: result.inputTokens, outputTokens: result.outputTokens }
+    }
+  });
+}
+async function runAgent(cms, req, postId) {
+  const post = await cms.posts.findById(postId);
+  if (!post) return notFound("Post");
+  const body = await req.json().catch(() => ({}));
+  const instruction = typeof body.instruction === "string" ? body.instruction : "";
+  if (!instruction.trim()) return badRequest("instruction is required");
+  const requestedTarget = body.target === "in-place" || body.target === "new-draft" ? body.target : null;
+  const defaultTarget = post.status === PostStatus.PUBLISHED ? "new-draft" : "in-place";
+  const target = requestedTarget ?? defaultTarget;
+  const settings = await cms.aiSettings.get();
+  const { anthropicKey, openaiKey } = resolveKeys(cms, settings);
+  const styleExamples = await fetchStyleExamples2(cms);
+  const { chatStream: chatStream2 } = await Promise.resolve().then(() => (init_chat2(), chat_exports));
+  const stream = await chatStream2({
+    messages: [{ role: "user", content: instruction }],
+    model: body.model || settings.defaultModel,
+    mode: "agent",
+    essayContext: {
+      title: post.title,
+      subtitle: post.subtitle ?? void 0,
+      markdown: post.markdown
+    },
+    chatRules: settings.chatRules,
+    rules: settings.rules,
+    template: settings.chatTemplate ?? null,
+    agentTemplate: settings.agentTemplate ?? null,
+    styleExamples,
+    anthropicKey,
+    openaiKey,
+    useWebSearch: body.useWebSearch === true,
+    useThinking: body.useThinking === true
+  });
+  const text = await collectStream(stream);
+  const parsed = parseGeneratedContent(text);
+  const newTitle = parsed.title || post.title;
+  const newSubtitle = parsed.subtitle || post.subtitle || void 0;
+  const newMarkdown = parsed.body || text;
+  if (target === "new-draft") {
+    const created = await cms.posts.create({
+      title: `${newTitle} (agent draft)`,
+      subtitle: newSubtitle,
+      slug: `${post.slug}-agent`,
+      markdown: newMarkdown,
+      status: PostStatus.DRAFT,
+      sourceUrl: post.slug
+    });
+    return jsonResponse4({ data: { post: created, target, raw: text } }, 201);
+  }
+  const recent = await cms.revisions.findByPost(postId);
+  const last = recent[0];
+  if (!last || last.markdown !== post.markdown || last.title !== post.title) {
+    await cms.revisions.create(postId, {
+      title: post.title,
+      subtitle: post.subtitle ?? void 0,
+      markdown: post.markdown
+    });
+    await cms.revisions.pruneOldest(postId, 50);
+  }
+  const updated = await cms.posts.update(postId, {
+    title: newTitle,
+    subtitle: newSubtitle,
+    markdown: newMarkdown
+  });
+  return jsonResponse4({ data: { post: updated, target, raw: text } });
+}
+
+// src/api/public/me.ts
+async function handlePublicMe(req, cms, key, _path) {
+  if (req.method !== "GET") return methodNotAllowed();
+  const full = await cms.apiKeys.findById(key.id);
+  if (!full) return jsonResponse4({ error: "Key not found" }, 404);
+  return jsonResponse4({
+    data: {
+      id: full.id,
+      name: full.name,
+      prefix: full.prefix,
+      ownerUserId: full.ownerUserId,
+      createdAt: full.createdAt,
+      lastUsedAt: full.lastUsedAt
+    }
+  });
+}
+
+// src/api/public/index.ts
+function extractV1Path(pathname) {
+  const idx = pathname.indexOf("/v1");
+  if (idx === -1) return pathname;
+  return pathname.slice(idx);
+}
+function createPublicAPIHandler(cms) {
+  return async (req) => {
+    const path = extractV1Path(req.nextUrl.pathname);
+    const method = req.method;
+    const ip = getClientIp(req);
+    const userAgent = req.headers.get("user-agent");
+    const auth = await authenticate(req, cms);
+    if (!auth.ok) {
+      const status2 = 401;
+      cms.apiAuditLog.append({
+        apiKeyId: null,
+        apiKeyName: "<unauthorized>",
+        method,
+        path,
+        postId: extractPostIdFromPath(path),
+        status: status2,
+        ip,
+        userAgent
+      });
+      const message = auth.reason === "missing" ? "Missing or malformed Authorization header" : "Invalid or revoked API key";
+      return jsonResponse4({ error: message }, status2);
+    }
+    const { key } = auth;
+    let response;
+    try {
+      if (path === "/v1/me") {
+        response = await handlePublicMe(req, cms, key, path);
+      } else if (/^\/v1\/posts\/[^/]+\/agent$/.test(path)) {
+        response = await handlePublicAI(req, cms, key, path);
+      } else if (path.startsWith("/v1/posts")) {
+        response = await handlePublicPosts(req, cms, key, path);
+      } else if (path.startsWith("/v1/tags")) {
+        response = await handlePublicTags(req, cms, key, path);
+      } else if (path.startsWith("/v1/revisions")) {
+        response = await handlePublicRevisions(req, cms, key, path);
+      } else if (path.startsWith("/v1/topics") || path.startsWith("/v1/auto-draft")) {
+        response = await handlePublicTopics(req, cms, key, path);
+      } else if (path.startsWith("/v1/ai")) {
+        response = await handlePublicAI(req, cms, key, path);
+      } else {
+        response = jsonResponse4({ error: "Not found" }, 404);
+      }
+    } catch (err) {
+      console.error("[public-api]", err);
+      response = jsonResponse4(
+        { error: err instanceof Error ? err.message : "Internal server error" },
+        500
+      );
+    }
+    const status = response.status;
+    cms.apiAuditLog.append({
+      apiKeyId: key.id,
+      apiKeyName: key.name,
+      method,
+      path,
+      postId: extractPostIdFromPath(path),
+      status,
+      ip,
+      userAgent
+    });
+    cms.apiKeys.touch(key.id);
+    return response;
   };
 }
 
@@ -6911,41 +8035,6 @@ function filterByKeywords(articles, keywords) {
     const searchText = `${article.title} ${article.summary || ""}`.toLowerCase();
     return lowerKeywords.some((keyword) => searchText.includes(keyword));
   });
-}
-
-// src/ai/index.ts
-init_models();
-init_provider();
-init_generate2();
-init_chat2();
-init_builders2();
-init_prompts();
-
-// src/ai/parse.ts
-function parseGeneratedContent(markdown) {
-  const lines = markdown.trim().split("\n");
-  let title2 = "";
-  let subtitle = "";
-  let bodyStartIndex = 0;
-  if (lines[0]?.startsWith("# ")) {
-    title2 = lines[0].replace(/^#\s+/, "").trim();
-    bodyStartIndex = 1;
-  }
-  for (let i = bodyStartIndex; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (line === "") continue;
-    const italicMatch = line.match(/^\*(.+)\*$/) || line.match(/^_(.+)_$/);
-    if (italicMatch) {
-      subtitle = italicMatch[1].trim();
-      bodyStartIndex = i + 1;
-    }
-    break;
-  }
-  while (bodyStartIndex < lines.length && lines[bodyStartIndex].trim() === "") {
-    bodyStartIndex++;
-  }
-  const body = lines.slice(bodyStartIndex).join("\n").trim();
-  return { title: title2, subtitle, body };
 }
 
 // src/lib/markdown.ts
@@ -7419,11 +8508,14 @@ function createAutoblogger(config) {
     aiSettings: createAISettingsData(prisma),
     topics: createTopicsData(prisma),
     newsItems: createNewsItemsData(prisma),
-    users: createUsersData(prisma)
+    users: createUsersData(prisma),
+    apiKeys: createApiKeysData(prisma),
+    apiAuditLog: createApiAuditLogData(prisma)
   };
   const server = {
     ...baseServer,
     handleRequest: async () => new Response("Not initialized", { status: 500 }),
+    handlePublicRequest: async () => new Response("Not initialized", { status: 500 }),
     autoDraft: {
       run: async (topicId, skipFrequencyCheck) => {
         const autoDraftConfig = {
@@ -7437,10 +8529,11 @@ function createAutoblogger(config) {
     }
   };
   const apiHandler = createAPIHandler(server);
-  server.handleRequest = async (req, path) => {
+  const publicApiHandler = createPublicAPIHandler(server);
+  function buildHandlerRequest(req, virtualBase, path) {
     const normalizedPath = "/" + path.replace(/^\//, "");
     const originalUrl = new URL(req.url);
-    const newUrl = new URL(originalUrl.origin + "/api/cms" + normalizedPath);
+    const newUrl = new URL(originalUrl.origin + virtualBase + normalizedPath);
     originalUrl.searchParams.forEach((value, key) => {
       newUrl.searchParams.set(key, value);
     });
@@ -7455,7 +8548,13 @@ function createAutoblogger(config) {
       value: newUrl,
       writable: false
     });
-    return apiHandler(handlerReq);
+    return handlerReq;
+  }
+  server.handleRequest = async (req, path) => {
+    return apiHandler(buildHandlerRequest(req, "/api/cms", path));
+  };
+  server.handlePublicRequest = async (req, path) => {
+    return publicApiHandler(buildHandlerRequest(req, "/writer/api", path));
   };
   return server;
 }

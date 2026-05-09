@@ -102,6 +102,7 @@ model User {
   role      String    @default("writer")
   createdAt DateTime  @default(now())
   comments  Comment[]
+  apiKeys   ApiKey[]
 }
 
 model Tag {
@@ -192,6 +193,44 @@ model NewsItem {
   postId      String?            @unique
   post        Post?              @relation(fields: [postId], references: [id])
   createdAt   DateTime           @default(now())
+}
+
+// ==========================================
+// PUBLIC API - bearer-token access + audit log
+// ==========================================
+
+model ApiKey {
+  id          String    @id @default(uuid())
+  name        String
+  prefix      String    @unique // first 12 chars of plaintext, e.g. "ab_live_3f8c"
+  hash        String    @unique // sha256(plaintext)
+  ownerUserId String?
+  owner       User?     @relation(fields: [ownerUserId], references: [id])
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+
+  auditLogs   ApiAuditLog[]
+
+  @@index([revokedAt])
+}
+
+model ApiAuditLog {
+  id         String   @id @default(uuid())
+  apiKeyId   String?
+  apiKey     ApiKey?  @relation(fields: [apiKeyId], references: [id], onDelete: SetNull)
+  apiKeyName String   // denormalized so log survives key deletion
+  method     String
+  path       String
+  postId     String?
+  status     Int
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([apiKeyId, createdAt])
+  @@index([postId, createdAt])
+  @@index([createdAt])
 }
 
 // ==========================================
