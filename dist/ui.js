@@ -627,7 +627,6 @@ function isMarkInSet(marks, type, attributes = {}) {
   return !!findMarkInSet(marks, type, attributes);
 }
 function getMarkRange($pos, type, attributes) {
-  var _a;
   if (!$pos || !type) {
     return;
   }
@@ -638,7 +637,12 @@ function getMarkRange($pos, type, attributes) {
   if (!start.node || !start.node.marks.some((mark2) => mark2.type === type)) {
     return;
   }
-  attributes = attributes || ((_a = start.node.marks[0]) == null ? void 0 : _a.attrs);
+  if (!attributes) {
+    const firstMark = start.node.marks.find((mark2) => mark2.type === type);
+    if (firstMark) {
+      attributes = firstMark.attrs;
+    }
+  }
   const mark = findMarkInSet([...start.node.marks], type, attributes);
   if (!mark) {
     return;
@@ -1113,6 +1117,67 @@ function getAttributesFromExtensions(extensions) {
   });
   return extensionAttributes;
 }
+function splitStyleDeclarations(styles) {
+  const result = [];
+  let current = "";
+  let inSingleQuote = false;
+  let inDoubleQuote = false;
+  let parenDepth = 0;
+  const length = styles.length;
+  for (let i = 0; i < length; i += 1) {
+    const char = styles[i];
+    if (char === "'" && !inDoubleQuote) {
+      inSingleQuote = !inSingleQuote;
+      current += char;
+      continue;
+    }
+    if (char === '"' && !inSingleQuote) {
+      inDoubleQuote = !inDoubleQuote;
+      current += char;
+      continue;
+    }
+    if (!inSingleQuote && !inDoubleQuote) {
+      if (char === "(") {
+        parenDepth += 1;
+        current += char;
+        continue;
+      }
+      if (char === ")" && parenDepth > 0) {
+        parenDepth -= 1;
+        current += char;
+        continue;
+      }
+      if (char === ";" && parenDepth === 0) {
+        result.push(current);
+        current = "";
+        continue;
+      }
+    }
+    current += char;
+  }
+  if (current) {
+    result.push(current);
+  }
+  return result;
+}
+function parseStyleEntries(styles) {
+  const pairs = [];
+  const declarations = splitStyleDeclarations(styles || "");
+  const numDeclarations = declarations.length;
+  for (let i = 0; i < numDeclarations; i += 1) {
+    const declaration = declarations[i];
+    const firstColonIndex = declaration.indexOf(":");
+    if (firstColonIndex === -1) {
+      continue;
+    }
+    const property = declaration.slice(0, firstColonIndex).trim();
+    const value = declaration.slice(firstColonIndex + 1).trim();
+    if (property && value) {
+      pairs.push([property, value]);
+    }
+  }
+  return pairs;
+}
 function mergeAttributes(...objects) {
   return objects.filter((item) => !!item).reduce((items, item) => {
     const mergedAttributes = { ...items };
@@ -1128,17 +1193,7 @@ function mergeAttributes(...objects) {
         const insertClasses = valueClasses.filter((valueClass) => !existingClasses.includes(valueClass));
         mergedAttributes[key] = [...existingClasses, ...insertClasses].join(" ");
       } else if (key === "style") {
-        const newStyles = value ? value.split(";").map((style2) => style2.trim()).filter(Boolean) : [];
-        const existingStyles = mergedAttributes[key] ? mergedAttributes[key].split(";").map((style2) => style2.trim()).filter(Boolean) : [];
-        const styleMap = /* @__PURE__ */ new Map();
-        existingStyles.forEach((style2) => {
-          const [property, val] = style2.split(":").map((part) => part.trim());
-          styleMap.set(property, val);
-        });
-        newStyles.forEach((style2) => {
-          const [property, val] = style2.split(":").map((part) => part.trim());
-          styleMap.set(property, val);
-        });
+        const styleMap = new Map([...parseStyleEntries(mergedAttributes[key]), ...parseStyleEntries(value)]);
         mergedAttributes[key] = Array.from(styleMap.entries()).map(([property, val]) => `${property}: ${val}`).join("; ");
       } else {
         mergedAttributes[key] = value;
@@ -1573,7 +1628,7 @@ function isNodeEmpty(node, {
       return true;
     }
     if (node.isText) {
-      return /^\s*$/m.test((_a = node.text) != null ? _a : "");
+      return !/\S/.test((_a = node.text) != null ? _a : "");
     }
   }
   if (node.isText) {
@@ -1637,6 +1692,16 @@ function ensureMarks(state, splittableMarks) {
     const filteredMarks = marks.filter((mark) => splittableMarks == null ? void 0 : splittableMarks.includes(mark.type.name));
     state.tr.ensureMarks(filteredMarks);
   }
+}
+function createInnerSelectionForWholeDocList(tr) {
+  const doc = tr.doc;
+  const list = doc.firstChild;
+  if (!list) {
+    return null;
+  }
+  const $start = doc.resolve(1);
+  const $end = doc.resolve(list.nodeSize - 1);
+  return import_state12.TextSelection.between($start, $end);
 }
 function run(config) {
   var _a;
@@ -1702,7 +1767,7 @@ function run(config) {
 }
 function inputRulesPlugin(props) {
   const { editor, rules } = props;
-  const plugin = new import_state13.Plugin({
+  const plugin = new import_state14.Plugin({
     state: {
       init() {
         return null;
@@ -1907,7 +1972,7 @@ function pasteRulesPlugin(props) {
     return tr;
   };
   const plugins = rules.map((rule) => {
-    return new import_state14.Plugin({
+    return new import_state15.Plugin({
       // we register a global drag handler to track the current drag source element
       view(view) {
         const handleDragstart = (event) => {
@@ -2118,7 +2183,7 @@ function wrappingInputRule(config) {
 function canInsertNode(state, nodeType) {
   const { selection } = state;
   const { $from } = selection;
-  if (selection instanceof import_state23.NodeSelection) {
+  if (selection instanceof import_state24.NodeSelection) {
     const index = $from.index();
     const parent = $from.parent;
     return parent.canReplaceWith(index, index + 1, nodeType);
@@ -2588,17 +2653,21 @@ function renderNestedMarkdownContent(node, h2, prefixOrGenerator, ctx) {
   const prefix = typeof prefixOrGenerator === "function" ? prefixOrGenerator(ctx) : prefixOrGenerator;
   const [content, ...children] = node.content;
   const mainContent = h2.renderChildren([content]);
-  const output = [`${prefix}${mainContent}`];
+  let output = `${prefix}${mainContent}`;
   if (children && children.length > 0) {
-    children.forEach((child) => {
-      const childContent = h2.renderChildren([child]);
-      if (childContent) {
-        const indentedChild = childContent.split("\n").map((line) => line ? h2.indent(line) : "").join("\n");
-        output.push(indentedChild);
+    children.forEach((child, index) => {
+      var _a, _b;
+      const childContent = (_b = (_a = h2.renderChild) == null ? void 0 : _a.call(h2, child, index + 1)) != null ? _b : h2.renderChildren([child]);
+      if (childContent !== void 0 && childContent !== null) {
+        const indentedChild = childContent.split("\n").map((line) => line ? h2.indent(line) : h2.indent("")).join("\n");
+        output += child.type === "paragraph" ? `
+
+${indentedChild}` : `
+${indentedChild}`;
       }
     });
   }
-  return output.join("\n");
+  return output;
 }
 function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
   const { state } = editor;
@@ -2667,12 +2736,15 @@ function markPasteRule(config) {
         }
         markEnd = range.from + startSpaces + captureGroup.length;
         tr.addMark(range.from + startSpaces, markEnd, config.type.create(attributes || {}));
-        tr.removeStoredMark(config.type);
+        const isMatchAtEndOfText = match.index !== void 0 && match.input !== void 0 && match.index + match[0].length >= match.input.length;
+        if (!isMatchAtEndOfText) {
+          tr.removeStoredMark(config.type);
+        }
       }
     }
   });
 }
-var import_transform, import_commands, import_state, import_commands2, import_commands3, import_state2, import_state3, import_state4, import_model, import_model2, import_state5, import_transform2, import_commands4, import_transform3, import_transform4, import_commands5, import_commands6, import_commands7, import_commands8, import_schema_list, import_commands9, import_state6, import_commands10, import_commands11, import_commands12, import_commands13, import_commands14, import_transform5, import_model3, import_model4, import_model5, import_model6, import_model7, import_state7, import_commands15, import_state8, import_state9, import_schema_list2, import_state10, import_transform6, import_model8, import_state11, import_transform7, import_transform8, import_commands16, import_schema_list3, import_state12, import_view, import_keymap, import_model9, import_state13, import_model10, import_state14, import_state15, import_transform9, import_state16, import_state17, import_state18, import_state19, import_state20, import_state21, import_state22, import_transform10, import_state23, import_state24, __defProp2, __export2, CommandManager, commands_exports, blur, clearContent, clearNodes, command, createParagraphNear, cut, deleteCurrentNode, deleteNode, deleteRange, deleteSelection, enter, exitCode, extendMarkRange, first, focus, forEach, insertContent, removeWhitespaces, isFragment, insertContentAt, joinUp, joinDown, joinBackward, joinForward, joinItemBackward, joinItemForward, joinTextblockBackward, joinTextblockForward, keyboardShortcut, lift, liftEmptyBlock, liftListItem, newlineInCode, resetAttributes, scrollIntoView, selectAll, selectNodeBackward, selectNodeForward, selectParentNode, selectTextblockEnd, selectTextblockStart, setContent, getNodeAtPosition, getTextContentFromNodes, isAtEndOfNode, isAtStartOfNode, setMark, setMeta, setNode, setNodeSelection, setTextDirection, setTextSelection, sinkListItem, splitBlock, splitListItem, joinListBackwards, joinListForwards, toggleList, toggleMark, toggleNode, toggleWrap, undoInputRule, unsetAllMarks, unsetMark, unsetTextDirection, updateAttributes, wrapIn, wrapInList, InputRule, inputRuleMatcherHandler, Extendable, Mark, PasteRule, pasteRuleMatcherHandler, tiptapDragFromOtherEditor, createClipboardPasteEvent, ExtensionManager, extensions_exports, Extension, ClipboardTextSerializer, Commands, Delete, Drop, Editable, focusEventsPluginKey, FocusEvents, Keymap, Paste, Tabindex, TextDirection, markdown_exports, Node3;
+var import_transform, import_commands, import_state, import_commands2, import_commands3, import_state2, import_state3, import_state4, import_model, import_model2, import_state5, import_transform2, import_commands4, import_transform3, import_transform4, import_commands5, import_commands6, import_commands7, import_commands8, import_schema_list, import_commands9, import_state6, import_commands10, import_commands11, import_commands12, import_commands13, import_commands14, import_transform5, import_model3, import_model4, import_model5, import_model6, import_model7, import_state7, import_commands15, import_state8, import_state9, import_schema_list2, import_state10, import_transform6, import_model8, import_state11, import_transform7, import_state12, import_transform8, import_commands16, import_schema_list3, import_state13, import_view, import_keymap, import_model9, import_state14, import_model10, import_state15, import_state16, import_transform9, import_state17, import_state18, import_state19, import_state20, import_state21, import_state22, import_state23, import_transform10, import_state24, import_state25, __defProp2, __export2, CommandManager, commands_exports, blur, clearContent, clearNodes, command, createParagraphNear, cut, deleteCurrentNode, deleteNode, deleteRange, deleteSelection, enter, exitCode, extendMarkRange, first, focus, forEach, insertContent, removeWhitespaces, isFragment, insertContentAt, joinUp, joinDown, joinBackward, joinForward, joinItemBackward, joinItemForward, joinTextblockBackward, joinTextblockForward, keyboardShortcut, lift, liftEmptyBlock, liftListItem, newlineInCode, resetAttributes, scrollIntoView, selectAll, selectNodeBackward, selectNodeForward, selectParentNode, selectTextblockEnd, selectTextblockStart, setContent, getNodeAtPosition, getTextContentFromNodes, isAtEndOfNode, isAtStartOfNode, setMark, setMeta, setNode, setNodeSelection, setTextDirection, setTextSelection, sinkListItem, splitBlock, splitListItem, joinListBackwards, joinListForwards, toggleList, toggleMark, toggleNode, toggleWrap, undoInputRule, unsetAllMarks, unsetMark, unsetTextDirection, updateAttributes, wrapIn, wrapInList, InputRule, inputRuleMatcherHandler, Extendable, Mark, PasteRule, pasteRuleMatcherHandler, tiptapDragFromOtherEditor, createClipboardPasteEvent, ExtensionManager, extensions_exports, Extension, ClipboardTextSerializer, Commands, Delete, Drop, Editable, focusEventsPluginKey, FocusEvents, Keymap, Paste, Tabindex, TextDirection, markdown_exports, Node3;
 var init_dist = __esm({
   "node_modules/@tiptap/core/dist/index.js"() {
     "use strict";
@@ -2719,28 +2791,29 @@ var init_dist = __esm({
     import_model8 = require("@tiptap/pm/model");
     import_state11 = require("@tiptap/pm/state");
     import_transform7 = require("@tiptap/pm/transform");
+    import_state12 = require("@tiptap/pm/state");
     import_transform8 = require("@tiptap/pm/transform");
     import_commands16 = require("@tiptap/pm/commands");
     import_schema_list3 = require("@tiptap/pm/schema-list");
-    import_state12 = require("@tiptap/pm/state");
+    import_state13 = require("@tiptap/pm/state");
     import_view = require("@tiptap/pm/view");
     import_keymap = require("@tiptap/pm/keymap");
     import_model9 = require("@tiptap/pm/model");
-    import_state13 = require("@tiptap/pm/state");
-    import_model10 = require("@tiptap/pm/model");
     import_state14 = require("@tiptap/pm/state");
+    import_model10 = require("@tiptap/pm/model");
     import_state15 = require("@tiptap/pm/state");
-    import_transform9 = require("@tiptap/pm/transform");
     import_state16 = require("@tiptap/pm/state");
+    import_transform9 = require("@tiptap/pm/transform");
     import_state17 = require("@tiptap/pm/state");
     import_state18 = require("@tiptap/pm/state");
     import_state19 = require("@tiptap/pm/state");
     import_state20 = require("@tiptap/pm/state");
     import_state21 = require("@tiptap/pm/state");
     import_state22 = require("@tiptap/pm/state");
-    import_transform10 = require("@tiptap/pm/transform");
     import_state23 = require("@tiptap/pm/state");
+    import_transform10 = require("@tiptap/pm/transform");
     import_state24 = require("@tiptap/pm/state");
+    import_state25 = require("@tiptap/pm/state");
     __defProp2 = Object.defineProperty;
     __export2 = (target, all) => {
       for (var name in all)
@@ -3024,7 +3097,7 @@ var init_dist = __esm({
     exitCode = () => ({ state, dispatch }) => {
       return (0, import_commands3.exitCode)(state, dispatch);
     };
-    extendMarkRange = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
+    extendMarkRange = (typeOrName, attributes) => ({ tr, state, dispatch }) => {
       const type = getMarkType(typeOrName, state.schema);
       const { doc, selection } = tr;
       const { $from, from, to } = selection;
@@ -3202,7 +3275,7 @@ var init_dist = __esm({
           const fromSelectionAtStart = $from.parentOffset === 0;
           const isTextSelection2 = $fromNode.isText || $fromNode.isTextblock;
           const hasContent = $fromNode.content.size > 0;
-          if (fromSelectionAtStart && isTextSelection2 && hasContent) {
+          if (fromSelectionAtStart && isTextSelection2 && hasContent && isOnlyBlockContent) {
             from = Math.max(0, from - 1);
           }
           tr.replaceWith(from, to, newContent);
@@ -3754,13 +3827,37 @@ var init_dist = __esm({
         return false;
       }
       const parentList = findParentNode((node) => isList(node.type.name, extensions))(selection);
-      if (range.depth >= 1 && parentList && range.depth - parentList.depth <= 1) {
-        if (parentList.node.type === listType) {
+      const isAllSelection = selection.from === 0 && selection.to === state.doc.content.size;
+      const topLevelNodes = state.doc.content.content;
+      const soleTopLevelNode = topLevelNodes.length === 1 ? topLevelNodes[0] : null;
+      const allSelectionList = isAllSelection && soleTopLevelNode && isList(soleTopLevelNode.type.name, extensions) ? {
+        node: soleTopLevelNode,
+        pos: 0,
+        depth: 0
+      } : null;
+      const currentList = parentList != null ? parentList : allSelectionList;
+      const isInsideExistingList = !!parentList && range.depth >= 1 && range.depth - parentList.depth <= 1;
+      const hasWholeDocSelectedList = !!allSelectionList;
+      if ((isInsideExistingList || hasWholeDocSelectedList) && currentList) {
+        if (currentList.node.type === listType) {
+          if (isAllSelection && hasWholeDocSelectedList) {
+            return chain().command(({ tr: trx, dispatch: disp }) => {
+              const nextSelection = createInnerSelectionForWholeDocList(trx);
+              if (!nextSelection) {
+                return false;
+              }
+              trx.setSelection(nextSelection);
+              if (disp) {
+                disp(trx);
+              }
+              return true;
+            }).liftListItem(itemType).run();
+          }
           return commands.liftListItem(itemType);
         }
-        if (isList(parentList.node.type.name, extensions) && listType.validContent(parentList.node.content) && dispatch) {
+        if (isList(currentList.node.type.name, extensions) && listType.validContent(currentList.node.content)) {
           return chain().command(() => {
-            tr.setNodeMarkup(parentList.pos, listType);
+            tr.setNodeMarkup(currentList.pos, listType);
             return true;
           }).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
         }
@@ -4082,6 +4179,7 @@ var init_dist = __esm({
         });
         extension.name = this.name;
         extension.parent = this.parent;
+        this.child = null;
         return extension;
       }
       extend(extendedConfig = {}) {
@@ -4421,6 +4519,36 @@ var init_dist = __esm({
         );
       }
       /**
+       * Destroy the extension manager and clean up all extension references
+       * to prevent memory leaks through parent/child extension chains.
+       *
+       * Walks each extension's full parent chain and nulls every forward
+       * `parent.child → current` link where the parent still points to the
+       * current node. This breaks the retention path from module-scope
+       * singleton roots through deep extend() chains.
+       *
+       * Only ancestor `.child` links matching the current chain are cleared.
+       * The `.parent` pointer on ancestors is never touched — extensions
+       * may be shared across live editors, so their own backward references
+       * and non-matching forward links must remain intact.
+       */
+      destroy() {
+        this.extensions.forEach((extension) => {
+          let current = extension;
+          while (current.parent) {
+            const parent = current.parent;
+            if (parent.child === current) {
+              parent.child = null;
+            }
+            current = parent;
+          }
+        });
+        this.extensions = [];
+        this.baseExtensions = [];
+        this.schema = null;
+        this.editor = null;
+      }
+      /**
        * Go through all extensions, create extension storages & setup marks
        * & bind editor event listener.
        */
@@ -4530,8 +4658,8 @@ var init_dist = __esm({
       },
       addProseMirrorPlugins() {
         return [
-          new import_state15.Plugin({
-            key: new import_state15.PluginKey("clipboardTextSerializer"),
+          new import_state16.Plugin({
+            key: new import_state16.PluginKey("clipboardTextSerializer"),
             props: {
               clipboardTextSerializer: () => {
                 const { editor } = this;
@@ -4601,7 +4729,7 @@ var init_dist = __esm({
               const newEnd = mapping.slice(index).map(step.to);
               const oldStart = mapping.invert().map(newStart, -1);
               const oldEnd = mapping.invert().map(newEnd);
-              const foundBeforeMark = (_a3 = nextTransaction.doc.nodeAt(newStart - 1)) == null ? void 0 : _a3.marks.some((mark) => mark.eq(step.mark));
+              const foundBeforeMark = newStart > 0 ? (_a3 = nextTransaction.doc.nodeAt(newStart - 1)) == null ? void 0 : _a3.marks.some((mark) => mark.eq(step.mark)) : false;
               const foundAfterMark = (_b3 = nextTransaction.doc.nodeAt(newEnd)) == null ? void 0 : _b3.marks.some((mark) => mark.eq(step.mark));
               this.editor.emit("delete", {
                 type: "mark",
@@ -4635,8 +4763,8 @@ var init_dist = __esm({
       name: "drop",
       addProseMirrorPlugins() {
         return [
-          new import_state16.Plugin({
-            key: new import_state16.PluginKey("tiptapDrop"),
+          new import_state17.Plugin({
+            key: new import_state17.PluginKey("tiptapDrop"),
             props: {
               handleDrop: (_, e, slice, moved) => {
                 this.editor.emit("drop", {
@@ -4655,8 +4783,8 @@ var init_dist = __esm({
       name: "editable",
       addProseMirrorPlugins() {
         return [
-          new import_state17.Plugin({
-            key: new import_state17.PluginKey("editable"),
+          new import_state18.Plugin({
+            key: new import_state18.PluginKey("editable"),
             props: {
               editable: () => this.editor.options.editable
             }
@@ -4664,13 +4792,13 @@ var init_dist = __esm({
         ];
       }
     });
-    focusEventsPluginKey = new import_state18.PluginKey("focusEvents");
+    focusEventsPluginKey = new import_state19.PluginKey("focusEvents");
     FocusEvents = Extension.create({
       name: "focusEvents",
       addProseMirrorPlugins() {
         const { editor } = this;
         return [
-          new import_state18.Plugin({
+          new import_state19.Plugin({
             key: focusEventsPluginKey,
             props: {
               handleDOMEvents: {
@@ -4705,7 +4833,7 @@ var init_dist = __esm({
             const $parentPos = $anchor.parent.isTextblock && pos > 0 ? tr.doc.resolve(pos - 1) : $anchor;
             const parentIsIsolating = $parentPos.parent.type.spec.isolating;
             const parentPos = $anchor.pos - $anchor.parentOffset;
-            const isAtStart = parentIsIsolating && $parentPos.parent.childCount === 1 ? parentPos === $anchor.pos : import_state19.Selection.atStart(doc).from === pos;
+            const isAtStart = parentIsIsolating && $parentPos.parent.childCount === 1 ? parentPos === $anchor.pos : import_state20.Selection.atStart(doc).from === pos;
             if (!empty || !parent.type.isTextblock || parent.textContent.length || !isAtStart || isAtStart && $anchor.parent.type.name === "paragraph") {
               return false;
             }
@@ -4763,8 +4891,8 @@ var init_dist = __esm({
           // to a paragraph if necessary.
           // This is an alternative to ProseMirror's `AllSelection`, which doesn’t work well
           // with many other commands.
-          new import_state19.Plugin({
-            key: new import_state19.PluginKey("clearDocument"),
+          new import_state20.Plugin({
+            key: new import_state20.PluginKey("clearDocument"),
             appendTransaction: (transactions, oldState, newState) => {
               if (transactions.some((tr2) => tr2.getMeta("composition"))) {
                 return;
@@ -4775,8 +4903,8 @@ var init_dist = __esm({
                 return;
               }
               const { empty, from, to } = oldState.selection;
-              const allFrom = import_state19.Selection.atStart(oldState.doc).from;
-              const allEnd = import_state19.Selection.atEnd(oldState.doc).to;
+              const allFrom = import_state20.Selection.atStart(oldState.doc).from;
+              const allEnd = import_state20.Selection.atEnd(oldState.doc).to;
               const allWasSelected = from === allFrom && to === allEnd;
               if (empty || !allWasSelected) {
                 return;
@@ -4808,8 +4936,8 @@ var init_dist = __esm({
       name: "paste",
       addProseMirrorPlugins() {
         return [
-          new import_state20.Plugin({
-            key: new import_state20.PluginKey("tiptapPaste"),
+          new import_state21.Plugin({
+            key: new import_state21.PluginKey("tiptapPaste"),
             props: {
               handlePaste: (_view, e, slice) => {
                 this.editor.emit("paste", {
@@ -4825,12 +4953,23 @@ var init_dist = __esm({
     });
     Tabindex = Extension.create({
       name: "tabindex",
+      addOptions() {
+        return {
+          value: void 0
+        };
+      },
       addProseMirrorPlugins() {
         return [
-          new import_state21.Plugin({
-            key: new import_state21.PluginKey("tabindex"),
+          new import_state22.Plugin({
+            key: new import_state22.PluginKey("tabindex"),
             props: {
-              attributes: () => this.editor.isEditable ? { tabindex: "0" } : {}
+              attributes: () => {
+                var _a;
+                if (!this.editor.isEditable && this.options.value === void 0) {
+                  return {};
+                }
+                return { tabindex: (_a = this.options.value) != null ? _a : "0" };
+              }
             }
           })
         ];
@@ -4876,8 +5015,8 @@ var init_dist = __esm({
       },
       addProseMirrorPlugins() {
         return [
-          new import_state22.Plugin({
-            key: new import_state22.PluginKey("textDirection"),
+          new import_state23.Plugin({
+            key: new import_state23.PluginKey("textDirection"),
             props: {
               attributes: () => {
                 const direction = this.options.direction;
@@ -4995,12 +5134,12 @@ function scrollToComment(editor, commentId) {
     return true;
   });
 }
-var import_state25, CommentMark;
+var import_state26, CommentMark;
 var init_comment_mark = __esm({
   "src/lib/comment-mark.ts"() {
     "use strict";
     init_dist();
-    import_state25 = require("@tiptap/pm/state");
+    import_state26 = require("@tiptap/pm/state");
     CommentMark = Mark.create({
       name: "comment",
       addOptions() {
@@ -5054,8 +5193,8 @@ var init_comment_mark = __esm({
       addProseMirrorPlugins() {
         const { onCommentClick } = this.options;
         return [
-          new import_state25.Plugin({
-            key: new import_state25.PluginKey("commentClick"),
+          new import_state26.Plugin({
+            key: new import_state26.PluginKey("commentClick"),
             props: {
               handleClick(view, pos) {
                 if (!onCommentClick) return false;
@@ -5567,18 +5706,22 @@ var init_dist3 = __esm({
           return helpers.parseChildren([tokens[0]]);
         }
         const content = helpers.parseInline(tokens);
-        if (content.length === 1 && content[0].type === "text" && (content[0].text === EMPTY_PARAGRAPH_MARKDOWN || content[0].text === NBSP_CHAR)) {
+        const hasExplicitEmptyParagraphMarker = tokens.length === 1 && tokens[0].type === "text" && (tokens[0].raw === EMPTY_PARAGRAPH_MARKDOWN || tokens[0].text === EMPTY_PARAGRAPH_MARKDOWN || tokens[0].raw === NBSP_CHAR || tokens[0].text === NBSP_CHAR);
+        if (hasExplicitEmptyParagraphMarker && content.length === 1 && content[0].type === "text" && (content[0].text === EMPTY_PARAGRAPH_MARKDOWN || content[0].text === NBSP_CHAR)) {
           return helpers.createNode("paragraph", void 0, []);
         }
         return helpers.createNode("paragraph", void 0, content);
       },
-      renderMarkdown: (node, h2) => {
+      renderMarkdown: (node, h2, ctx) => {
+        var _a, _b;
         if (!node) {
           return "";
         }
         const content = Array.isArray(node.content) ? node.content : [];
         if (content.length === 0) {
-          return EMPTY_PARAGRAPH_MARKDOWN;
+          const previousContent = Array.isArray((_a = ctx == null ? void 0 : ctx.previousNode) == null ? void 0 : _a.content) ? ctx.previousNode.content : [];
+          const previousNodeIsEmptyParagraph = ((_b = ctx == null ? void 0 : ctx.previousNode) == null ? void 0 : _b.type) === "paragraph" && previousContent.length === 0;
+          return previousNodeIsEmptyParagraph ? EMPTY_PARAGRAPH_MARKDOWN : "";
         }
         return h2.renderChildren(content);
       },
@@ -5600,6 +5743,55 @@ var init_dist3 = __esm({
 });
 
 // node_modules/@tiptap/extension-list/dist/index.js
+function isSameLineOrderedListToken(token) {
+  var _a, _b;
+  const nestedToken = (_a = token.tokens) == null ? void 0 : _a[0];
+  return Boolean(
+    token.text && ((_b = token.tokens) == null ? void 0 : _b.length) === 1 && (nestedToken == null ? void 0 : nestedToken.type) === "list" && nestedToken.ordered && nestedToken.raw === token.text
+  );
+}
+function parseSameLineOrderedListText(text, helpers) {
+  if (helpers.tokenizeInline) {
+    return helpers.parseInline(helpers.tokenizeInline(text));
+  }
+  return helpers.parseInline([
+    {
+      type: "text",
+      raw: text,
+      text
+    }
+  ]);
+}
+function isBlockContentLine(line) {
+  const trimmedLine = line.trimStart();
+  return /^[-+*]\s+/.test(trimmedLine) || /^\d+\.\s+/.test(trimmedLine) || /^>\s?/.test(trimmedLine) || /^```/.test(trimmedLine) || /^~~~/.test(trimmedLine);
+}
+function splitItemContent(contentLines) {
+  const paragraphLines = [];
+  const blockLines = [];
+  let reachedBlockBoundary = false;
+  contentLines.forEach((line) => {
+    if (reachedBlockBoundary) {
+      blockLines.push(line);
+      return;
+    }
+    if (line.trim() === "") {
+      reachedBlockBoundary = true;
+      blockLines.push(line);
+      return;
+    }
+    if (paragraphLines.length > 0 && isBlockContentLine(line)) {
+      reachedBlockBoundary = true;
+      blockLines.push(line);
+      return;
+    }
+    paragraphLines.push(line);
+  });
+  return {
+    paragraphLines,
+    blockLines
+  };
+}
 function collectOrderedListItems(lines) {
   const listItems = [];
   let currentLineIndex = 0;
@@ -5612,9 +5804,10 @@ function collectOrderedListItems(lines) {
     }
     const [, indent, number, content] = match;
     const indentLevel = indent.length;
-    let itemContent = content;
+    const itemContentLines = [content];
     let nextLineIndex = currentLineIndex + 1;
     const itemLines = [line];
+    let sawBlankLine = false;
     while (nextLineIndex < lines.length) {
       const nextLine = lines[nextLineIndex];
       const nextMatch = nextLine.match(ORDERED_LIST_ITEM_REGEX);
@@ -5623,21 +5816,27 @@ function collectOrderedListItems(lines) {
       }
       if (nextLine.trim() === "") {
         itemLines.push(nextLine);
-        itemContent += "\n";
+        itemContentLines.push("");
+        sawBlankLine = true;
         nextLineIndex += 1;
       } else if (nextLine.match(INDENTED_LINE_REGEX)) {
         itemLines.push(nextLine);
-        itemContent += `
-${nextLine.slice(indentLevel + 2)}`;
+        itemContentLines.push(nextLine.slice(indentLevel + 2));
         nextLineIndex += 1;
       } else {
-        break;
+        if (sawBlankLine) {
+          break;
+        }
+        itemLines.push(nextLine);
+        itemContentLines.push(nextLine);
+        nextLineIndex += 1;
       }
     }
     listItems.push({
       indent: indentLevel,
       number: parseInt(number, 10),
-      content: itemContent.trim(),
+      content: itemContentLines.join("\n").trim(),
+      contentLines: itemContentLines,
       raw: itemLines.join("\n")
     });
     consumed = nextLineIndex;
@@ -5646,14 +5845,13 @@ ${nextLine.slice(indentLevel + 2)}`;
   return [listItems, consumed];
 }
 function buildNestedStructure(items, baseIndent, lexer) {
-  var _a;
   const result = [];
   let currentIndex = 0;
   while (currentIndex < items.length) {
     const item = items[currentIndex];
     if (item.indent === baseIndent) {
-      const contentLines = item.content.split("\n");
-      const mainText = ((_a = contentLines[0]) == null ? void 0 : _a.trim()) || "";
+      const { paragraphLines, blockLines } = splitItemContent(item.contentLines);
+      const mainText = paragraphLines.join("\n").trim();
       const tokens = [];
       if (mainText) {
         tokens.push({
@@ -5662,7 +5860,7 @@ function buildNestedStructure(items, baseIndent, lexer) {
           tokens: lexer.inlineTokens(mainText)
         });
       }
-      const additionalContent = contentLines.slice(1).join("\n").trim();
+      const additionalContent = blockLines.join("\n").trim();
       if (additionalContent) {
         const blockTokens = lexer.blockTokens(additionalContent);
         tokens.push(...blockTokens);
@@ -5847,14 +6045,27 @@ var init_dist4 = __esm({
       },
       markdownTokenName: "list_item",
       parseMarkdown: (token, helpers) => {
+        var _a;
         if (token.type !== "list_item") {
           return [];
         }
+        const parseBlockChildren = (_a = helpers.parseBlockChildren) != null ? _a : helpers.parseChildren;
         let content = [];
         if (token.tokens && token.tokens.length > 0) {
+          if (isSameLineOrderedListToken(token)) {
+            return {
+              type: "listItem",
+              content: [
+                {
+                  type: "paragraph",
+                  content: parseSameLineOrderedListText(token.text || "", helpers)
+                }
+              ]
+            };
+          }
           const hasParagraphTokens = token.tokens.some((t) => t.type === "paragraph");
           if (hasParagraphTokens) {
-            content = helpers.parseChildren(token.tokens);
+            content = parseBlockChildren(token.tokens);
           } else {
             const firstToken = token.tokens[0];
             if (firstToken && firstToken.type === "text" && firstToken.tokens && firstToken.tokens.length > 0) {
@@ -5867,11 +6078,11 @@ var init_dist4 = __esm({
               ];
               if (token.tokens.length > 1) {
                 const remainingTokens = token.tokens.slice(1);
-                const additionalContent = helpers.parseChildren(remainingTokens);
+                const additionalContent = parseBlockChildren(remainingTokens);
                 content.push(...additionalContent);
               }
             } else {
-              content = helpers.parseChildren(token.tokens);
+              content = parseBlockChildren(token.tokens);
             }
           }
         }
@@ -6749,12 +6960,12 @@ var init_dist8 = __esm({
 });
 
 // node_modules/@tiptap/extension-code-block/dist/index.js
-var import_state26, DEFAULT_TAB_SIZE, backtickInputRegex, tildeInputRegex, CodeBlock, index_default7;
+var import_state27, DEFAULT_TAB_SIZE, backtickInputRegex, tildeInputRegex, CodeBlock, index_default7;
 var init_dist9 = __esm({
   "node_modules/@tiptap/extension-code-block/dist/index.js"() {
     "use strict";
     init_dist();
-    import_state26 = require("@tiptap/pm/state");
+    import_state27 = require("@tiptap/pm/state");
     DEFAULT_TAB_SIZE = 4;
     backtickInputRegex = /^```([a-z]+)?[\s\n]$/;
     tildeInputRegex = /^~~~([a-z]+)?[\s\n]$/;
@@ -6821,8 +7032,8 @@ var init_dist9 = __esm({
       },
       markdownTokenName: "code",
       parseMarkdown: (token, helpers) => {
-        var _a;
-        if (((_a = token.raw) == null ? void 0 : _a.startsWith("```")) === false && token.codeBlockStyle !== "indented") {
+        var _a, _b;
+        if (((_a = token.raw) == null ? void 0 : _a.startsWith("```")) === false && ((_b = token.raw) == null ? void 0 : _b.startsWith("~~~")) === false && token.codeBlockStyle !== "indented") {
           return [];
         }
         return helpers.createNode(
@@ -6940,7 +7151,7 @@ var init_dist9 = __esm({
                 tr.delete(lineStartPos, lineStartPos + spacesToRemove);
                 const cursorPosInLine = pos - lineStartPos;
                 if (cursorPosInLine <= spacesToRemove) {
-                  tr.setSelection(import_state26.TextSelection.create(tr.doc, lineStartPos));
+                  tr.setSelection(import_state27.TextSelection.create(tr.doc, lineStartPos));
                 }
                 return true;
               });
@@ -7002,7 +7213,7 @@ var init_dist9 = __esm({
             const nodeAfter = doc.nodeAt(after);
             if (nodeAfter) {
               return editor.commands.command(({ tr }) => {
-                tr.setSelection(import_state26.Selection.near(doc.resolve(after)));
+                tr.setSelection(import_state27.Selection.near(doc.resolve(after)));
                 return true;
               });
             }
@@ -7032,8 +7243,8 @@ var init_dist9 = __esm({
         return [
           // this plugin creates a code block for pasted content from VS Code
           // we can also detect the copied code language
-          new import_state26.Plugin({
-            key: new import_state26.PluginKey("codeBlockVSCodeHandler"),
+          new import_state27.Plugin({
+            key: new import_state27.PluginKey("codeBlockVSCodeHandler"),
             props: {
               handlePaste: (view, event) => {
                 if (!event.clipboardData) {
@@ -7053,7 +7264,7 @@ var init_dist9 = __esm({
                 const textNode = schema.text(text.replace(/\r\n?/g, "\n"));
                 tr.replaceSelectionWith(this.type.create({ language }, textNode));
                 if (tr.selection.$from.parent.type !== this.type) {
-                  tr.setSelection(import_state26.TextSelection.near(tr.doc.resolve(Math.max(0, tr.selection.from - 2))));
+                  tr.setSelection(import_state27.TextSelection.near(tr.doc.resolve(Math.max(0, tr.selection.from - 2))));
                 }
                 tr.setMeta("paste", true);
                 view.dispatch(tr);
@@ -7122,7 +7333,9 @@ var init_dist10 = __esm({
         return /* @__PURE__ */ h("blockquote", { ...mergeAttributes(this.options.HTMLAttributes, HTMLAttributes), children: /* @__PURE__ */ h("slot", {}) });
       },
       parseMarkdown: (token, helpers) => {
-        return helpers.createNode("blockquote", void 0, helpers.parseChildren(token.tokens || []));
+        var _a;
+        const parseBlockChildren = (_a = helpers.parseBlockChildren) != null ? _a : helpers.parseChildren;
+        return helpers.createNode("blockquote", void 0, parseBlockChildren(token.tokens || []));
       },
       renderMarkdown: (node, h2) => {
         if (!node.content) {
@@ -7130,8 +7343,9 @@ var init_dist10 = __esm({
         }
         const prefix = ">";
         const result = [];
-        node.content.forEach((child) => {
-          const childContent = h2.renderChildren([child]);
+        node.content.forEach((child, index) => {
+          var _a, _b;
+          const childContent = (_b = (_a = h2.renderChild) == null ? void 0 : _a.call(h2, child, index)) != null ? _b : h2.renderChildren([child]);
           const lines = childContent.split("\n");
           const linesWithPrefix = lines.map((line) => {
             if (line.trim() === "") {
@@ -7177,12 +7391,12 @@ ${prefix}
 });
 
 // node_modules/@tiptap/extension-horizontal-rule/dist/index.js
-var import_state27, HorizontalRule, index_default9;
+var import_state28, HorizontalRule, index_default9;
 var init_dist11 = __esm({
   "node_modules/@tiptap/extension-horizontal-rule/dist/index.js"() {
     "use strict";
     init_dist();
-    import_state27 = require("@tiptap/pm/state");
+    import_state28 = require("@tiptap/pm/state");
     HorizontalRule = Node3.create({
       name: "horizontalRule",
       addOptions() {
@@ -7227,18 +7441,18 @@ var init_dist11 = __esm({
                 const posAfter = $to.end();
                 if ($to.nodeAfter) {
                   if ($to.nodeAfter.isTextblock) {
-                    tr.setSelection(import_state27.TextSelection.create(tr.doc, $to.pos + 1));
+                    tr.setSelection(import_state28.TextSelection.create(tr.doc, $to.pos + 1));
                   } else if ($to.nodeAfter.isBlock) {
-                    tr.setSelection(import_state27.NodeSelection.create(tr.doc, $to.pos));
+                    tr.setSelection(import_state28.NodeSelection.create(tr.doc, $to.pos));
                   } else {
-                    tr.setSelection(import_state27.TextSelection.create(tr.doc, $to.pos));
+                    tr.setSelection(import_state28.TextSelection.create(tr.doc, $to.pos));
                   }
                 } else {
                   const nodeType = chainState.schema.nodes[this.options.nextNodeType] || $to.parent.type.contentMatch.defaultType;
                   const node = nodeType == null ? void 0 : nodeType.create();
                   if (node) {
                     tr.insert(posAfter, node);
-                    tr.setSelection(import_state27.TextSelection.create(tr.doc, posAfter + 1));
+                    tr.setSelection(import_state28.TextSelection.create(tr.doc, posAfter + 1));
                   }
                 }
                 tr.scrollIntoView();
@@ -9362,7 +9576,7 @@ function HistoryButtons({
       ToolbarButton,
       {
         onClick: handleUndo,
-        disabled: aiGenerating || (editor ? !editor.can().undo() : false),
+        disabled: aiGenerating || (editor && !editor.isDestroyed ? !editor.can?.()?.undo?.() : false),
         title: "Undo (\u2318Z)",
         children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.Undo2, { className: toolbarButtonStyles.iconSize })
       }
@@ -9371,7 +9585,7 @@ function HistoryButtons({
       ToolbarButton,
       {
         onClick: handleRedo,
-        disabled: aiGenerating || (editor ? !editor.can().redo() : false),
+        disabled: aiGenerating || (editor && !editor.isDestroyed ? !editor.can?.()?.redo?.() : false),
         title: "Redo (\u2318\u21E7Z)",
         children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(import_lucide_react7.Redo2, { className: toolbarButtonStyles.iconSize })
       }
