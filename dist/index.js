@@ -40,72 +40,6 @@ var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot
 var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
 var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
 
-// node_modules/@prismicio/client/dist/types/value/richText.js
-var RichTextNodeType;
-var init_richText = __esm({
-  "node_modules/@prismicio/client/dist/types/value/richText.js"() {
-    "use strict";
-    RichTextNodeType = {
-      heading1: "heading1",
-      heading2: "heading2",
-      heading3: "heading3",
-      heading4: "heading4",
-      heading5: "heading5",
-      heading6: "heading6",
-      paragraph: "paragraph",
-      preformatted: "preformatted",
-      strong: "strong",
-      em: "em",
-      listItem: "list-item",
-      oListItem: "o-list-item",
-      list: "group-list-item",
-      oList: "group-o-list-item",
-      image: "image",
-      embed: "embed",
-      hyperlink: "hyperlink",
-      label: "label",
-      span: "span"
-    };
-  }
-});
-
-// node_modules/@prismicio/client/dist/helpers/mapSliceZone.js
-function mapSliceZone(sliceZone2, mappers, context) {
-  return Promise.all(sliceZone2.map(async (slice, index, slices) => {
-    const isRestSliceType = "slice_type" in slice;
-    const sliceType = isRestSliceType ? slice.slice_type : slice.type;
-    const mapper = mappers[sliceType];
-    if (!mapper) return slice;
-    const mapperArgs = {
-      slice,
-      slices,
-      index,
-      context
-    };
-    let result = await mapper(mapperArgs);
-    if (mapper.length < 1 && (typeof result === "function" || typeof result === "object" && "default" in result)) {
-      result = "default" in result ? result.default : result;
-      result = await result(mapperArgs);
-    }
-    if (isRestSliceType) return {
-      __mapped: true,
-      id: slice.id,
-      slice_type: sliceType,
-      ...result
-    };
-    else return {
-      __mapped: true,
-      type: sliceType,
-      ...result
-    };
-  }));
-}
-var init_mapSliceZone = __esm({
-  "node_modules/@prismicio/client/dist/helpers/mapSliceZone.js"() {
-    "use strict";
-  }
-});
-
 // node_modules/@prismicio/client/dist/filter.js
 var formatValue, pathWithArgsFilter, pathFilter, argsFilter, filter;
 var init_filter = __esm({
@@ -171,133 +105,68 @@ var init_filter = __esm({
   }
 });
 
-// node_modules/@prismicio/client/dist/_virtual/rolldown_runtime.js
-var __defProp2, __export2;
-var init_rolldown_runtime = __esm({
-  "node_modules/@prismicio/client/dist/_virtual/rolldown_runtime.js"() {
-    "use strict";
-    __defProp2 = Object.defineProperty;
-    __export2 = (all) => {
-      let target = {};
-      for (var name2 in all) __defProp2(target, name2, {
-        get: all[name2],
-        enumerable: true
-      });
-      return target;
+// node_modules/@prismicio/client/dist/helpers/mapSliceZone.js
+function mapSliceZone(sliceZone2, mappers, context) {
+  return Promise.all(sliceZone2.map(async (slice, index, slices) => {
+    const isRestSliceType = "slice_type" in slice;
+    const sliceType = isRestSliceType ? slice.slice_type : slice.type;
+    const mapper = mappers[sliceType];
+    if (!mapper) return slice;
+    const mapperArgs = {
+      slice,
+      slices,
+      index,
+      context
     };
+    let result = await mapper(mapperArgs);
+    if (mapper.length < 1 && (typeof result === "function" || typeof result === "object" && "default" in result)) {
+      result = "default" in result ? result.default : result;
+      result = await result(mapperArgs);
+    }
+    if (isRestSliceType) return {
+      __mapped: true,
+      id: slice.id,
+      slice_type: sliceType,
+      ...result
+    };
+    else return {
+      __mapped: true,
+      type: sliceType,
+      ...result
+    };
+  }));
+}
+var init_mapSliceZone = __esm({
+  "node_modules/@prismicio/client/dist/helpers/mapSliceZone.js"() {
+    "use strict";
   }
 });
 
-// node_modules/@prismicio/client/dist/cookie.js
-var cookie_exports, preview;
-var init_cookie = __esm({
-  "node_modules/@prismicio/client/dist/cookie.js"() {
+// node_modules/@prismicio/client/dist/types/value/richText.js
+var RichTextNodeType;
+var init_richText = __esm({
+  "node_modules/@prismicio/client/dist/types/value/richText.js"() {
     "use strict";
-    init_rolldown_runtime();
-    cookie_exports = /* @__PURE__ */ __export2({ preview: () => preview });
-    preview = "io.prismic.preview";
-  }
-});
-
-// node_modules/@prismicio/client/dist/errors.js
-var PrismicError, ForbiddenError, NotFoundError, RepositoryNotFoundError, ParsingError, InvalidDataError, RefExpiredError, RefNotFoundError, PreviewTokenExpiredError;
-var init_errors = __esm({
-  "node_modules/@prismicio/client/dist/errors.js"() {
-    "use strict";
-    PrismicError = class extends Error {
-      constructor(message = "An invalid API response was returned", url, response) {
-        super(message);
-        __publicField(this, "url");
-        __publicField(this, "response");
-        this.url = url;
-        this.response = response;
-      }
-    };
-    ForbiddenError = class extends PrismicError {
-    };
-    NotFoundError = class extends PrismicError {
-    };
-    RepositoryNotFoundError = class extends NotFoundError {
-    };
-    ParsingError = class extends PrismicError {
-    };
-    InvalidDataError = class extends PrismicError {
-    };
-    RefExpiredError = class extends ForbiddenError {
-    };
-    RefNotFoundError = class extends ForbiddenError {
-    };
-    PreviewTokenExpiredError = class extends ForbiddenError {
-    };
-  }
-});
-
-// node_modules/@prismicio/client/dist/types/value/link.js
-var LinkType;
-var init_link = __esm({
-  "node_modules/@prismicio/client/dist/types/value/link.js"() {
-    "use strict";
-    LinkType = {
-      Any: "Any",
-      Document: "Document",
-      Media: "Media",
-      Web: "Web"
-    };
-  }
-});
-
-// node_modules/@prismicio/client/dist/helpers/documentToLinkField.js
-var documentToLinkField;
-var init_documentToLinkField = __esm({
-  "node_modules/@prismicio/client/dist/helpers/documentToLinkField.js"() {
-    "use strict";
-    init_link();
-    documentToLinkField = (prismicDocument2) => {
-      var _prismicDocument$slug;
-      return {
-        link_type: LinkType.Document,
-        id: prismicDocument2.id,
-        uid: prismicDocument2.uid || void 0,
-        type: prismicDocument2.type,
-        tags: prismicDocument2.tags,
-        lang: prismicDocument2.lang,
-        url: prismicDocument2.url == null ? void 0 : prismicDocument2.url,
-        slug: (_prismicDocument$slug = prismicDocument2.slugs) === null || _prismicDocument$slug === void 0 ? void 0 : _prismicDocument$slug[0],
-        ...prismicDocument2.data && Object.keys(prismicDocument2.data).length > 0 ? { data: prismicDocument2.data } : {}
-      };
-    };
-  }
-});
-
-// node_modules/@prismicio/client/dist/helpers/asLink.js
-var asLink;
-var init_asLink = __esm({
-  "node_modules/@prismicio/client/dist/helpers/asLink.js"() {
-    "use strict";
-    init_link();
-    init_documentToLinkField();
-    asLink = (linkFieldOrDocument, ...configObjectOrTuple) => {
-      if (!linkFieldOrDocument) return null;
-      const linkField = "link_type" in linkFieldOrDocument ? linkFieldOrDocument : documentToLinkField(linkFieldOrDocument);
-      const [configObjectOrLinkResolver] = configObjectOrTuple;
-      let config;
-      if (typeof configObjectOrLinkResolver === "function" || configObjectOrLinkResolver == null) config = { linkResolver: configObjectOrLinkResolver };
-      else config = { ...configObjectOrLinkResolver };
-      switch (linkField.link_type) {
-        case LinkType.Media:
-        case LinkType.Web:
-          return "url" in linkField ? linkField.url : null;
-        case LinkType.Document:
-          if ("id" in linkField && config.linkResolver) {
-            const resolvedURL = config.linkResolver(linkField);
-            if (resolvedURL != null) return resolvedURL;
-          }
-          if ("url" in linkField && linkField.url) return linkField.url;
-          return null;
-        case LinkType.Any:
-        default:
-          return null;
-      }
+    RichTextNodeType = {
+      heading1: "heading1",
+      heading2: "heading2",
+      heading3: "heading3",
+      heading4: "heading4",
+      heading5: "heading5",
+      heading6: "heading6",
+      paragraph: "paragraph",
+      preformatted: "preformatted",
+      strong: "strong",
+      em: "em",
+      listItem: "list-item",
+      oListItem: "o-list-item",
+      list: "group-list-item",
+      oList: "group-o-list-item",
+      image: "image",
+      embed: "embed",
+      hyperlink: "hyperlink",
+      label: "label",
+      span: "span"
     };
   }
 });
@@ -308,7 +177,7 @@ var init_package = __esm({
   "node_modules/@prismicio/client/dist/package.js"() {
     "use strict";
     name = "@prismicio/client";
-    version = "7.21.6";
+    version = "7.21.8";
   }
 });
 
@@ -378,6 +247,39 @@ var init_buildQueryURL = __esm({
   }
 });
 
+// node_modules/@prismicio/client/dist/errors.js
+var PrismicError, ForbiddenError, NotFoundError, RepositoryNotFoundError, ParsingError, InvalidDataError, RefExpiredError, RefNotFoundError, PreviewTokenExpiredError;
+var init_errors = __esm({
+  "node_modules/@prismicio/client/dist/errors.js"() {
+    "use strict";
+    PrismicError = class extends Error {
+      constructor(message = "An invalid API response was returned", url, response) {
+        super(message);
+        __publicField(this, "url");
+        __publicField(this, "response");
+        this.url = url;
+        this.response = response;
+      }
+    };
+    ForbiddenError = class extends PrismicError {
+    };
+    NotFoundError = class extends PrismicError {
+    };
+    RepositoryNotFoundError = class extends NotFoundError {
+    };
+    ParsingError = class extends PrismicError {
+    };
+    InvalidDataError = class extends PrismicError {
+    };
+    RefExpiredError = class extends ForbiddenError {
+    };
+    RefNotFoundError = class extends ForbiddenError {
+    };
+    PreviewTokenExpiredError = class extends ForbiddenError {
+    };
+  }
+});
+
 // node_modules/@prismicio/client/dist/isRepositoryName.js
 var isRepositoryName;
 var init_isRepositoryName = __esm({
@@ -420,6 +322,75 @@ var init_getRepositoryName = __esm({
   }
 });
 
+// node_modules/@prismicio/client/dist/types/value/link.js
+var LinkType;
+var init_link = __esm({
+  "node_modules/@prismicio/client/dist/types/value/link.js"() {
+    "use strict";
+    LinkType = {
+      Any: "Any",
+      Document: "Document",
+      Media: "Media",
+      Web: "Web"
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/documentToLinkField.js
+var documentToLinkField;
+var init_documentToLinkField = __esm({
+  "node_modules/@prismicio/client/dist/helpers/documentToLinkField.js"() {
+    "use strict";
+    init_link();
+    documentToLinkField = (prismicDocument2) => {
+      return {
+        link_type: LinkType.Document,
+        id: prismicDocument2.id,
+        uid: prismicDocument2.uid || void 0,
+        type: prismicDocument2.type,
+        tags: prismicDocument2.tags,
+        lang: prismicDocument2.lang,
+        url: prismicDocument2.url == null ? void 0 : prismicDocument2.url,
+        slug: prismicDocument2.slugs?.[0],
+        ...prismicDocument2.data && Object.keys(prismicDocument2.data).length > 0 ? { data: prismicDocument2.data } : {}
+      };
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/helpers/asLink.js
+var asLink;
+var init_asLink = __esm({
+  "node_modules/@prismicio/client/dist/helpers/asLink.js"() {
+    "use strict";
+    init_link();
+    init_documentToLinkField();
+    asLink = (linkFieldOrDocument, ...configObjectOrTuple) => {
+      if (!linkFieldOrDocument) return null;
+      const linkField = "link_type" in linkFieldOrDocument ? linkFieldOrDocument : documentToLinkField(linkFieldOrDocument);
+      const [configObjectOrLinkResolver] = configObjectOrTuple;
+      let config;
+      if (typeof configObjectOrLinkResolver === "function" || configObjectOrLinkResolver == null) config = { linkResolver: configObjectOrLinkResolver };
+      else config = { ...configObjectOrLinkResolver };
+      switch (linkField.link_type) {
+        case LinkType.Media:
+        case LinkType.Web:
+          return "url" in linkField ? linkField.url : null;
+        case LinkType.Document:
+          if ("id" in linkField && config.linkResolver) {
+            const resolvedURL = config.linkResolver(linkField);
+            if (resolvedURL != null) return resolvedURL;
+          }
+          if ("url" in linkField && linkField.url) return linkField.url;
+          return null;
+        case LinkType.Any:
+        default:
+          return null;
+      }
+    };
+  }
+});
+
 // node_modules/@prismicio/client/dist/isRepositoryEndpoint.js
 var isRepositoryEndpoint;
 var init_isRepositoryEndpoint = __esm({
@@ -436,12 +407,40 @@ var init_isRepositoryEndpoint = __esm({
   }
 });
 
+// node_modules/@prismicio/client/dist/_virtual/_rolldown/runtime.js
+var __defProp2, __exportAll;
+var init_runtime = __esm({
+  "node_modules/@prismicio/client/dist/_virtual/_rolldown/runtime.js"() {
+    "use strict";
+    __defProp2 = Object.defineProperty;
+    __exportAll = (all, no_symbols) => {
+      let target = {};
+      for (var name2 in all) __defProp2(target, name2, {
+        get: all[name2],
+        enumerable: true
+      });
+      if (!no_symbols) __defProp2(target, Symbol.toStringTag, { value: "Module" });
+      return target;
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/cookie.js
+var cookie_exports, preview;
+var init_cookie = __esm({
+  "node_modules/@prismicio/client/dist/cookie.js"() {
+    "use strict";
+    init_runtime();
+    cookie_exports = /* @__PURE__ */ __exportAll({ preview: () => preview });
+    preview = "io.prismic.preview";
+  }
+});
+
 // node_modules/@prismicio/client/dist/lib/getPreviewCookie.js
 var readValue, getPreviewCookie;
 var init_getPreviewCookie = __esm({
   "node_modules/@prismicio/client/dist/lib/getPreviewCookie.js"() {
     "use strict";
-    init_cookie();
     readValue = (value) => {
       return value.replace(/%3B/g, ";");
     };
@@ -450,7 +449,7 @@ var init_getPreviewCookie = __esm({
       let value;
       for (const cookie of cookies) {
         const parts = cookie.split("=");
-        if (readValue(parts[0]).replace(/%3D/g, "=") === preview) {
+        if (readValue(parts[0]).replace(/%3D/g, "=") === "io.prismic.preview") {
           value = readValue(parts.slice(1).join("="));
           break;
         }
@@ -472,8 +471,7 @@ var init_pLimit = __esm({
       let lastCompletion = 0;
       const resumeNext = () => {
         if (!busy && queue.length > 0) {
-          var _queue$shift;
-          (_queue$shift = queue.shift()) === null || _queue$shift === void 0 || _queue$shift();
+          queue.shift()?.();
           busy = true;
         }
       };
@@ -511,36 +509,34 @@ var init_pLimit = __esm({
 
 // node_modules/@prismicio/client/dist/lib/request.js
 async function memoizeResponse(response) {
-  const blob = await response.blob();
+  const buffer = await response.arrayBuffer();
   const memoized = {
     ok: response.ok,
     status: response.status,
     headers: response.headers,
     url: response.url,
-    text: async () => blob.text(),
-    json: async () => JSON.parse(await blob.text()),
-    blob: async () => blob,
+    text: async () => new TextDecoder().decode(buffer),
+    json: async () => JSON.parse(new TextDecoder().decode(buffer)),
+    arrayBuffer: async () => buffer,
+    blob: async () => new Blob([buffer]),
     clone: () => memoized
   };
   return memoized;
 }
 async function request(url, init, fetchFn) {
+  var _a4;
   const stringURL = url.toString();
   let job;
-  if (init === null || init === void 0 ? void 0 : init.body) {
-    var _url$hostname;
-    job = (THROTTLED_RUNNERS[_url$hostname = url.hostname] || (THROTTLED_RUNNERS[_url$hostname] = pLimit({ interval: DEFAULT_RETRY_AFTER })))(() => fetchFn(stringURL, init));
-  } else {
-    var _DEDUPLICATED_JOBS$st;
-    const existingJob = (_DEDUPLICATED_JOBS$st = DEDUPLICATED_JOBS[stringURL]) === null || _DEDUPLICATED_JOBS$st === void 0 ? void 0 : _DEDUPLICATED_JOBS$st.get(init === null || init === void 0 ? void 0 : init.signal);
+  if (init?.body) job = (THROTTLED_RUNNERS[_a4 = url.hostname] || (THROTTLED_RUNNERS[_a4] = pLimit({ interval: DEFAULT_RETRY_AFTER })))(() => fetchFn(stringURL, init));
+  else {
+    const existingJob = DEDUPLICATED_JOBS[stringURL]?.get(init?.signal);
     if (existingJob) job = existingJob;
     else {
       job = fetchFn(stringURL, init).then(memoizeResponse).finally(() => {
-        var _DEDUPLICATED_JOBS$st2, _DEDUPLICATED_JOBS$st3;
-        (_DEDUPLICATED_JOBS$st2 = DEDUPLICATED_JOBS[stringURL]) === null || _DEDUPLICATED_JOBS$st2 === void 0 || _DEDUPLICATED_JOBS$st2.delete(init === null || init === void 0 ? void 0 : init.signal);
-        if (((_DEDUPLICATED_JOBS$st3 = DEDUPLICATED_JOBS[stringURL]) === null || _DEDUPLICATED_JOBS$st3 === void 0 ? void 0 : _DEDUPLICATED_JOBS$st3.size) === 0) delete DEDUPLICATED_JOBS[stringURL];
+        DEDUPLICATED_JOBS[stringURL]?.delete(init?.signal);
+        if (DEDUPLICATED_JOBS[stringURL]?.size === 0) delete DEDUPLICATED_JOBS[stringURL];
       });
-      (DEDUPLICATED_JOBS[stringURL] || (DEDUPLICATED_JOBS[stringURL] = /* @__PURE__ */ new Map())).set(init === null || init === void 0 ? void 0 : init.signal, job);
+      (DEDUPLICATED_JOBS[stringURL] || (DEDUPLICATED_JOBS[stringURL] = /* @__PURE__ */ new Map())).set(init?.signal, job);
     }
   }
   const response = await job;
@@ -595,23 +591,23 @@ var init_Client = __esm({
     "use strict";
     init_filter();
     init_devMsg();
+    init_buildQueryURL();
+    init_errors();
+    init_getRepositoryEndpoint();
+    init_getRepositoryName();
+    init_asLink();
+    init_isRepositoryEndpoint();
     init_getPreviewCookie();
     init_request();
     init_throttledWarn();
-    init_errors();
-    init_asLink();
-    init_buildQueryURL();
-    init_getRepositoryEndpoint();
-    init_getRepositoryName();
-    init_isRepositoryEndpoint();
     MAX_PAGE_SIZE = 100;
     REPOSITORY_CACHE_TTL = 5e3;
     GET_ALL_QUERY_DELAY = 500;
     MAX_INVALID_REF_RETRY_ATTEMPTS = 3;
     Client = (_a = class {
       /**
-      * @param repositoryNameOrEndpoint - The Prismic repository name or full
-      *   Content API endpoint for the repository.
+      * @param repositoryNameOrEndpoint - The Prismic repository name or full Content API endpoint for
+      *   the repository.
       * @param config - Client configuration.
       */
       constructor(repositoryNameOrEndpoint, config = {}) {
@@ -629,24 +625,22 @@ var init_Client = __esm({
         */
         __publicField(this, "accessToken");
         /**
-        * A list of route resolver objects that define how a document's `url`
-        * property is resolved.
+        * A list of route resolver objects that define how a document's `url` property is resolved.
         *
         * @see {@link https://prismic.io/docs/routes}
         * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
         */
         __publicField(this, "routes");
         /**
-        * The URL used for link or content relationship fields that point to an
-        * archived or deleted page.
+        * The URL used for link or content relationship fields that point to an archived or deleted page.
         *
         * @see {@link https://prismic.io/docs/routes}
         * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
         */
         __publicField(this, "brokenRoute");
         /**
-        * Default parameters sent with each Content API request. These parameters can
-        * be overridden on each method.
+        * Default parameters sent with each Content API request. These parameters can be overridden on
+        * each method.
         *
         * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
         */
@@ -655,13 +649,12 @@ var init_Client = __esm({
         * The `fetch` function used to make network requests.
         *
         * @default The global `fetch` function.
-        *
         * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
         */
         __publicField(this, "fetchFn");
         /**
-        * The default `fetch` options sent with each Content API request. These
-        * parameters can be overriden on each method.
+        * The default `fetch` options sent with each Content API request. These parameters can be
+        * overriden on each method.
         *
         * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#config-options}
         */
@@ -672,8 +665,7 @@ var init_Client = __esm({
         __privateAdd(this, _autoPreviewsRequest);
         __privateAdd(this, _cachedRepository);
         __privateAdd(this, _cachedRepositoryExpiration, 0);
-        var _globalThis$fetch;
-        const { documentAPIEndpoint, accessToken, ref, routes, brokenRoute, defaultParams, fetchOptions = {}, fetch: fetch2 = (_globalThis$fetch = globalThis.fetch) === null || _globalThis$fetch === void 0 ? void 0 : _globalThis$fetch.bind(globalThis) } = config;
+        const { documentAPIEndpoint, accessToken, ref, routes, brokenRoute, defaultParams, fetchOptions = {}, fetch: fetch2 = globalThis.fetch?.bind(globalThis) } = config;
         if (isRepositoryEndpoint(repositoryNameOrEndpoint)) {
           try {
             this.repositoryName = getRepositoryName(repositoryNameOrEndpoint);
@@ -721,10 +713,9 @@ var init_Client = __esm({
       * Enables the client to automatically query content from a preview session.
       *
       * @example
-      *
-      * ```ts
-      * client.enableAutoPreviews()
-      * ```
+      * 	;```ts
+      * 	client.enableAutoPreviews()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#enableautopreviews}
       */
@@ -732,30 +723,27 @@ var init_Client = __esm({
         __privateSet(this, _autoPreviews, true);
       }
       /**
-      * Enables the client to automatically query content from a preview session
-      * using an HTTP request object.
+      * Enables the client to automatically query content from a preview session using an HTTP request
+      * object.
       *
       * @example
-      *
-      * ```ts
-      * client.enableAutoPreviewsFromReq(req)
-      * ```
+      * 	;```ts
+      * 	client.enableAutoPreviewsFromReq(req)
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#enableautopreviewsfromreq}
       */
-      enableAutoPreviewsFromReq(request$1) {
+      enableAutoPreviewsFromReq(request2) {
         this.enableAutoPreviews();
-        __privateSet(this, _autoPreviewsRequest, request$1);
+        __privateSet(this, _autoPreviewsRequest, request2);
       }
       /**
-      * Disables the client from automatically querying content from a preview
-      * session.
+      * Disables the client from automatically querying content from a preview session.
       *
       * @example
-      *
-      * ```ts
-      * client.disableAutoPreviews()
-      * ```
+      * 	;```ts
+      * 	client.disableAutoPreviews()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#disableautopreviews}
       */
@@ -767,10 +755,9 @@ var init_Client = __esm({
       * Fetches pages based on the `params` argument. Results are paginated.
       *
       * @example
-      *
-      * ```ts
-      * const response = await client.get({ pageSize: 10 })
-      * ```
+      * 	;```ts
+      * 	const response = await client.get({ pageSize: 10 })
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#get}
       */
@@ -781,15 +768,14 @@ var init_Client = __esm({
       * Fetches the first page returned based on the `params` argument.
       *
       * @example
-      *
-      * ```ts
-      * const page = await client.getFirst()
-      * ```
+      * 	;```ts
+      * 	const page = await client.getFirst()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getfirst}
       */
       async getFirst(params) {
-        const actualParams = (params === null || params === void 0 ? void 0 : params.page) || (params === null || params === void 0 ? void 0 : params.pageSize) ? params : {
+        const actualParams = params?.page || params?.pageSize ? params : {
           ...params,
           pageSize: 1
         };
@@ -799,23 +785,21 @@ var init_Client = __esm({
         throw new NotFoundError("No documents were returned", response.url, void 0);
       }
       /**
-      * Fetches all pages based on the `params` argument. This method may make
-      * multiple network requests to fetch all matching pages.
+      * Fetches all pages based on the `params` argument. This method may make multiple network
+      * requests to fetch all matching pages.
       *
       * @example
-      *
-      * ```ts
-      * const pages = await client.dangerouslyGetAll()
-      * ```
+      * 	;```ts
+      * 	const pages = await client.dangerouslyGetAll()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#dangerouslygetall}
       */
       async dangerouslyGetAll(params = {}) {
-        var _this$defaultParams;
         const { limit = Infinity, ...actualParams } = params;
         const resolvedParams = {
           ...actualParams,
-          pageSize: Math.min(limit, actualParams.pageSize || ((_this$defaultParams = this.defaultParams) === null || _this$defaultParams === void 0 ? void 0 : _this$defaultParams.pageSize) || MAX_PAGE_SIZE)
+          pageSize: Math.min(limit, actualParams.pageSize || this.defaultParams?.pageSize || MAX_PAGE_SIZE)
         };
         const documents = [];
         let latestResult;
@@ -834,10 +818,9 @@ var init_Client = __esm({
       * Fetches a page with a specific ID.
       *
       * @example
-      *
-      * ```ts
-      * const page = await client.getByID("WW4bKScAAMAqmluX")
-      * ```
+      * 	;```ts
+      * 	const page = await client.getByID("WW4bKScAAMAqmluX")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyid}
       */
@@ -848,13 +831,9 @@ var init_Client = __esm({
       * Fetches pages with specific IDs. Results are paginated.
       *
       * @example
-      *
-      * ```ts
-      * const response = await client.getByIDs([
-      * 	"WW4bKScAAMAqmluX",
-      * 	"U1kTRgEAAC8A5ldS",
-      * ])
-      * ```
+      * 	;```ts
+      * 	const response = await client.getByIDs(["WW4bKScAAMAqmluX", "U1kTRgEAAC8A5ldS"])
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyids}
       */
@@ -862,17 +841,13 @@ var init_Client = __esm({
         return await this.get(appendFilters(params, filter.in("document.id", ids)));
       }
       /**
-      * Fetches pages with specific IDs. This method may make multiple network
-      * requests to fetch all matching pages.
+      * Fetches pages with specific IDs. This method may make multiple network requests to fetch all
+      * matching pages.
       *
       * @example
-      *
-      * ```ts
-      * const pages = await client.getAllByIDs([
-      * 	"WW4bKScAAMAqmluX",
-      * 	"U1kTRgEAAC8A5ldS",
-      * ])
-      * ```
+      * 	;```ts
+      * 	const pages = await client.getAllByIDs(["WW4bKScAAMAqmluX", "U1kTRgEAAC8A5ldS"])
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbyids}
       */
@@ -883,10 +858,9 @@ var init_Client = __esm({
       * Fetches a page with a specific UID and type.
       *
       * @example
-      *
-      * ```ts
-      * const page = await client.getByUID("blog_post", "my-first-post")
-      * ```
+      * 	;```ts
+      * 	const page = await client.getByUID("blog_post", "my-first-post")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyuid}
       */
@@ -894,17 +868,12 @@ var init_Client = __esm({
         return await this.getFirst(appendFilters(params, filter.at("document.type", documentType), filter.at(`my.${documentType}.uid`, uid)));
       }
       /**
-      * Fetches pages with specific UIDs and a specific type. Results are
-      * paginated.
+      * Fetches pages with specific UIDs and a specific type. Results are paginated.
       *
       * @example
-      *
-      * ```ts
-      * const response = await client.getByUIDs("blog_post", [
-      * 	"my-first-post",
-      * 	"my-second-post",
-      * ])
-      * ```
+      * 	;```ts
+      * 	const response = await client.getByUIDs("blog_post", ["my-first-post", "my-second-post"])
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyuids}
       */
@@ -912,17 +881,13 @@ var init_Client = __esm({
         return await this.get(appendFilters(params, filter.at("document.type", documentType), filter.in(`my.${documentType}.uid`, uids)));
       }
       /**
-      * Fetches pages with specific UIDs and a specific type. This method may make
-      * multiple network requests to fetch all matching pages.
+      * Fetches pages with specific UIDs and a specific type. This method may make multiple network
+      * requests to fetch all matching pages.
       *
       * @example
-      *
-      * ```ts
-      * const pages = await client.getAllByUIDs("blog_post", [
-      * 	"my-first-post",
-      * 	"my-second-post",
-      * ])
-      * ```
+      * 	;```ts
+      * 	const pages = await client.getAllByUIDs("blog_post", ["my-first-post", "my-second-post"])
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbyuids}
       */
@@ -933,10 +898,9 @@ var init_Client = __esm({
       * Fetches a specific single type page.
       *
       * @example
-      *
-      * ```ts
-      * const page = await client.getSingle("settings")
-      * ```
+      * 	;```ts
+      * 	const page = await client.getSingle("settings")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getsingle}
       */
@@ -947,10 +911,9 @@ var init_Client = __esm({
       * Fetches pages with a specific type. Results are paginated.
       *
       * @example
-      *
-      * ```ts
-      * const response = await client.getByType("blog_post")
-      * ```
+      * 	;```ts
+      * 	const response = await client.getByType("blog_post")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbytype}
       */
@@ -958,14 +921,13 @@ var init_Client = __esm({
         return await this.get(appendFilters(params, filter.at("document.type", documentType)));
       }
       /**
-      * Fetches pages with a specific type. This method may make multiple network
-      * requests to fetch all matching documents.
+      * Fetches pages with a specific type. This method may make multiple network requests to fetch all
+      * matching documents.
       *
       * @example
-      *
-      * ```ts
-      * const pages = await client.getAllByType("blog_post")
-      * ```
+      * 	;```ts
+      * 	const pages = await client.getAllByType("blog_post")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbytype}
       */
@@ -976,10 +938,9 @@ var init_Client = __esm({
       * Fetches pages with a specific tag. Results are paginated.
       *
       * @example
-      *
-      * ```ts
-      * const response = await client.getByTag("featured")
-      * ```
+      * 	;```ts
+      * 	const response = await client.getByTag("featured")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbytag}
       */
@@ -987,14 +948,13 @@ var init_Client = __esm({
         return await this.get(appendFilters(params, filter.any("document.tags", [tag])));
       }
       /**
-      * Fetches pages with a specific tag. This method may make multiple network
-      * requests to fetch all matching documents.
+      * Fetches pages with a specific tag. This method may make multiple network requests to fetch all
+      * matching documents.
       *
       * @example
-      *
-      * ```ts
-      * const pages = await client.getAllByTag("featured")
-      * ```
+      * 	;```ts
+      * 	const pages = await client.getAllByTag("featured")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbytag}
       */
@@ -1005,10 +965,9 @@ var init_Client = __esm({
       * Fetches pages with every tag from a list of tags. Results are paginated.
       *
       * @example
-      *
-      * ```ts
-      * const response = await client.getByEveryTag(["featured", "homepage"])
-      * ```
+      * 	;```ts
+      * 	const response = await client.getByEveryTag(["featured", "homepage"])
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbyeverytag}
       */
@@ -1016,14 +975,13 @@ var init_Client = __esm({
         return await this.get(appendFilters(params, filter.at("document.tags", tags)));
       }
       /**
-      * Fetches pages with every tag from a list of tags. This method may make
-      * multiple network requests to fetch all matching pages.
+      * Fetches pages with every tag from a list of tags. This method may make multiple network
+      * requests to fetch all matching pages.
       *
       * @example
-      *
-      * ```ts
-      * const pages = await client.getAllByEveryTag(["featured", "homepage"])
-      * ```
+      * 	;```ts
+      * 	const pages = await client.getAllByEveryTag(["featured", "homepage"])
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbyeverytag}
       */
@@ -1031,14 +989,12 @@ var init_Client = __esm({
         return await this.dangerouslyGetAll(appendFilters(params, filter.at("document.tags", tags)));
       }
       /**
-      * Fetches pages with at least one tag from a list of tags. Results are
-      * paginated.
+      * Fetches pages with at least one tag from a list of tags. Results are paginated.
       *
       * @example
-      *
-      * ```ts
-      * const response = await client.getBySomeTags(["featured", "homepage"])
-      * ```
+      * 	;```ts
+      * 	const response = await client.getBySomeTags(["featured", "homepage"])
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getbysometags}
       */
@@ -1046,14 +1002,13 @@ var init_Client = __esm({
         return await this.get(appendFilters(params, filter.any("document.tags", tags)));
       }
       /**
-      * Fetches pages with at least one tag from a list of tags. This method may
-      * make multiple network requests to fetch all matching documents.
+      * Fetches pages with at least one tag from a list of tags. This method may make multiple network
+      * requests to fetch all matching documents.
       *
       * @example
-      *
-      * ```ts
-      * const pages = await client.getAllBySomeTags(["featured", "homepage"])
-      * ```
+      * 	;```ts
+      * 	const pages = await client.getAllBySomeTags(["featured", "homepage"])
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getallbysometags}
       */
@@ -1064,17 +1019,16 @@ var init_Client = __esm({
       * Fetches metadata about the client's Prismic repository.
       *
       * @example
-      *
-      * ```ts
-      * const repository = await client.getRepository()
-      * ```
+      * 	;```ts
+      * 	const repository = await client.getRepository()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getrepository}
       */
       async getRepository(params) {
         if (__privateGet(this, _cachedRepository) && __privateGet(this, _cachedRepositoryExpiration) > Date.now()) return __privateGet(this, _cachedRepository);
         const url = new URL(this.documentAPIEndpoint);
-        const accessToken = (params === null || params === void 0 ? void 0 : params.accessToken) || this.accessToken;
+        const accessToken = params?.accessToken || this.accessToken;
         if (accessToken) url.searchParams.set("access_token", accessToken);
         const response = await __privateMethod(this, _Client_instances, request_fn).call(this, url, params);
         if (response.ok) {
@@ -1089,10 +1043,9 @@ var init_Client = __esm({
       * Fetches the repository's active refs.
       *
       * @example
-      *
-      * ```ts
-      * const refs = await client.getRefs()
-      * ```
+      * 	;```ts
+      * 	const refs = await client.getRefs()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getrefs}
       */
@@ -1103,32 +1056,29 @@ var init_Client = __esm({
       * Fetches a ref by its ID.
       *
       * @example
-      *
-      * ```ts
-      * const ref = await client.getRefByID("YhE3YhEAACIA4321")
-      * ```
+      * 	;```ts
+      * 	const ref = await client.getRefByID("YhE3YhEAACIA4321")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getrefbyid}
       */
       async getRefByID(id, params) {
-        const ref = (await this.getRefs(params)).find((ref$1) => ref$1.id === id);
+        const ref = (await this.getRefs(params)).find((ref2) => ref2.id === id);
         if (!ref) throw new PrismicError(`Ref with ID "${id}" could not be found.`, void 0, void 0);
         return ref;
       }
       /**
-      * Fetches a ref by its label. A release ref's label is its name shown in the
-      * Page Builder.
+      * Fetches a ref by its label. A release ref's label is its name shown in the Page Builder.
       *
       * @example
-      *
-      * ```ts
-      * const ref = await client.getRefByLabel("My Release")
-      * ```
+      * 	;```ts
+      * 	const ref = await client.getRefByLabel("My Release")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getrefbylabel}
       */
       async getRefByLabel(label, params) {
-        const ref = (await this.getRefs(params)).find((ref$1) => ref$1.label === label);
+        const ref = (await this.getRefs(params)).find((ref2) => ref2.label === label);
         if (!ref) throw new PrismicError(`Ref with label "${label}" could not be found.`, void 0, void 0);
         return ref;
       }
@@ -1136,15 +1086,14 @@ var init_Client = __esm({
       * Fetches the repository's master ref.
       *
       * @example
-      *
-      * ```ts
-      * const masterRef = await client.getMasterRef()
-      * ```
+      * 	;```ts
+      * 	const masterRef = await client.getMasterRef()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getmasterref}
       */
       async getMasterRef(params) {
-        const ref = (await this.getRefs(params)).find((ref$1) => ref$1.isMasterRef);
+        const ref = (await this.getRefs(params)).find((ref2) => ref2.isMasterRef);
         if (!ref) throw new PrismicError("Master ref could not be found.", void 0, void 0);
         return ref;
       }
@@ -1152,10 +1101,9 @@ var init_Client = __esm({
       * Fetches the repository's active releases.
       *
       * @example
-      *
-      * ```ts
-      * const releases = await client.getReleases()
-      * ```
+      * 	;```ts
+      * 	const releases = await client.getReleases()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getreleases}
       */
@@ -1166,10 +1114,9 @@ var init_Client = __esm({
       * Fetches a release with a specific ID.
       *
       * @example
-      *
-      * ```ts
-      * const release = await client.getReleaseByID("YhE3YhEAACIA4321")
-      * ```
+      * 	;```ts
+      * 	const release = await client.getReleaseByID("YhE3YhEAACIA4321")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getreleasebyid}
       */
@@ -1179,14 +1126,12 @@ var init_Client = __esm({
         return release;
       }
       /**
-      * Fetches a release by its label. A release ref's label is its name shown in
-      * the Page Builder.
+      * Fetches a release by its label. A release ref's label is its name shown in the Page Builder.
       *
       * @example
-      *
-      * ```ts
-      * const release = await client.getReleaseByLabel("My Release")
-      * ```
+      * 	;```ts
+      * 	const release = await client.getReleaseByLabel("My Release")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#getreleasebylabel}
       */
@@ -1199,10 +1144,9 @@ var init_Client = __esm({
       * Fetches the repository's page tags.
       *
       * @example
-      *
-      * ```ts
-      * const tags = await client.getTags()
-      * ```
+      * 	;```ts
+      * 	const tags = await client.getTags()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#gettags}
       */
@@ -1221,12 +1165,11 @@ var init_Client = __esm({
       * Builds a Content API query URL with a set of parameters.
       *
       * @example
-      *
-      * ```ts
-      * const url = await client.buildQueryURL({
-      * 	filters: [filter.at("document.type", "blog_post")],
-      * })
-      * ```
+      * 	;```ts
+      * 	const url = await client.buildQueryURL({
+      * 		filters: [filter.at("document.type", "blog_post")],
+      * 	})
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#buildqueryurl}
       */
@@ -1255,13 +1198,12 @@ var init_Client = __esm({
       * Fetches a previewed page's URL using a preview token and page ID.
       *
       * @example
-      *
-      * ```ts
-      * const url = await client.resolvePreviewURL({
-      * 	linkResolver,
-      * 	defaultURL: "/",
-      * })
-      * ```
+      * 	;```ts
+      * 	const url = await client.resolvePreviewURL({
+      * 		linkResolver,
+      * 		defaultURL: "/",
+      * 	})
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#resolvepreviewurl}
       */
@@ -1274,9 +1216,8 @@ var init_Client = __esm({
           previewToken = previewToken || searchParams.get("token");
         } else if (__privateGet(this, _autoPreviewsRequest)) {
           if ("query" in __privateGet(this, _autoPreviewsRequest)) {
-            var _this$autoPreviewsReq, _this$autoPreviewsReq2;
-            documentID = documentID || ((_this$autoPreviewsReq = __privateGet(this, _autoPreviewsRequest).query) === null || _this$autoPreviewsReq === void 0 ? void 0 : _this$autoPreviewsReq.documentId);
-            previewToken = previewToken || ((_this$autoPreviewsReq2 = __privateGet(this, _autoPreviewsRequest).query) === null || _this$autoPreviewsReq2 === void 0 ? void 0 : _this$autoPreviewsReq2.token);
+            documentID = documentID || __privateGet(this, _autoPreviewsRequest).query?.documentId;
+            previewToken = previewToken || __privateGet(this, _autoPreviewsRequest).query?.token;
           } else if ("url" in __privateGet(this, _autoPreviewsRequest) && __privateGet(this, _autoPreviewsRequest).url) {
             const searchParams = new URL(__privateGet(this, _autoPreviewsRequest).url, "missing-host://").searchParams;
             documentID = documentID || searchParams.get("documentId");
@@ -1295,14 +1236,12 @@ var init_Client = __esm({
         return args.defaultURL;
       }
       /**
-      * Configures the client to query the latest published content. This is the
-      * client's default mode.
+      * Configures the client to query the latest published content. This is the client's default mode.
       *
       * @example
-      *
-      * ```ts
-      * client.queryLatestContent()
-      * ```
+      * 	;```ts
+      * 	client.queryLatestContent()
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#querylatestcontent}
       */
@@ -1313,10 +1252,9 @@ var init_Client = __esm({
       * Configures the client to query content from a release with a specific ID.
       *
       * @example
-      *
-      * ```ts
-      * client.queryContentFromReleaseByID("YhE3YhEAACIA4321")
-      * ```
+      * 	;```ts
+      * 	client.queryContentFromReleaseByID("YhE3YhEAACIA4321")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#querycontentfromreleasebyid}
       */
@@ -1326,14 +1264,12 @@ var init_Client = __esm({
         });
       }
       /**
-      * Configures the client to query content from a release with a specific
-      * label.
+      * Configures the client to query content from a release with a specific label.
       *
       * @example
-      *
-      * ```ts
-      * client.queryContentFromReleaseByLabel("My Release")
-      * ```
+      * 	;```ts
+      * 	client.queryContentFromReleaseByLabel("My Release")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#querycontentfromreleasebylabel}
       */
@@ -1346,10 +1282,9 @@ var init_Client = __esm({
       * Configures the client to query content from a specific ref.
       *
       * @example
-      *
-      * ```ts
-      * client.queryContentFromRef("my-ref")
-      * ```
+      * 	;```ts
+      * 	client.queryContentFromRef("my-ref")
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#querycontentfromref}
       */
@@ -1357,26 +1292,25 @@ var init_Client = __esm({
         __privateSet(this, _getRef, typeof ref === "string" ? () => ref : ref);
       }
       /**
-      * A preconfigured `fetch()` function for Prismic's GraphQL API that can be
-      * provided to GraphQL clients.
+      * A preconfigured `fetch()` function for Prismic's GraphQL API that can be provided to GraphQL
+      * clients.
       *
       * @example
+      * 	```ts
+      * 	import { createClient, getGraphQLEndpoint } from "@prismicio/client"
       *
-      * ```ts
-      * import { createClient, getGraphQLEndpoint } from "@prismicio/client"
-      *
-      * const client = createClient("example-prismic-repo")
-      * const graphQLClient = new ApolloClient({
+      * 	const client = createClient("example-prismic-repo")
+      * 	const graphQLClient = new ApolloClient({
       * 	link: new HttpLink({
-      * 		uri: getGraphQLEndpoint(client.repositoryName),
-      * 		// Provide `client.graphQLFetch` as the fetch implementation.
-      * 		fetch: client.graphQLFetch,
-      * 		// Using GET is required.
-      * 		useGETForQueries: true,
+      * 	uri: getGraphQLEndpoint(client.repositoryName),
+      * 	// Provide `client.graphQLFetch` as the fetch implementation.
+      * 	fetch: client.graphQLFetch,
+      * 	// Using GET is required.
+      * 	useGETForQueries: true,
       * 	}),
       * 	cache: new InMemoryCache(),
-      * })
-      * ```
+      * 	})
+      * 	```
       *
       * @see {@link https://prismic.io/docs/technical-reference/prismicio-client/v7#graphqlfetch}
       */
@@ -1391,7 +1325,7 @@ var init_Client = __esm({
         headers["prismic-ref"] = ref;
         if (this.accessToken) headers["authorization"] = `Token ${this.accessToken}`;
         if (repository.integrationFieldsRef) headers["prismic-integration-field-ref"] = repository.integrationFieldsRef;
-        for (const [key, value] of Object.entries((init === null || init === void 0 ? void 0 : init.headers) ?? {})) headers[key.toLowerCase()] = value;
+        for (const [key, value] of Object.entries(init?.headers ?? {})) headers[key.toLowerCase()] = value;
         const url = new URL(typeof input === "string" ? input : input.url);
         const query = (url.searchParams.get("query") ?? "").replace(/(\n| )*( |{|})(\n| )*/gm, (_chars, _spaces, brackets) => brackets);
         url.searchParams.set("query", query);
@@ -1402,13 +1336,12 @@ var init_Client = __esm({
         });
       }
     }, _repositoryName = new WeakMap(), _getRef = new WeakMap(), _autoPreviews = new WeakMap(), _autoPreviewsRequest = new WeakMap(), _cachedRepository = new WeakMap(), _cachedRepositoryExpiration = new WeakMap(), _Client_instances = new WeakSet(), getResolvedRef_fn = async function(params) {
-      var _this$getRef;
+      var _a4;
       if (__privateGet(this, _autoPreviews)) {
-        var _this$autoPreviewsReq3, _globalThis$document;
-        const previewRef = getPreviewCookie((((_this$autoPreviewsReq3 = __privateGet(this, _autoPreviewsRequest)) === null || _this$autoPreviewsReq3 === void 0 ? void 0 : _this$autoPreviewsReq3.headers) ? "get" in __privateGet(this, _autoPreviewsRequest).headers ? __privateGet(this, _autoPreviewsRequest).headers.get("cookie") : __privateGet(this, _autoPreviewsRequest).headers.cookie : (_globalThis$document = globalThis.document) === null || _globalThis$document === void 0 ? void 0 : _globalThis$document.cookie) ?? "");
+        const previewRef = getPreviewCookie((__privateGet(this, _autoPreviewsRequest)?.headers ? "get" in __privateGet(this, _autoPreviewsRequest).headers ? __privateGet(this, _autoPreviewsRequest).headers.get("cookie") : __privateGet(this, _autoPreviewsRequest).headers.cookie : globalThis.document?.cookie) ?? "");
         if (previewRef) return previewRef;
       }
-      const ref = await ((_this$getRef = __privateGet(this, _getRef)) === null || _this$getRef === void 0 ? void 0 : _this$getRef.call(this, params));
+      const ref = await ((_a4 = __privateGet(this, _getRef)) == null ? void 0 : _a4.call(this, params));
       if (ref) return ref;
       return (await this.getMasterRef(params)).ref;
     }, internalGet_fn = async function(params, attempt = 1) {
@@ -1419,9 +1352,8 @@ var init_Client = __esm({
         return await __privateMethod(this, _Client_instances, throwContentAPIError_fn).call(this, response, url);
       } catch (error) {
         if ((error instanceof RefNotFoundError || error instanceof RefExpiredError) && attempt < MAX_INVALID_REF_RETRY_ATTEMPTS) {
-          var _error$message$match;
-          if (!(params === null || params === void 0 ? void 0 : params.ref)) __privateSet(this, _cachedRepository, void 0);
-          const masterRef = (_error$message$match = error.message.match(/master ref is: (?<ref>.*)$/i)) === null || _error$message$match === void 0 || (_error$message$match = _error$message$match.groups) === null || _error$message$match === void 0 ? void 0 : _error$message$match.ref;
+          if (!params?.ref) __privateSet(this, _cachedRepository, void 0);
+          const masterRef = error.message.match(/master ref is: (?<ref>.*)$/i)?.groups?.ref;
           if (!masterRef) throw error;
           throttledWarn(`[@prismicio/client] The ref (${new URL(url).searchParams.get("ref")}) was ${error instanceof RefNotFoundError ? "invalid" : "expired"}. Now retrying with the latest master ref (${masterRef}). If you were previewing content, the response will not include draft content.`);
           return await __privateMethod(this, _Client_instances, internalGet_fn).call(this, {
@@ -1460,15 +1392,14 @@ var init_Client = __esm({
           throw new PrismicError(void 0, url, await response.text());
       }
     }, request_fn = async function(url, params) {
-      var _this$fetchOptions, _params$fetchOptions, _params$fetchOptions2, _this$fetchOptions2;
       return await request(url, {
         ...this.fetchOptions,
-        ...params === null || params === void 0 ? void 0 : params.fetchOptions,
+        ...params?.fetchOptions,
         headers: {
-          ...(_this$fetchOptions = this.fetchOptions) === null || _this$fetchOptions === void 0 ? void 0 : _this$fetchOptions.headers,
-          ...params === null || params === void 0 || (_params$fetchOptions = params.fetchOptions) === null || _params$fetchOptions === void 0 ? void 0 : _params$fetchOptions.headers
+          ...this.fetchOptions?.headers,
+          ...params?.fetchOptions?.headers
         },
-        signal: (params === null || params === void 0 || (_params$fetchOptions2 = params.fetchOptions) === null || _params$fetchOptions2 === void 0 ? void 0 : _params$fetchOptions2.signal) || (params === null || params === void 0 ? void 0 : params.signal) || ((_this$fetchOptions2 = this.fetchOptions) === null || _this$fetchOptions2 === void 0 ? void 0 : _this$fetchOptions2.signal)
+        signal: params?.fetchOptions?.signal || params?.signal || this.fetchOptions?.signal
       }, this.fetchFn);
     }, _a);
   }
@@ -1484,95 +1415,13 @@ var init_createClient = __esm({
   }
 });
 
-// node_modules/@prismicio/client/dist/types/migration/Asset.js
-var PrismicMigrationAsset;
-var init_Asset = __esm({
-  "node_modules/@prismicio/client/dist/types/migration/Asset.js"() {
-    "use strict";
-    PrismicMigrationAsset = class {
-      /**
-      * Creates a migration asset used with the Prismic Migration API.
-      *
-      * @param config - Configuration of the asset.
-      * @param initialField - The initial field value if any.
-      *
-      * @returns A migration asset instance.
-      */
-      constructor(config, initialField) {
-        /**
-        * Asset object from Prismic, available once created.
-        */
-        __publicField(this, "asset");
-        /**
-        * Configuration of the asset.
-        */
-        __publicField(this, "config");
-        /**
-        * The initial field value this migration field was created with.
-        */
-        __publicField(this, "originalField");
-        this.config = config;
-        this.originalField = initialField;
-      }
-    };
-  }
-});
-
-// node_modules/@prismicio/client/dist/types/migration/Document.js
-var PrismicMigrationDocument;
-var init_Document = __esm({
-  "node_modules/@prismicio/client/dist/types/migration/Document.js"() {
-    "use strict";
-    PrismicMigrationDocument = class {
-      /**
-      * Creates a Prismic migration document instance.
-      *
-      * @param document - The document to be sent to the Migration API.
-      * @param title - The name of the document displayed in the editor.
-      * @param params - Parameters to create/update the document with on the
-      *   Migration API.
-      *
-      * @returns A Prismic migration document instance.
-      */
-      constructor(document2, title2, params) {
-        /**
-        * The document to be sent to the Migration API.
-        */
-        __publicField(this, "document");
-        /**
-        * The name of the document displayed in the editor.
-        */
-        __publicField(this, "title");
-        /**
-        * The link to the master language document to relate the document to if any.
-        */
-        __publicField(this, "masterLanguageDocument");
-        /**
-        * Original Prismic document when the migration document came from another
-        * Prismic repository.
-        *
-        * @remarks
-        * When migrating a document from another repository, one might want to alter
-        * it with migration specific types, hence accepting an
-        * `ExistingPrismicDocument` instead of a regular `PrismicDocument`.
-        */
-        __publicField(this, "originalPrismicDocument");
-        this.document = document2;
-        this.title = title2;
-        this.masterLanguageDocument = params === null || params === void 0 ? void 0 : params.masterLanguageDocument;
-        this.originalPrismicDocument = params === null || params === void 0 ? void 0 : params.originalPrismicDocument;
-      }
-    };
-  }
-});
-
 // node_modules/@prismicio/client/dist/helpers/isFilled.js
 var isFilled_exports, isNonNullish, isNonEmptyArray, richText, title, imageThumbnail, image, link, linkToMedia, contentRelationship, date, timestamp, color, number, keyText, select, embed, geoPoint, table, integration, integrationField, integrationFields, repeatable, group, sliceZone;
 var init_isFilled = __esm({
   "node_modules/@prismicio/client/dist/helpers/isFilled.js"() {
     "use strict";
-    init_rolldown_runtime();
-    isFilled_exports = /* @__PURE__ */ __export2({
+    init_runtime();
+    isFilled_exports = /* @__PURE__ */ __exportAll({
       color: () => color,
       contentRelationship: () => contentRelationship,
       date: () => date,
@@ -1635,14 +1484,94 @@ var init_isFilled = __esm({
     integration = isNonNullish;
     integrationField = integration;
     integrationFields = integration;
-    repeatable = (repeatable$1) => {
-      return isNonNullish(repeatable$1) && isNonEmptyArray(repeatable$1);
+    repeatable = (repeatable2) => {
+      return isNonNullish(repeatable2) && isNonEmptyArray(repeatable2);
     };
-    group = (group$1) => {
-      return isNonNullish(group$1) && isNonEmptyArray(group$1);
+    group = (group2) => {
+      return isNonNullish(group2) && isNonEmptyArray(group2);
     };
     sliceZone = (slices) => {
       return isNonNullish(slices) && isNonEmptyArray(slices);
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/migration/Asset.js
+var PrismicMigrationAsset;
+var init_Asset = __esm({
+  "node_modules/@prismicio/client/dist/types/migration/Asset.js"() {
+    "use strict";
+    PrismicMigrationAsset = class {
+      /**
+      * Creates a migration asset used with the Prismic Migration API.
+      *
+      * @param config - Configuration of the asset.
+      * @param initialField - The initial field value if any.
+      * @returns A migration asset instance.
+      */
+      constructor(config, initialField) {
+        /** Asset object from Prismic, available once created. */
+        __publicField(this, "asset");
+        /** Configuration of the asset. */
+        __publicField(this, "config");
+        /** The initial field value this migration field was created with. */
+        __publicField(this, "originalField");
+        this.config = config;
+        this.originalField = initialField;
+      }
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/types/migration/Document.js
+var PrismicMigrationDocument;
+var init_Document = __esm({
+  "node_modules/@prismicio/client/dist/types/migration/Document.js"() {
+    "use strict";
+    PrismicMigrationDocument = class {
+      /**
+      * Creates a Prismic migration document instance.
+      *
+      * @param document - The document to be sent to the Migration API.
+      * @param title - The name of the document displayed in the editor.
+      * @param params - Parameters to create/update the document with on the Migration API.
+      * @returns A Prismic migration document instance.
+      */
+      constructor(document2, title2, params) {
+        /** The document to be sent to the Migration API. */
+        __publicField(this, "document");
+        /** The name of the document displayed in the editor. */
+        __publicField(this, "title");
+        /** The link to the master language document to relate the document to if any. */
+        __publicField(this, "masterLanguageDocument");
+        /**
+        * Original Prismic document when the migration document came from another Prismic repository.
+        *
+        * @remarks
+        *   When migrating a document from another repository, one might want to alter it with migration
+        *   specific types, hence accepting an `ExistingPrismicDocument` instead of a regular
+        *   `PrismicDocument`.
+        */
+        __publicField(this, "originalPrismicDocument");
+        this.document = document2;
+        this.title = title2;
+        this.masterLanguageDocument = params?.masterLanguageDocument;
+        this.originalPrismicDocument = params?.originalPrismicDocument;
+      }
+    };
+  }
+});
+
+// node_modules/@prismicio/client/dist/lib/getOptionalLinkProperties.js
+var getOptionalLinkProperties;
+var init_getOptionalLinkProperties = __esm({
+  "node_modules/@prismicio/client/dist/lib/getOptionalLinkProperties.js"() {
+    "use strict";
+    getOptionalLinkProperties = (input) => {
+      const res = {};
+      if ("text" in input) res.text = input.text;
+      if ("variant" in input) res.variant = input.variant;
+      return res;
     };
   }
 });
@@ -1715,20 +1644,6 @@ var init_isMigrationValue = __esm({
   }
 });
 
-// node_modules/@prismicio/client/dist/lib/getOptionalLinkProperties.js
-var getOptionalLinkProperties;
-var init_getOptionalLinkProperties = __esm({
-  "node_modules/@prismicio/client/dist/lib/getOptionalLinkProperties.js"() {
-    "use strict";
-    getOptionalLinkProperties = (input) => {
-      const res = {};
-      if ("text" in input) res.text = input.text;
-      if ("variant" in input) res.variant = input.variant;
-      return res;
-    };
-  }
-});
-
 // node_modules/@prismicio/client/dist/lib/resolveMigrationDocumentData.js
 async function resolveMigrationContentRelationship(relation) {
   if (typeof relation === "function") return resolveMigrationContentRelationship(await relation());
@@ -1777,24 +1692,23 @@ var init_resolveMigrationDocumentData = __esm({
     "use strict";
     init_richText();
     init_link();
+    init_isFilled();
     init_Asset();
     init_Document();
-    init_isFilled();
-    init_isMigrationValue();
     init_getOptionalLinkProperties();
-    resolveMigrationImage = (image$1, migration, withThumbnails) => {
-      var _migration$_assets$ge;
-      const { id: master, ...thumbnails } = image$1 instanceof PrismicMigrationAsset ? { id: image$1 } : image$1;
-      const asset = (_migration$_assets$ge = migration._assets.get(master.config.id)) === null || _migration$_assets$ge === void 0 ? void 0 : _migration$_assets$ge.asset;
+    init_isMigrationValue();
+    resolveMigrationImage = (image3, migration, withThumbnails) => {
+      const { id: master, ...thumbnails } = image3 instanceof PrismicMigrationAsset ? { id: image3 } : image3;
+      const asset = migration._assets.get(master.config.id)?.asset;
       const maybeInitialField = master.originalField;
       if (asset) {
-        const parameters = ((maybeInitialField === null || maybeInitialField === void 0 ? void 0 : maybeInitialField.url) || asset.url).split("?")[1];
+        const parameters = (maybeInitialField?.url || asset.url).split("?")[1];
         const url = `${asset.url.split("?")[0]}${parameters ? `?${parameters}` : ""}`;
         const dimensions = {
           width: asset.width,
           height: asset.height
         };
-        const edit = maybeInitialField && "edit" in maybeInitialField ? maybeInitialField === null || maybeInitialField === void 0 ? void 0 : maybeInitialField.edit : {
+        const edit = maybeInitialField && "edit" in maybeInitialField ? maybeInitialField?.edit : {
           x: 0,
           y: 0,
           zoom: 1,
@@ -1817,21 +1731,20 @@ var init_resolveMigrationDocumentData = __esm({
         };
       }
     };
-    resolveMigrationRTImageNode = async (rtImageNode$1, migration) => {
-      const image$1 = resolveMigrationImage(rtImageNode$1.id, migration);
-      if (image$1) {
-        const linkTo = await resolveMigrationDocumentData(rtImageNode$1.linkTo, migration);
+    resolveMigrationRTImageNode = async (rtImageNode3, migration) => {
+      const image3 = resolveMigrationImage(rtImageNode3.id, migration);
+      if (image3) {
+        const linkTo = await resolveMigrationDocumentData(rtImageNode3.linkTo, migration);
         return {
-          ...image$1,
+          ...image3,
           type: RichTextNodeType.image,
           linkTo: link(linkTo) ? linkTo : void 0
         };
       }
     };
-    resolveMigrationLinkToMedia = (linkToMedia$1, migration) => {
-      var _migration$_assets$ge2;
-      const asset = (_migration$_assets$ge2 = migration._assets.get(linkToMedia$1.id.config.id)) === null || _migration$_assets$ge2 === void 0 ? void 0 : _migration$_assets$ge2.asset;
-      const optionalLinkProperties = getOptionalLinkProperties(linkToMedia$1);
+    resolveMigrationLinkToMedia = (linkToMedia3, migration) => {
+      const asset = migration._assets.get(linkToMedia3.id.config.id)?.asset;
+      const optionalLinkProperties = getOptionalLinkProperties(linkToMedia3);
       if (asset) return {
         ...optionalLinkProperties,
         id: asset.id,
@@ -1852,25 +1765,22 @@ var init_WriteClient = __esm({
     "use strict";
     init_package();
     init_devMsg();
+    init_errors();
     init_pLimit();
     init_request();
-    init_errors();
     init_Client();
     init_resolveMigrationDocumentData();
     CLIENT_IDENTIFIER = `${name.replace("@", "").replace("/", "-")}/${version}`;
     WriteClient = (_a2 = class extends Client {
       /**
-      * Creates a Prismic client that can be used to query and write content to a
-      * repository.
+      * Creates a Prismic client that can be used to query and write content to a repository.
       *
-      * If used in an environment where a global `fetch` function is unavailable,
-      * such as in some Node.js versions, the `fetch` option must be provided as
-      * part of the `options` parameter.
+      * If used in an environment where a global `fetch` function is unavailable, such as in some
+      * Node.js versions, the `fetch` option must be provided as part of the `options` parameter.
       *
       * @param repositoryName - The Prismic repository name for the repository.
-      * @param options - Configuration that determines how content will be queried
-      *   from and written to the Prismic repository.
-      *
+      * @param options - Configuration that determines how content will be queried from and written to
+      *   the Prismic repository.
       * @returns A client that can query and write content to the repository.
       */
       constructor(repositoryName, options) {
@@ -1879,9 +1789,7 @@ var init_WriteClient = __esm({
         __publicField(this, "writeToken");
         __publicField(this, "assetAPIEndpoint", "https://asset-api.prismic.io/");
         __publicField(this, "migrationAPIEndpoint", "https://migration.prismic.io/");
-        /**
-        * {@link resolveAssetTagIDs} rate limiter.
-        */
+        /** {@link resolveAssetTagIDs} rate limiter. */
         __publicField(this, "_resolveAssetTagIDsLimit", pLimit());
         if (typeof globalThis.window !== "undefined") console.warn(`[@prismicio/client] Prismic write client appears to be running in a browser environment. This is not recommended as it exposes your write token. Consider using Prismic write client in a server environment only, preferring the regular client for browser environment. For more details, see ${devMsg("avoid-write-client-in-browser")}`);
         this.writeToken = options.writeToken;
@@ -1889,17 +1797,14 @@ var init_WriteClient = __esm({
         if (options.migrationAPIEndpoint) this.migrationAPIEndpoint = `${options.migrationAPIEndpoint}/`;
       }
       /**
-      * Creates a migration release on the Prismic repository based on the provided
-      * prepared migration.
+      * Creates a migration release on the Prismic repository based on the provided prepared migration.
       *
       * @param migration - A migration prepared with {@link createMigration}.
       * @param params - An event listener and additional fetch parameters.
-      *
       * @see Prismic Migration API technical reference: {@link https://prismic.io/docs/migration-api-technical-reference}
       */
       async migrate(migration, params = {}) {
-        var _params$reporter, _params$reporter2;
-        (_params$reporter = params.reporter) === null || _params$reporter === void 0 || _params$reporter.call(params, {
+        params.reporter?.({
           type: "start",
           data: { pending: {
             documents: migration._documents.length,
@@ -1909,7 +1814,7 @@ var init_WriteClient = __esm({
         await this.migrateCreateAssets(migration, params);
         await this.migrateCreateDocuments(migration, params);
         await this.migrateUpdateDocuments(migration, params);
-        (_params$reporter2 = params.reporter) === null || _params$reporter2 === void 0 || _params$reporter2.call(params, {
+        params.reporter?.({
           type: "end",
           data: { migrated: {
             documents: migration._documents.length,
@@ -1922,13 +1827,12 @@ var init_WriteClient = __esm({
       *
       * @param migration - A migration prepared with {@link createMigration}.
       * @param params - An event listener and additional fetch parameters.
-      *
       * @internal This method is one of the step performed by the {@link migrate} method.
       */
       async migrateCreateAssets(migration, { reporter, ...fetchParams } = {}) {
         let created = 0;
         for (const [_, migrationAsset] of migration._assets) {
-          reporter === null || reporter === void 0 || reporter({
+          reporter?.({
             type: "assets:creating",
             data: {
               current: ++created,
@@ -1957,7 +1861,7 @@ var init_WriteClient = __esm({
             ...fetchParams
           });
         }
-        reporter === null || reporter === void 0 || reporter({
+        reporter?.({
           type: "assets:created",
           data: { created }
         });
@@ -1967,12 +1871,11 @@ var init_WriteClient = __esm({
       *
       * @param migration - A migration prepared with {@link createMigration}.
       * @param params - An event listener and additional fetch parameters.
-      *
       * @internal This method is one of the step performed by the {@link migrate} method.
       */
       async migrateCreateDocuments(migration, { reporter, ...fetchParams } = {}) {
         const masterLocale = (await this.getRepository(fetchParams)).languages[0].id;
-        reporter === null || reporter === void 0 || reporter({
+        reporter?.({
           type: "documents:masterLocale",
           data: { masterLocale }
         });
@@ -1981,7 +1884,7 @@ var init_WriteClient = __esm({
         else documentsToCreate.push(doc);
         let created = 0;
         for (const doc of documentsToCreate) {
-          reporter === null || reporter === void 0 || reporter({
+          reporter?.({
             type: "documents:creating",
             data: {
               current: ++created,
@@ -1995,12 +1898,8 @@ var init_WriteClient = __esm({
             const masterLanguageDocument = await resolveMigrationContentRelationship(doc.masterLanguageDocument);
             masterLanguageDocumentID = "id" in masterLanguageDocument ? masterLanguageDocument.id : void 0;
           } else if (doc.originalPrismicDocument) {
-            var _doc$originalPrismicD;
-            const maybeOriginalID = (_doc$originalPrismicD = doc.originalPrismicDocument.alternate_languages.find(({ lang }) => lang === masterLocale)) === null || _doc$originalPrismicD === void 0 ? void 0 : _doc$originalPrismicD.id;
-            if (maybeOriginalID) {
-              var _migration$_getByOrig;
-              masterLanguageDocumentID = (_migration$_getByOrig = migration._getByOriginalID(maybeOriginalID)) === null || _migration$_getByOrig === void 0 ? void 0 : _migration$_getByOrig.document.id;
-            }
+            const maybeOriginalID = doc.originalPrismicDocument.alternate_languages.find(({ lang }) => lang === masterLocale)?.id;
+            if (maybeOriginalID) masterLanguageDocumentID = migration._getByOriginalID(maybeOriginalID)?.document.id;
           }
           const { id } = await this.createDocument({
             ...doc.document,
@@ -2011,24 +1910,22 @@ var init_WriteClient = __esm({
           });
           doc.document.id = id;
         }
-        reporter === null || reporter === void 0 || reporter({
+        reporter?.({
           type: "documents:created",
           data: { created }
         });
       }
       /**
-      * Updates documents in the Prismic repository's migration release with their
-      * patched data.
+      * Updates documents in the Prismic repository's migration release with their patched data.
       *
       * @param migration - A migration prepared with {@link createMigration}.
       * @param params - An event listener and additional fetch parameters.
-      *
       * @internal This method is one of the step performed by the {@link migrate} method.
       */
       async migrateUpdateDocuments(migration, { reporter, ...fetchParams } = {}) {
         let i = 0;
         for (const doc of migration._documents) {
-          reporter === null || reporter === void 0 || reporter({
+          reporter?.({
             type: "documents:updating",
             data: {
               current: ++i,
@@ -2043,7 +1940,7 @@ var init_WriteClient = __esm({
             data: await resolveMigrationDocumentData(doc.document.data, migration)
           }, fetchParams);
         }
-        reporter === null || reporter === void 0 || reporter({
+        reporter?.({
           type: "documents:updated",
           data: { updated: migration._documents.length }
         });
@@ -2054,7 +1951,6 @@ var init_WriteClient = __esm({
       * @param file - The file to upload as an asset.
       * @param filename - The filename of the asset.
       * @param params - Additional asset data and fetch parameters.
-      *
       * @returns The created asset.
       */
       async createAsset(file, filename, { notes, credits, alt, tags, ...params } = {}) {
@@ -2083,7 +1979,6 @@ var init_WriteClient = __esm({
       *
       * @param id - The ID of the asset to update.
       * @param params - The asset data to update and additional fetch parameters.
-      *
       * @returns The updated asset.
       */
       async updateAsset(id, { notes, credits, alt, filename, tags, ...params } = {}) {
@@ -2115,22 +2010,19 @@ var init_WriteClient = __esm({
       *
       * @param url - The URL of the asset to fetch.
       * @param params - Additional fetch parameters.
-      *
       * @returns A file representing the fetched asset.
       */
       async fetchForeignAsset(url, params = {}) {
         const res = await __privateMethod(this, _WriteClient_instances, request_fn2).call(this, new URL(url), params);
         if (!res.ok) throw new PrismicError("Could not fetch foreign asset", url, void 0);
-        const blob = await res.blob();
-        return new File([blob], "", { type: res.headers.get("content-type") || void 0 });
+        const buffer = await res.arrayBuffer();
+        return new File([buffer], "", { type: res.headers.get("content-type") || void 0 });
       }
       /**
       * Resolves asset tag IDs from tag names.
       *
       * @param tagNames - An array of tag names to resolve.
-      * @param params - Whether or not missing tags should be created and
-      *   additional fetch parameters.
-      *
+      * @param params - Whether or not missing tags should be created and additional fetch parameters.
       * @returns An array of resolved tag IDs.
       */
       async resolveAssetTagIDs(tagNames = [], { createTags, ...params } = {}) {
@@ -2150,18 +2042,16 @@ var init_WriteClient = __esm({
       * Creates a tag in the Asset API.
       *
       * @remarks
-      * Tags should be at least 3 characters long and 20 characters at most.
-      *
+      *   Tags should be at least 3 characters long and 20 characters at most.
       * @param name - The name of the tag to create.
       * @param params - Additional fetch parameters.
-      *
       * @returns The created tag.
       */
-      async createAssetTag(name$1, params) {
+      async createAssetTag(name2, params) {
         const url = new URL("tags", this.assetAPIEndpoint);
         const response = await __privateMethod(this, _WriteClient_instances, request_fn2).call(this, url, params, {
           method: "POST",
-          body: JSON.stringify({ name: name$1 }),
+          body: JSON.stringify({ name: name2 }),
           headers: { "content-type": "application/json" }
         });
         switch (response.status) {
@@ -2175,7 +2065,6 @@ var init_WriteClient = __esm({
       * Queries existing tags from the Asset API.
       *
       * @param params - Additional fetch parameters.
-      *
       * @returns An array of existing tags.
       */
       async getAssetTags(params) {
@@ -2192,15 +2081,11 @@ var init_WriteClient = __esm({
       * Creates a document in the repository's migration release.
       *
       * @typeParam TType - Type of Prismic documents to create.
-      *
       * @param document - The document to create.
-      * @param documentTitle - The title of the document to create which will be
-      *   displayed in the editor.
-      * @param params - Document master language document ID and additional fetch
-      *   parameters.
-      *
+      * @param documentTitle - The title of the document to create which will be displayed in the
+      *   editor.
+      * @param params - Document master language document ID and additional fetch parameters.
       * @returns The ID of the created document.
-      *
       * @see Prismic Migration API technical reference: {@link https://prismic.io/docs/migration-api-technical-reference}
       */
       async createDocument(document2, documentTitle, { masterLanguageDocumentID, ...params } = {}) {
@@ -2232,11 +2117,9 @@ var init_WriteClient = __esm({
       * Updates an existing document in the repository's migration release.
       *
       * @typeParam TType - Type of Prismic documents to update.
-      *
       * @param id - The ID of the document to update.
       * @param document - The document content to update.
       * @param params - Additional fetch parameters.
-      *
       * @see Prismic Migration API technical reference: {@link https://prismic.io/docs/migration-api-technical-reference}
       */
       async updateDocument(id, document2, params) {
@@ -2262,19 +2145,18 @@ var init_WriteClient = __esm({
         }
       }
     }, _WriteClient_instances = new WeakSet(), request_fn2 = async function(url, params, init) {
-      var _this$fetchOptions, _params$fetchOptions, _params$fetchOptions2, _this$fetchOptions2;
       return await request(url, {
         ...this.fetchOptions,
-        ...params === null || params === void 0 ? void 0 : params.fetchOptions,
+        ...params?.fetchOptions,
         ...init,
         headers: {
-          ...(_this$fetchOptions = this.fetchOptions) === null || _this$fetchOptions === void 0 ? void 0 : _this$fetchOptions.headers,
-          ...params === null || params === void 0 || (_params$fetchOptions = params.fetchOptions) === null || _params$fetchOptions === void 0 ? void 0 : _params$fetchOptions.headers,
-          ...init === null || init === void 0 ? void 0 : init.headers,
+          ...this.fetchOptions?.headers,
+          ...params?.fetchOptions?.headers,
+          ...init?.headers,
           repository: this.repositoryName,
           authorization: `Bearer ${this.writeToken}`
         },
-        signal: (params === null || params === void 0 || (_params$fetchOptions2 = params.fetchOptions) === null || _params$fetchOptions2 === void 0 ? void 0 : _params$fetchOptions2.signal) || (params === null || params === void 0 ? void 0 : params.signal) || ((_this$fetchOptions2 = this.fetchOptions) === null || _this$fetchOptions2 === void 0 ? void 0 : _this$fetchOptions2.signal)
+        signal: params?.fetchOptions?.signal || params?.signal || this.fetchOptions?.signal
       }, this.fetchFn);
     }, handleAssetAPIError_fn = async function(response) {
       const json = await response.json();
@@ -2286,8 +2168,6 @@ var init_WriteClient = __esm({
           throw new NotFoundError(json.error, response.url, json);
         case 400:
           throw new InvalidDataError(json.error, response.url, json);
-        case 500:
-        case 503:
         default:
           throw new PrismicError(json.error, response.url, json);
       }
@@ -2303,7 +2183,6 @@ var init_WriteClient = __esm({
           throw new ForbiddenError(message ?? payload.Message, response.url, payload);
         case 404:
           throw new NotFoundError(message, response.url, payload);
-        case 500:
         default:
           throw new PrismicError(message, response.url, payload);
       }
@@ -2357,8 +2236,8 @@ var init_Migration = __esm({
     init_link();
     init_Asset();
     init_Document();
-    init_isValue();
     init_getOptionalLinkProperties();
+    init_isValue();
     init_validateAssetMetadata();
     Migration = (_a3 = class {
       constructor() {
@@ -2377,14 +2256,13 @@ var init_Migration = __esm({
         __publicField(this, "_documents", []);
       }
       /**
-      * Registers an asset to be created in the migration from a file, an asset
-      * object, or an image or link to media field.
+      * Registers an asset to be created in the migration from a file, an asset object, or an image or
+      * link to media field.
       *
       * @remarks
-      * This method does not create the asset in Prismic media library right away.
-      * Instead, it registers it in your migration. The asset will be created when
-      * the migration is executed through the `writeClient.migrate()` method.
-      *
+      *   This method does not create the asset in Prismic media library right away. Instead, it
+      *   registers it in your migration. The asset will be created when the migration is executed
+      *   through the `writeClient.migrate()` method.
       * @returns A migration asset field instance.
       */
       createAsset(fileOrAssetOrField, filename, { notes, credits, alt, tags } = {}) {
@@ -2392,31 +2270,28 @@ var init_Migration = __esm({
         let maybeInitialField;
         if (typeof fileOrAssetOrField === "object" && "url" in fileOrAssetOrField) if ("dimensions" in fileOrAssetOrField || "link_type" in fileOrAssetOrField) {
           const url = fileOrAssetOrField.url.split("?")[0];
-          const filename$1 = "name" in fileOrAssetOrField ? fileOrAssetOrField.name : url.split("/").pop().split("_").pop();
-          const credits$1 = "copyright" in fileOrAssetOrField && fileOrAssetOrField.copyright ? fileOrAssetOrField.copyright : void 0;
-          const alt$1 = "alt" in fileOrAssetOrField && fileOrAssetOrField.alt ? fileOrAssetOrField.alt : void 0;
+          const filename2 = "name" in fileOrAssetOrField ? fileOrAssetOrField.name : url.split("/").pop().split("_").pop();
+          const credits2 = "copyright" in fileOrAssetOrField && fileOrAssetOrField.copyright ? fileOrAssetOrField.copyright : void 0;
+          const alt2 = "alt" in fileOrAssetOrField && fileOrAssetOrField.alt ? fileOrAssetOrField.alt : void 0;
           if ("dimensions" in fileOrAssetOrField) maybeInitialField = fileOrAssetOrField;
           config = {
             id: fileOrAssetOrField.id,
             file: url,
-            filename: filename$1,
+            filename: filename2,
             notes: void 0,
-            credits: credits$1,
-            alt: alt$1,
+            credits: credits2,
+            alt: alt2,
             tags: void 0
           };
-        } else {
-          var _fileOrAssetOrField$t;
-          config = {
-            id: fileOrAssetOrField.id,
-            file: fileOrAssetOrField.url,
-            filename: fileOrAssetOrField.filename,
-            notes: fileOrAssetOrField.notes,
-            credits: fileOrAssetOrField.credits,
-            alt: fileOrAssetOrField.alt,
-            tags: (_fileOrAssetOrField$t = fileOrAssetOrField.tags) === null || _fileOrAssetOrField$t === void 0 ? void 0 : _fileOrAssetOrField$t.map(({ name: name2 }) => name2)
-          };
-        }
+        } else config = {
+          id: fileOrAssetOrField.id,
+          file: fileOrAssetOrField.url,
+          filename: fileOrAssetOrField.filename,
+          notes: fileOrAssetOrField.notes,
+          credits: fileOrAssetOrField.credits,
+          alt: fileOrAssetOrField.alt,
+          tags: fileOrAssetOrField.tags?.map(({ name: name2 }) => name2)
+        };
         else config = {
           id: fileOrAssetOrField,
           file: fileOrAssetOrField,
@@ -2441,17 +2316,13 @@ var init_Migration = __esm({
       * Registers a document to be created in the migration.
       *
       * @remarks
-      * This method does not create the document in Prismic right away. Instead, it
-      * registers it in your migration. The document will be created when the
-      * migration is executed through the `writeClient.migrate()` method.
-      *
+      *   This method does not create the document in Prismic right away. Instead, it registers it in
+      *   your migration. The document will be created when the migration is executed through the
+      *   `writeClient.migrate()` method.
       * @typeParam TType - Type of the Prismic document to create.
-      *
       * @param document - The document to create.
-      * @param title - The title of the document to create which will be displayed
-      *   in the editor.
+      * @param title - The title of the document to create which will be displayed in the editor.
       * @param params - Document master language document ID.
-      *
       * @returns A migration document instance.
       */
       createDocument(document2, title2, params) {
@@ -2463,16 +2334,12 @@ var init_Migration = __esm({
       * Registers an existing document to be updated in the migration.
       *
       * @remarks
-      * This method does not update the document in Prismic right away. Instead, it
-      * registers it in your migration. The document will be updated when the
-      * migration is executed through the `writeClient.migrate()` method.
-      *
+      *   This method does not update the document in Prismic right away. Instead, it registers it in
+      *   your migration. The document will be updated when the migration is executed through the
+      *   `writeClient.migrate()` method.
       * @typeParam TType - Type of Prismic documents to update.
-      *
       * @param document - The document to update.
-      * @param title - The title of the document to update which will be displayed
-      *   in the editor.
-      *
+      * @param title - The title of the document to update which will be displayed in the editor.
       * @returns A migration document instance.
       */
       updateDocument(document2, title2) {
@@ -2481,18 +2348,14 @@ var init_Migration = __esm({
         return doc;
       }
       /**
-      * Registers a document from another Prismic repository to be created in the
-      * migration.
+      * Registers a document from another Prismic repository to be created in the migration.
       *
       * @remarks
-      * This method does not create the document in Prismic right away. Instead, it
-      * registers it in your migration. The document will be created when the
-      * migration is executed through the `writeClient.migrate()` method.
-      *
+      *   This method does not create the document in Prismic right away. Instead, it registers it in
+      *   your migration. The document will be created when the migration is executed through the
+      *   `writeClient.migrate()` method.
       * @param document - The document from Prismic to create.
-      * @param title - The title of the document to create which will be displayed
-      *   in the editor.
-      *
+      * @param title - The title of the document to create which will be displayed in the editor.
       * @returns A migration document instance.
       */
       createDocumentFromPrismic(document2, title2) {
@@ -2507,46 +2370,38 @@ var init_Migration = __esm({
         return doc;
       }
       /**
-      * Queries a document from the migration instance with a specific UID and
-      * custom type.
+      * Queries a document from the migration instance with a specific UID and custom type.
       *
       * @example
-      *
-      * ```ts
-      * const contentRelationship = migration.createContentRelationship(() =>
-      * 	migration.getByUID("blog_post", "my-first-post"),
-      * )
-      * ```
+      * 	;```ts
+      * 	const contentRelationship = migration.createContentRelationship(() =>
+      * 		migration.getByUID("blog_post", "my-first-post"),
+      * 	)
+      * 	```
       *
       * @typeParam TType - Type of the Prismic document returned.
-      *
       * @param type - The API ID of the document's custom type.
       * @param uid - The UID of the document.
-      *
-      * @returns The migration document instance with a UID matching the `uid`
-      *   parameter, if a matching document is found.
+      * @returns The migration document instance with a UID matching the `uid` parameter, if a matching
+      *   document is found.
       */
       getByUID(type, uid) {
         return this._documents.find((doc) => doc.document.type === type && doc.document.uid === uid);
       }
       /**
-      * Queries a singleton document from the migration instance for a specific
-      * custom type.
+      * Queries a singleton document from the migration instance for a specific custom type.
       *
       * @example
-      *
-      * ```ts
-      * const contentRelationship = migration.createContentRelationship(() =>
-      * 	migration.getSingle("settings"),
-      * )
-      * ```
+      * 	;```ts
+      * 	const contentRelationship = migration.createContentRelationship(() =>
+      * 		migration.getSingle("settings"),
+      * 	)
+      * 	```
       *
       * @typeParam TType - Type of the Prismic document returned.
-      *
       * @param type - The API ID of the singleton custom type.
-      *
       * @returns The migration document instance for the custom type, if a matching
-      *   document is found.
+      * document is found.
       */
       getSingle(type) {
         return this._documents.find((doc) => doc.document.type === type);
@@ -2555,34 +2410,26 @@ var init_Migration = __esm({
       * Queries a document from the migration instance for a specific original ID.
       *
       * @example
-      *
-      * ```ts
-      * const contentRelationship = migration.createContentRelationship(() =>
-      * 	migration._getByOriginalID("YhdrDxIAACgAcp_b"),
-      * )
-      * ```
+      * 	;```ts
+      * 	const contentRelationship = migration.createContentRelationship(() =>
+      * 		migration._getByOriginalID("YhdrDxIAACgAcp_b"),
+      * 	)
+      * 	```
       *
       * @typeParam TType - Type of the Prismic document returned.
-      *
       * @param id - The original ID of the Prismic document.
-      *
       * @returns The migration document instance for the original ID, if a matching
-      *   document is found.
-      *
+      * document is found.
       * @internal
       */
       _getByOriginalID(id) {
-        return this._documents.find((doc) => {
-          var _doc$originalPrismicD;
-          return ((_doc$originalPrismicD = doc.originalPrismicDocument) === null || _doc$originalPrismicD === void 0 ? void 0 : _doc$originalPrismicD.id) === id;
-        });
+        return this._documents.find((doc) => doc.originalPrismicDocument?.id === id);
       }
     }, _Migration_instances = new WeakSet(), /**
-    * Migrates a Prismic document data from another repository so that it can be
-    * created through the current repository's Migration API.
+    * Migrates a Prismic document data from another repository so that it can be created through the
+    * current repository's Migration API.
     *
     * @param input - The Prismic document data to migrate.
-    *
     * @returns The migrated Prismic document data.
     */
     migratePrismicDocumentData_fn = function(input) {
@@ -2606,12 +2453,12 @@ var init_Migration = __esm({
         id: this.createAsset(input)
       };
       if (rtImageNode(input)) {
-        const rtImageNode$1 = {
+        const rtImageNode3 = {
           type: RichTextNodeType.image,
           id: this.createAsset(input)
         };
-        if (input.linkTo) rtImageNode$1.linkTo = __privateMethod(this, _Migration_instances, migratePrismicDocumentData_fn).call(this, input.linkTo);
-        return rtImageNode$1;
+        if (input.linkTo) rtImageNode3.linkTo = __privateMethod(this, _Migration_instances, migratePrismicDocumentData_fn).call(this, input.linkTo);
+        return rtImageNode3;
       }
       if (filledImage(input)) {
         const image3 = { id: this.createAsset(input) };
@@ -2739,12 +2586,12 @@ var init_asText = __esm({
 });
 
 // node_modules/@prismicio/client/dist/helpers/asText.js
-var asText$1;
+var asText2;
 var init_asText2 = __esm({
   "node_modules/@prismicio/client/dist/helpers/asText.js"() {
     "use strict";
     init_asText();
-    asText$1 = (richTextField, ...configObjectOrTuple) => {
+    asText2 = (richTextField, ...configObjectOrTuple) => {
       if (richTextField) {
         const [configObjectOrSeparator] = configObjectOrTuple;
         let config;
@@ -3092,30 +2939,30 @@ var init_asHTML = __esm({
     createHTMLRichTextSerializer = (linkResolver, serializer) => {
       const useSerializerOrDefault = (nodeSerializerOrShorthand, defaultWithShorthand) => {
         if (typeof nodeSerializerOrShorthand === "function") return ((payload) => {
-          return (nodeSerializerOrShorthand === null || nodeSerializerOrShorthand === void 0 ? void 0 : nodeSerializerOrShorthand(payload)) || defaultWithShorthand(payload);
+          return nodeSerializerOrShorthand?.(payload) || defaultWithShorthand(payload);
         });
         return defaultWithShorthand;
       };
       return wrapMapSerializerWithStringChildren({
-        heading1: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading1, serializeStandardTag("h1", serializer === null || serializer === void 0 ? void 0 : serializer.heading1)),
-        heading2: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading2, serializeStandardTag("h2", serializer === null || serializer === void 0 ? void 0 : serializer.heading2)),
-        heading3: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading3, serializeStandardTag("h3", serializer === null || serializer === void 0 ? void 0 : serializer.heading3)),
-        heading4: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading4, serializeStandardTag("h4", serializer === null || serializer === void 0 ? void 0 : serializer.heading4)),
-        heading5: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading5, serializeStandardTag("h5", serializer === null || serializer === void 0 ? void 0 : serializer.heading5)),
-        heading6: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.heading6, serializeStandardTag("h6", serializer === null || serializer === void 0 ? void 0 : serializer.heading6)),
-        paragraph: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.paragraph, serializeStandardTag("p", serializer === null || serializer === void 0 ? void 0 : serializer.paragraph)),
-        preformatted: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.preformatted, serializePreFormatted(serializer === null || serializer === void 0 ? void 0 : serializer.preformatted)),
-        strong: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.strong, serializeStandardTag("strong", serializer === null || serializer === void 0 ? void 0 : serializer.strong)),
-        em: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.em, serializeStandardTag("em", serializer === null || serializer === void 0 ? void 0 : serializer.em)),
-        listItem: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.listItem, serializeStandardTag("li", serializer === null || serializer === void 0 ? void 0 : serializer.listItem)),
-        oListItem: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.oListItem, serializeStandardTag("li", serializer === null || serializer === void 0 ? void 0 : serializer.oListItem)),
-        list: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.list, serializeStandardTag("ul", serializer === null || serializer === void 0 ? void 0 : serializer.list)),
-        oList: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.oList, serializeStandardTag("ol", serializer === null || serializer === void 0 ? void 0 : serializer.oList)),
-        image: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.image, serializeImage(linkResolver, serializer === null || serializer === void 0 ? void 0 : serializer.image)),
-        embed: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.embed, serializeEmbed(serializer === null || serializer === void 0 ? void 0 : serializer.embed)),
-        hyperlink: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.hyperlink, serializeHyperlink(linkResolver, serializer === null || serializer === void 0 ? void 0 : serializer.hyperlink)),
-        label: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.label, serializeStandardTag("span", serializer === null || serializer === void 0 ? void 0 : serializer.label)),
-        span: useSerializerOrDefault(serializer === null || serializer === void 0 ? void 0 : serializer.span, serializeSpan())
+        heading1: useSerializerOrDefault(serializer?.heading1, serializeStandardTag("h1", serializer?.heading1)),
+        heading2: useSerializerOrDefault(serializer?.heading2, serializeStandardTag("h2", serializer?.heading2)),
+        heading3: useSerializerOrDefault(serializer?.heading3, serializeStandardTag("h3", serializer?.heading3)),
+        heading4: useSerializerOrDefault(serializer?.heading4, serializeStandardTag("h4", serializer?.heading4)),
+        heading5: useSerializerOrDefault(serializer?.heading5, serializeStandardTag("h5", serializer?.heading5)),
+        heading6: useSerializerOrDefault(serializer?.heading6, serializeStandardTag("h6", serializer?.heading6)),
+        paragraph: useSerializerOrDefault(serializer?.paragraph, serializeStandardTag("p", serializer?.paragraph)),
+        preformatted: useSerializerOrDefault(serializer?.preformatted, serializePreFormatted(serializer?.preformatted)),
+        strong: useSerializerOrDefault(serializer?.strong, serializeStandardTag("strong", serializer?.strong)),
+        em: useSerializerOrDefault(serializer?.em, serializeStandardTag("em", serializer?.em)),
+        listItem: useSerializerOrDefault(serializer?.listItem, serializeStandardTag("li", serializer?.listItem)),
+        oListItem: useSerializerOrDefault(serializer?.oListItem, serializeStandardTag("li", serializer?.oListItem)),
+        list: useSerializerOrDefault(serializer?.list, serializeStandardTag("ul", serializer?.list)),
+        oList: useSerializerOrDefault(serializer?.oList, serializeStandardTag("ol", serializer?.oList)),
+        image: useSerializerOrDefault(serializer?.image, serializeImage(linkResolver, serializer?.image)),
+        embed: useSerializerOrDefault(serializer?.embed, serializeEmbed(serializer?.embed)),
+        hyperlink: useSerializerOrDefault(serializer?.hyperlink, serializeHyperlink(linkResolver, serializer?.hyperlink)),
+        label: useSerializerOrDefault(serializer?.label, serializeStandardTag("span", serializer?.label)),
+        span: useSerializerOrDefault(serializer?.span, serializeSpan())
       });
     };
     wrapMapSerializerWithStringChildren = (mapSerializer) => {
@@ -3429,7 +3276,7 @@ __export(dist_exports, {
   asImageWidthSrcSet: () => asImageWidthSrcSet,
   asLink: () => asLink,
   asLinkAttrs: () => asLinkAttrs,
-  asText: () => asText$1,
+  asText: () => asText2,
   buildQueryURL: () => buildQueryURL,
   cookie: () => cookie_exports,
   createClient: () => createClient,
@@ -3452,24 +3299,24 @@ var predicate, unstable_mapSliceZone, Element;
 var init_dist2 = __esm({
   "node_modules/@prismicio/client/dist/index.js"() {
     "use strict";
-    init_richText();
-    init_mapSliceZone();
     init_filter();
-    init_cookie();
-    init_errors();
-    init_link();
-    init_documentToLinkField();
-    init_asLink();
+    init_mapSliceZone();
+    init_richText();
     init_buildQueryURL();
+    init_errors();
     init_isRepositoryName();
     init_getRepositoryEndpoint();
     init_getRepositoryName();
+    init_link();
+    init_documentToLinkField();
+    init_asLink();
     init_isRepositoryEndpoint();
+    init_cookie();
     init_Client();
     init_createClient();
+    init_isFilled();
     init_Asset();
     init_Document();
-    init_isFilled();
     init_WriteClient();
     init_createWriteClient();
     init_Migration();
@@ -7733,30 +7580,31 @@ var import_transform6 = require("@tiptap/pm/transform");
 var import_model8 = require("@tiptap/pm/model");
 var import_state11 = require("@tiptap/pm/state");
 var import_transform7 = require("@tiptap/pm/transform");
+var import_state12 = require("@tiptap/pm/state");
 var import_transform8 = require("@tiptap/pm/transform");
 var import_commands16 = require("@tiptap/pm/commands");
 var import_schema_list3 = require("@tiptap/pm/schema-list");
-var import_state12 = require("@tiptap/pm/state");
+var import_state13 = require("@tiptap/pm/state");
 var import_view = require("@tiptap/pm/view");
 var import_keymap = require("@tiptap/pm/keymap");
 var import_model9 = require("@tiptap/pm/model");
-var import_state13 = require("@tiptap/pm/state");
-var import_model10 = require("@tiptap/pm/model");
 var import_state14 = require("@tiptap/pm/state");
+var import_model10 = require("@tiptap/pm/model");
 var import_state15 = require("@tiptap/pm/state");
-var import_transform9 = require("@tiptap/pm/transform");
 var import_state16 = require("@tiptap/pm/state");
+var import_transform9 = require("@tiptap/pm/transform");
 var import_state17 = require("@tiptap/pm/state");
 var import_state18 = require("@tiptap/pm/state");
 var import_state19 = require("@tiptap/pm/state");
 var import_state20 = require("@tiptap/pm/state");
 var import_state21 = require("@tiptap/pm/state");
 var import_state22 = require("@tiptap/pm/state");
-var import_transform10 = require("@tiptap/pm/transform");
 var import_state23 = require("@tiptap/pm/state");
+var import_transform10 = require("@tiptap/pm/transform");
 var import_state24 = require("@tiptap/pm/state");
+var import_state25 = require("@tiptap/pm/state");
 var __defProp3 = Object.defineProperty;
-var __export3 = (target, all) => {
+var __export2 = (target, all) => {
   for (var name2 in all)
     __defProp3(target, name2, { get: all[name2], enumerable: true });
 };
@@ -7895,7 +7743,7 @@ var CommandManager = class {
   }
 };
 var commands_exports = {};
-__export3(commands_exports, {
+__export2(commands_exports, {
   blur: () => blur,
   clearContent: () => clearContent,
   clearNodes: () => clearNodes,
@@ -8108,7 +7956,6 @@ function isMarkInSet(marks, type, attributes = {}) {
   return !!findMarkInSet(marks, type, attributes);
 }
 function getMarkRange($pos, type, attributes) {
-  var _a4;
   if (!$pos || !type) {
     return;
   }
@@ -8119,7 +7966,12 @@ function getMarkRange($pos, type, attributes) {
   if (!start.node || !start.node.marks.some((mark2) => mark2.type === type)) {
     return;
   }
-  attributes = attributes || ((_a4 = start.node.marks[0]) == null ? void 0 : _a4.attrs);
+  if (!attributes) {
+    const firstMark = start.node.marks.find((mark2) => mark2.type === type);
+    if (firstMark) {
+      attributes = firstMark.attrs;
+    }
+  }
   const mark = findMarkInSet([...start.node.marks], type, attributes);
   if (!mark) {
     return;
@@ -8150,7 +8002,7 @@ function getMarkType(nameOrType, schema) {
   }
   return nameOrType;
 }
-var extendMarkRange = (typeOrName, attributes = {}) => ({ tr, state, dispatch }) => {
+var extendMarkRange = (typeOrName, attributes) => ({ tr, state, dispatch }) => {
   const type = getMarkType(typeOrName, state.schema);
   const { doc, selection } = tr;
   const { $from, from, to } = selection;
@@ -8464,7 +8316,7 @@ var insertContentAt = (position, value, options) => ({ tr, dispatch, editor }) =
       const fromSelectionAtStart = $from.parentOffset === 0;
       const isTextSelection2 = $fromNode.isText || $fromNode.isTextblock;
       const hasContent = $fromNode.content.size > 0;
-      if (fromSelectionAtStart && isTextSelection2 && hasContent) {
+      if (fromSelectionAtStart && isTextSelection2 && hasContent && isOnlyBlockContent) {
         from = Math.max(0, from - 1);
       }
       tr.replaceWith(from, to, newContent);
@@ -8964,6 +8816,67 @@ function getAttributesFromExtensions(extensions) {
   });
   return extensionAttributes;
 }
+function splitStyleDeclarations(styles) {
+  const result = [];
+  let current = "";
+  let inSingleQuote = false;
+  let inDoubleQuote = false;
+  let parenDepth = 0;
+  const length = styles.length;
+  for (let i = 0; i < length; i += 1) {
+    const char = styles[i];
+    if (char === "'" && !inDoubleQuote) {
+      inSingleQuote = !inSingleQuote;
+      current += char;
+      continue;
+    }
+    if (char === '"' && !inSingleQuote) {
+      inDoubleQuote = !inDoubleQuote;
+      current += char;
+      continue;
+    }
+    if (!inSingleQuote && !inDoubleQuote) {
+      if (char === "(") {
+        parenDepth += 1;
+        current += char;
+        continue;
+      }
+      if (char === ")" && parenDepth > 0) {
+        parenDepth -= 1;
+        current += char;
+        continue;
+      }
+      if (char === ";" && parenDepth === 0) {
+        result.push(current);
+        current = "";
+        continue;
+      }
+    }
+    current += char;
+  }
+  if (current) {
+    result.push(current);
+  }
+  return result;
+}
+function parseStyleEntries(styles) {
+  const pairs = [];
+  const declarations = splitStyleDeclarations(styles || "");
+  const numDeclarations = declarations.length;
+  for (let i = 0; i < numDeclarations; i += 1) {
+    const declaration = declarations[i];
+    const firstColonIndex = declaration.indexOf(":");
+    if (firstColonIndex === -1) {
+      continue;
+    }
+    const property = declaration.slice(0, firstColonIndex).trim();
+    const value = declaration.slice(firstColonIndex + 1).trim();
+    if (property && value) {
+      pairs.push([property, value]);
+    }
+  }
+  return pairs;
+}
 function mergeAttributes(...objects) {
   return objects.filter((item) => !!item).reduce((items, item) => {
     const mergedAttributes = { ...items };
@@ -8979,17 +8892,7 @@ function mergeAttributes(...objects) {
         const insertClasses = valueClasses.filter((valueClass) => !existingClasses.includes(valueClass));
         mergedAttributes[key] = [...existingClasses, ...insertClasses].join(" ");
       } else if (key === "style") {
-        const newStyles = value ? value.split(";").map((style2) => style2.trim()).filter(Boolean) : [];
-        const existingStyles = mergedAttributes[key] ? mergedAttributes[key].split(";").map((style2) => style2.trim()).filter(Boolean) : [];
-        const styleMap = /* @__PURE__ */ new Map();
-        existingStyles.forEach((style2) => {
-          const [property, val] = style2.split(":").map((part) => part.trim());
-          styleMap.set(property, val);
-        });
-        newStyles.forEach((style2) => {
-          const [property, val] = style2.split(":").map((part) => part.trim());
-          styleMap.set(property, val);
-        });
+        const styleMap = new Map([...parseStyleEntries(mergedAttributes[key]), ...parseStyleEntries(value)]);
         mergedAttributes[key] = Array.from(styleMap.entries()).map(([property, val]) => `${property}: ${val}`).join("; ");
       } else {
         mergedAttributes[key] = value;
@@ -9409,7 +9312,7 @@ function isNodeEmpty(node, {
       return true;
     }
     if (node.isText) {
-      return /^\s*$/m.test((_a4 = node.text) != null ? _a4 : "");
+      return !/\S/.test((_a4 = node.text) != null ? _a4 : "");
     }
   }
   if (node.isText) {
@@ -9765,6 +9668,16 @@ var joinListForwards = (tr, listType) => {
   tr.join(after);
   return true;
 };
+function createInnerSelectionForWholeDocList(tr) {
+  const doc = tr.doc;
+  const list = doc.firstChild;
+  if (!list) {
+    return null;
+  }
+  const $start = doc.resolve(1);
+  const $end = doc.resolve(list.nodeSize - 1);
+  return import_state12.TextSelection.between($start, $end);
+}
 var toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) => ({ editor, tr, state, dispatch, chain, commands, can }) => {
   const { extensions, splittableMarks } = editor.extensionManager;
   const listType = getNodeType(listTypeOrName, state.schema);
@@ -9777,13 +9690,37 @@ var toggleList = (listTypeOrName, itemTypeOrName, keepMarks, attributes = {}) =>
     return false;
   }
   const parentList = findParentNode((node) => isList(node.type.name, extensions))(selection);
-  if (range.depth >= 1 && parentList && range.depth - parentList.depth <= 1) {
-    if (parentList.node.type === listType) {
+  const isAllSelection = selection.from === 0 && selection.to === state.doc.content.size;
+  const topLevelNodes = state.doc.content.content;
+  const soleTopLevelNode = topLevelNodes.length === 1 ? topLevelNodes[0] : null;
+  const allSelectionList = isAllSelection && soleTopLevelNode && isList(soleTopLevelNode.type.name, extensions) ? {
+    node: soleTopLevelNode,
+    pos: 0,
+    depth: 0
+  } : null;
+  const currentList = parentList != null ? parentList : allSelectionList;
+  const isInsideExistingList = !!parentList && range.depth >= 1 && range.depth - parentList.depth <= 1;
+  const hasWholeDocSelectedList = !!allSelectionList;
+  if ((isInsideExistingList || hasWholeDocSelectedList) && currentList) {
+    if (currentList.node.type === listType) {
+      if (isAllSelection && hasWholeDocSelectedList) {
+        return chain().command(({ tr: trx, dispatch: disp }) => {
+          const nextSelection = createInnerSelectionForWholeDocList(trx);
+          if (!nextSelection) {
+            return false;
+          }
+          trx.setSelection(nextSelection);
+          if (disp) {
+            disp(trx);
+          }
+          return true;
+        }).liftListItem(itemType).run();
+      }
       return commands.liftListItem(itemType);
     }
-    if (isList(parentList.node.type.name, extensions) && listType.validContent(parentList.node.content) && dispatch) {
+    if (isList(currentList.node.type.name, extensions) && listType.validContent(currentList.node.content)) {
       return chain().command(() => {
-        tr.setNodeMarkup(parentList.pos, listType);
+        tr.setNodeMarkup(currentList.pos, listType);
         return true;
       }).command(() => joinListBackwards(tr, listType)).command(() => joinListForwards(tr, listType)).run();
     }
@@ -10118,7 +10055,7 @@ function run(config) {
 }
 function inputRulesPlugin(props) {
   const { editor, rules } = props;
-  const plugin = new import_state13.Plugin({
+  const plugin = new import_state14.Plugin({
     state: {
       init() {
         return null;
@@ -10272,6 +10209,7 @@ var Extendable = class {
     });
     extension.name = this.name;
     extension.parent = this.parent;
+    this.child = null;
     return extension;
   }
   extend(extendedConfig = {}) {
@@ -10448,7 +10386,7 @@ function pasteRulesPlugin(props) {
     return tr;
   };
   const plugins = rules.map((rule) => {
-    return new import_state14.Plugin({
+    return new import_state15.Plugin({
       // we register a global drag handler to track the current drag source element
       view(view) {
         const handleDragstart = (event) => {
@@ -10794,6 +10732,36 @@ var ExtensionManager = class {
     );
   }
   /**
+   * Destroy the extension manager and clean up all extension references
+   * to prevent memory leaks through parent/child extension chains.
+   *
+   * Walks each extension's full parent chain and nulls every forward
+   * `parent.child → current` link where the parent still points to the
+   * current node. This breaks the retention path from module-scope
+   * singleton roots through deep extend() chains.
+   *
+   * Only ancestor `.child` links matching the current chain are cleared.
+   * The `.parent` pointer on ancestors is never touched — extensions
+   * may be shared across live editors, so their own backward references
+   * and non-matching forward links must remain intact.
+   */
+  destroy() {
+    this.extensions.forEach((extension) => {
+      let current = extension;
+      while (current.parent) {
+        const parent = current.parent;
+        if (parent.child === current) {
+          parent.child = null;
+        }
+        current = parent;
+      }
+    });
+    this.extensions = [];
+    this.baseExtensions = [];
+    this.schema = null;
+    this.editor = null;
+  }
+  /**
    * Go through all extensions, create extension storages & setup marks
    * & bind editor event listener.
    */
@@ -10860,7 +10828,7 @@ ExtensionManager.resolve = resolveExtensions;
 ExtensionManager.sort = sortExtensions;
 ExtensionManager.flatten = flattenExtensions;
 var extensions_exports = {};
-__export3(extensions_exports, {
+__export2(extensions_exports, {
   ClipboardTextSerializer: () => ClipboardTextSerializer,
   Commands: () => Commands,
   Delete: () => Delete,
@@ -10903,8 +10871,8 @@ var ClipboardTextSerializer = Extension.create({
   },
   addProseMirrorPlugins() {
     return [
-      new import_state15.Plugin({
-        key: new import_state15.PluginKey("clipboardTextSerializer"),
+      new import_state16.Plugin({
+        key: new import_state16.PluginKey("clipboardTextSerializer"),
         props: {
           clipboardTextSerializer: () => {
             const { editor } = this;
@@ -10974,7 +10942,7 @@ var Delete = Extension.create({
           const newEnd = mapping.slice(index).map(step.to);
           const oldStart = mapping.invert().map(newStart, -1);
           const oldEnd = mapping.invert().map(newEnd);
-          const foundBeforeMark = (_a32 = nextTransaction.doc.nodeAt(newStart - 1)) == null ? void 0 : _a32.marks.some((mark) => mark.eq(step.mark));
+          const foundBeforeMark = newStart > 0 ? (_a32 = nextTransaction.doc.nodeAt(newStart - 1)) == null ? void 0 : _a32.marks.some((mark) => mark.eq(step.mark)) : false;
           const foundAfterMark = (_b3 = nextTransaction.doc.nodeAt(newEnd)) == null ? void 0 : _b3.marks.some((mark) => mark.eq(step.mark));
           this.editor.emit("delete", {
             type: "mark",
@@ -11008,8 +10976,8 @@ var Drop = Extension.create({
   name: "drop",
   addProseMirrorPlugins() {
     return [
-      new import_state16.Plugin({
-        key: new import_state16.PluginKey("tiptapDrop"),
+      new import_state17.Plugin({
+        key: new import_state17.PluginKey("tiptapDrop"),
         props: {
           handleDrop: (_, e, slice, moved) => {
             this.editor.emit("drop", {
@@ -11028,8 +10996,8 @@ var Editable = Extension.create({
   name: "editable",
   addProseMirrorPlugins() {
     return [
-      new import_state17.Plugin({
-        key: new import_state17.PluginKey("editable"),
+      new import_state18.Plugin({
+        key: new import_state18.PluginKey("editable"),
         props: {
           editable: () => this.editor.options.editable
         }
@@ -11037,13 +11005,13 @@ var Editable = Extension.create({
     ];
   }
 });
-var focusEventsPluginKey = new import_state18.PluginKey("focusEvents");
+var focusEventsPluginKey = new import_state19.PluginKey("focusEvents");
 var FocusEvents = Extension.create({
   name: "focusEvents",
   addProseMirrorPlugins() {
     const { editor } = this;
     return [
-      new import_state18.Plugin({
+      new import_state19.Plugin({
         key: focusEventsPluginKey,
         props: {
           handleDOMEvents: {
@@ -11078,7 +11046,7 @@ var Keymap = Extension.create({
         const $parentPos = $anchor.parent.isTextblock && pos > 0 ? tr.doc.resolve(pos - 1) : $anchor;
         const parentIsIsolating = $parentPos.parent.type.spec.isolating;
         const parentPos = $anchor.pos - $anchor.parentOffset;
-        const isAtStart = parentIsIsolating && $parentPos.parent.childCount === 1 ? parentPos === $anchor.pos : import_state19.Selection.atStart(doc).from === pos;
+        const isAtStart = parentIsIsolating && $parentPos.parent.childCount === 1 ? parentPos === $anchor.pos : import_state20.Selection.atStart(doc).from === pos;
         if (!empty || !parent.type.isTextblock || parent.textContent.length || !isAtStart || isAtStart && $anchor.parent.type.name === "paragraph") {
           return false;
         }
@@ -11136,8 +11104,8 @@ var Keymap = Extension.create({
       // to a paragraph if necessary.
       // This is an alternative to ProseMirror's `AllSelection`, which doesn’t work well
       // with many other commands.
-      new import_state19.Plugin({
-        key: new import_state19.PluginKey("clearDocument"),
+      new import_state20.Plugin({
+        key: new import_state20.PluginKey("clearDocument"),
         appendTransaction: (transactions, oldState, newState) => {
           if (transactions.some((tr2) => tr2.getMeta("composition"))) {
             return;
@@ -11148,8 +11116,8 @@ var Keymap = Extension.create({
             return;
           }
           const { empty, from, to } = oldState.selection;
-          const allFrom = import_state19.Selection.atStart(oldState.doc).from;
-          const allEnd = import_state19.Selection.atEnd(oldState.doc).to;
+          const allFrom = import_state20.Selection.atStart(oldState.doc).from;
+          const allEnd = import_state20.Selection.atEnd(oldState.doc).to;
           const allWasSelected = from === allFrom && to === allEnd;
           if (empty || !allWasSelected) {
             return;
@@ -11181,8 +11149,8 @@ var Paste = Extension.create({
   name: "paste",
   addProseMirrorPlugins() {
     return [
-      new import_state20.Plugin({
-        key: new import_state20.PluginKey("tiptapPaste"),
+      new import_state21.Plugin({
+        key: new import_state21.PluginKey("tiptapPaste"),
         props: {
           handlePaste: (_view, e, slice) => {
             this.editor.emit("paste", {
@@ -11198,12 +11166,23 @@ var Paste = Extension.create({
 });
 var Tabindex = Extension.create({
   name: "tabindex",
+  addOptions() {
+    return {
+      value: void 0
+    };
+  },
   addProseMirrorPlugins() {
     return [
-      new import_state21.Plugin({
-        key: new import_state21.PluginKey("tabindex"),
+      new import_state22.Plugin({
+        key: new import_state22.PluginKey("tabindex"),
         props: {
-          attributes: () => this.editor.isEditable ? { tabindex: "0" } : {}
+          attributes: () => {
+            var _a4;
+            if (!this.editor.isEditable && this.options.value === void 0) {
+              return {};
+            }
+            return { tabindex: (_a4 = this.options.value) != null ? _a4 : "0" };
+          }
         }
       })
     ];
@@ -11249,8 +11228,8 @@ var TextDirection = Extension.create({
   },
   addProseMirrorPlugins() {
     return [
-      new import_state22.Plugin({
-        key: new import_state22.PluginKey("textDirection"),
+      new import_state23.Plugin({
+        key: new import_state23.PluginKey("textDirection"),
         props: {
           attributes: () => {
             const direction = this.options.direction;
@@ -11267,7 +11246,7 @@ var TextDirection = Extension.create({
   }
 });
 var markdown_exports = {};
-__export3(markdown_exports, {
+__export2(markdown_exports, {
   createAtomBlockMarkdownSpec: () => createAtomBlockMarkdownSpec,
   createBlockMarkdownSpec: () => createBlockMarkdownSpec,
   createInlineMarkdownSpec: () => createInlineMarkdownSpec,
@@ -11729,17 +11708,21 @@ function renderNestedMarkdownContent(node, h2, prefixOrGenerator, ctx) {
   const prefix = typeof prefixOrGenerator === "function" ? prefixOrGenerator(ctx) : prefixOrGenerator;
   const [content, ...children] = node.content;
   const mainContent = h2.renderChildren([content]);
-  const output = [`${prefix}${mainContent}`];
+  let output = `${prefix}${mainContent}`;
   if (children && children.length > 0) {
-    children.forEach((child) => {
-      const childContent = h2.renderChildren([child]);
-      if (childContent) {
-        const indentedChild = childContent.split("\n").map((line) => line ? h2.indent(line) : "").join("\n");
-        output.push(indentedChild);
+    children.forEach((child, index) => {
+      var _a4, _b;
+      const childContent = (_b = (_a4 = h2.renderChild) == null ? void 0 : _a4.call(h2, child, index + 1)) != null ? _b : h2.renderChildren([child]);
+      if (childContent !== void 0 && childContent !== null) {
+        const indentedChild = childContent.split("\n").map((line) => line ? h2.indent(line) : h2.indent("")).join("\n");
+        output += child.type === "paragraph" ? `
+
+${indentedChild}` : `
+${indentedChild}`;
       }
     });
   }
-  return output.join("\n");
+  return output;
 }
 function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
   const { state } = editor;
@@ -11779,7 +11762,7 @@ function updateMarkViewAttributes(checkMark, editor, attrs = {}) {
 }
 
 // src/lib/comment-mark.ts
-var import_state25 = require("@tiptap/pm/state");
+var import_state26 = require("@tiptap/pm/state");
 var CommentMark = Mark.create({
   name: "comment",
   addOptions() {
@@ -11833,8 +11816,8 @@ var CommentMark = Mark.create({
   addProseMirrorPlugins() {
     const { onCommentClick } = this.options;
     return [
-      new import_state25.Plugin({
-        key: new import_state25.PluginKey("commentClick"),
+      new import_state26.Plugin({
+        key: new import_state26.PluginKey("commentClick"),
         props: {
           handleClick(view, pos) {
             if (!onCommentClick) return false;

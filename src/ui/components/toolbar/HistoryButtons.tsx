@@ -72,14 +72,14 @@ export function HistoryButtons({
       {/* Undo/Redo */}
       <ToolbarButton
         onClick={handleUndo}
-        disabled={aiGenerating || (editor ? !editor.can().undo() : false)}
+        disabled={aiGenerating || (editor && !editor.isDestroyed ? !editor.can?.()?.undo?.() : false)}
         title="Undo (⌘Z)"
       >
         <Undo2 className={toolbarButtonStyles.iconSize} />
       </ToolbarButton>
       <ToolbarButton
         onClick={handleRedo}
-        disabled={aiGenerating || (editor ? !editor.can().redo() : false)}
+        disabled={aiGenerating || (editor && !editor.isDestroyed ? !editor.can?.()?.redo?.() : false)}
         title="Redo (⌘⇧Z)"
       >
         <Redo2 className={toolbarButtonStyles.iconSize} />

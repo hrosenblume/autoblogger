@@ -1,7 +1,8 @@
 {
   "name": "autoblogger",
-  "version": "0.2.31",
+  "version": "0.2.32",
   "description": "A headless CMS with AI writing tools, WYSIWYG editor, and RSS auto-draft",
+  "packageManager": "bun@1.3.13",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -65,9 +66,9 @@
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm run build",
-    "yalc:push": "npm run build && yalc push"
+    "prepare": "bun run build",
+    "prepublishOnly": "bun run build",
+    "yalc:push": "bun run build && yalc push"
   },
   "peerDependencies": {
     "@prisma/client": "^5.0.0 || ^6.0.0",
