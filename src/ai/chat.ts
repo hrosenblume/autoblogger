@@ -1,6 +1,8 @@
 import { createStream } from './provider'
 import { buildChatPrompt, buildPlanPrompt } from './builders'
-import { extractAndFetchUrls, buildUrlContext } from '../lib/url-extractor'
+// url-extractor is loaded dynamically inside the web-search branch so the
+// jsdom dependency stays out of the static module graph (Next/webpack would
+// otherwise try to bundle parse5, which is ESM-only).
 import { DEFAULT_AGENT_TEMPLATE, DEFAULT_ASK_TEMPLATE } from './prompts'
 
 interface ChatMessage {
@@ -52,9 +54,9 @@ export async function chatStream(options: ChatOptions): Promise<ReadableStream> 
     const lastUserMsg = [...options.messages].reverse().find((m) => m.role === 'user')
     if (lastUserMsg) {
       try {
-        const { extractUrls } = await import('../lib/url-extractor')
+        const { extractUrls, extractAndFetchUrls, buildUrlContext } = await import('../lib/url-extractor')
         const detectedUrls = extractUrls(lastUserMsg.content)
-        
+
         if (detectedUrls.length > 0) {
           console.log('[URL Extraction] Detected URLs:', detectedUrls)
           const fetched = await extractAndFetchUrls(lastUserMsg.content)

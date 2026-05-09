@@ -4660,7 +4660,8 @@ async function generateStream(options) {
   let enrichedPrompt = options.prompt;
   if (options.useWebSearch) {
     try {
-      const fetched = await extractAndFetchUrls(options.prompt);
+      const { extractAndFetchUrls: extractAndFetchUrls2 } = await Promise.resolve().then(() => (init_url_extractor(), url_extractor_exports));
+      const fetched = await extractAndFetchUrls2(options.prompt);
       const successful = fetched.filter((f) => !f.error && f.content);
       if (successful.length > 0) {
         enrichedPrompt = `${options.prompt}
@@ -4715,7 +4716,6 @@ var init_generate2 = __esm({
     "use strict";
     init_provider();
     init_builders2();
-    init_url_extractor();
   }
 });
 
@@ -4742,16 +4742,16 @@ async function chatStream(options) {
     const lastUserMsg = [...options.messages].reverse().find((m) => m.role === "user");
     if (lastUserMsg) {
       try {
-        const { extractUrls: extractUrls2 } = await Promise.resolve().then(() => (init_url_extractor(), url_extractor_exports));
+        const { extractUrls: extractUrls2, extractAndFetchUrls: extractAndFetchUrls2, buildUrlContext: buildUrlContext2 } = await Promise.resolve().then(() => (init_url_extractor(), url_extractor_exports));
         const detectedUrls = extractUrls2(lastUserMsg.content);
         if (detectedUrls.length > 0) {
           console.log("[URL Extraction] Detected URLs:", detectedUrls);
-          const fetched = await extractAndFetchUrls(lastUserMsg.content);
+          const fetched = await extractAndFetchUrls2(lastUserMsg.content);
           if (fetched.length > 0) {
             const successful = fetched.filter((f) => !f.error && f.content);
             const failed = fetched.filter((f) => f.error || !f.content);
             if (successful.length > 0) {
-              urlContext = buildUrlContext(fetched);
+              urlContext = buildUrlContext2(fetched);
               console.log("[URL Extraction] Successfully fetched:", successful.map((f) => f.url));
             }
             if (failed.length > 0) {
@@ -4835,7 +4835,6 @@ var init_chat2 = __esm({
     "use strict";
     init_provider();
     init_builders2();
-    init_url_extractor();
     init_prompts();
   }
 });

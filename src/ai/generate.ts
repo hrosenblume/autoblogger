@@ -1,6 +1,8 @@
 import { createStream } from './provider'
 import { buildGeneratePrompt, buildExpandPlanPrompt } from './builders'
-import { extractAndFetchUrls } from '../lib/url-extractor'
+// url-extractor is loaded dynamically inside the web-search branch so the
+// jsdom dependency stays out of the static module graph (Next/webpack would
+// otherwise try to bundle parse5, which is ESM-only).
 
 interface GenerateOptions {
   prompt: string
@@ -27,6 +29,7 @@ export async function generateStream(options: GenerateOptions): Promise<Readable
   let enrichedPrompt = options.prompt
   if (options.useWebSearch) {
     try {
+      const { extractAndFetchUrls } = await import('../lib/url-extractor')
       const fetched = await extractAndFetchUrls(options.prompt)
       const successful = fetched.filter((f) => !f.error && f.content)
       if (successful.length > 0) {
