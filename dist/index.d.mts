@@ -581,7 +581,19 @@ interface BaseCrud<T> {
  */
 declare function createCrudData<T>(prisma: any, options: CrudOptions): BaseCrud<T>;
 
-/** Full model definition with provider details */
+/**
+ * Runtime model discovery: queries each provider's /v1/models endpoint, picks the
+ * latest GA model per tier, and caches the result. Lets the app pick up new model
+ * versions without code changes — providers ship a new ID, the next discovery
+ * refresh surfaces it.
+ */
+
+interface DiscoveryKeys {
+    anthropicKey?: string | null;
+    openaiKey?: string | null;
+}
+
+/** Full model definition with provider details. The `id` is a stable tier id (e.g. 'claude-sonnet') and `modelId` is the API string. */
 interface AIModel {
     id: string;
     name: string;
@@ -589,20 +601,23 @@ interface AIModel {
     modelId: string;
     description?: string;
     searchModel: 'native' | null;
+    supportsThinking: boolean;
 }
+/** @deprecated Prefer `STATIC_MODELS` or the async helpers; this only reflects the baked-in fallback. */
 declare const AI_MODELS: AIModel[];
-declare function getModel(id: string): AIModel | undefined;
-declare function getDefaultModel(): AIModel;
+/** Look up a model by tier id (or legacy id). Triggers discovery on first call; cached for 24h. */
+declare function getModel(id: string, keys?: DiscoveryKeys): Promise<AIModel | undefined>;
+declare function getDefaultModel(keys?: DiscoveryKeys): Promise<AIModel>;
 /**
  * Resolve a model ID, falling back to database default or hardcoded default.
  * Used by AI API routes to avoid duplicating model resolution logic.
  *
  * @param providedModelId - Optional model ID from request
  * @param getDefaultModelId - Async function to get default from DB (avoids Prisma import here)
- * @returns Resolved AIModel
- * @throws Error if model not found
+ * @param keys - Optional API keys to seed discovery
+ * @throws Error if model cannot be resolved
  */
-declare function resolveModel(providedModelId: string | undefined, getDefaultModelId: () => Promise<string | null>): Promise<AIModel>;
+declare function resolveModel(providedModelId: string | undefined, getDefaultModelId: () => Promise<string | null>, keys?: DiscoveryKeys): Promise<AIModel>;
 
 interface GenerateResult {
     text: string;

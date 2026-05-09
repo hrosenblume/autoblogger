@@ -128,7 +128,7 @@ async function generateEssayFromArticle(
   const model = await resolveModel(undefined, async () => {
     const settings = await config.prisma.aISettings.findUnique({ where: { id: 'default' } })
     return settings?.defaultModel || null
-  })
+  }, { anthropicKey: config.anthropicKey, openaiKey: config.openaiKey })
 
   // User prompt is minimal since all instructions are in the system prompt
   const userPrompt = essayFocus 

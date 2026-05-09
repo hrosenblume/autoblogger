@@ -55,10 +55,11 @@ export function AISettings() {
         setAutoDraftWordCount(data.autoDraftWordCount ?? 800)
         setDefaultModel(data.defaultModel || 'claude-sonnet')
         setModels(data.availableModels || [
-          { id: 'claude-sonnet', name: 'Sonnet 4.5', description: 'Fast, capable, best value' },
-          { id: 'claude-opus', name: 'Opus 4.5', description: 'Highest quality, slower' },
-          { id: 'gpt-5.2', name: 'GPT-5.2', description: 'Latest OpenAI flagship' },
-          { id: 'gpt-5-mini', name: 'GPT-5 Mini', description: 'Fast and cost-efficient' },
+          { id: 'claude-opus', name: 'Opus 4.7', description: 'Highest quality, slower' },
+          { id: 'claude-sonnet', name: 'Sonnet 4.6', description: 'Fast, capable, best value' },
+          { id: 'claude-haiku', name: 'Haiku 4.5', description: 'Fastest, lightweight' },
+          { id: 'openai-flagship', name: 'GPT-5.5', description: 'Latest OpenAI flagship' },
+          { id: 'openai-mini', name: 'GPT-5.4 Mini', description: 'Fast and cost-efficient' },
         ])
         setGenerateTemplate(data.generateTemplate ?? null)
         setChatTemplate(data.chatTemplate ?? null)

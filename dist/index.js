@@ -308,7 +308,7 @@ var init_package = __esm({
   "node_modules/@prismicio/client/dist/package.js"() {
     "use strict";
     name = "@prismicio/client";
-    version = "7.21.3";
+    version = "7.21.6";
   }
 });
 
@@ -412,7 +412,7 @@ var init_getRepositoryName = __esm({
     getRepositoryName = (repositoryEndpoint) => {
       try {
         const hostname = new URL(repositoryEndpoint).hostname;
-        if (hostname.endsWith("prismic.io") || hostname.endsWith("wroom.io") || hostname.endsWith("wroom.test")) return hostname.split(".")[0];
+        if (hostname.endsWith("prismic.io") || hostname.endsWith("wroom.io") || hostname.endsWith("dev-tools-wroom.com") || hostname.endsWith("marketing-tools-wroom.com") || hostname.endsWith("platform-wroom.com") || hostname.endsWith("wroom.test")) return hostname.split(".")[0];
       } catch {
       }
       throw new PrismicError(`An invalid Prismic Document API endpoint was provided: ${repositoryEndpoint}`, void 0, void 0);
@@ -510,6 +510,20 @@ var init_pLimit = __esm({
 });
 
 // node_modules/@prismicio/client/dist/lib/request.js
+async function memoizeResponse(response) {
+  const blob = await response.blob();
+  const memoized = {
+    ok: response.ok,
+    status: response.status,
+    headers: response.headers,
+    url: response.url,
+    text: async () => blob.text(),
+    json: async () => JSON.parse(await blob.text()),
+    blob: async () => blob,
+    clone: () => memoized
+  };
+  return memoized;
+}
 async function request(url, init, fetchFn) {
   const stringURL = url.toString();
   let job;
@@ -521,7 +535,7 @@ async function request(url, init, fetchFn) {
     const existingJob = (_DEDUPLICATED_JOBS$st = DEDUPLICATED_JOBS[stringURL]) === null || _DEDUPLICATED_JOBS$st === void 0 ? void 0 : _DEDUPLICATED_JOBS$st.get(init === null || init === void 0 ? void 0 : init.signal);
     if (existingJob) job = existingJob;
     else {
-      job = fetchFn(stringURL, init).finally(() => {
+      job = fetchFn(stringURL, init).then(memoizeResponse).finally(() => {
         var _DEDUPLICATED_JOBS$st2, _DEDUPLICATED_JOBS$st3;
         (_DEDUPLICATED_JOBS$st2 = DEDUPLICATED_JOBS[stringURL]) === null || _DEDUPLICATED_JOBS$st2 === void 0 || _DEDUPLICATED_JOBS$st2.delete(init === null || init === void 0 ? void 0 : init.signal);
         if (((_DEDUPLICATED_JOBS$st3 = DEDUPLICATED_JOBS[stringURL]) === null || _DEDUPLICATED_JOBS$st3 === void 0 ? void 0 : _DEDUPLICATED_JOBS$st3.size) === 0) delete DEDUPLICATED_JOBS[stringURL];
@@ -536,7 +550,7 @@ async function request(url, init, fetchFn) {
     await new Promise((resolve) => setTimeout(resolve, resolvedRetryAfter));
     return request(url, init, fetchFn);
   }
-  return response.clone();
+  return response;
 }
 var DEFAULT_RETRY_AFTER, THROTTLED_RUNNERS, DEDUPLICATED_JOBS;
 var init_request = __esm({
@@ -676,7 +690,7 @@ var init_Client = __esm({
         if (!isRepositoryEndpoint(this.documentAPIEndpoint)) throw new PrismicError(`documentAPIEndpoint is not a valid URL: ${documentAPIEndpoint}`, void 0, void 0);
         if (isRepositoryEndpoint(repositoryNameOrEndpoint) && documentAPIEndpoint && repositoryNameOrEndpoint !== documentAPIEndpoint) console.warn(`[@prismicio/client] Multiple incompatible endpoints were provided. Create the client using a repository name to prevent this error. For more details, see ${devMsg("prefer-repository-name")}`);
         if (process.env.NODE_ENV === "development" && /\.prismic\.io\/(?!api\/v2\/?)/i.test(this.documentAPIEndpoint)) throw new PrismicError("@prismicio/client only supports Prismic Rest API V2. Please provide only the repository name to the first createClient() parameter or use the getRepositoryEndpoint() helper to generate a valid Rest API V2 endpoint URL.", void 0, void 0);
-        if (process.env.NODE_ENV === "development" && /(?<!\.cdn)\.prismic\.io$/i.test(new URL(this.documentAPIEndpoint).hostname)) console.warn(`[@prismicio/client] The client was created with a non-CDN endpoint. Convert it to the CDN endpoint for better performance. For more details, see ${devMsg("endpoint-must-use-cdn")}`);
+        if (process.env.NODE_ENV === "development" && /\.prismic\.io$/i.test(new URL(this.documentAPIEndpoint).hostname) && !/\.cdn\.prismic\.io$/i.test(new URL(this.documentAPIEndpoint).hostname)) console.warn(`[@prismicio/client] The client was created with a non-CDN endpoint. Convert it to the CDN endpoint for better performance. For more details, see ${devMsg("endpoint-must-use-cdn")}`);
         this.accessToken = accessToken;
         this.routes = routes;
         this.brokenRoute = brokenRoute;
@@ -3911,21 +3925,186 @@ var init_prompts = __esm({
   }
 });
 
+// src/ai/models-discovery.ts
+async function discoverModels(keys) {
+  const now = Date.now();
+  if (cache && now - cache.fetchedAt < CACHE_TTL_MS) {
+    return cache.value;
+  }
+  if (!inFlight) {
+    inFlight = doDiscover(keys).then((value) => {
+      cache = { value, fetchedAt: Date.now() };
+      return value;
+    }).catch((err) => {
+      console.warn("[Model Discovery] Failed:", err instanceof Error ? err.message : err);
+      if (cache) return cache.value;
+      return new Map(STATIC_MODELS_BY_TIER);
+    }).finally(() => {
+      inFlight = null;
+    });
+  }
+  return inFlight;
+}
+async function doDiscover(keys) {
+  const result = new Map(STATIC_MODELS_BY_TIER);
+  const overrides = parseOverrides();
+  const anthropicKey = keys?.anthropicKey || process.env.ANTHROPIC_API_KEY || null;
+  const openaiKey = keys?.openaiKey || process.env.OPENAI_API_KEY || null;
+  const [anthropic, openai] = await Promise.allSettled([
+    anthropicKey ? fetchAnthropicModels(anthropicKey).then(curateAnthropic) : Promise.resolve(/* @__PURE__ */ new Map()),
+    openaiKey ? fetchOpenAIModels(openaiKey).then(curateOpenAI) : Promise.resolve(/* @__PURE__ */ new Map())
+  ]);
+  if (anthropic.status === "fulfilled") {
+    for (const [tier, model] of anthropic.value) {
+      if (!overrides.has(tier)) result.set(tier, model);
+    }
+  } else {
+    console.warn("[Model Discovery] Anthropic /v1/models failed:", anthropic.reason);
+  }
+  if (openai.status === "fulfilled") {
+    for (const [tier, model] of openai.value) {
+      if (!overrides.has(tier)) result.set(tier, model);
+    }
+  } else {
+    console.warn("[Model Discovery] OpenAI /v1/models failed:", openai.reason);
+  }
+  for (const [tier, modelId] of overrides) {
+    const existing = result.get(tier) ?? STATIC_MODELS_BY_TIER.get(tier);
+    if (existing) result.set(tier, { ...existing, modelId });
+  }
+  return result;
+}
+async function fetchAnthropicModels(apiKey) {
+  const res = await fetch("https://api.anthropic.com/v1/models?limit=100", {
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01"
+    }
+  });
+  if (!res.ok) throw new Error(`Anthropic /v1/models ${res.status}`);
+  const json = await res.json();
+  return (json.data ?? []).map((m) => m.id);
+}
+async function fetchOpenAIModels(apiKey) {
+  const res = await fetch("https://api.openai.com/v1/models", {
+    headers: { Authorization: `Bearer ${apiKey}` }
+  });
+  if (!res.ok) throw new Error(`OpenAI /v1/models ${res.status}`);
+  const json = await res.json();
+  return (json.data ?? []).map((m) => m.id);
+}
+function pickLatest(ids, pattern) {
+  let best = null;
+  for (const id of ids) {
+    const m = id.match(pattern);
+    if (!m) continue;
+    const major = parseInt(m[1], 10);
+    const minor = m[2] != null ? parseInt(m[2], 10) : 0;
+    if (!best || major > best.major || major === best.major && minor > best.minor) {
+      best = { id, major, minor };
+    }
+  }
+  return best;
+}
+function pickLatestHaiku(ids) {
+  let best = null;
+  for (const id of ids) {
+    const alias = id.match(/^claude-haiku-(\d+)-(\d+)$/);
+    const dated = id.match(/^claude-haiku-(\d+)-(\d+)-(\d{8})$/);
+    const m = alias ?? dated;
+    if (!m) continue;
+    const major = parseInt(m[1], 10);
+    const minor = parseInt(m[2], 10);
+    const date2 = dated ? m[3] : "99999999";
+    const candidate = { id, major, minor, date: date2 };
+    if (!best || candidate.major > best.major || candidate.major === best.major && candidate.minor > best.minor || candidate.major === best.major && candidate.minor === best.minor && candidate.date > best.date) {
+      best = candidate;
+    }
+  }
+  return best ? { id: best.id, major: best.major, minor: best.minor } : null;
+}
+async function curateAnthropic(ids) {
+  const out = /* @__PURE__ */ new Map();
+  const opus = pickLatest(ids, /^claude-opus-(\d+)-(\d+)$/);
+  const sonnet = pickLatest(ids, /^claude-sonnet-(\d+)-(\d+)$/);
+  const haiku = pickLatestHaiku(ids);
+  if (opus) {
+    const fallback = STATIC_MODELS_BY_TIER.get("claude-opus");
+    out.set("claude-opus", { ...fallback, modelId: opus.id, name: `Opus ${opus.major}.${opus.minor}` });
+  }
+  if (sonnet) {
+    const fallback = STATIC_MODELS_BY_TIER.get("claude-sonnet");
+    out.set("claude-sonnet", { ...fallback, modelId: sonnet.id, name: `Sonnet ${sonnet.major}.${sonnet.minor}` });
+  }
+  if (haiku) {
+    const fallback = STATIC_MODELS_BY_TIER.get("claude-haiku");
+    out.set("claude-haiku", { ...fallback, modelId: haiku.id, name: `Haiku ${haiku.major}.${haiku.minor}` });
+  }
+  return out;
+}
+async function curateOpenAI(ids) {
+  const out = /* @__PURE__ */ new Map();
+  const flagship = pickLatest(ids, /^gpt-(\d+)(?:\.(\d+))?$/);
+  const mini = pickLatest(ids, /^gpt-(\d+)(?:\.(\d+))?-mini$/);
+  if (flagship) {
+    const fallback = STATIC_MODELS_BY_TIER.get("openai-flagship");
+    const versionLabel = `${flagship.major}${flagship.minor ? `.${flagship.minor}` : ""}`;
+    out.set("openai-flagship", { ...fallback, modelId: flagship.id, name: `GPT-${versionLabel}` });
+  }
+  if (mini) {
+    const fallback = STATIC_MODELS_BY_TIER.get("openai-mini");
+    const versionLabel = `${mini.major}${mini.minor ? `.${mini.minor}` : ""}`;
+    out.set("openai-mini", { ...fallback, modelId: mini.id, name: `GPT-${versionLabel} Mini` });
+  }
+  return out;
+}
+function parseOverrides() {
+  const raw = process.env.AUTOBLOGGER_MODELS_OVERRIDE;
+  if (!raw) return /* @__PURE__ */ new Map();
+  try {
+    const parsed = JSON.parse(raw);
+    const out = /* @__PURE__ */ new Map();
+    for (const tier of TIER_ORDER) {
+      if (typeof parsed[tier] === "string") out.set(tier, parsed[tier]);
+    }
+    return out;
+  } catch {
+    console.warn("[Model Discovery] Invalid AUTOBLOGGER_MODELS_OVERRIDE JSON; ignored");
+    return /* @__PURE__ */ new Map();
+  }
+}
+var CACHE_TTL_MS, cache, inFlight;
+var init_models_discovery = __esm({
+  "src/ai/models-discovery.ts"() {
+    "use strict";
+    init_models();
+    CACHE_TTL_MS = 24 * 60 * 60 * 1e3;
+    cache = null;
+    inFlight = null;
+  }
+});
+
 // src/ai/models.ts
-function getModel(id) {
-  return AI_MODELS.find((m) => m.id === id);
+function canonicalizeId(id) {
+  return LEGACY_ALIASES[id] ?? id;
 }
-function getDefaultModel() {
-  return AI_MODELS[0];
+async function getModel(id, keys) {
+  const tier = canonicalizeId(id);
+  const models = await discoverModels(keys);
+  return models.get(tier) ?? STATIC_MODELS_BY_TIER.get(tier);
 }
-async function resolveModel(providedModelId, getDefaultModelId) {
+async function getDefaultModel(keys) {
+  const models = await discoverModels(keys);
+  return models.get("claude-sonnet") ?? STATIC_MODELS_BY_TIER.get("claude-sonnet");
+}
+async function resolveModel(providedModelId, getDefaultModelId, keys) {
   let modelId = providedModelId;
   if (!modelId) {
     modelId = await getDefaultModelId() || "claude-sonnet";
   }
-  const model = getModel(modelId);
+  const model = await getModel(modelId, keys);
   if (!model) {
-    throw new Error(`Unknown model: ${modelId}. Available: ${AI_MODELS.map((m) => m.id).join(", ")}`);
+    throw new Error(`Unknown model: ${modelId}`);
   }
   return model;
 }
@@ -3937,50 +4116,77 @@ function toModelOption(model) {
     hasNativeSearch: model.searchModel === "native"
   };
 }
-function getModelOptions() {
-  return AI_MODELS.map(toModelOption);
+async function getModelOptions(keys) {
+  const models = await discoverModels(keys);
+  return TIER_ORDER.map((id) => models.get(id) ?? STATIC_MODELS_BY_TIER.get(id)).filter((m) => !!m).map(toModelOption);
 }
-var AI_MODELS;
+var TIER_ORDER, STATIC_MODELS, STATIC_MODELS_BY_TIER, AI_MODELS, LEGACY_ALIASES;
 var init_models = __esm({
   "src/ai/models.ts"() {
     "use strict";
-    AI_MODELS = [
-      {
-        id: "claude-sonnet",
-        name: "Sonnet 4.5",
-        provider: "anthropic",
-        modelId: "claude-sonnet-4-5-20250929",
-        description: "Fast, capable, best value",
-        searchModel: null
-        // No native search, uses search-first flow
-      },
+    init_models_discovery();
+    TIER_ORDER = [
+      "claude-opus",
+      "claude-sonnet",
+      "claude-haiku",
+      "openai-flagship",
+      "openai-mini"
+    ];
+    STATIC_MODELS = [
       {
         id: "claude-opus",
-        name: "Opus 4.5",
+        name: "Opus 4.7",
         provider: "anthropic",
-        modelId: "claude-opus-4-5-20251101",
+        modelId: "claude-opus-4-7",
         description: "Highest quality, slower",
-        searchModel: null
+        searchModel: null,
+        supportsThinking: true
       },
       {
-        id: "gpt-5.2",
-        name: "GPT-5.2",
+        id: "claude-sonnet",
+        name: "Sonnet 4.6",
+        provider: "anthropic",
+        modelId: "claude-sonnet-4-6",
+        description: "Fast, capable, best value",
+        searchModel: null,
+        supportsThinking: true
+      },
+      {
+        id: "claude-haiku",
+        name: "Haiku 4.5",
+        provider: "anthropic",
+        modelId: "claude-haiku-4-5",
+        description: "Fastest, lightweight",
+        searchModel: null,
+        supportsThinking: false
+      },
+      {
+        id: "openai-flagship",
+        name: "GPT-5.5",
         provider: "openai",
-        modelId: "gpt-5.2",
+        modelId: "gpt-5.5",
         description: "Latest OpenAI flagship",
-        searchModel: "native"
-        // Uses tools-based web search
+        searchModel: "native",
+        supportsThinking: false
       },
       {
-        id: "gpt-5-mini",
-        name: "GPT-5 Mini",
+        id: "openai-mini",
+        name: "GPT-5.4 Mini",
         provider: "openai",
-        modelId: "gpt-5-mini",
+        modelId: "gpt-5.4-mini",
         description: "Fast and cost-efficient",
-        searchModel: "native"
-        // Uses tools-based web search
+        searchModel: "native",
+        supportsThinking: false
       }
     ];
+    STATIC_MODELS_BY_TIER = new Map(
+      STATIC_MODELS.map((m) => [m.id, m])
+    );
+    AI_MODELS = STATIC_MODELS;
+    LEGACY_ALIASES = {
+      "gpt-5.2": "openai-flagship",
+      "gpt-5-mini": "openai-mini"
+    };
   }
 });
 
@@ -4053,7 +4259,10 @@ function extractSearchQuery(messages) {
   return userMessages[userMessages.length - 1]?.content || "";
 }
 async function generate(modelId, systemPrompt, userPrompt, options = {}) {
-  const model = getModel(modelId);
+  const model = await getModel(modelId, {
+    anthropicKey: options.anthropicKey,
+    openaiKey: options.openaiKey
+  });
   if (!model) {
     throw new Error(`Unknown model: ${modelId}`);
   }
@@ -4124,7 +4333,10 @@ async function generateWithOpenAI(modelId, systemPrompt, userPrompt, options) {
   };
 }
 async function createStream(options) {
-  const modelConfig = getModel(options.model);
+  const modelConfig = await getModel(options.model, {
+    anthropicKey: options.anthropicKey,
+    openaiKey: options.openaiKey
+  });
   if (!modelConfig) {
     throw new Error(`Unknown model: ${options.model}`);
   }
@@ -4156,7 +4368,7 @@ Use the search results above to inform your response with current, accurate info
     }
   }
   if (modelConfig.provider === "anthropic") {
-    return createAnthropicStream(options, modelConfig.modelId, searchContext);
+    return createAnthropicStream(options, modelConfig.modelId, searchContext, modelConfig.supportsThinking);
   } else {
     return createOpenAIStream(options, modelConfig.modelId, options.useWebSearch);
   }
@@ -4239,7 +4451,7 @@ async function* normalizeOpenAIResponsesEvents(stream) {
     }
   }
 }
-async function createAnthropicStream(options, modelId, searchContext = "") {
+async function createAnthropicStream(options, modelId, searchContext = "", supportsThinking = true) {
   const anthropic = new import_sdk.default({
     ...options.anthropicKey && { apiKey: options.anthropicKey }
   });
@@ -4251,7 +4463,7 @@ async function createAnthropicStream(options, modelId, searchContext = "") {
     system: systemMessage,
     messages: chatMessages
   };
-  if (options.useThinking && (modelId.includes("claude-sonnet") || modelId.includes("claude-opus"))) {
+  if (options.useThinking && supportsThinking) {
     requestParams.thinking = {
       type: "enabled",
       budget_tokens: 1e4
@@ -5979,12 +6191,13 @@ async function handleAIAPI(req, cms, session, path) {
   if (authError) return authError;
   if (method === "GET" && path === "/ai/settings") {
     const settings = await cms.aiSettings.get();
+    const anthropicKey = cms.config.ai?.anthropicKey || settings.anthropicKey || process.env.ANTHROPIC_API_KEY;
+    const openaiKey = cms.config.ai?.openaiKey || settings.openaiKey || process.env.OPENAI_API_KEY;
     const hasAnthropicEnvKey = !!(cms.config.ai?.anthropicKey || process.env.ANTHROPIC_API_KEY);
     const hasOpenaiEnvKey = !!(cms.config.ai?.openaiKey || process.env.OPENAI_API_KEY);
     return jsonResponse2({
       data: {
         ...settings,
-        // Don't expose actual env keys, just indicate they exist
         hasAnthropicEnvKey,
         hasOpenaiEnvKey,
         defaultGenerateTemplate: DEFAULT_GENERATE_TEMPLATE,
@@ -5995,7 +6208,7 @@ async function handleAIAPI(req, cms, session, path) {
         defaultExpandPlanTemplate: DEFAULT_EXPAND_PLAN_TEMPLATE,
         defaultAgentTemplate: DEFAULT_AGENT_TEMPLATE,
         defaultPlanRules: DEFAULT_PLAN_RULES,
-        availableModels: getModelOptions()
+        availableModels: await getModelOptions({ anthropicKey, openaiKey })
       }
     });
   }
@@ -6947,7 +7160,7 @@ async function generateEssayFromArticle(config, article, topicName, essayFocus) 
   const model = await resolveModel(void 0, async () => {
     const settings = await config.prisma.aISettings.findUnique({ where: { id: "default" } });
     return settings?.defaultModel || null;
-  });
+  }, { anthropicKey: config.anthropicKey, openaiKey: config.openaiKey });
   const userPrompt = essayFocus ? `Write the essay now. Focus on: ${essayFocus}` : "Write the essay now.";
   const result = await generate(model.id, systemPrompt, userPrompt, {
     maxTokens: 4096,
@@ -8017,8 +8230,12 @@ var focus = (position = null, options = {}) => ({ editor, view, tr, dispatch }) 
       }
     });
   };
-  if (view.hasFocus() && position === null || position === false) {
-    return true;
+  try {
+    if (view.hasFocus() && position === null || position === false) {
+      return true;
+    }
+  } catch {
+    return false;
   }
   if (dispatch && position === null && !isTextSelection(editor.state.selection)) {
     delayedFocus();
@@ -8666,6 +8883,9 @@ function getAttributesFromExtensions(extensions) {
     keepOnSplit: true,
     isRequired: false
   };
+  const nodeExtensionTypes = nodeExtensions.filter((ext) => ext.name !== "text").map((ext) => ext.name);
+  const markExtensionTypes = markExtensions.map((ext) => ext.name);
+  const allExtensionTypes = [...nodeExtensionTypes, ...markExtensionTypes];
   extensions.forEach((extension) => {
     const context = {
       name: extension.name,
@@ -8683,7 +8903,19 @@ function getAttributesFromExtensions(extensions) {
     }
     const globalAttributes = addGlobalAttributes();
     globalAttributes.forEach((globalAttribute) => {
-      globalAttribute.types.forEach((type) => {
+      let resolvedTypes;
+      if (Array.isArray(globalAttribute.types)) {
+        resolvedTypes = globalAttribute.types;
+      } else if (globalAttribute.types === "*") {
+        resolvedTypes = allExtensionTypes;
+      } else if (globalAttribute.types === "nodes") {
+        resolvedTypes = nodeExtensionTypes;
+      } else if (globalAttribute.types === "marks") {
+        resolvedTypes = markExtensionTypes;
+      } else {
+        resolvedTypes = [];
+      }
+      resolvedTypes.forEach((type) => {
         Object.entries(globalAttribute.attributes).forEach(([name2, attribute]) => {
           extensionAttributes.push({
             type,
@@ -9104,6 +9336,9 @@ function isMarkActive(state, typeOrName, attributes = {}) {
     const from = $from.pos;
     const to = $to.pos;
     state.doc.nodesBetween(from, to, (node, pos) => {
+      if (type && node.inlineContent && !node.type.allowsMarkType(type)) {
+        return false;
+      }
       if (!node.isText && !node.marks.length) {
         return;
       }
@@ -10487,6 +10722,39 @@ var ExtensionManager = class {
         dispatchTransaction.call(context, { transaction, next });
       };
     }, baseDispatch);
+  }
+  /**
+   * Get the composed transformPastedHTML function from all extensions.
+   * @param baseTransform The base transform function (e.g. from the editor props)
+   * @returns A composed transform function that chains all extension transforms
+   */
+  transformPastedHTML(baseTransform) {
+    const { editor } = this;
+    const extensions = sortExtensions([...this.extensions]);
+    return extensions.reduce(
+      (transform, extension) => {
+        const context = {
+          name: extension.name,
+          options: extension.options,
+          storage: this.editor.extensionStorage[extension.name],
+          editor,
+          type: getSchemaTypeByName(extension.name, this.schema)
+        };
+        const extensionTransform = getExtensionField(
+          extension,
+          "transformPastedHTML",
+          context
+        );
+        if (!extensionTransform) {
+          return transform;
+        }
+        return (html, view) => {
+          const transformedHtml = transform(html, view);
+          return extensionTransform.call(context, transformedHtml);
+        };
+      },
+      baseTransform || ((html) => html)
+    );
   }
   get markViews() {
     const { editor } = this;
