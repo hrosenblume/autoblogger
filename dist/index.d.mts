@@ -666,6 +666,7 @@ declare function buildExpandPlanPrompt(options: {
     template?: string | null;
     plan: string;
     styleExamples?: string;
+    wordCount?: number;
 }): string;
 /**
  * Build a system prompt for plan/outline generation.
@@ -702,8 +703,13 @@ declare function buildAutoDraftPrompt(options: {
 /**
  * Default template for essay generation.
  * Placeholders: {{RULES}}, {{STYLE_EXAMPLES}}, {{WORD_COUNT}}
+ *
+ * The {{WORD_COUNT}} placeholder is referenced in three places (role-level
+ * critical block, length rule, and output_format) so that newer Anthropic
+ * models that de-prioritize XML constraint tags still get the signal as
+ * a hard imperative.
  */
-declare const DEFAULT_GENERATE_TEMPLATE = "<system>\n<role>Expert essay writer creating engaging, thoughtful content</role>\n\n<critical>\nALWAYS output a complete essay. NEVER respond conversationally.\n- Do NOT ask questions or request clarification\n- Do NOT say \"Here is your essay\" or similar preamble\n- Do NOT explain what you're going to write\n- If the prompt is vague, make creative choices and proceed\n- Output ONLY the essay in markdown format\n</critical>\n\n<rules>\n{{RULES}}\n</rules>\n\n<style_reference>\n{{STYLE_EXAMPLES}}\n</style_reference>\n\n<constraints>\n<word_count>{{WORD_COUNT}}</word_count>\n</constraints>\n\n<output_format>\nCRITICAL: Your response MUST start with exactly this format:\n\nLine 1: # [Your Title Here]\nLine 2: *[Your subtitle here]*\nLine 3: (blank line)\nLine 4+: Essay body in markdown\n\n<title_guidelines>\n- Be SPECIFIC, not generic (avoid \"The Power of\", \"Why X Matters\", \"A Guide to\")\n- Include a concrete detail, angle, or unexpected element\n- Create curiosity or make a bold claim\n- 5-12 words ideal\n</title_guidelines>\n\n<subtitle_guidelines>\n- One sentence that hooks the reader\n- Tease the main argument or reveal a key insight\n- Create tension, curiosity, or promise value\n- Make readers want to continue reading\n</subtitle_guidelines>\n</output_format>\n</system>";
+declare const DEFAULT_GENERATE_TEMPLATE = "<system>\n<role>Expert essay writer creating engaging, thoughtful content</role>\n\n<critical>\nALWAYS output a complete essay of approximately {{WORD_COUNT}} words. NEVER respond conversationally.\n- LENGTH: Hit roughly {{WORD_COUNT}} words. A short summary or 100-word reply is a failure even if well-written. Expand with examples, evidence, and texture until you reach the target.\n- STRUCTURE: Line 1 must be `# Title`. Line 2 must be a single italic subtitle wrapped in single asterisks (`*subtitle here*`). Line 3 blank. Then the body. Omitting the italic subtitle is a failure.\n- Do NOT ask questions or request clarification\n- Do NOT say \"Here is your essay\" or similar preamble\n- Do NOT explain what you're going to write\n- If the prompt is vague, make creative choices and proceed\n- Output ONLY the essay in markdown format\n</critical>\n\n<rules>\n{{RULES}}\n</rules>\n\n<style_reference>\n{{STYLE_EXAMPLES}}\n</style_reference>\n\n<output_format>\nYour response MUST start with exactly this format:\n\nLine 1: # [Your Title Here]\nLine 2: *[Your subtitle here]*\nLine 3: (blank line)\nLine 4+: Essay body in markdown (approximately {{WORD_COUNT}} words total)\n\n<title_guidelines>\n- Be SPECIFIC, not generic (avoid \"The Power of\", \"Why X Matters\", \"A Guide to\")\n- Include a concrete detail, angle, or unexpected element\n- Create curiosity or make a bold claim\n- 5-12 words ideal\n</title_guidelines>\n\n<subtitle_guidelines>\n- One sentence that hooks the reader\n- Tease the main argument or reveal a key insight\n- Create tension, curiosity, or promise value\n- Make readers want to continue reading\n- ALWAYS produce a subtitle. Wrap it in single asterisks (`*like this*`) so it renders as italic markdown.\n</subtitle_guidelines>\n</output_format>\n</system>";
 
 /**
  * Default template for chat interactions.
@@ -735,9 +741,9 @@ declare const DEFAULT_PLAN_RULES = "<format>\nEXACT OUTPUT FORMAT - copy this st
 
 /**
  * Default template for expanding outlines into full essays.
- * Placeholders: {{RULES}}, {{STYLE_EXAMPLES}}, {{PLAN}}
+ * Placeholders: {{RULES}}, {{STYLE_EXAMPLES}}, {{WORD_COUNT}}, {{PLAN}}
  */
-declare const DEFAULT_EXPAND_PLAN_TEMPLATE = "<system>\n<role>Writing assistant that expands essay outlines into full drafts</role>\n\n<writing_rules>\n{{RULES}}\n</writing_rules>\n\n<style_reference>\n{{STYLE_EXAMPLES}}\n</style_reference>\n\n<plan_to_expand>\n{{PLAN}}\n</plan_to_expand>\n\n<output_format>\nCRITICAL: Your response MUST start with exactly this format:\n\nLine 1: # [Title from plan, refined if needed]\nLine 2: *[Subtitle from plan, refined if needed]*\nLine 3: (blank line)\nLine 4+: Essay body with ## section headings\n\n<requirements>\n- Use the section headers from the plan as H2 headings\n- Expand each section's bullet points into full paragraphs\n- Match the author's voice and style from the examples\n- Output ONLY markdown \u2014 no preamble, no \"Here is...\", no explanations\n</requirements>\n\n<title_refinement>\nIf the plan title is generic, improve it to be:\n- More specific and concrete\n- Curiosity-inducing or bold\n- 5-12 words\n</title_refinement>\n</output_format>\n</system>";
+declare const DEFAULT_EXPAND_PLAN_TEMPLATE = "<system>\n<role>Writing assistant that expands essay outlines into full drafts</role>\n\n<critical>\nProduce a complete essay of approximately {{WORD_COUNT}} words.\n- LENGTH: Hit roughly {{WORD_COUNT}} words. Expanding the plan into a short summary is a failure \u2014 flesh out each section with examples, evidence, and texture until you reach the target.\n- STRUCTURE: Line 1 must be `# Title`. Line 2 must be a single italic subtitle wrapped in single asterisks (`*subtitle here*`). Line 3 blank. Then the body with H2 headings. Omitting the italic subtitle is a failure.\n- Output ONLY markdown \u2014 no preamble, no \"Here is...\", no explanations.\n</critical>\n\n<writing_rules>\n{{RULES}}\n</writing_rules>\n\n<style_reference>\n{{STYLE_EXAMPLES}}\n</style_reference>\n\n<plan_to_expand>\n{{PLAN}}\n</plan_to_expand>\n\n<output_format>\nYour response MUST start with exactly this format:\n\nLine 1: # [Title from plan, refined if needed]\nLine 2: *[Subtitle from plan, refined if needed]*\nLine 3: (blank line)\nLine 4+: Essay body with ## section headings (approximately {{WORD_COUNT}} words total)\n\n<requirements>\n- Use the section headers from the plan as H2 headings\n- Expand each section's bullet points into full paragraphs\n- Match the author's voice and style from the examples\n- ALWAYS produce a subtitle on line 2 wrapped in single asterisks\n</requirements>\n\n<title_refinement>\nIf the plan title is generic, improve it to be:\n- More specific and concrete\n- Curiosity-inducing or bold\n- 5-12 words\n</title_refinement>\n</output_format>\n</system>";
 
 /**
  * Parse AI-generated markdown to extract title, subtitle, and body.

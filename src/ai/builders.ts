@@ -64,11 +64,13 @@ export function buildExpandPlanPrompt(options: {
   template?: string | null
   plan: string
   styleExamples?: string
+  wordCount?: number
 }): string {
   const template = options.template || DEFAULT_EXPAND_PLAN_TEMPLATE
-  
+
   return template
     .replace('{{RULES}}', options.rules || '')
+    .replace('{{WORD_COUNT}}', String(options.wordCount || 800))
     .replace('{{STYLE_EXAMPLES}}', options.styleExamples || '')
     .replace('{{PLAN}}', options.plan)
 }
