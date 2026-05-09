@@ -221,9 +221,24 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       
       const data = await res.json()
       if (data.data) {
-        // Merge API response into existing post
-        setPost(prev => ({ ...prev, ...data.data }))
-        // Track all content fields for unsaved changes detection (merge current post with API response)
+        // Merge ONLY server-managed metadata into local state. Never overwrite
+        // user-edited fields (title, subtitle, markdown, custom fields) — if the
+        // user typed during the in-flight save, the response is stale and would
+        // clobber their edits and trigger a setContent() that scrolls the page
+        // to the bottom of the doc.
+        const { id, slug, status, createdAt, updatedAt, publishedAt, tags } = data.data
+        setPost(prev => ({
+          ...prev,
+          ...(id !== undefined && { id }),
+          ...(slug !== undefined && { slug }),
+          ...(status !== undefined && { status }),
+          ...(createdAt !== undefined && { createdAt }),
+          ...(updatedAt !== undefined && { updatedAt }),
+          ...(publishedAt !== undefined && { publishedAt }),
+          ...(tags !== undefined && { tags }),
+        }))
+        // Track content fields based on the SERVER snapshot (data.data), not
+        // local state — savedContent should reflect what's actually persisted.
         const mergedPost = { ...post, ...data.data }
         const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = mergedPost
         savedContent.current = stableStringify(contentFields)
@@ -275,8 +290,20 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
       if (res.ok) {
         const data = await res.json()
         if (data.data) {
-          // Update local state with new post data (including generated slug and id)
-          setPost(prev => ({ ...prev, ...data.data }))
+          // Only merge server-managed metadata into local state. See savePost
+          // for why we don't spread title/subtitle/markdown back over the user's
+          // local edits.
+          const { id, slug, status, createdAt, updatedAt, publishedAt, tags } = data.data
+          setPost(prev => ({
+            ...prev,
+            ...(id !== undefined && { id }),
+            ...(slug !== undefined && { slug }),
+            ...(status !== undefined && { status }),
+            ...(createdAt !== undefined && { createdAt }),
+            ...(updatedAt !== undefined && { updatedAt }),
+            ...(publishedAt !== undefined && { publishedAt }),
+            ...(tags !== undefined && { tags }),
+          }))
           updateSharedPost(data.data)
           // Track saved content to clear unsaved changes state
           const { id: _id, slug: _slug, status: _status, createdAt: _ca, updatedAt: _ua, publishedAt: _pa, tags: _tags, ...contentFields } = { ...post, ...data.data }
