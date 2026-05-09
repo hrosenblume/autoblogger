@@ -350,6 +350,83 @@ var init_models = __esm({
   }
 });
 
+// src/ai/edits.ts
+function parseEditBlocks(content) {
+  const editRegex = /:::edit\s*([\s\S]*?)\s*:::/g;
+  const edits = [];
+  let cleanContent = content;
+  let match;
+  while ((match = editRegex.exec(content)) !== null) {
+    try {
+      const edit = JSON.parse(match[1]);
+      edits.push(edit);
+      cleanContent = cleanContent.replace(match[0], "");
+    } catch {
+    }
+  }
+  cleanContent = cleanContent.replace(/\n{3,}/g, "\n\n").trim();
+  return { edits, cleanContent };
+}
+function applyOne(snapshot, edit) {
+  if (edit.type === "replace_all") {
+    return {
+      title: edit.title ?? snapshot.title,
+      subtitle: edit.subtitle ?? snapshot.subtitle,
+      markdown: edit.markdown ?? snapshot.markdown
+    };
+  }
+  if (edit.type === "replace_section" && edit.find && edit.replace !== void 0) {
+    if (!snapshot.markdown.includes(edit.find)) return null;
+    return {
+      ...snapshot,
+      markdown: snapshot.markdown.replace(edit.find, edit.replace)
+    };
+  }
+  if (edit.type === "insert" && edit.replace !== void 0) {
+    if (edit.position === "start") {
+      return { ...snapshot, markdown: edit.replace + snapshot.markdown };
+    }
+    if (edit.position === "end") {
+      return { ...snapshot, markdown: snapshot.markdown + edit.replace };
+    }
+    if (edit.find) {
+      if (!snapshot.markdown.includes(edit.find)) return null;
+      const idx = snapshot.markdown.indexOf(edit.find);
+      const insertPoint = edit.position === "before" ? idx : idx + edit.find.length;
+      return {
+        ...snapshot,
+        markdown: snapshot.markdown.slice(0, insertPoint) + edit.replace + snapshot.markdown.slice(insertPoint)
+      };
+    }
+    return null;
+  }
+  if (edit.type === "delete" && edit.find) {
+    if (!snapshot.markdown.includes(edit.find)) return null;
+    return { ...snapshot, markdown: snapshot.markdown.replace(edit.find, "") };
+  }
+  return null;
+}
+function applyEdits(snapshot, edits) {
+  let current = snapshot;
+  let applied = 0;
+  let failed = 0;
+  for (const edit of edits) {
+    const next = applyOne(current, edit);
+    if (next) {
+      current = next;
+      applied++;
+    } else {
+      failed++;
+    }
+  }
+  return { snapshot: current, applied, failed };
+}
+var init_edits = __esm({
+  "src/ai/edits.ts"() {
+    "use strict";
+  }
+});
+
 // src/lib/theme-constants.ts
 var THEME_COLORS, getThemeBackground;
 var init_theme_constants = __esm({
@@ -5268,23 +5345,6 @@ var init_sse = __esm({
 });
 
 // src/ui/hooks/useChat.tsx
-function parseEditBlocks(content) {
-  const editRegex = /:::edit\s*([\s\S]*?)\s*:::/g;
-  const edits = [];
-  let cleanContent = content;
-  let match;
-  while ((match = editRegex.exec(content)) !== null) {
-    try {
-      const edit = JSON.parse(match[1]);
-      edits.push(edit);
-      cleanContent = cleanContent.replace(match[0], "");
-    } catch {
-      console.warn("Failed to parse edit block:", match[1]);
-    }
-  }
-  cleanContent = cleanContent.replace(/\n{3,}/g, "\n\n").trim();
-  return { edits, cleanContent };
-}
 function stripEditBlocksForDisplay(content) {
   let cleaned = content.replace(/:::edit\s*[\s\S]*?\s*:::/g, "");
   cleaned = cleaned.replace(/:::edit\s*[\s\S]*$/g, "");
@@ -5426,7 +5486,7 @@ function ChatProvider({
         });
       }, signal);
       if (mode === "agent" && editHandlerRef.current && essayContextRef.current) {
-        const { edits, cleanContent } = parseEditBlocks(assistantContent);
+        const { edits, cleanContent } = parseEditBlocks2(assistantContent);
         const previousState = {
           title: essayContextRef.current.title,
           subtitle: essayContextRef.current.subtitle || "",
@@ -5573,15 +5633,17 @@ function useChatContext() {
 function useChatContextOptional() {
   return (0, import_react17.useContext)(ChatContext);
 }
-var import_react17, import_jsx_runtime21, ChatContext;
+var import_react17, import_jsx_runtime21, ChatContext, parseEditBlocks2;
 var init_useChat = __esm({
   "src/ui/hooks/useChat.tsx"() {
     "use strict";
     "use client";
     import_react17 = require("react");
     init_sse();
+    init_edits();
     import_jsx_runtime21 = require("react/jsx-runtime");
     ChatContext = (0, import_react17.createContext)(null);
+    parseEditBlocks2 = parseEditBlocks;
   }
 });
 
@@ -8814,6 +8876,7 @@ function PostItem({ post, onNavigate, onDelete, onPublish, onUnpublish, showStat
 var import_react20 = require("react");
 var import_sonner = require("sonner");
 init_context();
+init_edits();
 
 // src/ui/components/EditorToolbar.tsx
 var import_lucide_react8 = require("lucide-react");
@@ -11161,65 +11224,22 @@ function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp }) {
     };
   }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown]);
   const handleEdit = (0, import_react20.useCallback)((edit) => {
-    if (edit.type === "replace_all") {
-      setPost((prev) => ({
+    let applied = 0;
+    setPost((prev) => {
+      const result = applyEdits(
+        { title: prev.title, subtitle: prev.subtitle ?? "", markdown: prev.markdown },
+        [edit]
+      );
+      applied = result.applied;
+      if (applied === 0) return prev;
+      return {
         ...prev,
-        title: edit.title ?? prev.title,
-        subtitle: edit.subtitle ?? prev.subtitle,
-        markdown: edit.markdown ?? prev.markdown
-      }));
-      return true;
-    }
-    if (edit.type === "replace_section" && edit.find && edit.replace !== void 0) {
-      let found = false;
-      setPost((prev) => {
-        if (prev.markdown.includes(edit.find)) {
-          found = true;
-          return { ...prev, markdown: prev.markdown.replace(edit.find, edit.replace) };
-        }
-        return prev;
-      });
-      return found;
-    }
-    if (edit.type === "insert" && edit.replace !== void 0) {
-      if (edit.position === "start") {
-        setPost((prev) => ({ ...prev, markdown: edit.replace + prev.markdown }));
-        return true;
-      }
-      if (edit.position === "end") {
-        setPost((prev) => ({ ...prev, markdown: prev.markdown + edit.replace }));
-        return true;
-      }
-      if (edit.find) {
-        let found = false;
-        setPost((prev) => {
-          if (prev.markdown.includes(edit.find)) {
-            found = true;
-            const idx = prev.markdown.indexOf(edit.find);
-            const insertPoint = edit.position === "before" ? idx : idx + edit.find.length;
-            return {
-              ...prev,
-              markdown: prev.markdown.slice(0, insertPoint) + edit.replace + prev.markdown.slice(insertPoint)
-            };
-          }
-          return prev;
-        });
-        return found;
-      }
-      return false;
-    }
-    if (edit.type === "delete" && edit.find) {
-      let found = false;
-      setPost((prev) => {
-        if (prev.markdown.includes(edit.find)) {
-          found = true;
-          return { ...prev, markdown: prev.markdown.replace(edit.find, "") };
-        }
-        return prev;
-      });
-      return found;
-    }
-    return false;
+        title: result.snapshot.title,
+        subtitle: result.snapshot.subtitle,
+        markdown: result.snapshot.markdown
+      };
+    });
+    return applied > 0;
   }, []);
   (0, import_react20.useEffect)(() => {
     if (!onRegisterEditHandler) return;

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo, type ReactNode } from 'react'
 import type { ChatMode, EditCommand, EssaySnapshot, EditHandler } from '../../types/editor'
 import { consumeSSEStream } from '../../lib/sse'
+import { parseEditBlocks as parseEditBlocksShared } from '../../ai/edits'
 
 // Re-export for backward compatibility
 export type { ChatMode, EssaySnapshot, EditHandler } from '../../types/editor'
@@ -51,27 +52,9 @@ interface ChatContextValue {
 
 const ChatContext = createContext<ChatContextValue | null>(null)
 
-// Parse edit blocks from agent mode responses
-function parseEditBlocks(content: string): { edits: EditCommand[], cleanContent: string } {
-  const editRegex = /:::edit\s*([\s\S]*?)\s*:::/g
-  const edits: EditCommand[] = []
-  let cleanContent = content
-  
-  let match
-  while ((match = editRegex.exec(content)) !== null) {
-    try {
-      const edit = JSON.parse(match[1]) as EditCommand
-      edits.push(edit)
-      cleanContent = cleanContent.replace(match[0], '')
-    } catch {
-      console.warn('Failed to parse edit block:', match[1])
-    }
-  }
-  
-  cleanContent = cleanContent.replace(/\n{3,}/g, '\n\n').trim()
-  
-  return { edits, cleanContent }
-}
+// Parse edit blocks from agent mode responses (delegates to shared SDK helper
+// so server and client share one parser).
+const parseEditBlocks = parseEditBlocksShared
 
 /**
  * Strip incomplete or complete :::edit blocks from content for display during streaming.

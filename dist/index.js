@@ -7565,6 +7565,83 @@ function parseGeneratedContent(markdown) {
   return { title: title2, subtitle, body };
 }
 
+// src/ai/edits.ts
+function parseEditBlocks(content) {
+  const editRegex = /:::edit\s*([\s\S]*?)\s*:::/g;
+  const edits = [];
+  let cleanContent = content;
+  let match;
+  while ((match = editRegex.exec(content)) !== null) {
+    try {
+      const edit = JSON.parse(match[1]);
+      edits.push(edit);
+      cleanContent = cleanContent.replace(match[0], "");
+    } catch {
+    }
+  }
+  cleanContent = cleanContent.replace(/\n{3,}/g, "\n\n").trim();
+  return { edits, cleanContent };
+}
+function applyOne(snapshot, edit) {
+  if (edit.type === "replace_all") {
+    return {
+      title: edit.title ?? snapshot.title,
+      subtitle: edit.subtitle ?? snapshot.subtitle,
+      markdown: edit.markdown ?? snapshot.markdown
+    };
+  }
+  if (edit.type === "replace_section" && edit.find && edit.replace !== void 0) {
+    if (!snapshot.markdown.includes(edit.find)) return null;
+    return {
+      ...snapshot,
+      markdown: snapshot.markdown.replace(edit.find, edit.replace)
+    };
+  }
+  if (edit.type === "insert" && edit.replace !== void 0) {
+    if (edit.position === "start") {
+      return { ...snapshot, markdown: edit.replace + snapshot.markdown };
+    }
+    if (edit.position === "end") {
+      return { ...snapshot, markdown: snapshot.markdown + edit.replace };
+    }
+    if (edit.find) {
+      if (!snapshot.markdown.includes(edit.find)) return null;
+      const idx = snapshot.markdown.indexOf(edit.find);
+      const insertPoint = edit.position === "before" ? idx : idx + edit.find.length;
+      return {
+        ...snapshot,
+        markdown: snapshot.markdown.slice(0, insertPoint) + edit.replace + snapshot.markdown.slice(insertPoint)
+      };
+    }
+    return null;
+  }
+  if (edit.type === "delete" && edit.find) {
+    if (!snapshot.markdown.includes(edit.find)) return null;
+    return { ...snapshot, markdown: snapshot.markdown.replace(edit.find, "") };
+  }
+  return null;
+}
+function applyEdits(snapshot, edits) {
+  let current = snapshot;
+  let applied = 0;
+  let failed = 0;
+  for (const edit of edits) {
+    const next = applyOne(current, edit);
+    if (next) {
+      current = next;
+      applied++;
+    } else {
+      failed++;
+    }
+  }
+  return { snapshot: current, applied, failed };
+}
+function parseAndApplyEdits(snapshot, modelOutput) {
+  const { edits, cleanContent } = parseEditBlocks(modelOutput);
+  const { snapshot: result, applied, failed } = applyEdits(snapshot, edits);
+  return { snapshot: result, applied, failed, cleanContent };
+}
+
 // src/api/public/ai.ts
 var MAX_STYLE_EXAMPLES = 5;
 var MAX_WORDS_PER_EXAMPLE = 500;
@@ -7876,10 +7953,34 @@ async function runAgent(cms, req, postId) {
     useThinking: body.useThinking === true
   });
   const text = await collectStream(stream);
-  const parsed = parseGeneratedContent(text);
-  const newTitle = parsed.title || post.title;
-  const newSubtitle = parsed.subtitle || post.subtitle || void 0;
-  const newMarkdown = parsed.body || text;
+  const startSnapshot = {
+    title: post.title,
+    subtitle: post.subtitle ?? "",
+    markdown: post.markdown
+  };
+  const editResult = parseAndApplyEdits(startSnapshot, text);
+  let finalSnapshot = editResult.snapshot;
+  let usedFullParse = false;
+  if (editResult.applied === 0 && editResult.failed === 0) {
+    const parsed = parseGeneratedContent(text);
+    if (parsed.body) {
+      finalSnapshot = {
+        title: parsed.title || post.title,
+        subtitle: parsed.subtitle || post.subtitle || "",
+        markdown: parsed.body
+      };
+      usedFullParse = true;
+    }
+  }
+  const newTitle = finalSnapshot.title;
+  const newSubtitle = finalSnapshot.subtitle || void 0;
+  const newMarkdown = finalSnapshot.markdown;
+  const meta = {
+    editsApplied: editResult.applied,
+    editsFailed: editResult.failed,
+    cleanContent: editResult.cleanContent,
+    usedFullParse
+  };
   if (target === "new-draft") {
     const created = await cms.posts.create({
       title: `${newTitle} (agent draft)`,
@@ -7889,7 +7990,7 @@ async function runAgent(cms, req, postId) {
       status: PostStatus.DRAFT,
       sourceUrl: post.slug
     });
-    return jsonResponse4({ data: { post: created, target, raw: text } }, 201);
+    return jsonResponse4({ data: { post: created, target, raw: text, ...meta } }, 201);
   }
   const recent = await cms.revisions.findByPost(postId);
   const last = recent[0];
@@ -7906,7 +8007,7 @@ async function runAgent(cms, req, postId) {
     subtitle: newSubtitle,
     markdown: newMarkdown
   });
-  return jsonResponse4({ data: { post: updated, target, raw: text } });
+  return jsonResponse4({ data: { post: updated, target, raw: text, ...meta } });
 }
 
 // src/api/public/me.ts

@@ -21,6 +21,7 @@ import {
   createStream,
   DEFAULT_SEARCH_ONLY_PROMPT,
 } from '../../ai'
+import { parseAndApplyEdits } from '../../ai/edits'
 
 interface AISettingsLike {
   rules: string
@@ -429,12 +430,43 @@ async function runAgent(
   })
 
   const text = await collectStream(stream)
-  const parsed = parseGeneratedContent(text)
 
-  // Fall back to existing fields if the model didn't produce a new title/subtitle
-  const newTitle = parsed.title || post.title
-  const newSubtitle = parsed.subtitle || post.subtitle || undefined
-  const newMarkdown = parsed.body || text
+  // Apply :::edit blocks to the existing essay (matches the dashboard's
+  // client-side behavior). Falls back to treating the whole output as a
+  // full-essay replacement when no edit blocks are present (e.g. if the
+  // host's agentTemplate has been customized to return prose).
+  const startSnapshot = {
+    title: post.title,
+    subtitle: post.subtitle ?? '',
+    markdown: post.markdown,
+  }
+  const editResult = parseAndApplyEdits(startSnapshot, text)
+
+  let finalSnapshot = editResult.snapshot
+  let usedFullParse = false
+  if (editResult.applied === 0 && editResult.failed === 0) {
+    // No edit blocks at all — treat the response like /ai/generate output.
+    const parsed = parseGeneratedContent(text)
+    if (parsed.body) {
+      finalSnapshot = {
+        title: parsed.title || post.title,
+        subtitle: parsed.subtitle || post.subtitle || '',
+        markdown: parsed.body,
+      }
+      usedFullParse = true
+    }
+  }
+
+  const newTitle = finalSnapshot.title
+  const newSubtitle = finalSnapshot.subtitle || undefined
+  const newMarkdown = finalSnapshot.markdown
+
+  const meta = {
+    editsApplied: editResult.applied,
+    editsFailed: editResult.failed,
+    cleanContent: editResult.cleanContent,
+    usedFullParse,
+  }
 
   if (target === 'new-draft') {
     const created = await cms.posts.create({
@@ -445,7 +477,7 @@ async function runAgent(
       status: PostStatus.DRAFT,
       sourceUrl: post.slug,
     })
-    return jsonResponse({ data: { post: created, target, raw: text } }, 201)
+    return jsonResponse({ data: { post: created, target, raw: text, ...meta } }, 201)
   }
 
   // in-place — reuse the same auto-revision logic as PATCH
@@ -465,5 +497,5 @@ async function runAgent(
     subtitle: newSubtitle,
     markdown: newMarkdown,
   })
-  return jsonResponse({ data: { post: updated, target, raw: text } })
+  return jsonResponse({ data: { post: updated, target, raw: text, ...meta } })
 }

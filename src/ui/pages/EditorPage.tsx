@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo, lazy, Suspense } fro
 import type { Editor } from '@tiptap/react'
 import { toast } from 'sonner'
 import { useDashboardContext, type EditCommand } from '../context'
+import { applyEdits } from '../../ai/edits'
 import { EditorToolbar } from '../components/EditorToolbar'
 import type { SelectionState } from '../components/TiptapEditor'
 import { CommentsPanel } from '../components/CommentsPanel'
@@ -447,72 +448,26 @@ export function EditorPage({ slug, onEditorStateChange: onEditorStateChangeProp 
     }
   }, [hasUnsavedChanges, post.status, savingAs, post.title, post.subtitle, post.markdown])
 
-  // Create edit handler for AI agent mode
+  // Create edit handler for AI agent mode. Delegates to the shared SDK
+  // applier so server (POST /v1/posts/:id/agent) and client share one
+  // implementation.
   const handleEdit = useCallback((edit: EditCommand): boolean => {
-    if (edit.type === 'replace_all') {
-      setPost(prev => ({
+    let applied = 0
+    setPost(prev => {
+      const result = applyEdits(
+        { title: prev.title, subtitle: prev.subtitle ?? '', markdown: prev.markdown },
+        [edit]
+      )
+      applied = result.applied
+      if (applied === 0) return prev
+      return {
         ...prev,
-        title: edit.title ?? prev.title,
-        subtitle: edit.subtitle ?? prev.subtitle,
-        markdown: edit.markdown ?? prev.markdown,
-      }))
-      return true
-    }
-
-    if (edit.type === 'replace_section' && edit.find && edit.replace !== undefined) {
-      // Use functional update to get current post state
-      let found = false
-      setPost(prev => {
-        if (prev.markdown.includes(edit.find!)) {
-          found = true
-          return { ...prev, markdown: prev.markdown.replace(edit.find!, edit.replace!) }
-        }
-        return prev
-      })
-      return found
-    }
-
-    if (edit.type === 'insert' && edit.replace !== undefined) {
-      if (edit.position === 'start') {
-        setPost(prev => ({ ...prev, markdown: edit.replace + prev.markdown }))
-        return true
+        title: result.snapshot.title,
+        subtitle: result.snapshot.subtitle,
+        markdown: result.snapshot.markdown,
       }
-      if (edit.position === 'end') {
-        setPost(prev => ({ ...prev, markdown: prev.markdown + edit.replace }))
-        return true
-      }
-      if (edit.find) {
-        let found = false
-        setPost(prev => {
-          if (prev.markdown.includes(edit.find!)) {
-            found = true
-            const idx = prev.markdown.indexOf(edit.find!)
-            const insertPoint = edit.position === 'before' ? idx : idx + edit.find!.length
-            return {
-              ...prev,
-              markdown: prev.markdown.slice(0, insertPoint) + edit.replace + prev.markdown.slice(insertPoint),
-            }
-          }
-          return prev
-        })
-        return found
-      }
-      return false
-    }
-
-    if (edit.type === 'delete' && edit.find) {
-      let found = false
-      setPost(prev => {
-        if (prev.markdown.includes(edit.find!)) {
-          found = true
-          return { ...prev, markdown: prev.markdown.replace(edit.find!, '') }
-        }
-        return prev
-      })
-      return found
-    }
-
-    return false
+    })
+    return applied > 0
   }, [])
 
   // Register edit handler with dashboard context (for external use)
