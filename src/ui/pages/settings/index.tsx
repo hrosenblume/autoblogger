@@ -15,6 +15,7 @@ import { TopicsSettings } from './TopicsSettings'
 import { PostsSettings } from './PostsSettings'
 import { RevisionsSettings, RevisionDetail } from './RevisionsSettings'
 import { CollapsibleTemplate } from './CollapsibleTemplate'
+import { ApiKeysSettings } from './ApiKeysSettings'
 
 interface SettingsLink {
   path: string
@@ -39,6 +40,7 @@ export function SettingsPage({ subPath }: { subPath: string }) {
     { path: '/settings/comments', label: 'Comments', description: 'Manage post comments' },
     { path: '/settings/topics', label: 'Topics', description: 'RSS subscriptions for auto-draft', countKey: 'topics' },
     { path: '/settings/general', label: 'General', description: 'Post URLs and site settings' },
+    { path: '/settings/api', label: 'API', description: 'API keys and audit log' },
   ]
 
   // Filter out Topics if autoDraftEnabled is off
@@ -106,6 +108,7 @@ export function SettingsPage({ subPath }: { subPath: string }) {
       {pageName === 'revisions' && <RevisionsSettings />}
       {revisionDetailMatch && <RevisionDetail revisionId={revisionDetailMatch[1]} />}
       {pageName === 'comments' && <CommentsSettings />}
+      {pageName === 'api' && <ApiKeysSettings />}
     </PageContainer>
   )
 }

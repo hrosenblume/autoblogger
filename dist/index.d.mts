@@ -428,6 +428,85 @@ declare function createUsersData(prisma: any): {
     delete: (id: string) => Promise<unknown>;
 };
 
+interface ApiKey {
+    id: string;
+    name: string;
+    prefix: string;
+    hash: string;
+    ownerUserId: string | null;
+    createdAt: Date;
+    lastUsedAt: Date | null;
+    revokedAt: Date | null;
+}
+interface VerifiedKey {
+    id: string;
+    name: string;
+}
+declare function createApiKeysData(prisma: any): {
+    findAll(): Promise<ApiKey[]>;
+    findById(id: string): Promise<ApiKey | null>;
+    /**
+     * Create a new API key. Returns the plaintext token ONCE — it is hashed
+     * before storage and cannot be recovered later.
+     */
+    create(input: {
+        name: string;
+        ownerUserId?: string | null;
+    }): Promise<{
+        key: ApiKey;
+        plaintext: string;
+    }>;
+    revoke(id: string): Promise<ApiKey>;
+    delete(id: string): Promise<void>;
+    /**
+     * Look up a key by its plaintext value. Returns null if not found or revoked.
+     */
+    verify(plaintext: string): Promise<VerifiedKey | null>;
+    /**
+     * Bump lastUsedAt. Fire-and-forget; failures should not affect the request.
+     */
+    touch(id: string): Promise<void>;
+};
+
+interface ApiAuditLogEntry {
+    id: string;
+    apiKeyId: string | null;
+    apiKeyName: string;
+    method: string;
+    path: string;
+    postId: string | null;
+    status: number;
+    ip: string | null;
+    userAgent: string | null;
+    createdAt: Date;
+}
+interface AppendInput {
+    apiKeyId: string | null;
+    apiKeyName: string;
+    method: string;
+    path: string;
+    postId?: string | null;
+    status: number;
+    ip?: string | null;
+    userAgent?: string | null;
+}
+declare function createApiAuditLogData(prisma: any): {
+    /**
+     * Append an audit log entry. Fire-and-forget — failures are logged but
+     * never bubble up to the caller, since logging must not break API responses.
+     */
+    append(input: AppendInput): Promise<void>;
+    findAll(opts?: {
+        keyId?: string;
+        postId?: string;
+        page?: number;
+        limit?: number;
+    }): Promise<{
+        data: ApiAuditLogEntry[];
+        total: number;
+    }>;
+};
+
 interface Session {
     user?: {
         id?: string;
@@ -526,8 +605,12 @@ interface AutobloggerServer {
     topics: ReturnType<typeof createTopicsData>;
     newsItems: ReturnType<typeof createNewsItemsData>;
     users: ReturnType<typeof createUsersData>;
-    /** Handle an API request - convenience method for route handlers */
+    apiKeys: ReturnType<typeof createApiKeysData>;
+    apiAuditLog: ReturnType<typeof createApiAuditLogData>;
+    /** Handle an internal/dashboard API request - convenience method for route handlers */
     handleRequest: (req: Request, path: string) => Promise<Response>;
+    /** Handle a public/external API request (bearer-token auth, /v1/*) */
+    handlePublicRequest: (req: Request, path: string) => Promise<Response>;
     /** Auto-draft runner */
     autoDraft: {
         run: (topicId?: string, skipFrequencyCheck?: boolean) => Promise<GenerationResult[]>;

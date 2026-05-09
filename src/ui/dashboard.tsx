@@ -19,6 +19,7 @@ import { ChatProvider } from './hooks/useChat'
 import { useDashboardKeyboard } from './hooks/useKeyboard'
 import { useChatContextOptional } from './hooks/useChat'
 import { useIOSVisualViewportHeaderFix } from './hooks/useIOSVisualViewportHeaderFix'
+import { useWriterFavicon } from './hooks/useWriterFavicon'
 import { Toaster } from './components/Toaster'
 import { toast } from 'sonner'
 
@@ -58,6 +59,10 @@ export function AutobloggerDashboard({
   // Resolve default paths
   const resolvedChatApiPath = chatApiPath || `${apiBasePath}/ai/chat`
   const resolvedHistoryApiPath = historyApiPath || `${apiBasePath}/chat/history`
+
+  // Swap browser tab + iOS home-screen icon to the Writer feather glyph while
+  // mounted; restore the host app's icons on unmount.
+  useWriterFavicon()
 
 
   // ThemeProvider is always used - it's self-contained and manages its own .dark class
