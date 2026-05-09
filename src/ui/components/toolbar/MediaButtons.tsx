@@ -51,10 +51,11 @@ export function MediaButtons({ editor: editorProp, textareaRef, markdown, onMark
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Client-side validation
-    const maxSize = 4 * 1024 * 1024 // 4MB
+    // Client-side validation. Server compresses and resizes for web before storage,
+    // so we accept much larger originals than we ultimately store.
+    const maxSize = 25 * 1024 * 1024 // 25MB
     if (file.size > maxSize) {
-      alert(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 4MB.`)
+      alert(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 25MB.`)
       e.target.value = ''
       return
     }
