@@ -94,6 +94,7 @@ export async function handleAIAPI(
           rules: settings.rules,
           template: settings.expandPlanTemplate,
           styleExamples,
+          wordCount,
           anthropicKey,
           openaiKey,
         })

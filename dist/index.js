@@ -3358,7 +3358,9 @@ var init_generate = __esm({
 <role>Expert essay writer creating engaging, thoughtful content</role>
 
 <critical>
-ALWAYS output a complete essay. NEVER respond conversationally.
+ALWAYS output a complete essay of approximately {{WORD_COUNT}} words. NEVER respond conversationally.
+- LENGTH: Hit roughly {{WORD_COUNT}} words. A short summary or 100-word reply is a failure even if well-written. Expand with examples, evidence, and texture until you reach the target.
+- STRUCTURE: Line 1 must be \`# Title\`. Line 2 must be a single italic subtitle wrapped in single asterisks (\`*subtitle here*\`). Line 3 blank. Then the body. Omitting the italic subtitle is a failure.
 - Do NOT ask questions or request clarification
 - Do NOT say "Here is your essay" or similar preamble
 - Do NOT explain what you're going to write
@@ -3374,17 +3376,13 @@ ALWAYS output a complete essay. NEVER respond conversationally.
 {{STYLE_EXAMPLES}}
 </style_reference>
 
-<constraints>
-<word_count>{{WORD_COUNT}}</word_count>
-</constraints>
-
 <output_format>
-CRITICAL: Your response MUST start with exactly this format:
+Your response MUST start with exactly this format:
 
 Line 1: # [Your Title Here]
 Line 2: *[Your subtitle here]*
 Line 3: (blank line)
-Line 4+: Essay body in markdown
+Line 4+: Essay body in markdown (approximately {{WORD_COUNT}} words total)
 
 <title_guidelines>
 - Be SPECIFIC, not generic (avoid "The Power of", "Why X Matters", "A Guide to")
@@ -3398,6 +3396,7 @@ Line 4+: Essay body in markdown
 - Tease the main argument or reveal a key insight
 - Create tension, curiosity, or promise value
 - Make readers want to continue reading
+- ALWAYS produce a subtitle. Wrap it in single asterisks (\`*like this*\`) so it renders as italic markdown.
 </subtitle_guidelines>
 </output_format>
 </system>`;
@@ -3682,6 +3681,13 @@ var init_expand_plan = __esm({
     DEFAULT_EXPAND_PLAN_TEMPLATE = `<system>
 <role>Writing assistant that expands essay outlines into full drafts</role>
 
+<critical>
+Produce a complete essay of approximately {{WORD_COUNT}} words.
+- LENGTH: Hit roughly {{WORD_COUNT}} words. Expanding the plan into a short summary is a failure \u2014 flesh out each section with examples, evidence, and texture until you reach the target.
+- STRUCTURE: Line 1 must be \`# Title\`. Line 2 must be a single italic subtitle wrapped in single asterisks (\`*subtitle here*\`). Line 3 blank. Then the body with H2 headings. Omitting the italic subtitle is a failure.
+- Output ONLY markdown \u2014 no preamble, no "Here is...", no explanations.
+</critical>
+
 <writing_rules>
 {{RULES}}
 </writing_rules>
@@ -3695,18 +3701,18 @@ var init_expand_plan = __esm({
 </plan_to_expand>
 
 <output_format>
-CRITICAL: Your response MUST start with exactly this format:
+Your response MUST start with exactly this format:
 
 Line 1: # [Title from plan, refined if needed]
 Line 2: *[Subtitle from plan, refined if needed]*
 Line 3: (blank line)
-Line 4+: Essay body with ## section headings
+Line 4+: Essay body with ## section headings (approximately {{WORD_COUNT}} words total)
 
 <requirements>
 - Use the section headers from the plan as H2 headings
 - Expand each section's bullet points into full paragraphs
 - Match the author's voice and style from the examples
-- Output ONLY markdown \u2014 no preamble, no "Here is...", no explanations
+- ALWAYS produce a subtitle on line 2 wrapped in single asterisks
 </requirements>
 
 <title_refinement>
@@ -4417,7 +4423,7 @@ ${options.essayContext.markdown}
 }
 function buildExpandPlanPrompt2(options) {
   const template = options.template || DEFAULT_EXPAND_PLAN_TEMPLATE;
-  return template.replace("{{RULES}}", options.rules || "").replace("{{STYLE_EXAMPLES}}", options.styleExamples || "").replace("{{PLAN}}", options.plan);
+  return template.replace("{{RULES}}", options.rules || "").replace("{{WORD_COUNT}}", String(options.wordCount || 800)).replace("{{STYLE_EXAMPLES}}", options.styleExamples || "").replace("{{PLAN}}", options.plan);
 }
 function buildPlanPrompt2(options) {
   const template = options.template || DEFAULT_PLAN_TEMPLATE;
@@ -4713,7 +4719,8 @@ async function expandPlanStream(options) {
     rules: options.rules,
     template: options.template,
     plan: options.plan,
-    styleExamples: options.styleExamples
+    styleExamples: options.styleExamples,
+    wordCount: options.wordCount
   });
   return createStream({
     model: options.model,
@@ -6087,6 +6094,7 @@ async function handleAIAPI(req, cms, session, path) {
           rules: settings.rules,
           template: settings.expandPlanTemplate,
           styleExamples,
+          wordCount: wordCount2,
           anthropicKey,
           openaiKey
         });

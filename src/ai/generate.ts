@@ -69,6 +69,7 @@ interface ExpandPlanOptions {
   rules?: string
   template?: string | null
   styleExamples?: string
+  wordCount?: number
   anthropicKey?: string
   openaiKey?: string
 }
@@ -79,6 +80,7 @@ export async function expandPlanStream(options: ExpandPlanOptions): Promise<Read
     template: options.template,
     plan: options.plan,
     styleExamples: options.styleExamples,
+    wordCount: options.wordCount,
   })
 
   return createStream({
