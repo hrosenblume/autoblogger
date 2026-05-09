@@ -12,8 +12,9 @@ export interface AIModelOption {
 
 /** Default models - can be overridden by API */
 export const DEFAULT_MODELS: AIModelOption[] = [
-  { id: 'claude-sonnet', name: 'Sonnet 4.5', description: 'Fast, capable', hasNativeSearch: false },
-  { id: 'claude-opus', name: 'Opus 4.5', description: 'Highest quality', hasNativeSearch: false },
-  { id: 'gpt-5.2', name: 'GPT-5.2', description: 'Latest OpenAI', hasNativeSearch: true },
-  { id: 'gpt-5-mini', name: 'GPT-5 Mini', description: 'Fast and efficient', hasNativeSearch: true },
+  { id: 'claude-opus', name: 'Opus 4.7', description: 'Highest quality, slower', hasNativeSearch: false },
+  { id: 'claude-sonnet', name: 'Sonnet 4.6', description: 'Fast, capable, best value', hasNativeSearch: false },
+  { id: 'claude-haiku', name: 'Haiku 4.5', description: 'Fastest, lightweight', hasNativeSearch: false },
+  { id: 'openai-flagship', name: 'GPT-5.5', description: 'Latest OpenAI flagship', hasNativeSearch: true },
+  { id: 'openai-mini', name: 'GPT-5.4 Mini', description: 'Fast and cost-efficient', hasNativeSearch: true },
 ]

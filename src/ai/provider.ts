@@ -129,7 +129,10 @@ export async function generate(
     useWebSearch?: boolean
   } = {}
 ): Promise<GenerateResult> {
-  const model = getModel(modelId)
+  const model = await getModel(modelId, {
+    anthropicKey: options.anthropicKey,
+    openaiKey: options.openaiKey,
+  })
   if (!model) {
     throw new Error(`Unknown model: ${modelId}`)
   }
@@ -226,7 +229,10 @@ async function generateWithOpenAI(
 }
 
 export async function createStream(options: StreamOptions): Promise<ReadableStream> {
-  const modelConfig = getModel(options.model)
+  const modelConfig = await getModel(options.model, {
+    anthropicKey: options.anthropicKey,
+    openaiKey: options.openaiKey,
+  })
   if (!modelConfig) {
     throw new Error(`Unknown model: ${options.model}`)
   }
@@ -252,7 +258,7 @@ export async function createStream(options: StreamOptions): Promise<ReadableStre
   }
 
   if (modelConfig.provider === 'anthropic') {
-    return createAnthropicStream(options, modelConfig.modelId, searchContext)
+    return createAnthropicStream(options, modelConfig.modelId, searchContext, modelConfig.supportsThinking)
   } else {
     return createOpenAIStream(options, modelConfig.modelId, options.useWebSearch)
   }
@@ -357,7 +363,7 @@ async function* normalizeOpenAIResponsesEvents(stream: AsyncIterable<any>): Asyn
   }
 }
 
-async function createAnthropicStream(options: StreamOptions, modelId: string, searchContext: string = ''): Promise<ReadableStream> {
+async function createAnthropicStream(options: StreamOptions, modelId: string, searchContext: string = '', supportsThinking: boolean = true): Promise<ReadableStream> {
   const anthropic = new Anthropic({
     ...(options.anthropicKey && { apiKey: options.anthropicKey }),
   })
@@ -374,7 +380,7 @@ async function createAnthropicStream(options: StreamOptions, modelId: string, se
     messages: chatMessages,
   }
 
-  if (options.useThinking && (modelId.includes('claude-sonnet') || modelId.includes('claude-opus'))) {
+  if (options.useThinking && supportsThinking) {
     requestParams.thinking = {
       type: 'enabled',
       budget_tokens: 10000,

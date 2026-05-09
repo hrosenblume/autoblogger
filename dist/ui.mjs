@@ -317,10 +317,11 @@ var init_models = __esm({
     "use strict";
     LENGTH_OPTIONS = [300, 500, 800, 1e3];
     DEFAULT_MODELS = [
-      { id: "claude-sonnet", name: "Sonnet 4.5", description: "Fast, capable", hasNativeSearch: false },
-      { id: "claude-opus", name: "Opus 4.5", description: "Highest quality", hasNativeSearch: false },
-      { id: "gpt-5.2", name: "GPT-5.2", description: "Latest OpenAI", hasNativeSearch: true },
-      { id: "gpt-5-mini", name: "GPT-5 Mini", description: "Fast and efficient", hasNativeSearch: true }
+      { id: "claude-opus", name: "Opus 4.7", description: "Highest quality, slower", hasNativeSearch: false },
+      { id: "claude-sonnet", name: "Sonnet 4.6", description: "Fast, capable, best value", hasNativeSearch: false },
+      { id: "claude-haiku", name: "Haiku 4.5", description: "Fastest, lightweight", hasNativeSearch: false },
+      { id: "openai-flagship", name: "GPT-5.5", description: "Latest OpenAI flagship", hasNativeSearch: true },
+      { id: "openai-mini", name: "GPT-5.4 Mini", description: "Fast and cost-efficient", hasNativeSearch: true }
     ];
   }
 });
@@ -1076,6 +1077,9 @@ function getAttributesFromExtensions(extensions) {
     keepOnSplit: true,
     isRequired: false
   };
+  const nodeExtensionTypes = nodeExtensions.filter((ext) => ext.name !== "text").map((ext) => ext.name);
+  const markExtensionTypes = markExtensions.map((ext) => ext.name);
+  const allExtensionTypes = [...nodeExtensionTypes, ...markExtensionTypes];
   extensions.forEach((extension) => {
     const context = {
       name: extension.name,
@@ -1093,7 +1097,19 @@ function getAttributesFromExtensions(extensions) {
     }
     const globalAttributes = addGlobalAttributes();
     globalAttributes.forEach((globalAttribute) => {
-      globalAttribute.types.forEach((type) => {
+      let resolvedTypes;
+      if (Array.isArray(globalAttribute.types)) {
+        resolvedTypes = globalAttribute.types;
+      } else if (globalAttribute.types === "*") {
+        resolvedTypes = allExtensionTypes;
+      } else if (globalAttribute.types === "nodes") {
+        resolvedTypes = nodeExtensionTypes;
+      } else if (globalAttribute.types === "marks") {
+        resolvedTypes = markExtensionTypes;
+      } else {
+        resolvedTypes = [];
+      }
+      resolvedTypes.forEach((type) => {
         Object.entries(globalAttribute.attributes).forEach(([name, attribute]) => {
           extensionAttributes.push({
             type,
@@ -1529,6 +1545,9 @@ function isMarkActive(state, typeOrName, attributes = {}) {
     const from = $from.pos;
     const to = $to.pos;
     state.doc.nodesBetween(from, to, (node, pos) => {
+      if (type && node.inlineContent && !node.type.allowsMarkType(type)) {
+        return false;
+      }
       if (!node.isText && !node.marks.length) {
         return;
       }
@@ -3030,8 +3049,12 @@ var init_dist = __esm({
           }
         });
       };
-      if (view.hasFocus() && position === null || position === false) {
-        return true;
+      try {
+        if (view.hasFocus() && position === null || position === false) {
+          return true;
+        }
+      } catch {
+        return false;
       }
       if (dispatch && position === null && !isTextSelection(editor.state.selection)) {
         delayedFocus();
@@ -4307,6 +4330,39 @@ var init_dist = __esm({
           };
         }, baseDispatch);
       }
+      /**
+       * Get the composed transformPastedHTML function from all extensions.
+       * @param baseTransform The base transform function (e.g. from the editor props)
+       * @returns A composed transform function that chains all extension transforms
+       */
+      transformPastedHTML(baseTransform) {
+        const { editor } = this;
+        const extensions = sortExtensions([...this.extensions]);
+        return extensions.reduce(
+          (transform, extension) => {
+            const context = {
+              name: extension.name,
+              options: extension.options,
+              storage: this.editor.extensionStorage[extension.name],
+              editor,
+              type: getSchemaTypeByName(extension.name, this.schema)
+            };
+            const extensionTransform = getExtensionField(
+              extension,
+              "transformPastedHTML",
+              context
+            );
+            if (!extensionTransform) {
+              return transform;
+            }
+            return (html, view) => {
+              const transformedHtml = transform(html, view);
+              return extensionTransform.call(context, transformedHtml);
+            };
+          },
+          baseTransform || ((html) => html)
+        );
+      }
       get markViews() {
         const { editor } = this;
         const { markExtensions } = splitExtensions(this.extensions);
@@ -5462,11 +5518,13 @@ var init_dist2 = __esm({
 });
 
 // node_modules/@tiptap/extension-paragraph/dist/index.js
-var Paragraph, index_default2;
+var EMPTY_PARAGRAPH_MARKDOWN, NBSP_CHAR, Paragraph, index_default2;
 var init_dist3 = __esm({
   "node_modules/@tiptap/extension-paragraph/dist/index.js"() {
     "use strict";
     init_dist();
+    EMPTY_PARAGRAPH_MARKDOWN = "&nbsp;";
+    NBSP_CHAR = "\xA0";
     Paragraph = Node3.create({
       name: "paragraph",
       priority: 1e3,
@@ -5488,18 +5546,21 @@ var init_dist3 = __esm({
         if (tokens.length === 1 && tokens[0].type === "image") {
           return helpers.parseChildren([tokens[0]]);
         }
-        return helpers.createNode(
-          "paragraph",
-          void 0,
-          // no attributes for paragraph
-          helpers.parseInline(tokens)
-        );
+        const content = helpers.parseInline(tokens);
+        if (content.length === 1 && content[0].type === "text" && (content[0].text === EMPTY_PARAGRAPH_MARKDOWN || content[0].text === NBSP_CHAR)) {
+          return helpers.createNode("paragraph", void 0, []);
+        }
+        return helpers.createNode("paragraph", void 0, content);
       },
       renderMarkdown: (node, h2) => {
-        if (!node || !Array.isArray(node.content)) {
+        if (!node) {
           return "";
         }
-        return h2.renderChildren(node.content);
+        const content = Array.isArray(node.content) ? node.content : [];
+        if (content.length === 0) {
+          return EMPTY_PARAGRAPH_MARKDOWN;
+        }
+        return h2.renderChildren(content);
       },
       addCommands() {
         return {
@@ -5812,11 +5873,13 @@ var init_dist4 = __esm({
           node,
           h2,
           (context) => {
+            var _a, _b;
             if (context.parentType === "bulletList") {
               return "- ";
             }
             if (context.parentType === "orderedList") {
-              return `${context.index + 1}. `;
+              const start = ((_b = (_a = context.meta) == null ? void 0 : _a.parentAttrs) == null ? void 0 : _b.start) || 1;
+              return `${start + context.index}. `;
             }
             return "- ";
           },
@@ -12384,10 +12447,11 @@ function AISettings() {
       setAutoDraftWordCount(data.autoDraftWordCount ?? 800);
       setDefaultModel(data.defaultModel || "claude-sonnet");
       setModels(data.availableModels || [
-        { id: "claude-sonnet", name: "Sonnet 4.5", description: "Fast, capable, best value" },
-        { id: "claude-opus", name: "Opus 4.5", description: "Highest quality, slower" },
-        { id: "gpt-5.2", name: "GPT-5.2", description: "Latest OpenAI flagship" },
-        { id: "gpt-5-mini", name: "GPT-5 Mini", description: "Fast and cost-efficient" }
+        { id: "claude-opus", name: "Opus 4.7", description: "Highest quality, slower" },
+        { id: "claude-sonnet", name: "Sonnet 4.6", description: "Fast, capable, best value" },
+        { id: "claude-haiku", name: "Haiku 4.5", description: "Fastest, lightweight" },
+        { id: "openai-flagship", name: "GPT-5.5", description: "Latest OpenAI flagship" },
+        { id: "openai-mini", name: "GPT-5.4 Mini", description: "Fast and cost-efficient" }
       ]);
       setGenerateTemplate(data.generateTemplate ?? null);
       setChatTemplate(data.chatTemplate ?? null);

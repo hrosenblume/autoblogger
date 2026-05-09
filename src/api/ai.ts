@@ -30,16 +30,15 @@ export async function handleAIAPI(
   // GET /ai/settings - get AI settings
   if (method === 'GET' && path === '/ai/settings') {
     const settings = await cms.aiSettings.get()
-    
-    // Check if API keys are available from config or environment variables
+
+    const anthropicKey = cms.config.ai?.anthropicKey || settings.anthropicKey || process.env.ANTHROPIC_API_KEY
+    const openaiKey = cms.config.ai?.openaiKey || settings.openaiKey || process.env.OPENAI_API_KEY
     const hasAnthropicEnvKey = !!(cms.config.ai?.anthropicKey || process.env.ANTHROPIC_API_KEY)
     const hasOpenaiEnvKey = !!(cms.config.ai?.openaiKey || process.env.OPENAI_API_KEY)
-    
-    // Include default templates for the UI to display as placeholders
-    return jsonResponse({ 
+
+    return jsonResponse({
       data: {
         ...settings,
-        // Don't expose actual env keys, just indicate they exist
         hasAnthropicEnvKey,
         hasOpenaiEnvKey,
         defaultGenerateTemplate: DEFAULT_GENERATE_TEMPLATE,
@@ -50,7 +49,7 @@ export async function handleAIAPI(
         defaultExpandPlanTemplate: DEFAULT_EXPAND_PLAN_TEMPLATE,
         defaultAgentTemplate: DEFAULT_AGENT_TEMPLATE,
         defaultPlanRules: DEFAULT_PLAN_RULES,
-        availableModels: getModelOptions(),
+        availableModels: await getModelOptions({ anthropicKey, openaiKey }),
       }
     })
   }
