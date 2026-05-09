@@ -3831,28 +3831,29 @@ function pickLatest(ids, pattern) {
   }
   return best;
 }
-function pickLatestHaiku(ids) {
+function pickLatestAnthropic(ids, tier) {
   let best = null;
+  const alias = new RegExp(`^claude-${tier}-(\\d+)-(\\d{1,2})$`);
+  const dated = new RegExp(`^claude-${tier}-(\\d+)-(\\d{1,2})-(\\d{8})$`);
   for (const id of ids) {
-    const alias = id.match(/^claude-haiku-(\d+)-(\d+)$/);
-    const dated = id.match(/^claude-haiku-(\d+)-(\d+)-(\d{8})$/);
-    const m = alias ?? dated;
+    const a = id.match(alias);
+    const d = id.match(dated);
+    const m = a ?? d;
     if (!m) continue;
     const major = parseInt(m[1], 10);
     const minor = parseInt(m[2], 10);
-    const date2 = dated ? m[3] : "99999999";
-    const candidate = { id, major, minor, date: date2 };
-    if (!best || candidate.major > best.major || candidate.major === best.major && candidate.minor > best.minor || candidate.major === best.major && candidate.minor === best.minor && candidate.date > best.date) {
-      best = candidate;
+    const date2 = d ? m[3] : "99999999";
+    if (!best || major > best.major || major === best.major && minor > best.minor || major === best.major && minor === best.minor && date2 > best.date) {
+      best = { id, major, minor, date: date2 };
     }
   }
   return best ? { id: best.id, major: best.major, minor: best.minor } : null;
 }
 async function curateAnthropic(ids) {
   const out = /* @__PURE__ */ new Map();
-  const opus = pickLatest(ids, /^claude-opus-(\d+)-(\d+)$/);
-  const sonnet = pickLatest(ids, /^claude-sonnet-(\d+)-(\d+)$/);
-  const haiku = pickLatestHaiku(ids);
+  const opus = pickLatestAnthropic(ids, "opus");
+  const sonnet = pickLatestAnthropic(ids, "sonnet");
+  const haiku = pickLatestAnthropic(ids, "haiku");
   if (opus) {
     const fallback = STATIC_MODELS_BY_TIER.get("claude-opus");
     out.set("claude-opus", { ...fallback, modelId: opus.id, name: `Opus ${opus.major}.${opus.minor}` });
@@ -6245,7 +6246,54 @@ ${examples}`;
   return "";
 }
 
+// src/lib/imageProcessor.ts
+import sharp from "sharp";
+var MAX_DIMENSION = 2400;
+var QUALITY = 85;
+async function processImage(input, mimeType) {
+  if (mimeType === "image/gif") {
+    return { buffer: input, mimeType };
+  }
+  if (mimeType !== "image/jpeg" && mimeType !== "image/png" && mimeType !== "image/webp") {
+    return { buffer: input, mimeType };
+  }
+  try {
+    const pipeline = sharp(input, { failOn: "none" }).rotate();
+    const metadata = await pipeline.metadata();
+    const longest = Math.max(metadata.width || 0, metadata.height || 0);
+    if (longest > MAX_DIMENSION) {
+      pipeline.resize({
+        width: MAX_DIMENSION,
+        height: MAX_DIMENSION,
+        fit: "inside",
+        withoutEnlargement: true
+      });
+    }
+    if (mimeType === "image/jpeg") {
+      pipeline.jpeg({ quality: QUALITY, mozjpeg: true });
+    } else if (mimeType === "image/png") {
+      pipeline.png({ compressionLevel: 9, palette: true });
+    } else if (mimeType === "image/webp") {
+      pipeline.webp({ quality: QUALITY });
+    }
+    const { data, info } = await pipeline.toBuffer({ resolveWithObject: true });
+    if (data.length >= input.length && longest <= MAX_DIMENSION) {
+      return { buffer: input, mimeType };
+    }
+    return {
+      buffer: data,
+      mimeType,
+      width: info.width,
+      height: info.height
+    };
+  } catch (err) {
+    console.warn("[autoblogger] image processing failed, using original:", err);
+    return { buffer: input, mimeType };
+  }
+}
+
 // src/api/upload.ts
+var MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
 async function handleUploadAPI(req, cms, session) {
   if (req.method !== "POST") {
     return jsonResponse2({ error: "Method not allowed" }, 405);
@@ -6269,11 +6317,15 @@ async function handleUploadAPI(req, cms, session) {
         error: "Invalid file type. Allowed: JPEG, PNG, GIF, WebP"
       }, 400);
     }
-    const maxSize = 4 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return jsonResponse2({ error: "File too large. Maximum size: 4MB" }, 400);
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return jsonResponse2({ error: "File too large. Maximum size: 25MB" }, 400);
     }
-    const result = await cms.config.storage.upload(file);
+    const inputBuffer = Buffer.from(await file.arrayBuffer());
+    const processed = await processImage(inputBuffer, file.type);
+    const uploadFile2 = processed.buffer === inputBuffer && processed.mimeType === file.type ? file : new File([new Uint8Array(processed.buffer)], file.name, {
+      type: processed.mimeType
+    });
+    const result = await cms.config.storage.upload(uploadFile2);
     return jsonResponse2({ data: result });
   } catch (error) {
     return jsonResponse2({

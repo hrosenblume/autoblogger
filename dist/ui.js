@@ -9217,9 +9217,9 @@ function MediaButtons({ editor: editorProp, textareaRef, markdown, onMarkdownCha
   const handleImageUpload = (0, import_react6.useCallback)(async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const maxSize = 4 * 1024 * 1024;
+    const maxSize = 25 * 1024 * 1024;
     if (file.size > maxSize) {
-      alert(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 4MB.`);
+      alert(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum size is 25MB.`);
       e.target.value = "";
       return;
     }

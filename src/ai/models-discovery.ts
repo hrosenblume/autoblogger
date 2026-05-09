@@ -134,25 +134,31 @@ function pickLatest(ids: string[], pattern: RegExp): VersionedId | null {
   return best
 }
 
-/** Haiku may still ship dated IDs (e.g. `claude-haiku-4-5-20251001`); accept both shapes. */
-function pickLatestHaiku(ids: string[]): VersionedId | null {
+/**
+ * Pick the latest model per Anthropic tier. Accepts both alias (e.g. `claude-opus-4-7`)
+ * and dated (e.g. `claude-opus-4-7-20251201`) ID shapes. Constrains the minor segment
+ * to 1-2 digits so malformed IDs like `claude-opus-4-20250514` (where the 8-digit date
+ * would otherwise be treated as a minor version) are rejected.
+ */
+function pickLatestAnthropic(ids: string[], tier: 'opus' | 'sonnet' | 'haiku'): VersionedId | null {
   let best: { id: string; major: number; minor: number; date: string } | null = null
+  const alias = new RegExp(`^claude-${tier}-(\\d+)-(\\d{1,2})$`)
+  const dated = new RegExp(`^claude-${tier}-(\\d+)-(\\d{1,2})-(\\d{8})$`)
   for (const id of ids) {
-    const alias = id.match(/^claude-haiku-(\d+)-(\d+)$/)
-    const dated = id.match(/^claude-haiku-(\d+)-(\d+)-(\d{8})$/)
-    const m = alias ?? dated
+    const a = id.match(alias)
+    const d = id.match(dated)
+    const m = a ?? d
     if (!m) continue
     const major = parseInt(m[1], 10)
     const minor = parseInt(m[2], 10)
-    const date = dated ? m[3] : '99999999'
-    const candidate = { id, major, minor, date }
+    const date = d ? m[3] : '99999999'
     if (
       !best ||
-      candidate.major > best.major ||
-      (candidate.major === best.major && candidate.minor > best.minor) ||
-      (candidate.major === best.major && candidate.minor === best.minor && candidate.date > best.date)
+      major > best.major ||
+      (major === best.major && minor > best.minor) ||
+      (major === best.major && minor === best.minor && date > best.date)
     ) {
-      best = candidate
+      best = { id, major, minor, date }
     }
   }
   return best ? { id: best.id, major: best.major, minor: best.minor } : null
@@ -160,9 +166,9 @@ function pickLatestHaiku(ids: string[]): VersionedId | null {
 
 async function curateAnthropic(ids: string[]): Promise<Map<string, AIModel>> {
   const out = new Map<string, AIModel>()
-  const opus = pickLatest(ids, /^claude-opus-(\d+)-(\d+)$/)
-  const sonnet = pickLatest(ids, /^claude-sonnet-(\d+)-(\d+)$/)
-  const haiku = pickLatestHaiku(ids)
+  const opus = pickLatestAnthropic(ids, 'opus')
+  const sonnet = pickLatestAnthropic(ids, 'sonnet')
+  const haiku = pickLatestAnthropic(ids, 'haiku')
 
   if (opus) {
     const fallback = STATIC_MODELS_BY_TIER.get('claude-opus')!
